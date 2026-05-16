@@ -11,11 +11,14 @@
 
 ## 🚀 Key Highlights
 
-- **Live Deterministic Simulation**: Visualize real-time traffic flow across your architecture. See packets move through your system and witness how load affects performance.
-- **Architectural Validation Engine**: Built-in AWS best practices that prevent invalid connections (e.g., ensuring an SQS queue is connected to a compatible consumer).
-- **Multi-Currency Cost Estimation**: Real-time monthly cost calculation with support for **USD, INR, EUR, JPY, and GBP**.
-- **Interactive Modeling Canvas**: A high-performance whiteboard powered by `@foblex/flow` for seamless drag-and-drop service orchestration.
-- **Service-Specific Metrics**: Track CPU pressure, memory usage, queue size, and latency for every node in your design.
+- **🏗️ Design Architectures**: Drop services from the palette and visualize your AWS infrastructure with an intuitive drag-and-drop interface.
+- **⚡ Real-time Simulation**: Watch traffic flow through your design in real-time to identify bottlenecks and visualize system behavior.
+- **📊 Performance Metrics**: Monitor latency, throughput, error rates, and resource utilization for every node in your architecture.
+- **🔧 Tune & Optimize**: Fine-tune your system by adjusting capacity, configuring services, and running various load scenarios.
+- **💰 Cost Estimation**: Get realistic monthly cost approximations based on simulated traffic and specific service configurations.
+- **🤖 AI Intelligence (Coming Soon)**: AI-powered architecture analysis and optimization suggestions tailored to your business needs.
+- **🌐 Multi-Cloud Support (Coming Soon)**: Compare architectures and costs across AWS, GCP, and Azure to find the best provider for your workload.
+- **✅ Architectural Validation**: Built-in AWS best practices ensure your designs are technically sound and ready for implementation.
 
 ## 🛠️ Problems This Tool Resolves
 
