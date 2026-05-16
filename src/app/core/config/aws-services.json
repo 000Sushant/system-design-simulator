@@ -1,0 +1,1561 @@
+{
+  "services": [
+    {
+      "type": "client",
+      "name": "Client / User",
+      "category": "Entry",
+      "inputs": [
+        "http"
+      ],
+      "outputs": [
+        "http"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "route53",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "dns"
+          ],
+          "type": "dns",
+          "description": "Users resolve DNS through Route 53."
+        },
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "cdn"
+          ],
+          "type": "http",
+          "description": "Users call CloudFront over HTTP."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users call API Gateway."
+        },
+        {
+          "target": "alb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users call ALB."
+        }
+      ]
+    },
+    {
+      "type": "route53",
+      "name": "Route 53",
+      "category": "Network",
+      "inputs": [
+        "dns",
+        "identity"
+      ],
+      "outputs": [
+        "dns"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "cdn",
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 can resolve to CloudFront."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 can resolve to API Gateway."
+        },
+        {
+          "target": "alb",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 can resolve to ALB."
+        }
+      ]
+    },
+    {
+      "type": "cloudfront",
+      "name": "CloudFront",
+      "category": "Network",
+      "inputs": [
+        "http",
+        "cdn",
+        "identity"
+      ],
+      "outputs": [
+        "cdn"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "cdn",
+          "description": "CloudFront can use S3 as an origin."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "CloudFront can front API Gateway."
+        },
+        {
+          "target": "alb",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "CloudFront can use ALB as an origin."
+        }
+      ]
+    },
+    {
+      "type": "apiGateway",
+      "name": "API Gateway",
+      "category": "Entry",
+      "inputs": [
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "http",
+        "event",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "http",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can invoke Lambda."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can integrate directly with SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can integrate directly with SNS."
+        },
+        {
+          "target": "stepFunctions",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "workflow",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can start Step Function workflows."
+        },
+        {
+          "target": "alb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "network"
+          ],
+          "type": "http",
+          "description": "API Gateway can route HTTP to Load Balancers."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "compute"
+          ],
+          "type": "http",
+          "description": "API Gateway can route traffic directly to EC2 instances."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "compute"
+          ],
+          "type": "http",
+          "description": "API Gateway can route to ECS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "API Gateway emits logs and metrics to CloudWatch."
+        }
+      ]
+    },
+    {
+      "type": "alb",
+      "name": "ELB / ALB",
+      "category": "Network",
+      "inputs": [
+        "http",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "http",
+        "compute",
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "type": "http",
+          "description": "Load Balancers route traffic to EC2 targets."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "type": "http",
+          "description": "Load Balancers route traffic to ECS services."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "event"
+          ],
+          "type": "http",
+          "description": "ALB can trigger Lambda targets."
+        }
+      ]
+    },
+    {
+      "type": "lambda",
+      "name": "Lambda",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "event",
+        "queue",
+        "topic",
+        "storage",
+        "workflow",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "event",
+        "queue",
+        "topic",
+        "storage",
+        "database",
+        "http",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "queue",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "queue",
+          "description": "Lambda can send messages to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "topic",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "topic",
+          "description": "Lambda can publish to SNS."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda can read/write DynamoDB."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda can connect to RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "cache"
+          ],
+          "targetPorts": [
+            "cache"
+          ],
+          "type": "cache",
+          "description": "Lambda can use ElastiCache."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage",
+            "http"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "Lambda can read/write S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability",
+            "event"
+          ],
+          "targetPorts": [
+            "observability",
+            "event"
+          ],
+          "type": "observability",
+          "description": "Lambda emits metrics to CloudWatch."
+        },
+        {
+          "target": "stepFunctions",
+          "sourcePorts": [
+            "event",
+            "workflow"
+          ],
+          "targetPorts": [
+            "workflow",
+            "event"
+          ],
+          "type": "workflow",
+          "description": "Lambda can start workflows."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Lambda can call other APIs via Gateway."
+        }
+      ]
+    },
+    {
+      "type": "ec2",
+      "name": "EC2",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "compute",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "http",
+        "storage",
+        "database",
+        "cache",
+        "queue",
+        "topic",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EC2 can connect to RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "cache"
+          ],
+          "targetPorts": [
+            "cache"
+          ],
+          "type": "cache",
+          "description": "EC2 can use ElastiCache."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EC2 can read/write DynamoDB."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage",
+            "http"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "EC2 can read/write S3."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "queue",
+          "description": "EC2 can send to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "topic"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "topic",
+          "description": "EC2 can publish to SNS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EC2 emits logs to CloudWatch."
+        }
+      ]
+    },
+    {
+      "type": "ecs",
+      "name": "ECS",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "compute",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "http",
+        "storage",
+        "database",
+        "cache",
+        "queue",
+        "topic",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS can connect to RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "cache"
+          ],
+          "targetPorts": [
+            "cache"
+          ],
+          "type": "cache",
+          "description": "ECS can use ElastiCache."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS can read/write DynamoDB."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage",
+            "http"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "ECS can read/write S3."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "queue",
+          "description": "ECS can send to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "topic"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "topic",
+          "description": "ECS can publish to SNS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "ECS emits logs to CloudWatch."
+        }
+      ]
+    },
+    {
+      "type": "sqs",
+      "name": "SQS",
+      "category": "Integration",
+      "inputs": [
+        "queue",
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "queue",
+        "event",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "queue",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "queue",
+          "description": "SQS can trigger Lambda."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "queue",
+          "description": "ECS can poll SQS."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "queue",
+          "description": "EC2 can poll SQS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "SQS emits metrics to CloudWatch."
+        }
+      ]
+    },
+    {
+      "type": "sns",
+      "name": "SNS",
+      "category": "Integration",
+      "inputs": [
+        "topic",
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "topic",
+        "event",
+        "queue",
+        "http",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "topic",
+            "queue",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "queue",
+          "description": "SNS can fan out to SQS."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "topic",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "event",
+          "description": "SNS can invoke Lambda subscribers."
+        },
+        {
+          "target": "http",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "SNS can call HTTP endpoints."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "topic",
+            "event",
+            "observability"
+          ],
+          "targetPorts": [
+            "observability",
+            "event"
+          ],
+          "type": "observability",
+          "description": "SNS can integrate with CloudWatch for metrics and events."
+        },
+        {
+          "target": "*",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "SNS emits telemetry to observability services."
+        },
+        {
+          "target": "batch",
+          "sourcePorts": [
+            "topic",
+            "event"
+          ],
+          "targetPorts": [
+            "job",
+            "queue"
+          ],
+          "type": "event",
+          "description": "SNS can trigger AWS Batch jobs via event notifications."
+        }
+      ]
+    },
+    {
+      "type": "s3",
+      "name": "S3",
+      "category": "Storage",
+      "inputs": [
+        "storage",
+        "event",
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "storage",
+        "event",
+        "cdn",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "cdn"
+          ],
+          "type": "cdn",
+          "description": "S3 can be an origin for CloudFront."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event",
+            "storage"
+          ],
+          "type": "event",
+          "description": "S3 events can trigger Lambda."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "S3 emits usage and performance metrics to CloudWatch."
+        }
+      ]
+    },
+    {
+      "type": "rds",
+      "name": "RDS",
+      "category": "Data",
+      "inputs": [
+        "database",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "database",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": []
+    },
+    {
+      "type": "dynamoDb",
+      "name": "DynamoDB",
+      "category": "Data",
+      "inputs": [
+        "database",
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "database",
+        "event",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "DynamoDB emits operational metrics to CloudWatch."
+        }
+      ]
+    },
+    {
+      "type": "elastiCache",
+      "name": "ElastiCache",
+      "category": "Data",
+      "inputs": [
+        "cache",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "cache",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": []
+    },
+    {
+      "type": "cloudWatch",
+      "name": "CloudWatch",
+      "category": "Observability",
+      "inputs": [
+        "observability",
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "observability",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "observability",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudWatch Alarms and Events can trigger SNS."
+        }
+      ]
+    },
+    {
+      "type": "stepFunctions",
+      "name": "Step Functions",
+      "category": "Integration",
+      "inputs": [
+        "event",
+        "workflow",
+        "identity"
+      ],
+      "outputs": [
+        "workflow",
+        "event",
+        "http"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "workflow",
+            "event"
+          ],
+          "targetPorts": [
+            "workflow",
+            "event"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can orchestrate Lambda."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can send to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can publish to SNS."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can read/write DynamoDB."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Step Functions can call external APIs."
+        }
+      ]
+    },
+    {
+      "type": "vpc",
+      "name": "VPC",
+      "category": "Network",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "alb",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for ALB."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for EC2."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for ECS."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for Lambda."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for ElastiCache."
+        },
+        {
+          "target": "natGateway",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC uses NAT Gateway for outbound traffic."
+        },
+        {
+          "target": "securityGroup",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC uses Security Groups for firewalling."
+        }
+      ]
+    },
+    {
+      "type": "iam",
+      "name": "IAM",
+      "category": "Security",
+      "inputs": [
+        "identity"
+      ],
+      "outputs": [
+        "identity"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "*",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "IAM grants service permissions."
+        }
+      ]
+    },
+    {
+      "type": "autoScalingGroup",
+      "name": "Auto Scaling Group",
+      "category": "Compute",
+      "inputs": [
+        "compute",
+        "identity"
+      ],
+      "outputs": [
+        "compute",
+        "http"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": false,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ASG manages EC2 capacity."
+        }
+      ]
+    },
+    {
+      "type": "securityGroup",
+      "name": "Security Group",
+      "category": "Security",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network",
+        "identity"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects EC2."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects ECS."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects ElastiCache."
+        },
+        {
+          "target": "alb",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects ALB."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects Lambda."
+        }
+      ]
+    },
+    {
+      "type": "natGateway",
+      "name": "NAT Gateway",
+      "category": "Network",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": false,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "storage"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound S3 access."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "topic"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound SNS access."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "queue"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound SQS access."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "database"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound DynamoDB access."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "observability"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound CloudWatch access."
+        }
+      ]
+    },
+    {
+      "type": "batch",
+      "name": "AWS Batch",
+      "category": "Compute",
+      "inputs": [
+        "job",
+        "network",
+        "storage",
+        "queue",
+        "event"
+      ],
+      "outputs": [
+        "job",
+        "compute",
+        "result"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "defaults": {
+        "cpu": 200,
+        "memory": 1024,
+        "latency": 300000,
+        "replication": 10,
+        "requestRate": 0.5
+      },
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "result",
+            "storage"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "AWS Batch stores processed outputs in Amazon S3."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "job"
+          ],
+          "targetPorts": [
+            "queue",
+            "http"
+          ],
+          "type": "queue",
+          "description": "AWS Batch consumes jobs from Amazon SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "result"
+          ],
+          "targetPorts": [
+            "topic",
+            "http"
+          ],
+          "type": "notification",
+          "description": "AWS Batch publishes job completion events to Amazon SNS."
+        },
+        {
+          "target": "stepFunctions",
+          "sourcePorts": [
+            "job",
+            "result"
+          ],
+          "targetPorts": [
+            "workflow",
+            "http"
+          ],
+          "type": "workflow",
+          "description": "AWS Batch integrates with AWS Step Functions for orchestration."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "result"
+          ],
+          "targetPorts": [
+            "database",
+            "http"
+          ],
+          "type": "data",
+          "description": "AWS Batch stores processed metadata in Amazon DynamoDB."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability",
+            "http"
+          ],
+          "type": "monitoring",
+          "description": "AWS Batch publishes logs and metrics to Amazon CloudWatch."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "result"
+          ],
+          "targetPorts": [
+            "compute",
+            "http"
+          ],
+          "type": "event",
+          "description": "AWS Batch triggers AWS Lambda after job completion."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute",
+            "network"
+          ],
+          "type": "compute",
+          "description": "AWS Batch provisions EC2 compute environments for job execution."
+        }
+      ]
+    }
+  ]
+}

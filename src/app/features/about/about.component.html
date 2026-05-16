@@ -1,0 +1,95 @@
+<div class="about-overlay" (click)="close.emit()">
+  <div class="about-container" (click)="$event.stopPropagation()">
+    <header class="about-header">
+      <div class="header-main">
+        <h1>Sr. Architect <span>v1.0</span></h1>
+        <p>The ultimate AWS system design and simulation playground.</p>
+      </div>
+      <button class="close-btn" (click)="close.emit()">
+        <i class="fas fa-times"></i>
+      </button>
+    </header>
+
+    <div class="about-scroll-content">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-text">
+          <h2>Design. Simulate. Optimize.</h2>
+          <p>Sr. Architect is a deterministic simulation engine designed to help cloud architects visualize data flows,
+            identify bottlenecks, and estimate costs before deploying a single line of code.</p>
+        </div>
+        <div class="hero-image">
+          <img src="/assets/about-arch.png" alt="Architecture Illustration">
+        </div>
+      </section>
+
+      <!-- How it Works -->
+      <section class="info-section">
+        <h3 class="section-title">The Simulation Engine</h3>
+        <div class="simulation-grid">
+          <div class="sim-card" *ngFor="let item of simulationHighlights">
+            <div class="sim-card-icon">
+              <i
+                [class]="item.title === 'Load Simulation' ? 'fas fa-tachometer-alt' : (item.title === 'Cost Estimation' ? 'fas fa-dollar-sign' : 'fas fa-wave-square')"></i>
+            </div>
+            <h4>{{ item.title }}</h4>
+            <p>{{ item.description }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Services Table -->
+      <section class="info-section">
+        <h3 class="section-title">Service Catalog & Parameters</h3>
+        <div class="table-container">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Services</th>
+                <th>Cost Impacting Params</th>
+                <th>Non-Cost (Performance) Params</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of services">
+                <td><strong>{{ item.name }}</strong></td>
+                <td>{{ item.services }}</td>
+                <td class="cost-cell">{{ item.costParams }}</td>
+                <td class="perf-cell">{{ item.loadParams }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Cost Section -->
+      <section class="hero-section reverse">
+        <div class="hero-image">
+          <img src="/assets/about-cost.png" alt="Cost Dashboard Mockup">
+        </div>
+        <div class="hero-text">
+          <h2>Financial Transparency</h2>
+          <p>Our cost models are based on the latest AWS pricing principles. We support multi-currency conversion (USD,
+            INR, EUR, JPY) so you can plan your budget regardless of your region.</p>
+          <ul class="cost-list">
+            <li><i class="fas fa-check"></i> Serverless pay-as-you-go modeling</li>
+            <li><i class="fas fa-check"></i> Compute-second precision for AWS Batch & Lambda</li>
+            <li><i class="fas fa-check"></i> Provisioned capacity vs. actual consumption analysis</li>
+          </ul>
+        </div>
+      </section>
+
+      <footer class="about-footer">
+        <p>Built for architects, by architects. Developed by <strong>Sushant Kumar</strong>.</p>
+        <div class="footer-links">
+          <a href="mailto:[000susahntkumar@gmail.com]" target="_blank" rel="noopener noreferrer" title="Email"><i
+              class="fa fa-envelope"></i>Email</a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i
+              class="fab fa-linkedin"></i> LinkedIn</a>
+          <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      </footer>
+    </div>
+  </div>
+</div>
