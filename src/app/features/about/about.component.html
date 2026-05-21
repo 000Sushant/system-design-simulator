@@ -1,95 +1,172 @@
 <div class="about-overlay" (click)="close.emit()">
-  <div class="about-container" (click)="$event.stopPropagation()">
-    <header class="about-header">
-      <div class="header-main">
-        <h1>Sr. Architect <span>v1.0</span></h1>
-        <p>The ultimate AWS system design and simulation playground.</p>
-      </div>
-      <button class="close-btn" (click)="close.emit()">
-        <i class="fas fa-times"></i>
-      </button>
-    </header>
+  <div class="ambient-field" aria-hidden="true">
+    <span class="particle particle-a"></span>
+    <span class="particle particle-b"></span>
+    <span class="particle particle-c"></span>
+    <span class="light-leak leak-a"></span>
+    <span class="light-leak leak-b"></span>
+  </div>
+
+  <section class="about-panel" (click)="$event.stopPropagation()">
+    <div class="panel-glow" aria-hidden="true"></div>
+    <button class="close-btn" type="button" (click)="close.emit()" aria-label="Close learn more">
+      <i class="fas fa-times"></i>
+    </button>
 
     <div class="about-scroll-content">
-      <!-- Hero Section -->
-      <section class="hero-section">
-        <div class="hero-text">
-          <h2>Design. Simulate. Optimize.</h2>
-          <p>Sr. Architect is a deterministic simulation engine designed to help cloud architects visualize data flows,
-            identify bottlenecks, and estimate costs before deploying a single line of code.</p>
+      <header class="showcase-header glass-module hero-glass">
+        <div class="status-row">
+          <span class="status-chip"><i class="fas fa-circle"></i> LIVE SIMULATION ENGINE</span>
+          <span class="version-badge">v1.1</span>
         </div>
-        <div class="hero-image">
-          <img src="/assets/about-arch.png" alt="Architecture Illustration">
+        <h1>Sr. Architect</h1>
+        <p class="tagline">The ultimate AWS architecture simulation and cost intelligence playground.</p>
+        <p class="subheading">Design infrastructure visually. Simulate traffic deterministically. Understand cost before deployment.</p>
+        <div class="header-orbit" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </header>
+
+      <section class="whats-new-section">
+        <div class="section-kicker">What&apos;s New in v1.1</div>
+        <div class="release-strip">
+          <article class="release-card glass-module" *ngFor="let feature of whatsNew">
+            <span class="feature-icon"><i [class]="feature.icon"></i></span>
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.description }}</p>
+          </article>
         </div>
       </section>
 
-      <!-- How it Works -->
-      <section class="info-section">
-        <h3 class="section-title">The Simulation Engine</h3>
-        <div class="simulation-grid">
-          <div class="sim-card" *ngFor="let item of simulationHighlights">
-            <div class="sim-card-icon">
-              <i
-                [class]="item.title === 'Load Simulation' ? 'fas fa-tachometer-alt' : (item.title === 'Cost Estimation' ? 'fas fa-dollar-sign' : 'fas fa-wave-square')"></i>
+      <section class="main-hero glass-module">
+        <div class="hero-copy">
+          <span class="section-kicker">Cloud OS Preview</span>
+          <h2>Design. Simulate. Optimize.</h2>
+          <p>Sr. Architect is a deterministic cloud simulation engine built for architects, engineers, and infrastructure teams to visualize traffic flow, identify bottlenecks, model scalability, and estimate AWS costs before deploying a single resource.</p>
+        </div>
+        <div class="architecture-visual" aria-hidden="true">
+          <div class="node node-client">Client</div>
+          <div class="node node-api">API</div>
+          <div class="node node-lambda">Lambda</div>
+          <div class="node node-db">DB</div>
+          <span class="beam beam-a"></span>
+          <span class="beam beam-b"></span>
+          <span class="beam beam-c"></span>
+          <span class="packet packet-a"></span>
+          <span class="packet packet-b"></span>
+          <span class="packet packet-c"></span>
+          <div class="throughput-graph"><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="latency-badge">42ms</div>
+        </div>
+      </section>
+
+      <section class="engine-section">
+        <div class="section-heading">
+          <span class="section-kicker">The Simulation Engine</span>
+          <h2>Every signal in the architecture has a cause.</h2>
+        </div>
+        <div class="engine-grid">
+          <article class="engine-module glass-module" *ngFor="let module of engineModules">
+            <div class="module-visual" [class]="module.visualClass">
+              <span></span><span></span><span></span><span></span>
             </div>
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.description }}</p>
+            <h3>{{ module.title }}</h3>
+            <p>{{ module.description }}</p>
+            <ul>
+              <li *ngFor="let point of module.points">{{ point }}</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="cost-intelligence glass-module">
+        <div>
+          <span class="section-kicker">Deterministic Cost Intelligence</span>
+          <h2>I can finally see where AWS costs come from.</h2>
+          <p>Infrastructure pricing is modeled using AWS billing principles including request volume, provisioned capacity, compute duration, transfer bandwidth, WebSocket connection minutes, cache allocation, retry amplification, and payload transfer sizing.</p>
+          <div class="service-pills">
+            <span *ngFor="let service of supportedServices">{{ service }}</span>
           </div>
         </div>
+        <aside class="transparency-panel">
+          <span class="panel-label">Transparency Mode</span>
+          <div class="formula-line">requests x amplification x price/million</div>
+          <div class="cost-bar"><span style="--w: 76%"></span></div>
+          <div class="formula-line">duration x memory x GB-second rate</div>
+          <div class="cost-bar"><span style="--w: 54%"></span></div>
+          <div class="formula-line">payload GB x transfer tier</div>
+          <div class="cost-bar"><span style="--w: 38%"></span></div>
+        </aside>
       </section>
 
-      <!-- Services Table -->
-      <section class="info-section">
-        <h3 class="section-title">Service Catalog & Parameters</h3>
-        <div class="table-container">
-          <table class="modern-table">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Services</th>
-                <th>Cost Impacting Params</th>
-                <th>Non-Cost (Performance) Params</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of services">
-                <td><strong>{{ item.name }}</strong></td>
-                <td>{{ item.services }}</td>
-                <td class="cost-cell">{{ item.costParams }}</td>
-                <td class="perf-cell">{{ item.loadParams }}</td>
-              </tr>
-            </tbody>
-          </table>
+      <section class="visual-feedback">
+        <div class="section-heading">
+          <span class="section-kicker">Reactive System Visualization</span>
+          <h2>The system reacts while it runs.</h2>
+        </div>
+        <div class="feedback-grid">
+          <article class="feedback-card glass-module" *ngFor="let item of feedbackItems">
+            <i [class]="item.icon"></i>
+            <span>{{ item.text }}</span>
+          </article>
         </div>
       </section>
 
-      <!-- Cost Section -->
-      <section class="hero-section reverse">
-        <div class="hero-image">
-          <img src="/assets/about-cost.png" alt="Cost Dashboard Mockup">
+      <section class="catalog-section">
+        <div class="section-heading">
+          <span class="section-kicker">Service Catalog</span>
+          <h2>Expandable AWS building blocks.</h2>
         </div>
-        <div class="hero-text">
-          <h2>Financial Transparency</h2>
-          <p>Our cost models are based on the latest AWS pricing principles. We support multi-currency conversion (USD,
-            INR, EUR, JPY) so you can plan your budget regardless of your region.</p>
-          <ul class="cost-list">
-            <li><i class="fas fa-check"></i> Serverless pay-as-you-go modeling</li>
-            <li><i class="fas fa-check"></i> Compute-second precision for AWS Batch & Lambda</li>
-            <li><i class="fas fa-check"></i> Provisioned capacity vs. actual consumption analysis</li>
-          </ul>
+        <div class="catalog-grid">
+          <article class="catalog-card glass-module" *ngFor="let category of serviceCategories">
+            <div class="catalog-head">
+              <span class="catalog-icon"><i [class]="category.icon"></i></span>
+              <h3>{{ category.name }}</h3>
+            </div>
+            <div class="service-cloud">
+              <span *ngFor="let service of category.services">{{ service }}</span>
+            </div>
+            <div class="tuning-panel">
+              <small>Cost-impacting parameters</small>
+              <strong>{{ category.costParams }}</strong>
+              <small>Performance tuning</small>
+              <strong>{{ category.performanceParams }}</strong>
+            </div>
+          </article>
         </div>
       </section>
 
-      <footer class="about-footer">
-        <p>Built for architects, by architects. Developed by <strong>Sushant Kumar</strong>.</p>
-        <div class="footer-links">
-          <a href="mailto:[000susahntkumar@gmail.com]" target="_blank" rel="noopener noreferrer" title="Email"><i
-              class="fa fa-envelope"></i>Email</a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i
-              class="fab fa-linkedin"></i> LinkedIn</a>
-          <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+      <section class="financial-section glass-module">
+        <div class="financial-copy">
+          <span class="section-kicker">Financial Transparency</span>
+          <h2>Real-time pricing clarity without the fog.</h2>
+          <p>Cost models combine deterministic simulation logic with pricing principles for multi-currency support, request amplification visibility, provisioned vs consumed analysis, cache cost visibility, retry cost amplification, and transfer bandwidth modeling.</p>
+          <div class="currency-chips">
+            <span *ngFor="let currency of currencies">{{ currency }}</span>
+          </div>
         </div>
+        <div class="trend-visual" aria-hidden="true">
+          <div class="trend-line"></div>
+          <span class="trend-dot dot-a"></span>
+          <span class="trend-dot dot-b"></span>
+          <span class="trend-dot dot-c"></span>
+          <strong>$284.19</strong>
+          <small>live monthly projection</small>
+        </div>
+      </section>
+
+      <footer class="about-footer glass-module">
+        <div>
+          <p>Built for architects, by architects.</p>
+          <strong>Developed by Sushant Kumar.</strong>
+        </div>
+        <nav class="footer-links" aria-label="Creator links">
+          <a href="mailto:[000susahntkumar@gmail.com]" target="_blank" rel="noopener noreferrer"><i class="fa fa-envelope"></i>Email</a>
+          <a href="https://linkedin.com/in/sushant--kumar" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i>LinkedIn</a>
+          <a href="https://000sushant.github.io/sushant-portfolio/" target="_blank" rel="noopener noreferrer"><i class="fas fa-globe"></i>Portfolio</a>
+          <a href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i>GitHub</a>
+        </nav>
       </footer>
     </div>
-  </div>
+  </section>
 </div>

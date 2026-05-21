@@ -16,6 +16,15 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* Android Chrome fix: overflow:hidden on root blocks child touch scroll gestures.
+   On mobile we keep the app locked but allow pointer events through. */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  html, body {
+    overflow: clip; /* blocks page scroll but still allows child overflow scroll */
+    overscroll-behavior: none;
+  }
+}
+
 body {
   background: #f8fafc;
   color: #0f172a;

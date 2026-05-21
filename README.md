@@ -22,12 +22,12 @@
 
 ## 🛠️ Problems This Tool Resolves
 
-| Problem | Solution |
-| :--- | :--- |
-| **Architectural Ambiguity** | Provides a clear, visual representation of complex cloud workflows. |
-| **Cost Uncertainty** | Estimates pay-as-you-go and provisioned costs based on actual simulated load. |
+| Problem                     | Solution                                                                          |
+| :-------------------------- | :-------------------------------------------------------------------------------- |
+| **Architectural Ambiguity** | Provides a clear, visual representation of complex cloud workflows.               |
+| **Cost Uncertainty**        | Estimates pay-as-you-go and provisioned costs based on actual simulated load.     |
 | **Performance Bottlenecks** | Simulates traffic spikes to identify which services will fail or slow down first. |
-| **Integration Errors** | Validates service-to-service connectivity rules to ensure production-readiness. |
+| **Integration Errors**      | Validates service-to-service connectivity rules to ensure production-readiness.   |
 
 ## 💻 Tech Stack
 
@@ -40,10 +40,12 @@
 ## 🏃 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18+)
 - npm
 
 ### Installation
+
 1. Clone the repository
 2. Install dependencies:
    ```bash
@@ -60,7 +62,7 @@
 ## 👤 About Me
 
 **Sushant Kumar**  
-*Cloud Architect & Full-Stack Developer*
+_Full-Stack Developer and Problem Solver_
 
 I build tools that help developers and architects understand complex systems with ease. Passionate about AWS, high-performance UI, and simulation engines.
 
@@ -74,5 +76,14 @@ I build tools that help developers and architects understand complex systems wit
 </p>
 
 ---
+
+## 📦 Release Notes
+
+### Version 1.1 — 2026-05-21
+
+- Added in-depth cost calculation params
+- Added cost calculation transparency
+- Made run stats compact and responsive for all screen sizes
+- Restructured and added more insformation in about section
 
 Built with ❤️ for the Cloud Community. Licensed under the [MIT License](LICENSE).

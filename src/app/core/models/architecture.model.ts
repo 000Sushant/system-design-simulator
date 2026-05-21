@@ -45,6 +45,7 @@ export type HealthStatus = 'normal' | 'busy' | 'overloaded' | 'failing' | 'offli
 export type SimulationMode = 'idle' | 'running' | 'paused';
 
 export interface ServiceConfig {
+  [key: string]: any;
   throughput: number;
   latency: number;
   requestRate: number;

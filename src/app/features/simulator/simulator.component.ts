@@ -30,8 +30,9 @@ import { PresetService } from '../../core/services/preset.service';
 import { ProjectStorageService } from '../../core/services/project-storage.service';
 import { SimulationService } from '../../core/services/simulation.service';
 import { ValidationRuleService } from '../../core/services/validation-rule.service';
-import { CostService } from '../../core/services/cost.service';
+import { CostService, CostBreakdown } from '../../core/services/cost.service';
 import { Currency } from '../../core/models/architecture.model';
+import serviceCostModelData from '../../core/data/service-cost-model.json';
 
 interface PortSelection {
   node: ArchitectureNode;
@@ -256,6 +257,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedNodeIds: string[] = [];
   selectedConnectionIds: string[] = [];
   ctrlPressed = false;
+  advancedConfigExpanded = false;
+  costEvaluationExpanded = false;
   public selectionTrigger = (event: any): boolean => {
     // Support for Chrome, Edge, and Mac (Meta)
     const e = event.originalEvent || event;
@@ -282,6 +285,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   private wasMobileViewport = false;
   private readonly onMobileViewportChange = (): void => this.updateMobileViewport();
 
+
   constructor(
     readonly awsCatalog: AwsCatalogService,
     private readonly factory: ArchitectureFactoryService,
@@ -289,7 +293,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly simulation: SimulationService,
     private readonly presets: PresetService,
     private readonly storage: ProjectStorageService,
-    public readonly costService: CostService
+    public readonly costService: CostService,
+    private readonly elementRef: ElementRef
   ) { }
 
   ngOnInit(): void {
@@ -432,6 +437,20 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.flowCanvas._setPosition(this.pan);
       this.flowCanvas.redraw();
     }
+
+    // Direct event isolation on the toolbar container.
+    // By stopping touch events from bubbling up to the document level,
+    // we bypass f-flow's global touch event interceptors, allowing
+    // Android Chrome and other browsers to use native momentum scrolling.
+    const toolbarActions = this.elementRef.nativeElement.querySelector('.toolbar-actions');
+    if (toolbarActions) {
+      const stopTouch = (e: TouchEvent) => {
+        e.stopPropagation();
+      };
+      toolbarActions.addEventListener('touchstart', stopTouch, { passive: true });
+      toolbarActions.addEventListener('touchmove', stopTouch, { passive: true });
+      toolbarActions.addEventListener('touchend', stopTouch, { passive: true });
+    }
   }
 
   ngOnDestroy(): void {
@@ -440,7 +459,6 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clearMinimapHideTimer();
     this.simulation.stop();
   }
-
   private calculateNodeHealth(node: ArchitectureNode): { tone: 'success' | 'warning' | 'error' | 'neutral', message: string } {
     const inputs = this.connections.filter(c => c.targetNodeId === node.id).length;
     const outputs = this.connections.filter(c => c.sourceNodeId === node.id).length;
@@ -548,6 +566,40 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get selectedSelectFields(): SelectField[] {
     return this.selectedNode ? this.serviceSelectFields[this.selectedNode.type] ?? [] : [];
+  }
+
+  get hasJsonModel(): boolean {
+    if (!this.selectedNode) return false;
+    return !!(serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
+  }
+
+  get selectedPrimaryParams(): any[] {
+    if (!this.selectedNode) return [];
+    const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
+    return model?.primaryParams || [];
+  }
+
+  get selectedAdvancedParams(): any[] {
+    if (!this.selectedNode) return [];
+    const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
+    return model?.advancedTune || [];
+  }
+
+  get selectedCostParams(): any[] {
+    if (!this.selectedNode) return [];
+    const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
+    return model?.costParams || [];
+  }
+
+  get selectedCostEvaluation(): any {
+    if (!this.selectedNode) return null;
+    const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
+    return model?.costEvaluation || null;
+  }
+
+  get costBreakdown(): CostBreakdown | null {
+    if (!this.selectedNode) return null;
+    return this.costService.getCostBreakdown(this.selectedNode);
   }
 
   get selectedConnection(): ArchitectureConnection | undefined {
@@ -854,6 +906,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedNodeIds = [id];
     this.selectedConnectionIds = [];
     this.nodes = this.nodes.map((node) => ({ ...node, selected: node.id === id }));
+    this.advancedConfigExpanded = false;
+    this.costEvaluationExpanded = false;
   }
 
   selectConnection(id: string): void {
@@ -1041,7 +1095,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.collapsedCategories.has(category);
   }
 
-  updateConfig(key: keyof ServiceConfig, value: number): void {
+  updateConfig(key: any, value: number): void {
     if (!this.selectedNode) {
       return;
     }
@@ -1051,7 +1105,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.onConfigChange();
   }
 
-  updateSelectConfig(key: keyof ServiceConfig, value: string): void {
+  updateSelectConfig(key: any, value: any): void {
     if (!this.selectedNode) {
       return;
     }
@@ -1073,7 +1127,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onConfigChange(): void {
     // Sync local changes to the simulation service so they take effect immediately
-    this.simulation.updateNodes(this.nodes);
+    this.simulation.updateNodes(this.nodes, this.connections);
   }
 
   nodeStyle(node: ArchitectureNode): Record<string, string> {

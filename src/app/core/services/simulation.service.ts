@@ -65,7 +65,7 @@ export class SimulationService {
     this.emit('running');
   }
 
-  updateNodes(nodes: ArchitectureNode[]): void {
+  updateNodes(nodes: ArchitectureNode[], connections?: ArchitectureConnection[]): void {
     // Update internal nodes with new configurations while preserving current simulation metrics
     this.nodes = nodes.map(newNode => {
       const existing = this.nodes.find(n => n.id === newNode.id);
@@ -75,6 +75,15 @@ export class SimulationService {
         status: existing ? existing.status : newNode.status
       };
     });
+    if (connections) {
+      this.connections = connections.map(newConn => {
+        const existing = this.connections.find(c => c.id === newConn.id);
+        return {
+          ...newConn,
+          traffic: existing ? existing.traffic : { requestsPerSecond: 0, latency: 0, errorRate: 0, intensity: 0 }
+        };
+      });
+    }
     // If not running, emit the new state immediately so UI reflects the changes
     if (!this.loop) {
       this.emit(this.snapshot$.value.mode);
