@@ -84,6 +84,7 @@ I build tools that help developers and architects understand complex systems wit
 - Added in-depth cost calculation params
 - Added cost calculation transparency
 - Made run stats compact and responsive for all screen sizes
-- Restructured and added more insformation in about section
+- Restructured and added more information in about section
+- Minor bug fix
 
 Built with ❤️ for the Cloud Community. Licensed under the [MIT License](LICENSE).
