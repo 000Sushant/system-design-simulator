@@ -31,7 +31,7 @@ export class SimulationService {
   private nodes: ArchitectureNode[] = [];
   private connections: ArchitectureConnection[] = [];
   private packets: DataPacket[] = [];
-  private tick = 0;
+  public tick = 0;
 
   constructor(private readonly factory: ArchitectureFactoryService) {}
 
@@ -88,6 +88,27 @@ export class SimulationService {
     if (!this.loop) {
       this.emit(this.snapshot$.value.mode);
     }
+  }
+
+  switchTab(
+    nodes: ArchitectureNode[],
+    connections: ArchitectureConnection[],
+    packets: DataPacket[],
+    tick: number,
+    mode: SimulationMode
+  ): void {
+    this.loop?.unsubscribe();
+    this.loop = undefined;
+    this.nodes = nodes;
+    this.connections = connections;
+    this.packets = packets;
+    this.tick = tick;
+
+    if (mode === 'running') {
+      this.loop = interval(180).subscribe(() => this.step('running'));
+    }
+
+    this.emit(mode);
   }
 
   stop(): void {
@@ -157,7 +178,7 @@ export class SimulationService {
 
       const outputs = outgoingByNode.get(node.id) ?? [];
       if (outputs.length > 0 && processed > 0 && node.status !== 'offline') {
-        const fanoutMultiplier = ['sns', 'stepFunctions', 'apiGateway'].includes(node.type) ? 1 : outputs.length;
+        const fanoutMultiplier = ['sns', 'stepFunctions', 'apiGateway', 'eventBridge', 'kinesis', 'msk', 'mq', 'appSync', 'transitGateway'].includes(node.type) ? 1 : outputs.length;
         const perConnection = processed / Math.max(1, fanoutMultiplier);
         for (const connection of outputs) {
           const target = this.nodes.find((candidate) => candidate.id === connection.targetNodeId);

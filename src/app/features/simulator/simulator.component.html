@@ -21,6 +21,15 @@
       <div class="toolbar-actions-inner">
         <button
           type="button"
+          class="action-btn"
+          (mousemove)="onMouseMove($event)"
+          (click)="goHome()"
+        >
+          <i class="fas fa-home"></i> Home
+        </button>
+        <span class="divider"></span>
+        <button
+          type="button"
           class="icon-button"
           (mousemove)="onMouseMove($event)"
           title="Zoom out"
@@ -103,6 +112,13 @@
             aria-label="Search services"
           />
         </label>
+        <div class="all-services-toggle-container" *ngIf="roleMode === 'architect'">
+          <span class="toggle-label">Show More Services</span>
+          <label class="glass-switch">
+            <input type="checkbox" [(ngModel)]="showAllServices" />
+            <span class="glass-slider"></span>
+          </label>
+        </div>
         <div class="service-list">
           <!-- Built-in Tools Category -->
           <section class="service-category">
@@ -224,6 +240,49 @@
       (pointercancel)="onCanvasPointerUp($event)"
       (touchstart)="onCanvasTouchStart($event)"
     >
+      <!-- Canvas-level Browser Tab Bar -->
+      <div class="canvas-tab-bar">
+        <div class="canvas-tabs-container">
+          <div
+            *ngFor="let tab of tabs; let i = index"
+            class="canvas-tab"
+            [class.active]="i === activeTabIndex"
+            (click)="switchCanvasTab(i)"
+            (dblclick)="startRenameTab(i, $event)"
+          >
+            <span *ngIf="editingTabIndex !== i" class="tab-title-text">{{ tab.name }}</span>
+            <input
+              *ngIf="editingTabIndex === i"
+              #renameInput
+              type="text"
+              [value]="tab.name"
+              (blur)="finishRenameTab(i, renameInput.value)"
+              (keydown.enter)="finishRenameTab(i, renameInput.value)"
+              (keydown.escape)="editingTabIndex = null"
+              class="tab-rename-input"
+              autofocus
+            />
+            <button
+              *ngIf="tabs.length > 1"
+              type="button"
+              class="tab-close-btn"
+              title="Close canvas"
+              (click)="closeTab(i, $event)"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <button
+            type="button"
+            class="add-tab-btn"
+            title="Add new canvas"
+            (click)="addNewTab()"
+          >
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+
       <div class="canvas-surface" (contextmenu)="$event.preventDefault()"></div>
       <f-flow
         class="flow-host"
@@ -517,7 +576,7 @@
               <strong>{{ node.metrics.cpuPressure }}%</strong><small>cpu</small>
             </div>
           </div>
-          <div class="node-cost-highlight">
+          <div class="node-cost-highlight" *ngIf="roleMode === 'architect'">
             <div class="cost-badge">
               <i class="fas fa-coins"></i> {{ getNodeCostFormatted(node) }}
               <small>/mo</small>
@@ -694,7 +753,7 @@
                 align-items: center;
               "
               (click)="advancedConfigExpanded = !advancedConfigExpanded"
-              *ngIf="selectedCostParams.length > 0"
+              *ngIf="roleMode === 'architect' && selectedCostParams.length > 0"
             >
               <strong
                 ><i
@@ -712,7 +771,7 @@
             </div>
             <div
               class="field-list"
-              *ngIf="advancedConfigExpanded && selectedCostParams.length > 0"
+              *ngIf="roleMode === 'architect' && advancedConfigExpanded && selectedCostParams.length > 0"
             >
               <label
                 *ngFor="let field of selectedCostParams"
@@ -720,12 +779,10 @@
               >
                 <span
                   [title]="field.costDriver || field.notes || ''"
-                  class="field-label-with-info"
-                  [class.cost-field]="!!field.costDriver"
+                  class="field-label-with-info cost-field"
                 >
                   {{ field.label }}
                   <i
-                    *ngIf="field.costDriver"
                     class="fas fa-coins info-icon cost-icon"
                     title="Affects monthly cost"
                   ></i>
@@ -800,7 +857,7 @@
                 align-items: center;
               "
               (click)="costEvaluationExpanded = !costEvaluationExpanded"
-              *ngIf="costBreakdown && costBreakdown.lines.length > 0"
+              *ngIf="roleMode === 'architect' && costBreakdown && costBreakdown.lines.length > 0"
             >
               <strong
                 ><i
@@ -821,7 +878,7 @@
             </div>
             <div
               class="cost-evaluation-panel"
-              *ngIf="costEvaluationExpanded && costBreakdown"
+              *ngIf="roleMode === 'architect' && costEvaluationExpanded && costBreakdown"
             >
               <div
                 class="cost-line-item"
@@ -1137,14 +1194,7 @@
                     >MIT Licensed · Open Source</small
                   >
                 </div>
-                <button
-                  type="button"
-                  class="about-link-btn"
-                  (click)="toggleAbout()"
-                >
-                  <i class="fas fa-info-circle"></i> Learn more about Sr.
-                  Architect
-                </button>
+
               </div>
             </div>
           </ng-template>
@@ -1189,7 +1239,7 @@
           <span class="wave-bar"></span>
           <span class="wave-bar"></span>
         </div>
-        <div class="island-cost">
+        <div class="island-cost" *ngIf="roleMode === 'architect'">
           {{ totalCostFormatted }}
         </div>
       </div>
@@ -1237,10 +1287,10 @@
           </button>
         </div>
 
-        <div class="stat-divider"></div>
+        <div class="stat-divider" *ngIf="roleMode === 'architect'"></div>
 
         <!-- Monthly Estimated Cost -->
-        <div class="cost-highlight">
+        <div class="cost-highlight" *ngIf="roleMode === 'architect'">
           <span class="cost-label">Est. Cost / mo</span>
           <span class="cost-value">{{ totalCostFormatted }}</span>
           <select
@@ -1254,6 +1304,18 @@
             <option value="INR">INR</option>
             <option value="JPY">JPY</option>
           </select>
+          <div class="region-select-wrapper">
+            <span class="region-select-display">{{ globalRegion }}</span>
+            <select
+              class="region-select"
+              [ngModel]="globalRegion"
+              (ngModelChange)="setRegion($event)"
+            >
+              <option *ngFor="let reg of costService.regions" [value]="reg.code">
+                {{ reg.code }} - {{ reg.name }} ({{ reg.multiplier }}x)
+              </option>
+            </select>
+          </div>
         </div>
 
         <div class="stat-divider"></div>
@@ -1282,7 +1344,7 @@
     </div>
   </div>
 
-  <app-about *ngIf="showAbout" (close)="toggleAbout()"></app-about>
+
 
   <!-- Mobile/Tablet Warning Overlay -->
   <div
@@ -1308,6 +1370,25 @@
         >
           Continue on this device
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save Loader Overlay -->
+  <div class="save-overlay" *ngIf="showSaveLoader">
+    <div class="glass-loader-card">
+      <div class="loader-spinner"></div>
+      <span>Securing architecture blueprint...</span>
+    </div>
+  </div>
+
+  <!-- Save Success Toast -->
+  <div class="save-toast" [class.show]="showSaveSuccess">
+    <div class="toast-content">
+      <i class="fas fa-check-circle success-icon"></i>
+      <div class="toast-text">
+        <strong>Saved in memory</strong>
+        <small>Architecture synced with local browser storage</small>
       </div>
     </div>
   </div>

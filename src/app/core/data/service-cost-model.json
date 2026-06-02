@@ -47,215 +47,60 @@
       ],
       "costParams": [
         {
-          "key": "apiType",
+          "key": "type",
           "label": "API Type",
           "type": "enum",
-          "default": "http",
-          "group": "pricing",
+          "default": "rest",
+          "group": "compute",
           "options": [
             {
-              "value": "http",
-              "label": "HTTP API",
-              "description": "Low-cost API optimized for serverless & proxy workloads.",
-              "pricePerUnit": 1,
-              "priceUnit": "per million requests"
+              "value": "rest",
+              "label": "REST API"
             },
             {
-              "value": "rest",
-              "label": "REST API",
-              "description": "Full-featured with caching, WAF, usage plans & transformations.",
-              "pricePerUnit": 3.5,
-              "priceUnit": "per million requests"
+              "value": "http",
+              "label": "HTTP API"
             },
             {
               "value": "websocket",
-              "label": "WebSocket API",
-              "description": "Persistent bidirectional realtime communication APIs.",
-              "pricePerUnit": 1,
-              "priceUnit": "per million messages + $0.25/M connection mins"
+              "label": "WebSocket API"
             }
-          ],
-          "costDriver": "Different API types use completely different pricing models."
+          ]
         },
         {
-          "key": "requestCount",
-          "label": "API Requests (Millions/mo)",
+          "key": "requestsM",
+          "label": "Requests / Month (Millions)",
           "type": "number",
-          "unit": "million_requests",
           "default": 10,
           "min": 0,
-          "max": 1000000,
-          "costDriver": "Total monthly API calls. This is the primary billing dimension."
+          "max": 100000,
+          "group": "compute"
         },
         {
-          "key": "endpointType",
-          "label": "Endpoint Type",
+          "key": "cacheGB",
+          "label": "Cache Capacity (GB)",
           "type": "enum",
-          "default": "regional",
-          "group": "networking",
+          "default": "0",
+          "group": "storage",
+          "visibleIf": "config.type === 'rest'",
           "options": [
             {
-              "value": "regional",
-              "label": "Regional",
-              "description": "Optimized for same-region traffic."
+              "value": "0",
+              "label": "None"
             },
-            {
-              "value": "edge",
-              "label": "Edge Optimized",
-              "description": "Uses CloudFront edge network for global clients."
-            },
-            {
-              "value": "private",
-              "label": "Private",
-              "description": "Accessible only through VPC endpoints."
-            }
-          ],
-          "costDriver": "Private endpoints may require PrivateLink charges ($0.01/GB + $0.01/hr)."
-        },
-        {
-          "key": "authorizationType",
-          "label": "Authorization",
-          "type": "enum",
-          "default": "none",
-          "group": "security",
-          "options": [
-            {
-              "value": "none",
-              "label": "None",
-              "description": "No authorization."
-            },
-            {
-              "value": "iam",
-              "label": "IAM",
-              "description": "AWS Signature V4 signing."
-            },
-            {
-              "value": "jwt",
-              "label": "JWT Authorizer",
-              "description": "Validates JWT tokens from any OIDC provider."
-            },
-            {
-              "value": "lambda",
-              "label": "Lambda Authorizer",
-              "description": "Custom auth logic — adds Lambda invocation costs."
-            },
-            {
-              "value": "cognito",
-              "label": "Cognito User Pools",
-              "description": "Managed user auth with Cognito."
-            }
-          ],
-          "costDriver": "Lambda authorizers add Lambda invocation costs per request."
-        },
-        {
-          "key": "responsePayloadGB",
-          "label": "Data Transfer Out (GB/mo)",
-          "type": "number",
-          "unit": "GB",
-          "default": 50,
-          "min": 0,
-          "max": 10000000,
-          "costDriver": "Data sent to clients. First 100 GB free, then $0.09/GB."
-        },
-        {
-          "key": "cacheStrategy",
-          "label": "Cache Strategy",
-          "type": "enum",
-          "default": "disabled",
-          "group": "caching",
-          "options": [
-            {
-              "value": "disabled",
-              "label": "Disabled",
-              "description": "No API response caching."
-            },
-            {
-              "value": "fullRequest",
-              "label": "Full Request Cache",
-              "description": "Caches entire response by URL."
-            },
-            {
-              "value": "parameterAware",
-              "label": "Parameter-aware Cache",
-              "description": "Caches based on query params/headers."
-            }
-          ],
-          "costDriver": "Caching adds hourly infrastructure charges (REST API only)."
-        },
-        {
-          "key": "cacheSize",
-          "label": "Cache Cluster Size",
-          "type": "enum",
-          "default": "0.5",
-          "group": "caching",
-          "options": [
             {
               "value": "0.5",
-              "label": "0.5 GB — $0.020/hr ($14.60/mo)",
-              "pricePerHour": 0.02
+              "label": "0.5 GB"
             },
             {
               "value": "1.6",
-              "label": "1.6 GB — $0.038/hr ($27.74/mo)",
-              "pricePerHour": 0.038
+              "label": "1.6 GB"
             },
             {
               "value": "6.1",
-              "label": "6.1 GB — $0.200/hr ($146/mo)",
-              "pricePerHour": 0.2
-            },
-            {
-              "value": "13.5",
-              "label": "13.5 GB — $0.250/hr ($182.50/mo)",
-              "pricePerHour": 0.25
-            },
-            {
-              "value": "28.4",
-              "label": "28.4 GB — $0.500/hr ($365/mo)",
-              "pricePerHour": 0.5
-            },
-            {
-              "value": "58.2",
-              "label": "58.2 GB — $1.000/hr ($730/mo)",
-              "pricePerHour": 1
-            },
-            {
-              "value": "118",
-              "label": "118 GB — $1.900/hr ($1,387/mo)",
-              "pricePerHour": 1.9
-            },
-            {
-              "value": "237",
-              "label": "237 GB — $3.800/hr ($2,774/mo)",
-              "pricePerHour": 3.8
+              "label": "6.1 GB"
             }
-          ],
-          "costDriver": "Larger cache = more hourly cost. Only applies to REST APIs."
-        },
-        {
-          "key": "throttlingStrategy",
-          "label": "Throttle Mode",
-          "type": "enum",
-          "default": "soft",
-          "group": "traffic",
-          "options": [
-            {
-              "value": "soft",
-              "label": "Soft Throttle",
-              "description": "429 responses on burst; clients retry."
-            },
-            {
-              "value": "hard",
-              "label": "Hard Rate Limit",
-              "description": "Strict rate cap; excess requests rejected."
-            },
-            {
-              "value": "burst",
-              "label": "Burst Optimized",
-              "description": "Allows burst up to 5,000 rps (REST) or 10,000 rps (HTTP)."
-            }
-          ],
-          "costDriver": "Traffic shaping affects retry amplification and backend scaling."
+          ]
         }
       ],
       "costEvaluation": {
@@ -301,21 +146,16 @@
         }
       },
       "pricingFactors": {
-        "httpApiPerMillion": 1,
-        "restApiPerMillion": 3.5,
-        "wsMessagesPerMillion": 1,
-        "wsConnectionMinsPerMillion": 0.25,
-        "dataTransferPerGB": 0.09,
-        "dataTransferFreeGB": 100,
-        "cachePricePerHour": {
-          "118": 1.9,
-          "237": 3.8,
-          "0.5": 0.02,
-          "1.6": 0.038,
-          "6.1": 0.2,
-          "13.5": 0.25,
-          "28.4": 0.5,
-          "58.2": 1
+        "requestsM": {
+          "rest": 3.5,
+          "http": 1,
+          "websocket": 1
+        },
+        "cacheRates": {
+          "0": 0,
+          "0.5": 14,
+          "1.6": 38,
+          "6.1": 130
         }
       }
     },
@@ -354,133 +194,31 @@
       ],
       "costParams": [
         {
-          "key": "hostedZoneCount",
+          "key": "hostedZones",
           "label": "Hosted Zones",
           "type": "number",
-          "unit": "count",
           "default": 1,
+          "min": 0,
+          "max": 1000,
+          "group": "networking"
+        },
+        {
+          "key": "queriesM",
+          "label": "Standard Queries (Millions)",
+          "type": "number",
+          "default": 10,
           "min": 0,
           "max": 10000,
-          "costDriver": "$0.50/zone/mo for first 25, then $0.10/zone/mo after."
+          "group": "networking"
         },
         {
-          "key": "dnsQueryVolume",
-          "label": "DNS Queries (Millions/mo)",
+          "key": "latencyQueriesM",
+          "label": "Latency Queries (Millions)",
           "type": "number",
-          "unit": "million_requests",
-          "default": 1,
-          "min": 0,
-          "max": 1000000,
-          "costDriver": "Standard queries cost $0.40 per million. Alias queries to AWS resources are FREE."
-        },
-        {
-          "key": "routingPolicyType",
-          "label": "Routing Policy",
-          "type": "enum",
-          "default": "simple",
-          "group": "routing",
-          "options": [
-            {
-              "value": "simple",
-              "label": "Simple",
-              "description": "Basic single-value routing.",
-              "queryPricePerMillion": 0.4
-            },
-            {
-              "value": "weighted",
-              "label": "Weighted",
-              "description": "Distribute traffic by assigned weights.",
-              "queryPricePerMillion": 0.6
-            },
-            {
-              "value": "latency",
-              "label": "Latency-based",
-              "description": "Routes to lowest-latency region.",
-              "queryPricePerMillion": 0.6
-            },
-            {
-              "value": "failover",
-              "label": "Failover",
-              "description": "Active-passive failover with health checks.",
-              "queryPricePerMillion": 0.6
-            },
-            {
-              "value": "geolocation",
-              "label": "Geolocation",
-              "description": "Routes based on user's geographic location.",
-              "queryPricePerMillion": 0.7
-            },
-            {
-              "value": "geoproximity",
-              "label": "Geoproximity",
-              "description": "Routes based on geographic proximity with bias.",
-              "queryPricePerMillion": 0.7
-            },
-            {
-              "value": "ipBased",
-              "label": "IP-based",
-              "description": "Routes based on client IP CIDR blocks.",
-              "queryPricePerMillion": 0.8
-            },
-            {
-              "value": "multivalue",
-              "label": "Multivalue Answer",
-              "description": "Returns up to 8 healthy records randomly.",
-              "queryPricePerMillion": 0.4
-            }
-          ],
-          "costDriver": "Advanced routing policies (latency, geo) cost more per query."
-        },
-        {
-          "key": "healthCheckCount",
-          "label": "Health Checks",
-          "type": "number",
-          "unit": "count",
           "default": 0,
           "min": 0,
           "max": 10000,
-          "costDriver": "First 50 AWS endpoint health checks free, then $0.50/check/mo."
-        },
-        {
-          "key": "healthCheckType",
-          "label": "Health Check Type",
-          "type": "enum",
-          "default": "basic",
-          "group": "monitoring",
-          "options": [
-            {
-              "value": "basic",
-              "label": "Basic (HTTP)",
-              "description": "Simple HTTP endpoint check.",
-              "pricePerMonth": 0.5
-            },
-            {
-              "value": "https",
-              "label": "HTTPS",
-              "description": "TLS endpoint check.",
-              "pricePerMonth": 1.5
-            },
-            {
-              "value": "stringMatch",
-              "label": "String Matching",
-              "description": "Check response body for a string.",
-              "pricePerMonth": 2.5
-            },
-            {
-              "value": "httpsStringMatch",
-              "label": "HTTPS + String Match",
-              "description": "TLS check with body validation.",
-              "pricePerMonth": 3.5
-            }
-          ],
-          "costDriver": "HTTPS and string matching add $1.00 each per health check per month."
-        },
-        {
-          "key": "dnsSecEnabled",
-          "label": "DNSSEC Signing",
-          "type": "boolean",
-          "default": false,
-          "costDriver": "No Route 53 fee, but ~$1-5/mo for KMS signing key costs."
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -524,16 +262,9 @@
         }
       },
       "pricingFactors": {
-        "hostedZonePriceFirst25": 0.5,
-        "hostedZonePriceAfter25": 0.1,
-        "standardQueryPerMillion": 0.4,
-        "latencyQueryPerMillion": 0.6,
-        "geoQueryPerMillion": 0.7,
-        "ipBasedQueryPerMillion": 0.8,
-        "healthCheckBasic": 0.5,
-        "healthCheckHTTPS": 1.5,
-        "healthCheckStringMatch": 2.5,
-        "freeHealthChecks": 50
+        "zoneMonthly": 0.5,
+        "standardM": 0.4,
+        "latencyM": 0.6
       }
     },
     "cloudfront": {
@@ -571,88 +302,50 @@
       ],
       "costParams": [
         {
-          "key": "viewerRequestCount",
-          "label": "Viewer Requests (Millions/mo)",
-          "type": "number",
-          "unit": "million_requests",
-          "default": 10,
-          "min": 0,
-          "max": 1000000,
-          "costDriver": "HTTP $0.0075/10K, HTTPS $0.01/10K requests (US/EU region)."
-        },
-        {
-          "key": "requestProtocol",
-          "label": "Request Protocol",
+          "key": "region",
+          "label": "Traffic Region",
           "type": "enum",
-          "default": "https",
+          "default": "us-eu",
           "group": "networking",
           "options": [
             {
-              "value": "http",
-              "label": "HTTP",
-              "description": "Unencrypted requests.",
-              "pricePer10K": 0.0075
+              "value": "us-eu",
+              "label": "US, Europe, Canada"
             },
             {
-              "value": "https",
-              "label": "HTTPS",
-              "description": "Encrypted requests (recommended).",
-              "pricePer10K": 0.01
+              "value": "asia",
+              "label": "Asia Pacific"
+            },
+            {
+              "value": "sa",
+              "label": "South America"
             }
-          ],
-          "costDriver": "HTTPS requests cost ~33% more than HTTP requests."
+          ]
         },
         {
-          "key": "viewerEgressGB",
-          "label": "Data Transfer Out to Internet (GB/mo)",
+          "key": "dataTransferOut",
+          "label": "Data Transfer Out (GB)",
           "type": "number",
-          "unit": "GB",
-          "default": 100,
+          "default": 1000,
           "min": 0,
-          "max": 10000000,
-          "costDriver": "$0.085/GB for first 10 TB, then tiered lower. 1 TB/mo free."
+          "max": 1000000,
+          "group": "networking"
         },
         {
-          "key": "priceClass",
-          "label": "Price Class",
-          "type": "enum",
-          "default": "PriceClass_All",
-          "group": "region",
-          "options": [
-            {
-              "value": "PriceClass_100",
-              "label": "Price Class 100 (US, Canada, Europe, Israel)",
-              "description": "Cheapest — only North America & Europe edge locations."
-            },
-            {
-              "value": "PriceClass_200",
-              "label": "Price Class 200 (Most regions)",
-              "description": "Excludes South America, Australia, New Zealand."
-            },
-            {
-              "value": "PriceClass_All",
-              "label": "Price Class All (Global)",
-              "description": "All 450+ edge locations worldwide."
-            }
-          ],
-          "costDriver": "Limiting regions reduces per-GB transfer pricing."
-        },
-        {
-          "key": "originShieldEnabled",
-          "label": "Origin Shield",
-          "type": "boolean",
-          "default": false,
-          "costDriver": "Extra caching layer: ~$0.0090/10K requests. Reduces origin load."
-        },
-        {
-          "key": "invalidationPathCount",
-          "label": "Invalidation Paths/mo",
+          "key": "requestsM",
+          "label": "HTTP/HTTPS Requests (Millions)",
           "type": "number",
-          "unit": "count",
-          "default": 0,
+          "default": 10,
           "min": 0,
           "max": 100000,
-          "costDriver": "First 1,000 paths/mo free, then $0.005/path."
+          "group": "compute"
+        },
+        {
+          "key": "wafEnabled",
+          "label": "Enable WAF",
+          "type": "boolean",
+          "default": false,
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -706,43 +399,18 @@
         }
       },
       "pricingFactors": {
-        "dataTransferTiers": [
-          {
-            "upToGB": 1000,
-            "pricePerGB": 0
-          },
-          {
-            "upToGB": 10240,
-            "pricePerGB": 0.085
-          },
-          {
-            "upToGB": 51200,
-            "pricePerGB": 0.08
-          },
-          {
-            "upToGB": 153600,
-            "pricePerGB": 0.06
-          },
-          {
-            "upToGB": 512000,
-            "pricePerGB": 0.04
-          },
-          {
-            "upToGB": 1048576,
-            "pricePerGB": 0.03
-          },
-          {
-            "upToGB": 999999999,
-            "pricePerGB": 0.025
-          }
-        ],
-        "httpRequestPer10K": 0.0075,
-        "httpsRequestPer10K": 0.01,
-        "originShieldPer10K": 0.009,
-        "invalidationFree": 1000,
-        "invalidationPricePerPath": 0.005,
-        "freeTransferGB": 1000,
-        "freeRequests": 10000000
+        "dtOut": {
+          "us-eu": 0.085,
+          "asia": 0.114,
+          "sa": 0.114
+        },
+        "requestsM": {
+          "us-eu": 1,
+          "asia": 1.2,
+          "sa": 2.2
+        },
+        "wafBase": 5,
+        "wafRequestM": 0.6
       }
     },
     "lambda": {
@@ -790,83 +458,67 @@
       ],
       "costParams": [
         {
-          "key": "invocationCount",
-          "label": "Requests (Millions/mo)",
-          "type": "number",
-          "unit": "million_requests",
-          "default": 10,
-          "min": 0,
-          "max": 1000000,
-          "costDriver": "$0.20 per million requests. First 1M always free."
-        },
-        {
-          "key": "avgDurationMs",
-          "label": "Average Duration (ms)",
-          "type": "number",
-          "unit": "ms",
-          "default": 250,
-          "min": 1,
-          "max": 900000,
-          "costDriver": "You pay for execution time in 1ms increments."
-        },
-        {
-          "key": "memoryMB",
-          "label": "Allocated Memory (MB)",
-          "type": "number",
-          "unit": "MB",
-          "default": 512,
-          "min": 128,
-          "max": 10240,
-          "costDriver": "More memory = more CPU power, but costs more per millisecond."
-        },
-        {
           "key": "architecture",
           "label": "Architecture",
           "type": "enum",
-          "default": "arm64",
+          "default": "x86",
           "group": "compute",
           "options": [
             {
-              "value": "x86_64",
-              "label": "x86_64",
-              "description": "Standard Intel/AMD processors.",
-              "gbSecondPrice": 0.0000166667
+              "value": "x86",
+              "label": "x86"
             },
             {
               "value": "arm64",
-              "label": "ARM64 (Graviton2)",
-              "description": "20% cheaper. Best for most workloads.",
-              "gbSecondPrice": 0.0000133334
+              "label": "arm64 (Graviton)"
             }
-          ],
-          "costDriver": "ARM (Graviton2) is ~20% cheaper than x86 per GB-second."
+          ]
         },
         {
-          "key": "provisionedConcurrency",
-          "label": "Provisioned Concurrency",
+          "key": "memoryMB",
+          "label": "Memory (MB)",
           "type": "number",
-          "unit": "count",
-          "default": 0,
+          "default": 512,
+          "min": 128,
+          "max": 10240,
+          "step": 128,
+          "group": "compute"
+        },
+        {
+          "key": "invocationsM",
+          "label": "Invocations / Month (Millions)",
+          "type": "number",
+          "default": 10,
           "min": 0,
           "max": 100000,
-          "costDriver": "Keeps functions warm — no cold starts but billed even when idle."
+          "group": "compute"
         },
         {
-          "key": "ephemeralStorageMB",
+          "key": "durationMs",
+          "label": "Average Duration (ms)",
+          "type": "number",
+          "default": 200,
+          "min": 1,
+          "max": 900000,
+          "group": "compute"
+        },
+        {
+          "key": "ephemeralMB",
           "label": "Ephemeral Storage (MB)",
           "type": "number",
-          "unit": "MB",
           "default": 512,
           "min": 512,
           "max": 10240,
-          "costDriver": "512 MB included free. Extra storage: $0.0000000309/GB-sec."
+          "group": "compute"
         },
         {
-          "key": "vpcEnabled",
-          "label": "VPC Attachment",
-          "type": "boolean",
-          "default": false,
-          "costDriver": "VPC attachment is free, but internet access requires a paid NAT Gateway ($32.40/mo + $0.045/GB)."
+          "key": "provConcurrency",
+          "label": "Provisioned Concurrency",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -924,15 +576,12 @@
         }
       },
       "pricingFactors": {
-        "requestPerMillion": 0.2,
-        "x86GbSecondPrice": 0.0000166667,
-        "armGbSecondPrice": 0.0000133334,
-        "provisionedCapacityPerGBSec": 0.0000041667,
-        "provisionedDurationPerGBSec": 0.0000097222,
-        "ephemeralStoragePerGBSec": 3.09e-8,
-        "freeRequests": 1000000,
-        "freeGBSeconds": 400000,
-        "freeStorageMB": 512
+        "requestM": 0.2,
+        "gbSec_x86": 0.0000166667,
+        "gbSec_arm": 0.0000133334,
+        "ephemeralGB_Sec": 3.09e-8,
+        "provConcurrency_x86": 0.015,
+        "provConcurrency_arm": 0.012
       }
     },
     "ec2": {
@@ -980,216 +629,151 @@
       ],
       "costParams": [
         {
-          "key": "instanceType",
-          "label": "Instance Type",
+          "key": "instanceFamily",
+          "label": "Instance Family",
           "type": "enum",
-          "default": "t3.medium",
+          "default": "t3",
           "group": "compute",
           "options": [
             {
-              "value": "t3.micro",
-              "label": "t3.micro (2 vCPU, 1 GiB) — $0.0104/hr",
-              "hourlyPrice": 0.0104,
-              "vCPU": 2,
-              "memoryGiB": 1
+              "value": "t3",
+              "label": "General Purpose (t3)"
             },
             {
-              "value": "t3.small",
-              "label": "t3.small (2 vCPU, 2 GiB) — $0.0208/hr",
-              "hourlyPrice": 0.0208,
-              "vCPU": 2,
-              "memoryGiB": 2
+              "value": "m5",
+              "label": "General Purpose (m5)"
             },
             {
-              "value": "t3.medium",
-              "label": "t3.medium (2 vCPU, 4 GiB) — $0.0416/hr",
-              "hourlyPrice": 0.0416,
-              "vCPU": 2,
-              "memoryGiB": 4
+              "value": "m6g",
+              "label": "General Purpose ARM (m6g)"
             },
             {
-              "value": "t3.large",
-              "label": "t3.large (2 vCPU, 8 GiB) — $0.0832/hr",
-              "hourlyPrice": 0.0832,
-              "vCPU": 2,
-              "memoryGiB": 8
+              "value": "c5",
+              "label": "Compute Optimized (c5)"
             },
             {
-              "value": "t3.xlarge",
-              "label": "t3.xlarge (4 vCPU, 16 GiB) — $0.1664/hr",
-              "hourlyPrice": 0.1664,
-              "vCPU": 4,
-              "memoryGiB": 16
+              "value": "c6g",
+              "label": "Compute Optimized ARM (c6g)"
             },
             {
-              "value": "m5.large",
-              "label": "m5.large (2 vCPU, 8 GiB) — $0.0960/hr",
-              "hourlyPrice": 0.096,
-              "vCPU": 2,
-              "memoryGiB": 8
+              "value": "r5",
+              "label": "Memory Optimized (r5)"
             },
             {
-              "value": "m5.xlarge",
-              "label": "m5.xlarge (4 vCPU, 16 GiB) — $0.1920/hr",
-              "hourlyPrice": 0.192,
-              "vCPU": 4,
-              "memoryGiB": 16
-            },
-            {
-              "value": "m5.2xlarge",
-              "label": "m5.2xlarge (8 vCPU, 32 GiB) — $0.3840/hr",
-              "hourlyPrice": 0.384,
-              "vCPU": 8,
-              "memoryGiB": 32
-            },
-            {
-              "value": "c5.large",
-              "label": "c5.large (2 vCPU, 4 GiB) — $0.0850/hr",
-              "hourlyPrice": 0.085,
-              "vCPU": 2,
-              "memoryGiB": 4
-            },
-            {
-              "value": "c5.xlarge",
-              "label": "c5.xlarge (4 vCPU, 8 GiB) — $0.1700/hr",
-              "hourlyPrice": 0.17,
-              "vCPU": 4,
-              "memoryGiB": 8
-            },
-            {
-              "value": "r5.large",
-              "label": "r5.large (2 vCPU, 16 GiB) — $0.1260/hr",
-              "hourlyPrice": 0.126,
-              "vCPU": 2,
-              "memoryGiB": 16
-            },
-            {
-              "value": "r5.xlarge",
-              "label": "r5.xlarge (4 vCPU, 32 GiB) — $0.2520/hr",
-              "hourlyPrice": 0.252,
-              "vCPU": 4,
-              "memoryGiB": 32
+              "value": "r6g",
+              "label": "Memory Optimized ARM (r6g)"
             }
-          ],
-          "costDriver": "The hardware profile (CPU/RAM) of your server. Bigger = more expensive."
+          ]
         },
         {
-          "key": "instanceCount",
-          "label": "Number of Instances",
+          "key": "instanceSize",
+          "label": "Instance Size",
+          "type": "enum",
+          "default": "medium",
+          "group": "compute",
+          "options": [
+            {
+              "value": "micro",
+              "label": "micro"
+            },
+            {
+              "value": "small",
+              "label": "small"
+            },
+            {
+              "value": "medium",
+              "label": "medium"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            },
+            {
+              "value": "xlarge",
+              "label": "xlarge"
+            },
+            {
+              "value": "2xlarge",
+              "label": "2xlarge"
+            },
+            {
+              "value": "4xlarge",
+              "label": "4xlarge"
+            }
+          ]
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
           "type": "number",
-          "unit": "count",
           "default": 2,
           "min": 1,
-          "max": 100,
-          "costDriver": "Each instance is billed independently."
-        },
-        {
-          "key": "runHours",
-          "label": "Running Hours/mo",
-          "type": "number",
-          "unit": "hours",
-          "default": 730,
-          "min": 0,
-          "max": 744,
-          "costDriver": "730 = full month (24×30.4). Per-second billing with 60-sec min."
+          "max": 1000,
+          "group": "compute"
         },
         {
           "key": "purchaseOption",
           "label": "Purchase Option",
           "type": "enum",
           "default": "on-demand",
-          "group": "billing",
+          "group": "compute",
           "options": [
             {
               "value": "on-demand",
-              "label": "On-Demand",
-              "description": "No commitment, full flexibility.",
-              "discountPercent": 0
-            },
-            {
-              "value": "spot",
-              "label": "Spot Instance (up to 90% off)",
-              "description": "Can be interrupted with 2-min warning.",
-              "discountPercent": 70
+              "label": "On-Demand"
             },
             {
               "value": "reserved-1yr",
-              "label": "Reserved 1-Year (up to 40% off)",
-              "description": "1-year commitment, no upfront.",
-              "discountPercent": 40
+              "label": "Reserved (1yr, No Upfront)"
             },
             {
               "value": "reserved-3yr",
-              "label": "Reserved 3-Year (up to 60% off)",
-              "description": "3-year commitment, best savings.",
-              "discountPercent": 60
+              "label": "Reserved (3yr, No Upfront)"
             },
             {
-              "value": "savings-plan",
-              "label": "Compute Savings Plan (up to 66% off)",
-              "description": "Flexible across instance types.",
-              "discountPercent": 66
+              "value": "spot",
+              "label": "Spot Instance"
             }
-          ],
-          "costDriver": "Spot is cheapest but interruptible. Reserved gives predictable savings."
+          ]
         },
         {
-          "key": "ebsVolumeType",
+          "key": "storageType",
           "label": "EBS Volume Type",
           "type": "enum",
           "default": "gp3",
           "group": "storage",
           "options": [
             {
-              "value": "gp3",
-              "label": "gp3 (General Purpose SSD) — $0.08/GB/mo",
-              "description": "3,000 IOPS + 125 MB/s included free.",
-              "pricePerGB": 0.08
+              "value": "gp2",
+              "label": "General Purpose SSD (gp2)"
             },
             {
-              "value": "io1",
-              "label": "io1 (Provisioned IOPS SSD) — $0.125/GB/mo",
-              "description": "For databases needing guaranteed IOPS.",
-              "pricePerGB": 0.125
+              "value": "gp3",
+              "label": "General Purpose SSD (gp3)"
             },
             {
               "value": "io2",
-              "label": "io2 (High-Durability IOPS SSD) — $0.125/GB/mo",
-              "description": "99.999% durability, tiered IOPS pricing.",
-              "pricePerGB": 0.125
+              "label": "Provisioned IOPS SSD (io2)"
             }
-          ],
-          "costDriver": "gp3 includes 3,000 IOPS free. io1/io2 charge per provisioned IOPS."
+          ]
         },
         {
-          "key": "ebsVolumeGB",
-          "label": "EBS Storage (GB)",
+          "key": "storageSize",
+          "label": "EBS Size per Node (GB)",
           "type": "number",
-          "unit": "GB",
+          "default": 30,
+          "min": 8,
+          "max": 16000,
+          "group": "storage"
+        },
+        {
+          "key": "dataTransferOut",
+          "label": "Data Transfer Out (GB)",
+          "type": "number",
           "default": 100,
-          "min": 1,
-          "max": 16384,
-          "costDriver": "Storage billed per GB/month based on volume type."
-        },
-        {
-          "key": "ebsIOPS",
-          "label": "Provisioned IOPS",
-          "type": "number",
-          "unit": "iops",
-          "default": 3000,
-          "min": 3000,
-          "max": 256000,
-          "costDriver": "gp3: first 3,000 free, then $0.005/IOPS/mo. io1: $0.065/IOPS/mo."
-        },
-        {
-          "key": "dataTransferOutGB",
-          "label": "Data Transfer Out (GB/mo)",
-          "type": "number",
-          "unit": "GB",
-          "default": 50,
           "min": 0,
-          "max": 10000000,
-          "costDriver": "First 100 GB free. Then $0.09/GB (up to 10 TB)."
+          "max": 100000,
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -1248,30 +832,36 @@
         }
       },
       "pricingFactors": {
-        "instancePricing": {
-          "t3.micro": 0.0104,
-          "t3.small": 0.0208,
-          "t3.medium": 0.0416,
-          "t3.large": 0.0832,
-          "t3.xlarge": 0.1664,
-          "m5.large": 0.096,
-          "m5.xlarge": 0.192,
-          "m5.2xlarge": 0.384,
-          "c5.large": 0.085,
-          "c5.xlarge": 0.17,
-          "r5.large": 0.126,
-          "r5.xlarge": 0.252
+        "familyRatesLarge": {
+          "t3": 0.0832,
+          "m5": 0.096,
+          "m6g": 0.077,
+          "c5": 0.085,
+          "c6g": 0.068,
+          "r5": 0.126,
+          "r6g": 0.1008
         },
-        "ebsPricing": {
+        "sizeMultipliers": {
+          "micro": 0.125,
+          "small": 0.25,
+          "medium": 0.5,
+          "large": 1,
+          "xlarge": 2,
+          "2xlarge": 4,
+          "4xlarge": 8
+        },
+        "purchaseDiscounts": {
+          "on-demand": 0,
+          "reserved-1yr": 0.4,
+          "reserved-3yr": 0.6,
+          "spot": 0.7
+        },
+        "ebsRates": {
+          "gp2": 0.1,
           "gp3": 0.08,
-          "io1": 0.125,
           "io2": 0.125
         },
-        "gp3FreeIOPS": 3000,
-        "gp3ExtraIOPSPrice": 0.005,
-        "io1IOPSPrice": 0.065,
-        "dataTransferPerGB": 0.09,
-        "dataTransferFreeGB": 100
+        "dataTransferGB": 0.09
       }
     },
     "s3": {
@@ -1307,111 +897,57 @@
           "options": [
             {
               "value": "standard",
-              "label": "S3 Standard — $0.023/GB/mo",
-              "description": "Frequently accessed data, low latency.",
-              "pricePerGB": 0.023,
-              "putPer1K": 0.005,
-              "getPer1K": 0.0004
+              "label": "S3 Standard"
             },
             {
-              "value": "standard-ia",
-              "label": "S3 Standard-IA — $0.0125/GB/mo",
-              "description": "Infrequent access, retrieval fee applies.",
-              "pricePerGB": 0.0125,
-              "putPer1K": 0.01,
-              "getPer1K": 0.001
+              "value": "intelligent",
+              "label": "Intelligent Tiering"
             },
             {
-              "value": "one-zone-ia",
-              "label": "S3 One Zone-IA — $0.01/GB/mo",
-              "description": "Single AZ, 20% cheaper than Standard-IA.",
-              "pricePerGB": 0.01,
-              "putPer1K": 0.01,
-              "getPer1K": 0.001
+              "value": "sia",
+              "label": "Standard-IA"
             },
             {
-              "value": "glacier-instant",
-              "label": "Glacier Instant Retrieval — $0.004/GB/mo",
-              "description": "Archive with millisecond retrieval.",
-              "pricePerGB": 0.004,
-              "putPer1K": 0.02,
-              "getPer1K": 0.003
-            },
-            {
-              "value": "glacier-flexible",
-              "label": "Glacier Flexible Retrieval — $0.0036/GB/mo",
-              "description": "Archive with minutes-to-hours retrieval.",
-              "pricePerGB": 0.0036,
-              "putPer1K": 0.03,
-              "getPer1K": 0.005
-            },
-            {
-              "value": "glacier-deep",
-              "label": "Glacier Deep Archive — $0.00099/GB/mo",
-              "description": "Cheapest storage, 12-48 hour retrieval.",
-              "pricePerGB": 0.00099,
-              "putPer1K": 0.05,
-              "getPer1K": 0.005
+              "value": "glacier",
+              "label": "Glacier Flexible"
             }
-          ],
-          "costDriver": "Standard is for hot data. Glacier is for long-term backups."
+          ]
         },
         {
-          "key": "storedGB",
-          "label": "Total Storage (GB)",
+          "key": "storageGB",
+          "label": "Storage Amount (GB)",
           "type": "number",
-          "unit": "GB",
-          "default": 1000,
-          "min": 0,
-          "max": 100000000,
-          "costDriver": "You pay monthly for the total amount of data stored."
-        },
-        {
-          "key": "putRequestCount",
-          "label": "PUT/COPY/POST/LIST Requests (Thousands/mo)",
-          "type": "number",
-          "unit": "thousands",
           "default": 100,
           "min": 0,
-          "max": 1000000000,
-          "costDriver": "Standard: $0.005 per 1K PUT requests."
+          "max": 1000000,
+          "group": "storage"
         },
         {
-          "key": "getRequestCount",
-          "label": "GET/SELECT Requests (Thousands/mo)",
+          "key": "putsM",
+          "label": "PUT/COPY/POST (Millions)",
           "type": "number",
-          "unit": "thousands",
-          "default": 1000,
+          "default": 1,
           "min": 0,
-          "max": 10000000000,
-          "costDriver": "Standard: $0.0004 per 1K GET requests."
+          "max": 10000,
+          "group": "compute"
         },
         {
-          "key": "dataTransferOutGB",
-          "label": "Data Transfer Out (GB/mo)",
+          "key": "getsM",
+          "label": "GET/SELECT (Millions)",
           "type": "number",
-          "unit": "GB",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        },
+        {
+          "key": "dataTransferOut",
+          "label": "Data Transfer Out (GB)",
+          "type": "number",
           "default": 100,
           "min": 0,
-          "max": 10000000,
-          "costDriver": "First 100 GB free. Then $0.09/GB (up to 10 TB)."
-        },
-        {
-          "key": "versioningEnabled",
-          "label": "Bucket Versioning",
-          "type": "boolean",
-          "default": false,
-          "costDriver": "Keeps old versions — increases total stored bytes and cost."
-        },
-        {
-          "key": "replicationGB",
-          "label": "Cross-Region Replication (GB/mo)",
-          "type": "number",
-          "unit": "GB",
-          "default": 0,
-          "min": 0,
-          "max": 10000000,
-          "costDriver": "Replication incurs S3 request + data transfer costs to target region."
+          "max": 1000000,
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -1468,32 +1004,25 @@
         }
       },
       "pricingFactors": {
-        "storagePerGB": {
+        "storage": {
           "standard": 0.023,
-          "standard-ia": 0.0125,
-          "one-zone-ia": 0.01,
-          "glacier-instant": 0.004,
-          "glacier-flexible": 0.0036,
-          "glacier-deep": 0.00099
+          "intelligent": 0.023,
+          "sia": 0.0125,
+          "glacier": 0.0036
         },
-        "putPer1K": {
-          "standard": 0.005,
-          "standard-ia": 0.01,
-          "one-zone-ia": 0.01,
-          "glacier-instant": 0.02,
-          "glacier-flexible": 0.03,
-          "glacier-deep": 0.05
+        "puts": {
+          "standard": 5,
+          "intelligent": 5,
+          "sia": 10,
+          "glacier": 30
         },
-        "getPer1K": {
-          "standard": 0.0004,
-          "standard-ia": 0.001,
-          "one-zone-ia": 0.001,
-          "glacier-instant": 0.003,
-          "glacier-flexible": 0.005,
-          "glacier-deep": 0.005
+        "gets": {
+          "standard": 0.4,
+          "intelligent": 0.4,
+          "sia": 1,
+          "glacier": 10
         },
-        "dataTransferPerGB": 0.09,
-        "dataTransferFreeGB": 100
+        "dataTransferGB": 0.09
       }
     },
     "alb": {
@@ -1521,24 +1050,31 @@
       ],
       "costParams": [
         {
-          "key": "instanceCount",
-          "label": "ALB Instances",
+          "key": "count",
+          "label": "Load Balancer Count",
           "type": "number",
-          "unit": "count",
           "default": 1,
           "min": 1,
           "max": 50,
-          "costDriver": "$0.0225 per hour per ALB."
+          "group": "networking"
         },
         {
-          "key": "lcuCount",
-          "label": "LCUs",
+          "key": "dataGB",
+          "label": "Data Processed (GB)",
           "type": "number",
-          "unit": "count",
-          "default": 1,
+          "default": 100,
           "min": 0,
-          "max": 1000,
-          "costDriver": "$0.008 per LCU per hour."
+          "max": 100000,
+          "group": "networking"
+        },
+        {
+          "key": "rules",
+          "label": "Rule Evaluations (M)",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 10000,
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -1564,7 +1100,7 @@
       },
       "pricingFactors": {
         "hourly": 0.0225,
-        "lcu": 0.008
+        "lcuHour": 0.008
       }
     },
     "vpc": {
@@ -1585,31 +1121,19 @@
           "key": "endpoints",
           "label": "VPC Endpoints",
           "type": "number",
-          "unit": "count",
           "default": 0,
           "min": 0,
-          "max": 50,
-          "costDriver": "$0.01 per hour per endpoint."
+          "max": 100,
+          "group": "networking"
         },
         {
           "key": "endpointGB",
-          "label": "Endpoint Data (GB/mo)",
+          "label": "Endpoint Data (GB)",
           "type": "number",
-          "unit": "GB",
           "default": 0,
           "min": 0,
-          "max": 100000,
-          "costDriver": "$0.01 per GB processed."
-        },
-        {
-          "key": "peeringGB",
-          "label": "Cross-AZ Peering (GB/mo)",
-          "type": "number",
-          "unit": "GB",
-          "default": 0,
-          "min": 0,
-          "max": 100000,
-          "costDriver": "$0.02 per GB round-trip."
+          "max": 10000,
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -1643,8 +1167,7 @@
       },
       "pricingFactors": {
         "endpointHourly": 0.01,
-        "endpointGB": 0.01,
-        "peeringGB": 0.02
+        "endpointGB": 0.01
       }
     },
     "natGateway": {
@@ -1662,24 +1185,22 @@
       ],
       "costParams": [
         {
-          "key": "instances",
-          "label": "NAT Gateways",
+          "key": "count",
+          "label": "NAT Gateway Count",
           "type": "number",
-          "unit": "count",
           "default": 1,
           "min": 1,
           "max": 10,
-          "costDriver": "$0.045 per hour per NAT."
+          "group": "networking"
         },
         {
           "key": "dataGB",
-          "label": "Data Processed (GB/mo)",
+          "label": "Data Processed (GB)",
           "type": "number",
-          "unit": "GB",
           "default": 100,
           "min": 0,
           "max": 100000,
-          "costDriver": "$0.045 per GB."
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -1705,51 +1226,38 @@
       },
       "pricingFactors": {
         "hourly": 0.045,
-        "perGB": 0.045
+        "dataGB": 0.045
       }
     },
     "cloudWatch": {
       "primaryParams": [],
       "costParams": [
         {
-          "key": "customMetrics",
+          "key": "metrics",
           "label": "Custom Metrics",
           "type": "number",
-          "unit": "count",
-          "default": 10,
+          "default": 100,
           "min": 0,
-          "max": 10000,
-          "costDriver": "$0.30 per metric."
+          "max": 100000,
+          "group": "compute"
         },
         {
           "key": "logsGB",
-          "label": "Logs Ingested (GB/mo)",
+          "label": "Logs Ingested (GB)",
           "type": "number",
-          "unit": "GB",
           "default": 50,
           "min": 0,
-          "max": 10000,
-          "costDriver": "$0.50 per GB."
-        },
-        {
-          "key": "alarms",
-          "label": "Alarms",
-          "type": "number",
-          "unit": "count",
-          "default": 5,
-          "min": 0,
-          "max": 1000,
-          "costDriver": "$0.10 per alarm."
+          "max": 100000,
+          "group": "compute"
         },
         {
           "key": "dashboards",
           "label": "Dashboards",
           "type": "number",
-          "unit": "count",
-          "default": 1,
+          "default": 2,
           "min": 0,
-          "max": 100,
-          "costDriver": "$3.00 per dashboard."
+          "max": 500,
+          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -1794,11 +1302,9 @@
         }
       },
       "pricingFactors": {
-        "metric": 0.3,
+        "metricRate": 0.3,
         "logsGB": 0.5,
-        "alarm": 0.1,
-        "dashboard": 3,
-        "freeDashboards": 3
+        "dashboard": 3
       }
     },
     "dynamoDb": {
@@ -1819,74 +1325,91 @@
           "key": "capacityMode",
           "label": "Capacity Mode",
           "type": "enum",
-          "default": "provisioned",
-          "group": "billing",
+          "default": "on-demand",
+          "group": "compute",
           "options": [
             {
-              "value": "provisioned",
-              "label": "Provisioned",
-              "description": "Pay for provisioned WCU/RCU.",
-              "wcuCost": 0.00065,
-              "rcuCost": 0.00013
+              "value": "on-demand",
+              "label": "On-Demand"
             },
             {
-              "value": "ondemand",
-              "label": "On-Demand",
-              "description": "Pay per million requests.",
-              "wruCost": 1.25,
-              "rruCost": 0.25
+              "value": "provisioned",
+              "label": "Provisioned"
             }
           ]
+        },
+        {
+          "key": "storageClass",
+          "label": "Table Class",
+          "type": "enum",
+          "default": "standard",
+          "group": "storage",
+          "options": [
+            {
+              "value": "standard",
+              "label": "Standard"
+            },
+            {
+              "value": "infrequent-access",
+              "label": "Standard-IA"
+            }
+          ]
+        },
+        {
+          "key": "readsM",
+          "label": "Reads / Month (Millions)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'on-demand' || !config.capacityMode"
+        },
+        {
+          "key": "writesM",
+          "label": "Writes / Month (Millions)",
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'on-demand' || !config.capacityMode"
         },
         {
           "key": "wcu",
           "label": "Provisioned WCU",
           "type": "number",
-          "unit": "count",
           "default": 100,
           "min": 1,
           "max": 100000,
-          "costDriver": "$0.00065 per WCU/hr."
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'provisioned'"
         },
         {
           "key": "rcu",
           "label": "Provisioned RCU",
           "type": "number",
-          "unit": "count",
           "default": 100,
           "min": 1,
           "max": 100000,
-          "costDriver": "$0.00013 per RCU/hr."
-        },
-        {
-          "key": "wruM",
-          "label": "On-Demand Writes (M/mo)",
-          "type": "number",
-          "unit": "M",
-          "default": 1,
-          "min": 0,
-          "max": 10000,
-          "costDriver": "$1.25 per million writes."
-        },
-        {
-          "key": "rruM",
-          "label": "On-Demand Reads (M/mo)",
-          "type": "number",
-          "unit": "M",
-          "default": 1,
-          "min": 0,
-          "max": 10000,
-          "costDriver": "$0.25 per million reads."
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'provisioned'"
         },
         {
           "key": "storageGB",
-          "label": "Storage (GB)",
+          "label": "Storage Size (GB)",
           "type": "number",
-          "unit": "GB",
-          "default": 10,
+          "default": 50,
           "min": 0,
           "max": 100000,
-          "costDriver": "First 25 GB free, then $0.25/GB/mo."
+          "group": "storage"
+        },
+        {
+          "key": "globalTables",
+          "label": "Global Tables Enabled",
+          "type": "boolean",
+          "default": false,
+          "group": "networking"
         }
       ],
       "costEvaluation": {
@@ -1942,12 +1465,21 @@
         }
       },
       "pricingFactors": {
-        "wcuHour": 0.00065,
-        "rcuHour": 0.00013,
-        "wruMillion": 1.25,
-        "rruMillion": 0.25,
-        "storageGB": 0.25,
-        "freeStorageGB": 25
+        "std": {
+          "readM": 0.25,
+          "writeM": 1.25,
+          "wcuHr": 0.00065,
+          "rcuHr": 0.00013,
+          "storageGB": 0.25
+        },
+        "ia": {
+          "readM": 0.3125,
+          "writeM": 1.5625,
+          "wcuHr": 0.0008125,
+          "rcuHr": 0.0001625,
+          "storageGB": 0.1
+        },
+        "globalMultiplier": 1.5
       }
     },
     "rds": {
@@ -1975,60 +1507,105 @@
       ],
       "costParams": [
         {
-          "key": "instanceType",
-          "label": "Instance Type",
+          "key": "engine",
+          "label": "Database Engine",
           "type": "enum",
-          "default": "db.t3.medium",
+          "default": "postgresql",
           "group": "compute",
           "options": [
             {
-              "value": "db.t3.micro",
-              "label": "db.t3.micro",
-              "hourly": 0.017
+              "value": "mysql",
+              "label": "MySQL"
             },
             {
-              "value": "db.t3.small",
-              "label": "db.t3.small",
-              "hourly": 0.034
+              "value": "postgresql",
+              "label": "PostgreSQL"
             },
             {
-              "value": "db.t3.medium",
-              "label": "db.t3.medium",
-              "hourly": 0.068
+              "value": "sqlserver-ex",
+              "label": "SQL Server Express"
             },
             {
-              "value": "db.m5.large",
-              "label": "db.m5.large",
-              "hourly": 0.171
-            },
-            {
-              "value": "db.m5.xlarge",
-              "label": "db.m5.xlarge",
-              "hourly": 0.342
-            },
-            {
-              "value": "db.m5.2xlarge",
-              "label": "db.m5.2xlarge",
-              "hourly": 0.684
+              "value": "oracle-se2",
+              "label": "Oracle SE2"
             }
           ]
         },
         {
-          "key": "multiAZ",
-          "label": "Multi-AZ Deployment",
-          "type": "boolean",
-          "default": false,
-          "costDriver": "Doubles compute and storage cost."
+          "key": "instanceClass",
+          "label": "Instance Class",
+          "type": "enum",
+          "default": "db.m5.large",
+          "group": "compute",
+          "options": [
+            {
+              "value": "db.t3.medium",
+              "label": "db.t3.medium"
+            },
+            {
+              "value": "db.m5.large",
+              "label": "db.m5.large"
+            },
+            {
+              "value": "db.r5.large",
+              "label": "db.r5.large"
+            },
+            {
+              "value": "db.r6g.large",
+              "label": "db.r6g.large (ARM)"
+            }
+          ]
         },
         {
-          "key": "storageGB",
-          "label": "Storage (GB)",
+          "key": "multiAz",
+          "label": "Multi-AZ Deployment",
+          "type": "boolean",
+          "default": true,
+          "group": "compute"
+        },
+        {
+          "key": "count",
+          "label": "Instance Count (incl Replicas)",
           "type": "number",
-          "unit": "GB",
+          "default": 2,
+          "min": 1,
+          "max": 15,
+          "group": "compute"
+        },
+        {
+          "key": "storageType",
+          "label": "Storage Type",
+          "type": "enum",
+          "default": "gp3",
+          "group": "storage",
+          "options": [
+            {
+              "value": "gp2",
+              "label": "General Purpose (gp2)"
+            },
+            {
+              "value": "gp3",
+              "label": "General Purpose (gp3)"
+            }
+          ]
+        },
+        {
+          "key": "storageSize",
+          "label": "Storage Size (GB)",
+          "type": "number",
           "default": 100,
           "min": 20,
-          "max": 65536,
-          "costDriver": "$0.115 per GB/mo (gp3)."
+          "max": 65000,
+          "group": "storage"
+        },
+        {
+          "key": "backupStorage",
+          "label": "Backup Storage (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 65000,
+          "group": "storage"
         }
       ],
       "costEvaluation": {
@@ -2055,15 +1632,24 @@
         ]
       },
       "pricingFactors": {
+        "engines": {
+          "mysql": 1,
+          "postgresql": 1.05,
+          "sqlserver-ex": 1.2,
+          "oracle-se2": 1.8
+        },
         "instances": {
-          "db.t3.micro": 0.017,
-          "db.t3.small": 0.034,
           "db.t3.medium": 0.068,
           "db.m5.large": 0.171,
-          "db.m5.xlarge": 0.342,
-          "db.m5.2xlarge": 0.684
+          "db.r5.large": 0.24,
+          "db.r6g.large": 0.216
         },
-        "storageGB": 0.115
+        "multiAzMultiplier": 2,
+        "storage": {
+          "gp2": 0.115,
+          "gp3": 0.115
+        },
+        "backupGB": 0.095
       }
     },
     "elastiCache": {
@@ -2091,58 +1677,62 @@
       ],
       "costParams": [
         {
-          "key": "instanceType",
-          "label": "Node Type",
+          "key": "engine",
+          "label": "Engine",
           "type": "enum",
-          "default": "cache.t3.medium",
+          "default": "redis",
           "group": "compute",
           "options": [
             {
-              "value": "cache.t3.micro",
-              "label": "cache.t3.micro",
-              "hourly": 0.017
+              "value": "redis",
+              "label": "Redis"
             },
             {
-              "value": "cache.t3.small",
-              "label": "cache.t3.small",
-              "hourly": 0.034
-            },
-            {
-              "value": "cache.t3.medium",
-              "label": "cache.t3.medium",
-              "hourly": 0.068
-            },
-            {
-              "value": "cache.m5.large",
-              "label": "cache.m5.large",
-              "hourly": 0.156
-            },
-            {
-              "value": "cache.m5.xlarge",
-              "label": "cache.m5.xlarge",
-              "hourly": 0.312
+              "value": "memcached",
+              "label": "Memcached"
             }
           ]
         },
         {
-          "key": "nodes",
-          "label": "Number of Nodes",
+          "key": "nodeType",
+          "label": "Node Type",
+          "type": "enum",
+          "default": "cache.t3.micro",
+          "group": "compute",
+          "options": [
+            {
+              "value": "cache.t3.micro",
+              "label": "cache.t3.micro"
+            },
+            {
+              "value": "cache.t3.medium",
+              "label": "cache.t3.medium"
+            },
+            {
+              "value": "cache.m5.large",
+              "label": "cache.m5.large"
+            },
+            {
+              "value": "cache.r6g.large",
+              "label": "cache.r6g.large (ARM)"
+            }
+          ]
+        },
+        {
+          "key": "count",
+          "label": "Node Count",
           "type": "number",
-          "unit": "count",
           "default": 2,
           "min": 1,
           "max": 500,
-          "costDriver": "Nodes in cluster."
+          "group": "compute"
         },
         {
-          "key": "backupGB",
-          "label": "Backup Storage (GB)",
-          "type": "number",
-          "unit": "GB",
-          "default": 0,
-          "min": 0,
-          "max": 10000,
-          "costDriver": "$0.085 per GB/mo."
+          "key": "dataTiering",
+          "label": "Data Tiering",
+          "type": "boolean",
+          "default": false,
+          "group": "storage"
         }
       ],
       "costEvaluation": {
@@ -2169,13 +1759,12 @@
       },
       "pricingFactors": {
         "instances": {
-          "cache.t3.micro": 0.017,
-          "cache.t3.small": 0.034,
+          "cache.t3.micro": 0.016,
           "cache.t3.medium": 0.068,
           "cache.m5.large": 0.156,
-          "cache.m5.xlarge": 0.312
+          "cache.r6g.large": 0.211
         },
-        "backupGB": 0.085
+        "tieringPremium": 1.15
       }
     },
     "ecs": {
@@ -2203,21 +1792,36 @@
       ],
       "costParams": [
         {
+          "key": "launchType",
+          "label": "Launch Type",
+          "type": "enum",
+          "default": "fargate",
+          "options": [
+            {
+              "value": "fargate",
+              "label": "AWS Fargate"
+            },
+            {
+              "value": "ec2",
+              "label": "Amazon EC2"
+            }
+          ]
+        },
+        {
           "key": "tasks",
-          "label": "Fargate Tasks",
+          "label": "Task Count",
           "type": "number",
-          "unit": "count",
+          "unit": "tasks",
           "default": 2,
           "min": 1,
           "max": 1000,
-          "costDriver": "Number of running tasks."
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
         },
         {
           "key": "vCPU",
           "label": "vCPU per Task",
           "type": "enum",
           "default": "0.5",
-          "group": "compute",
           "options": [
             {
               "value": "0.25",
@@ -2240,7 +1844,7 @@
               "label": "4 vCPU"
             }
           ],
-          "costDriver": "$0.04048 per vCPU/hour."
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
         },
         {
           "key": "memoryGB",
@@ -2250,7 +1854,198 @@
           "default": 1,
           "min": 0.5,
           "max": 30,
-          "costDriver": "$0.004445 per GB/hour."
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+        },
+        {
+          "key": "utilization",
+          "label": "Average Utilization (%)",
+          "type": "number",
+          "unit": "%",
+          "default": 100,
+          "min": 1,
+          "max": 100
+        },
+        {
+          "key": "runtimeHours",
+          "label": "Monthly Runtime Hours",
+          "type": "number",
+          "unit": "hrs",
+          "default": 730,
+          "min": 1,
+          "max": 730
+        },
+        {
+          "key": "os",
+          "label": "Operating System",
+          "type": "enum",
+          "default": "linux",
+          "group": "fargate",
+          "options": [
+            {
+              "value": "linux",
+              "label": "Linux"
+            },
+            {
+              "value": "windows",
+              "label": "Windows Server"
+            }
+          ],
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+        },
+        {
+          "key": "architecture",
+          "label": "CPU Architecture",
+          "type": "enum",
+          "default": "x86",
+          "group": "fargate",
+          "options": [
+            {
+              "value": "x86",
+              "label": "x86"
+            },
+            {
+              "value": "arm",
+              "label": "ARM (Graviton)"
+            }
+          ],
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+        },
+        {
+          "key": "ephemeralStorage",
+          "label": "Ephemeral Storage (GB)",
+          "type": "number",
+          "unit": "GB",
+          "default": 20,
+          "min": 20,
+          "max": 200,
+          "group": "fargate",
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+        },
+        {
+          "key": "spotUsage",
+          "label": "Spot Usage (%)",
+          "type": "number",
+          "unit": "%",
+          "default": 0,
+          "min": 0,
+          "max": 100,
+          "group": "fargate",
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+        },
+        {
+          "key": "publicIp",
+          "label": "Public IP Enabled",
+          "type": "boolean",
+          "default": false,
+          "group": "fargate",
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+        },
+        {
+          "key": "nodeInstanceType",
+          "label": "EC2 Instance Type",
+          "type": "enum",
+          "default": "t3.medium",
+          "group": "ec2",
+          "options": [
+            {
+              "value": "t3.medium",
+              "label": "t3.medium"
+            },
+            {
+              "value": "m5.large",
+              "label": "m5.large"
+            },
+            {
+              "value": "m5.xlarge",
+              "label": "m5.xlarge"
+            },
+            {
+              "value": "m6g.large",
+              "label": "m6g.large (ARM)"
+            }
+          ],
+          "visibleIf": "config.launchType === 'ec2'"
+        },
+        {
+          "key": "nodeCount",
+          "label": "EC2 Instance Count",
+          "type": "number",
+          "unit": "nodes",
+          "default": 2,
+          "min": 1,
+          "max": 100,
+          "group": "ec2",
+          "visibleIf": "config.launchType === 'ec2'"
+        },
+        {
+          "key": "purchaseOption",
+          "label": "Purchase Option",
+          "type": "enum",
+          "default": "on-demand",
+          "group": "ec2",
+          "options": [
+            {
+              "value": "on-demand",
+              "label": "On-Demand"
+            },
+            {
+              "value": "reserved",
+              "label": "Reserved (1yr)"
+            },
+            {
+              "value": "spot",
+              "label": "Spot Instance"
+            }
+          ],
+          "visibleIf": "config.launchType === 'ec2'"
+        },
+        {
+          "key": "ebsStorage",
+          "label": "EBS Storage per Node (GB)",
+          "type": "number",
+          "unit": "GB",
+          "default": 30,
+          "min": 8,
+          "max": 1000,
+          "group": "ec2",
+          "visibleIf": "config.launchType === 'ec2'"
+        },
+        {
+          "key": "dataTransferOut",
+          "label": "Data Transfer Out",
+          "type": "number",
+          "unit": "GB",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        },
+        {
+          "key": "crossAzTraffic",
+          "label": "Cross-AZ Traffic",
+          "type": "number",
+          "unit": "GB",
+          "default": 50,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        },
+        {
+          "key": "loadBalancer",
+          "label": "Load Balancer Enabled",
+          "type": "boolean",
+          "default": true,
+          "group": "networking"
+        },
+        {
+          "key": "cloudWatchLogs",
+          "label": "CloudWatch Logs Ingestion",
+          "type": "number",
+          "unit": "GB",
+          "default": 10,
+          "min": 0,
+          "max": 10000,
+          "group": "observability"
         }
       ],
       "costEvaluation": {
@@ -2278,7 +2073,26 @@
       },
       "pricingFactors": {
         "cpuHour": 0.04048,
-        "memHour": 0.004445
+        "memHour": 0.004445,
+        "armCpuHour": 0.03238,
+        "armMemHour": 0.00356,
+        "windowsCpuPremium": 0.046,
+        "windowsMemPremium": 0.004,
+        "spotDiscount": 0.7,
+        "ephemeralGBHour": 0.000111,
+        "publicIpHour": 0.005,
+        "instances": {
+          "t3.medium": 0.0416,
+          "m5.large": 0.096,
+          "m5.xlarge": 0.192,
+          "m6g.large": 0.077
+        },
+        "ebsGBMonth": 0.08,
+        "reservedDiscount": 0.4,
+        "dataTransferGB": 0.09,
+        "crossAzGB": 0.01,
+        "albHourly": 0.0225,
+        "logsGB": 0.5
       }
     },
     "batch": {
@@ -2384,33 +2198,30 @@
       ],
       "costParams": [
         {
-          "key": "queueType",
+          "key": "type",
           "label": "Queue Type",
           "type": "enum",
           "default": "standard",
-          "group": "queue",
+          "group": "compute",
           "options": [
             {
               "value": "standard",
-              "label": "Standard Queue",
-              "priceM": 0.4
+              "label": "Standard"
             },
             {
               "value": "fifo",
-              "label": "FIFO Queue",
-              "priceM": 0.5
+              "label": "FIFO"
             }
           ]
         },
         {
           "key": "requestsM",
-          "label": "Requests (M/mo)",
+          "label": "Requests (Millions)",
           "type": "number",
-          "unit": "M",
           "default": 10,
           "min": 0,
           "max": 100000,
-          "costDriver": "Billed per 64KB chunk."
+          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -2448,33 +2259,30 @@
       "costParams": [
         {
           "key": "publishM",
-          "label": "Publish Requests (M/mo)",
+          "label": "Publish Reqs (Millions)",
           "type": "number",
-          "unit": "M",
           "default": 10,
           "min": 0,
           "max": 100000,
-          "costDriver": "$0.50 per million."
+          "group": "compute"
         },
         {
-          "key": "httpDeliveriesM",
-          "label": "HTTP Deliveries (M/mo)",
+          "key": "httpM",
+          "label": "HTTP Deliveries (Millions)",
           "type": "number",
-          "unit": "M",
           "default": 10,
           "min": 0,
           "max": 100000,
-          "costDriver": "$0.60 per million."
+          "group": "compute"
         },
         {
-          "key": "emailDeliveriesM",
-          "label": "Email Deliveries (M/mo)",
+          "key": "emailM",
+          "label": "Email Deliveries (Millions)",
           "type": "number",
-          "unit": "M",
           "default": 0,
           "min": 0,
           "max": 10000,
-          "costDriver": "$20.00 per million."
+          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -2527,51 +2335,51 @@
       ],
       "costParams": [
         {
-          "key": "workflowType",
+          "key": "type",
           "label": "Workflow Type",
           "type": "enum",
           "default": "standard",
-          "group": "type",
+          "group": "compute",
           "options": [
             {
               "value": "standard",
-              "label": "Standard (State Transitions)"
+              "label": "Standard"
             },
             {
               "value": "express",
-              "label": "Express (Requests + Compute)"
+              "label": "Express"
             }
           ]
         },
         {
           "key": "transitionsM",
-          "label": "Transitions (M/mo)",
+          "label": "Transitions (Millions)",
           "type": "number",
-          "unit": "M",
           "default": 1,
           "min": 0,
-          "max": 10000,
-          "costDriver": "$25.00 per million (Standard)."
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.type === 'standard' || !config.type"
         },
         {
-          "key": "expressRequestsM",
-          "label": "Express Requests (M/mo)",
+          "key": "expressReqsM",
+          "label": "Express Reqs (Millions)",
           "type": "number",
-          "unit": "M",
-          "default": 0,
+          "default": 10,
           "min": 0,
-          "max": 10000,
-          "costDriver": "$1.00 per million (Express)."
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.type === 'express'"
         },
         {
           "key": "expressGBsecM",
-          "label": "Express GB-sec (M/mo)",
+          "label": "Express Compute (M GB-s)",
           "type": "number",
-          "unit": "M",
-          "default": 0,
+          "default": 1,
           "min": 0,
           "max": 10000,
-          "costDriver": "$16.67 per million GB-sec (Express)."
+          "group": "compute",
+          "visibleIf": "config.type === 'express'"
         }
       ],
       "costEvaluation": {
@@ -2607,9 +2415,9 @@
         ]
       },
       "pricingFactors": {
-        "standard": 25,
-        "expressReq": 1,
-        "expressGBsec": 16.67
+        "standardM": 25,
+        "expressReqM": 1,
+        "expressGBsecM": 16.67
       }
     },
     "iam": {
@@ -2621,7 +2429,8 @@
         "freeTier": {
           "description": "AWS IAM is a globally free service."
         }
-      }
+      },
+      "pricingFactors": {}
     },
     "securityGroup": {
       "primaryParams": [],
@@ -2632,7 +2441,8 @@
         "freeTier": {
           "description": "AWS Security Groups are free of charge."
         }
-      }
+      },
+      "pricingFactors": {}
     },
     "client": {
       "primaryParams": [
@@ -2654,7 +2464,8 @@
         "freeTier": {
           "description": "Client node represents external users. No AWS cost associated."
         }
-      }
+      },
+      "pricingFactors": {}
     },
     "autoScalingGroup": {
       "primaryParams": [
@@ -2679,13 +2490,2797 @@
           "costDriver": "Maximum cluster size."
         }
       ],
-      "costParams": [],
+      "costParams": [
+        {
+          "key": "instanceFamily",
+          "label": "Instance Family",
+          "type": "enum",
+          "default": "t3",
+          "group": "compute",
+          "options": [
+            {
+              "value": "t3",
+              "label": "General Purpose (t3)"
+            },
+            {
+              "value": "m5",
+              "label": "General Purpose (m5)"
+            },
+            {
+              "value": "m6g",
+              "label": "General Purpose ARM (m6g)"
+            },
+            {
+              "value": "c5",
+              "label": "Compute Optimized (c5)"
+            },
+            {
+              "value": "c6g",
+              "label": "Compute Optimized ARM (c6g)"
+            },
+            {
+              "value": "r5",
+              "label": "Memory Optimized (r5)"
+            },
+            {
+              "value": "r6g",
+              "label": "Memory Optimized ARM (r6g)"
+            }
+          ]
+        },
+        {
+          "key": "instanceSize",
+          "label": "Instance Size",
+          "type": "enum",
+          "default": "medium",
+          "group": "compute",
+          "options": [
+            {
+              "value": "micro",
+              "label": "micro"
+            },
+            {
+              "value": "small",
+              "label": "small"
+            },
+            {
+              "value": "medium",
+              "label": "medium"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            },
+            {
+              "value": "xlarge",
+              "label": "xlarge"
+            },
+            {
+              "value": "2xlarge",
+              "label": "2xlarge"
+            },
+            {
+              "value": "4xlarge",
+              "label": "4xlarge"
+            }
+          ]
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "group": "compute"
+        },
+        {
+          "key": "purchaseOption",
+          "label": "Purchase Option",
+          "type": "enum",
+          "default": "on-demand",
+          "group": "compute",
+          "options": [
+            {
+              "value": "on-demand",
+              "label": "On-Demand"
+            },
+            {
+              "value": "reserved-1yr",
+              "label": "Reserved (1yr, No Upfront)"
+            },
+            {
+              "value": "reserved-3yr",
+              "label": "Reserved (3yr, No Upfront)"
+            },
+            {
+              "value": "spot",
+              "label": "Spot Instance"
+            }
+          ]
+        },
+        {
+          "key": "storageType",
+          "label": "EBS Volume Type",
+          "type": "enum",
+          "default": "gp3",
+          "group": "storage",
+          "options": [
+            {
+              "value": "gp2",
+              "label": "General Purpose SSD (gp2)"
+            },
+            {
+              "value": "gp3",
+              "label": "General Purpose SSD (gp3)"
+            },
+            {
+              "value": "io2",
+              "label": "Provisioned IOPS SSD (io2)"
+            }
+          ]
+        },
+        {
+          "key": "storageSize",
+          "label": "EBS Size per Node (GB)",
+          "type": "number",
+          "default": 30,
+          "min": 8,
+          "max": 16000,
+          "group": "storage"
+        },
+        {
+          "key": "dataTransferOut",
+          "label": "Data Transfer Out (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        }
+      ],
       "costEvaluation": {
         "formula": "Free",
         "components": [],
         "freeTier": {
           "description": "Auto Scaling is free. You are billed only for the EC2 instances it launches (see EC2 node)."
         }
+      },
+      "pricingFactors": {
+        "familyRatesLarge": {
+          "t3": 0.0832,
+          "m5": 0.096,
+          "m6g": 0.077,
+          "c5": 0.085,
+          "c6g": 0.068,
+          "r5": 0.126,
+          "r6g": 0.1008
+        },
+        "sizeMultipliers": {
+          "micro": 0.125,
+          "small": 0.25,
+          "medium": 0.5,
+          "large": 1,
+          "xlarge": 2,
+          "2xlarge": 4,
+          "4xlarge": 8
+        },
+        "purchaseDiscounts": {
+          "on-demand": 0,
+          "reserved-1yr": 0.4,
+          "reserved-3yr": 0.6,
+          "spot": 0.7
+        },
+        "ebsRates": {
+          "gp2": 0.1,
+          "gp3": 0.08,
+          "io2": 0.125
+        },
+        "dataTransferGB": 0.09
+      }
+    },
+    "eks": {
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/sec",
+          "type": "number",
+          "unit": "RPS",
+          "default": 500,
+          "min": 1,
+          "max": 100000,
+          "costDriver": "Cluster workloads load."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "computeType",
+          "label": "Compute Type",
+          "type": "enum",
+          "default": "managed",
+          "options": [
+            {
+              "value": "managed",
+              "label": "Managed EC2 Nodes"
+            },
+            {
+              "value": "fargate",
+              "label": "AWS Fargate"
+            }
+          ]
+        },
+        {
+          "key": "clusterCount",
+          "label": "Cluster Count",
+          "type": "number",
+          "unit": "qty",
+          "default": 1,
+          "min": 1,
+          "max": 10
+        },
+        {
+          "key": "nodeCount",
+          "label": "Node Count",
+          "type": "number",
+          "unit": "nodes",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "visibleIf": "config.computeType === 'managed' || !config.computeType"
+        },
+        {
+          "key": "tasks",
+          "label": "Fargate Pods",
+          "type": "number",
+          "unit": "pods",
+          "default": 10,
+          "min": 1,
+          "max": 10000,
+          "visibleIf": "config.computeType === 'fargate'"
+        },
+        {
+          "key": "vCPU",
+          "label": "vCPU per Pod",
+          "type": "enum",
+          "default": "0.5",
+          "visibleIf": "config.computeType === 'fargate'",
+          "options": [
+            {
+              "value": "0.25",
+              "label": "0.25 vCPU"
+            },
+            {
+              "value": "0.5",
+              "label": "0.5 vCPU"
+            },
+            {
+              "value": "1",
+              "label": "1 vCPU"
+            },
+            {
+              "value": "2",
+              "label": "2 vCPU"
+            },
+            {
+              "value": "4",
+              "label": "4 vCPU"
+            }
+          ]
+        },
+        {
+          "key": "memoryGB",
+          "label": "Memory per Pod (GB)",
+          "type": "number",
+          "unit": "GB",
+          "default": 1,
+          "min": 0.5,
+          "max": 30,
+          "visibleIf": "config.computeType === 'fargate'"
+        },
+        {
+          "key": "utilization",
+          "label": "Average Pod Utilization (%)",
+          "type": "number",
+          "unit": "%",
+          "default": 100,
+          "min": 1,
+          "max": 100
+        },
+        {
+          "key": "runtimeHours",
+          "label": "Monthly Runtime Hours",
+          "type": "number",
+          "unit": "hrs",
+          "default": 730,
+          "min": 1,
+          "max": 730
+        },
+        {
+          "key": "k8sSupport",
+          "label": "K8s Version Support",
+          "type": "enum",
+          "default": "standard",
+          "group": "cluster",
+          "options": [
+            {
+              "value": "standard",
+              "label": "Standard Support"
+            },
+            {
+              "value": "extended",
+              "label": "Extended Support"
+            }
+          ]
+        },
+        {
+          "key": "nodeInstanceType",
+          "label": "Node Instance Type",
+          "type": "enum",
+          "default": "m5.large",
+          "group": "nodes",
+          "options": [
+            {
+              "value": "t3.medium",
+              "label": "t3.medium"
+            },
+            {
+              "value": "m5.large",
+              "label": "m5.large"
+            },
+            {
+              "value": "m5.xlarge",
+              "label": "m5.xlarge"
+            },
+            {
+              "value": "m6g.large",
+              "label": "m6g.large (ARM)"
+            }
+          ],
+          "visibleIf": "config.computeType === 'managed' || !config.computeType"
+        },
+        {
+          "key": "purchaseOption",
+          "label": "Purchase Option",
+          "type": "enum",
+          "default": "on-demand",
+          "group": "nodes",
+          "options": [
+            {
+              "value": "on-demand",
+              "label": "On-Demand"
+            },
+            {
+              "value": "reserved",
+              "label": "Reserved (1yr)"
+            },
+            {
+              "value": "spot",
+              "label": "Spot Instance"
+            }
+          ],
+          "visibleIf": "config.computeType === 'managed' || !config.computeType"
+        },
+        {
+          "key": "spotUsage",
+          "label": "Fargate Spot Usage (%)",
+          "type": "number",
+          "unit": "%",
+          "default": 0,
+          "min": 0,
+          "max": 100,
+          "group": "fargate",
+          "visibleIf": "config.computeType === 'fargate'"
+        },
+        {
+          "key": "ephemeralStorage",
+          "label": "Ephemeral Storage (GB)",
+          "type": "number",
+          "unit": "GB",
+          "default": 20,
+          "min": 20,
+          "max": 200,
+          "group": "fargate",
+          "visibleIf": "config.computeType === 'fargate'"
+        },
+        {
+          "key": "loadBalancers",
+          "label": "Load Balancer Count",
+          "type": "number",
+          "unit": "ALB/NLB",
+          "default": 1,
+          "min": 0,
+          "max": 50,
+          "group": "networking"
+        },
+        {
+          "key": "crossAzTraffic",
+          "label": "Cross-AZ Traffic",
+          "type": "number",
+          "unit": "GB",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        },
+        {
+          "key": "natGateway",
+          "label": "NAT Gateway Enabled",
+          "type": "boolean",
+          "default": true,
+          "group": "networking"
+        },
+        {
+          "key": "publicTrafficOut",
+          "label": "Public Traffic Out",
+          "type": "number",
+          "unit": "GB",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        },
+        {
+          "key": "cloudWatchLogs",
+          "label": "CloudWatch Logs Ingestion",
+          "type": "number",
+          "unit": "GB",
+          "default": 20,
+          "min": 0,
+          "max": 10000,
+          "group": "observability"
+        },
+        {
+          "key": "containerInsights",
+          "label": "Container Insights Enabled",
+          "type": "boolean",
+          "default": false,
+          "group": "observability"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "controlPlaneCost + workerNodesCost",
+        "components": [
+          {
+            "id": "controlPlane",
+            "name": "EKS Control Plane",
+            "formula": "$0.10/hr × 730 hrs × clusters",
+            "variables": [
+              "clusterCount"
+            ]
+          },
+          {
+            "id": "workers",
+            "name": "Worker Nodes",
+            "formula": "nodeCount × hourlyRate × 730 hrs",
+            "variables": [
+              "nodeInstanceType",
+              "nodeCount"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "clusterHourlyStandard": 0.1,
+        "clusterHourlyExtended": 0.6,
+        "cpuHour": 0.04048,
+        "memHour": 0.004445,
+        "spotDiscount": 0.7,
+        "ephemeralGBHour": 0.000111,
+        "instances": {
+          "t3.medium": 0.0416,
+          "m5.large": 0.096,
+          "m5.xlarge": 0.192,
+          "m6g.large": 0.077
+        },
+        "reservedDiscount": 0.4,
+        "albHourly": 0.0225,
+        "crossAzGB": 0.01,
+        "natHourly": 0.045,
+        "natDataGB": 0.045,
+        "dataTransferGB": 0.09,
+        "logsGB": 0.5,
+        "containerInsightsPerNode": 2.5
+      }
+    },
+    "aurora": {
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Capacity (RPS)",
+          "type": "number",
+          "unit": "rps",
+          "default": 2000,
+          "min": 1,
+          "max": 100000
+        }
+      ],
+      "costParams": [
+        {
+          "key": "mode",
+          "label": "Pricing Mode",
+          "type": "enum",
+          "default": "serverless-v2",
+          "group": "compute",
+          "options": [
+            {
+              "value": "serverless-v2",
+              "label": "Serverless v2"
+            },
+            {
+              "value": "provisioned",
+              "label": "Provisioned"
+            }
+          ]
+        },
+        {
+          "key": "avgAcus",
+          "label": "Average ACUs",
+          "type": "number",
+          "default": 2,
+          "min": 0.5,
+          "max": 128,
+          "group": "compute",
+          "visibleIf": "config.mode === 'serverless-v2' || !config.mode"
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 15,
+          "group": "compute"
+        },
+        {
+          "key": "instanceClass",
+          "label": "Instance Class",
+          "type": "enum",
+          "default": "db.r6g.large",
+          "group": "compute",
+          "visibleIf": "config.mode === 'provisioned'",
+          "options": [
+            {
+              "value": "db.t3.medium",
+              "label": "db.t3.medium"
+            },
+            {
+              "value": "db.r5.large",
+              "label": "db.r5.large"
+            },
+            {
+              "value": "db.r6g.large",
+              "label": "db.r6g.large (ARM)"
+            }
+          ]
+        },
+        {
+          "key": "storageSize",
+          "label": "Storage Size (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 10,
+          "max": 128000,
+          "group": "storage"
+        },
+        {
+          "key": "ioRequestsM",
+          "label": "I/O Requests (Millions)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "storage"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "computeCost + storageCost",
+        "components": [
+          {
+            "id": "compute",
+            "name": "Aurora Compute",
+            "formula": "pricingMode === 'serverless' ? averageACU × $0.12/ACU-hr : db.r6g.large @ $0.29/hr",
+            "variables": [
+              "pricingMode",
+              "acuMin",
+              "acuMax",
+              "multiAZ"
+            ]
+          },
+          {
+            "id": "storage",
+            "name": "Storage Cost",
+            "formula": "storageGB × $0.10/GB/mo",
+            "variables": [
+              "storageGB",
+              "multiAZ"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "serverlessAcuHour": 0.12,
+        "instances": {
+          "db.t3.medium": 0.082,
+          "db.r5.large": 0.29,
+          "db.r6g.large": 0.26
+        },
+        "storageGB": 0.1,
+        "ioRequestPerM": 0.2
+      }
+    },
+    "eventBridge": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "eventsM",
+          "label": "Events Published (Millions)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "eventsCost",
+        "components": [
+          {
+            "id": "events",
+            "name": "Events Ingestion",
+            "formula": "eventsM × $1.00/Million",
+            "variables": [
+              "monthlyEventsM"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "eventM": 1
+      }
+    },
+    "kinesis": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "shards",
+          "label": "Provisioned Shards",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 10000,
+          "group": "compute"
+        },
+        {
+          "key": "putUnitsM",
+          "label": "PUT Payload Units (Millions)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        },
+        {
+          "key": "retentionDays",
+          "label": "Extended Retention (Days)",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 365,
+          "group": "storage"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "shardHoursCost + payloadCost",
+        "components": [
+          {
+            "id": "shards",
+            "name": "Shard Hour Cost",
+            "formula": "shards × $0.015/hr × 730 hrs",
+            "variables": [
+              "shards"
+            ]
+          },
+          {
+            "id": "payload",
+            "name": "PUT Payloads",
+            "formula": "payloadM × $0.014/Million",
+            "variables": [
+              "putRecordsM"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "shardHour": 0.015,
+        "putM": 0.014,
+        "retentionGB": 0.02
+      }
+    },
+    "msk": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "brokers",
+          "label": "Brokers",
+          "type": "number",
+          "default": 2,
+          "min": 2,
+          "max": 30,
+          "group": "compute"
+        },
+        {
+          "key": "instance",
+          "label": "Broker Type",
+          "type": "enum",
+          "default": "kafka.m5.large",
+          "group": "compute",
+          "options": [
+            {
+              "value": "kafka.t3.small",
+              "label": "kafka.t3.small"
+            },
+            {
+              "value": "kafka.m5.large",
+              "label": "kafka.m5.large"
+            }
+          ]
+        },
+        {
+          "key": "storageGB",
+          "label": "Storage per Broker (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 1,
+          "max": 16384,
+          "group": "storage"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "brokerComputeCost + brokerStorageCost",
+        "components": [
+          {
+            "id": "compute",
+            "name": "Broker Compute",
+            "formula": "brokerCount × brokerRate × 730 hrs",
+            "variables": [
+              "brokerInstanceType",
+              "brokerCount"
+            ]
+          },
+          {
+            "id": "storage",
+            "name": "Broker Storage",
+            "formula": "brokerCount × storageGB × $0.10/GB/mo",
+            "variables": [
+              "brokerCount",
+              "storageGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "instances": {
+          "kafka.t3.small": 0.0466,
+          "kafka.m5.large": 0.24
+        },
+        "storageGB": 0.1
+      }
+    },
+    "cognito": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "mau",
+          "label": "Monthly Active Users",
+          "type": "number",
+          "default": 50000,
+          "min": 0,
+          "max": 100000000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "mauTieredCost + securityCost",
+        "components": [
+          {
+            "id": "mau",
+            "name": "MAU Volume (Tiered)",
+            "formula": "First 50,000 MAUs free, next 50,000 @ $0.0055/MAU",
+            "variables": [
+              "mau"
+            ]
+          },
+          {
+            "id": "security",
+            "name": "Advanced Security",
+            "formula": "advancedSecurity ? MAUs × $0.050/MAU : $0.00",
+            "variables": [
+              "mau",
+              "advancedSecurity"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "freeTier": 50000,
+        "ratePerUser": 0.0055
+      }
+    },
+    "waf": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "acls",
+          "label": "Web ACLs",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 50,
+          "group": "compute"
+        },
+        {
+          "key": "rules",
+          "label": "Rules per ACL",
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "max": 100,
+          "group": "compute"
+        },
+        {
+          "key": "requestsM",
+          "label": "Requests Analyzed (M)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "aclCost + rulesCost + requestsCost",
+        "components": [
+          {
+            "id": "acls",
+            "name": "Web ACL Base Fee",
+            "formula": "webAcls × $5.00/mo",
+            "variables": [
+              "webAcls"
+            ]
+          },
+          {
+            "id": "rules",
+            "name": "Rules Charge",
+            "formula": "rules × $1.00/mo × webAcls",
+            "variables": [
+              "webAcls",
+              "rules"
+            ]
+          },
+          {
+            "id": "requests",
+            "name": "Request Traffic",
+            "formula": "requestsM × $0.60/Million",
+            "variables": [
+              "requestsM"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "aclMonth": 5,
+        "ruleMonth": 1,
+        "reqM": 0.6
+      }
+    },
+    "efs": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "storageClass",
+          "label": "Storage Class",
+          "type": "enum",
+          "default": "standard",
+          "group": "storage",
+          "options": [
+            {
+              "value": "standard",
+              "label": "EFS Standard"
+            },
+            {
+              "value": "ia",
+              "label": "EFS Infrequent Access"
+            }
+          ]
+        },
+        {
+          "key": "storageGB",
+          "label": "Storage Amount (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 1000000,
+          "group": "storage"
+        },
+        {
+          "key": "provisionedThroughput",
+          "label": "Provisioned Throughput (MB/s)",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 1024,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "storageCost",
+        "components": [
+          {
+            "id": "storage",
+            "name": "EFS Storage",
+            "formula": "storageGB × pricePerGB",
+            "variables": [
+              "storageGB",
+              "storageClass"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "storage": {
+          "standard": 0.3,
+          "ia": 0.016
+        },
+        "throughputMBps": 6
+      }
+    },
+    "athena": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "dataTB",
+          "label": "Data Scanned (TB)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "queryCost",
+        "components": [
+          {
+            "id": "queries",
+            "name": "Data Queries Scanned",
+            "formula": "dataScannedTB × $5.00/TB",
+            "variables": [
+              "dataScannedTB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "perTB": 5
+      }
+    },
+    "secretsManager": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "secrets",
+          "label": "Secret Count",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 100000,
+          "group": "compute"
+        },
+        {
+          "key": "callsM",
+          "label": "API Calls (Millions)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "secretsStorageCost + secretsApiCost",
+        "components": [
+          {
+            "id": "storage",
+            "name": "Secrets Storage",
+            "formula": "secretsCount × $0.40/secret/mo",
+            "variables": [
+              "secretsCount"
+            ]
+          },
+          {
+            "id": "api",
+            "name": "API Requests",
+            "formula": "apiCalls10k × $0.05/10k calls",
+            "variables": [
+              "apiCalls10k"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "secretMonth": 0.4,
+        "callM": 0.05
+      }
+    },
+    "transitGateway": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "attachments",
+          "label": "VPC Attachments",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 100,
+          "group": "networking"
+        },
+        {
+          "key": "dataGB",
+          "label": "Data Processed (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "attachmentCost + dataCost",
+        "components": [
+          {
+            "id": "attachments",
+            "name": "Attachment Hour Fee",
+            "formula": "attachments × $0.05/hr × 730 hrs",
+            "variables": [
+              "attachments"
+            ]
+          },
+          {
+            "id": "data",
+            "name": "Data Processing Fee",
+            "formula": "dataProcessedGB × $0.02/GB",
+            "variables": [
+              "dataProcessedGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "attachmentHourly": 0.05,
+        "dataGB": 0.02
+      }
+    },
+    "directConnect": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "speed",
+          "label": "Port Speed",
+          "type": "enum",
+          "default": "1g",
+          "group": "networking",
+          "options": [
+            {
+              "value": "1g",
+              "label": "1 Gbps"
+            },
+            {
+              "value": "10g",
+              "label": "10 Gbps"
+            },
+            {
+              "value": "100g",
+              "label": "100 Gbps"
+            }
+          ]
+        },
+        {
+          "key": "dataTransferOut",
+          "label": "Data Transfer Out (GB)",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "group": "networking"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "portCost + dataCost",
+        "components": [
+          {
+            "id": "port",
+            "name": "Connection Port Fee",
+            "formula": "portRate × 730 hrs",
+            "variables": [
+              "connectionSpeed"
+            ]
+          },
+          {
+            "id": "data",
+            "name": "Data Out Fee",
+            "formula": "dataOutGB × $0.02/GB",
+            "variables": [
+              "dataOutGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "portRates": {
+          "1g": 0.3,
+          "10g": 2.25,
+          "100g": 22.5
+        },
+        "dataTransferGB": 0.02
+      }
+    },
+    "globalAccelerator": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "accelerators",
+          "label": "Accelerators",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 10,
+          "group": "networking"
+        },
+        {
+          "key": "dataGB",
+          "label": "Data Transfer (GB)",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "acceleratorCost + premiumDtCost",
+        "components": [
+          {
+            "id": "base",
+            "name": "Accelerator Base Fee",
+            "formula": "accelerators × $0.025/hr × 730 hrs",
+            "variables": [
+              "accelerators"
+            ]
+          },
+          {
+            "id": "premium",
+            "name": "Data Premium (DT-in/out)",
+            "formula": "dataProcessedGB × $0.015/GB",
+            "variables": [
+              "dataProcessedGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "hourly": 0.025,
+        "dataGB": 0.015
+      }
+    },
+    "xray": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "tracesM",
+          "label": "Traces Recorded (M)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        },
+        {
+          "key": "scansM",
+          "label": "Traces Scanned (M)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "storageCost + scanCost",
+        "components": [
+          {
+            "id": "storage",
+            "name": "Traces Storage",
+            "formula": "tracesStoredM × $0.50/Million",
+            "variables": [
+              "tracesStoredM"
+            ]
+          },
+          {
+            "id": "scan",
+            "name": "Traces Retrieval & Scans",
+            "formula": "tracesScannedM × $0.50/Million",
+            "variables": [
+              "tracesScannedM"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "recordM": 5,
+        "scanM": 0.5
+      }
+    },
+    "openSearch": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "nodes",
+          "label": "Data Nodes",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 200,
+          "group": "compute"
+        },
+        {
+          "key": "instance",
+          "label": "Instance Type",
+          "type": "enum",
+          "default": "r6g.large",
+          "group": "compute",
+          "options": [
+            {
+              "value": "t3.medium",
+              "label": "t3.medium"
+            },
+            {
+              "value": "m6g.large",
+              "label": "m6g.large"
+            },
+            {
+              "value": "r6g.large",
+              "label": "r6g.large"
+            }
+          ]
+        },
+        {
+          "key": "storageGB",
+          "label": "Storage (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 10,
+          "max": 300000,
+          "group": "storage"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "nodeComputeCost + searchStorageCost",
+        "components": [
+          {
+            "id": "compute",
+            "name": "Search Instances",
+            "formula": "nodeCount × hourlyRate × 730 hrs",
+            "variables": [
+              "instanceType",
+              "nodeCount"
+            ]
+          },
+          {
+            "id": "storage",
+            "name": "EBS Volume Storage",
+            "formula": "nodeCount × storageGB × $0.12/GB/mo",
+            "variables": [
+              "nodeCount",
+              "storageGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "instances": {
+          "t3.medium": 0.073,
+          "m6g.large": 0.129,
+          "r6g.large": 0.167
+        },
+        "storageGB": 0.122
+      }
+    },
+    "redshift": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "type",
+          "label": "Cluster Type",
+          "type": "enum",
+          "default": "provisioned",
+          "group": "compute",
+          "options": [
+            {
+              "value": "provisioned",
+              "label": "Provisioned (RA3)"
+            },
+            {
+              "value": "serverless",
+              "label": "Serverless"
+            }
+          ]
+        },
+        {
+          "key": "nodes",
+          "label": "Node Count",
+          "type": "number",
+          "default": 2,
+          "min": 2,
+          "max": 128,
+          "group": "compute",
+          "visibleIf": "config.type === 'provisioned' || !config.type"
+        },
+        {
+          "key": "instance",
+          "label": "Node Type",
+          "type": "enum",
+          "default": "ra3.xlplus",
+          "group": "compute",
+          "visibleIf": "config.type === 'provisioned' || !config.type",
+          "options": [
+            {
+              "value": "ra3.xlplus",
+              "label": "ra3.xlplus"
+            },
+            {
+              "value": "ra3.4xlarge",
+              "label": "ra3.4xlarge"
+            }
+          ]
+        },
+        {
+          "key": "rpus",
+          "label": "Base RPUs",
+          "type": "number",
+          "default": 32,
+          "min": 8,
+          "max": 512,
+          "group": "compute",
+          "visibleIf": "config.type === 'serverless'"
+        },
+        {
+          "key": "hours",
+          "label": "Active Hours / Mo",
+          "type": "number",
+          "default": 730,
+          "min": 1,
+          "max": 730,
+          "group": "compute"
+        },
+        {
+          "key": "storageTB",
+          "label": "Managed Storage (TB)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 1000,
+          "group": "storage"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "redshiftComputeCost",
+        "components": [
+          {
+            "id": "compute",
+            "name": "Redshift Compute Cluster",
+            "formula": "nodeCount × hourlyRate × 730 hrs",
+            "variables": [
+              "instanceType",
+              "nodeCount"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "instances": {
+          "ra3.xlplus": 1.086,
+          "ra3.4xlarge": 3.26
+        },
+        "rpuHour": 0.36,
+        "storageTB": 24.576
+      }
+    },
+    "glue": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "dpus",
+          "label": "DPUs per Job",
+          "type": "number",
+          "default": 10,
+          "min": 2,
+          "max": 100,
+          "group": "compute"
+        },
+        {
+          "key": "hours",
+          "label": "Total Job Hours / Mo",
+          "type": "number",
+          "default": 50,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        },
+        {
+          "key": "crawlers",
+          "label": "Crawler Hours / Mo",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 1000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "etlCost",
+        "components": [
+          {
+            "id": "etl",
+            "name": "ETL Serverless Sparks",
+            "formula": "dpuCount × $0.44/DPU-hr × jobHours",
+            "variables": [
+              "dpuCount",
+              "hoursPerMonth"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "dpuHour": 0.44
+      }
+    },
+    "emr": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "nodes",
+          "label": "Cluster Nodes",
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 1000,
+          "group": "compute"
+        },
+        {
+          "key": "instance",
+          "label": "Instance Type",
+          "type": "enum",
+          "default": "m5.xlarge",
+          "group": "compute",
+          "options": [
+            {
+              "value": "m5.large",
+              "label": "m5.large"
+            },
+            {
+              "value": "m5.xlarge",
+              "label": "m5.xlarge"
+            },
+            {
+              "value": "r5.xlarge",
+              "label": "r5.xlarge"
+            }
+          ]
+        },
+        {
+          "key": "hours",
+          "label": "Runtime Hours / Mo",
+          "type": "number",
+          "default": 100,
+          "min": 1,
+          "max": 730,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "emrClusterCost",
+        "components": [
+          {
+            "id": "compute",
+            "name": "EMR Compute Cluster",
+            "formula": "nodeCount × $0.144/hr × activeHours",
+            "variables": [
+              "nodeCount",
+              "hoursPerMonth"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "instances": {
+          "m5.large": 0.12,
+          "m5.xlarge": 0.24,
+          "r5.xlarge": 0.31
+        }
+      }
+    },
+    "kinesisFirehose": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "dataGB",
+          "label": "Data Ingested (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        },
+        {
+          "key": "conversion",
+          "label": "Format Conversion",
+          "type": "boolean",
+          "default": false,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "ingestionCost",
+        "components": [
+          {
+            "id": "ingest",
+            "name": "Inbound Streaming Ingestion",
+            "formula": "dataInboundGB × $0.029/GB",
+            "variables": [
+              "dataInboundGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "ingestGB": 0.029,
+        "convertGB": 0.018
+      }
+    },
+    "mq": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "brokers",
+          "label": "Broker Count",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 50,
+          "group": "compute"
+        },
+        {
+          "key": "instance",
+          "label": "Instance Type",
+          "type": "enum",
+          "default": "mq.m5.large",
+          "group": "compute",
+          "options": [
+            {
+              "value": "mq.t3.micro",
+              "label": "mq.t3.micro"
+            },
+            {
+              "value": "mq.m5.large",
+              "label": "mq.m5.large"
+            }
+          ]
+        }
+      ],
+      "costEvaluation": {
+        "formula": "brokerCost",
+        "components": [
+          {
+            "id": "broker",
+            "name": "Broker Running Hours",
+            "formula": "hourlyRate × 730 hrs × (standby ? 2 : 1)",
+            "variables": [
+              "instanceType",
+              "deploymentMode"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "instances": {
+          "mq.t3.micro": 0.034,
+          "mq.m5.large": 0.34
+        }
+      }
+    },
+    "kms": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "keys",
+          "label": "CMK Count",
+          "type": "number",
+          "default": 5,
+          "min": 1,
+          "max": 10000,
+          "group": "compute"
+        },
+        {
+          "key": "requestsM",
+          "label": "Requests (Millions)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "keyStorageCost + keyApiCost",
+        "components": [
+          {
+            "id": "keys",
+            "name": "KMS Active Keys",
+            "formula": "keysCount × $1.00/key/mo",
+            "variables": [
+              "keysCount"
+            ]
+          },
+          {
+            "id": "api",
+            "name": "Encryption APIs",
+            "formula": "apiRequests10k × $0.03/10k calls",
+            "variables": [
+              "apiRequests10k"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "keyMonth": 1,
+        "reqM": 0.03
+      }
+    },
+    "shield": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "advanced",
+          "label": "Shield Advanced",
+          "type": "boolean",
+          "default": false,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "protectionCost",
+        "components": [
+          {
+            "id": "tier",
+            "name": "Shield Security Tier",
+            "formula": "protectionTier === 'advanced' ? $3,000.00 : $0.00",
+            "variables": [
+              "protectionTier"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "advancedMonth": 3000
+      }
+    },
+    "organizations": {
+      "primaryParams": [],
+      "costParams": [],
+      "costEvaluation": {
+        "formula": "Free",
+        "components": [],
+        "freeTier": {
+          "description": "AWS Organizations is offered at no additional charge."
+        }
+      },
+      "pricingFactors": {}
+    },
+    "codePipeline": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "pipelines",
+          "label": "Active Pipelines",
+          "type": "number",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "pipelineCost",
+        "components": [
+          {
+            "id": "pipelines",
+            "name": "Active Pipelines runs",
+            "formula": "max(0, pipelines − 1 free) × $1.00",
+            "variables": [
+              "pipelinesCount"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "pipelineMonth": 1
+      }
+    },
+    "codeBuild": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "minutes",
+          "label": "Build Minutes",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute"
+        },
+        {
+          "key": "computeType",
+          "label": "Compute Type",
+          "type": "enum",
+          "default": "general1.small",
+          "group": "compute",
+          "options": [
+            {
+              "value": "general1.small",
+              "label": "Small"
+            },
+            {
+              "value": "general1.large",
+              "label": "Large"
+            }
+          ]
+        }
+      ],
+      "costEvaluation": {
+        "formula": "buildCost",
+        "components": [
+          {
+            "id": "minutes",
+            "name": "Build Run minutes",
+            "formula": "buildMinutes × minutePrice",
+            "variables": [
+              "buildType",
+              "buildMinutes"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "rates": {
+          "general1.small": 0.005,
+          "general1.large": 0.02
+        }
+      }
+    },
+    "codeDeploy": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "onPremUpdates",
+          "label": "On-Prem Updates",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "deployCost",
+        "components": [
+          {
+            "id": "deploy",
+            "name": "On-Premises Deployments",
+            "formula": "onPremisesDeployments × $0.02",
+            "variables": [
+              "onPremisesDeployments"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "updateRate": 0.02
+      }
+    },
+    "bedrock": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "model",
+          "label": "Model Tier",
+          "type": "enum",
+          "default": "claude-haiku",
+          "group": "compute",
+          "options": [
+            {
+              "value": "claude-haiku",
+              "label": "Claude 3 Haiku"
+            },
+            {
+              "value": "claude-sonnet",
+              "label": "Claude 3 Sonnet"
+            },
+            {
+              "value": "titan",
+              "label": "Titan Text"
+            }
+          ]
+        },
+        {
+          "key": "inTokensM",
+          "label": "Input Tokens (Millions)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        },
+        {
+          "key": "outTokensM",
+          "label": "Output Tokens (Millions)",
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "inputTokensCost + outputTokensCost",
+        "components": [
+          {
+            "id": "input",
+            "name": "Input Token Ingestion",
+            "formula": "inputM × priceInput",
+            "variables": [
+              "modelType",
+              "inputTokensMillion"
+            ]
+          },
+          {
+            "id": "output",
+            "name": "Output Token Generation",
+            "formula": "outputM × priceOutput",
+            "variables": [
+              "modelType",
+              "outputTokensMillion"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "inM": {
+          "claude-haiku": 0.25,
+          "claude-sonnet": 3,
+          "titan": 0.0003
+        },
+        "outM": {
+          "claude-haiku": 1.25,
+          "claude-sonnet": 15,
+          "titan": 0.0004
+        }
+      }
+    },
+    "sageMaker": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "type",
+          "label": "Hosting Type",
+          "type": "enum",
+          "default": "instance",
+          "group": "compute",
+          "options": [
+            {
+              "value": "instance",
+              "label": "Real-time Instance"
+            },
+            {
+              "value": "serverless",
+              "label": "Serverless Inference"
+            }
+          ]
+        },
+        {
+          "key": "instance",
+          "label": "Instance Type",
+          "type": "enum",
+          "default": "ml.m5.large",
+          "group": "compute",
+          "visibleIf": "config.type === 'instance' || !config.type",
+          "options": [
+            {
+              "value": "ml.t3.medium",
+              "label": "ml.t3.medium"
+            },
+            {
+              "value": "ml.m5.large",
+              "label": "ml.m5.large"
+            },
+            {
+              "value": "ml.p3.2xlarge",
+              "label": "ml.p3.2xlarge (GPU)"
+            }
+          ]
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "group": "compute",
+          "visibleIf": "config.type === 'instance' || !config.type"
+        },
+        {
+          "key": "memoryMB",
+          "label": "Memory (MB)",
+          "type": "number",
+          "default": 2048,
+          "min": 1024,
+          "max": 6144,
+          "group": "compute",
+          "visibleIf": "config.type === 'serverless'"
+        },
+        {
+          "key": "durationMs",
+          "label": "Avg Duration (ms)",
+          "type": "number",
+          "default": 500,
+          "min": 10,
+          "max": 60000,
+          "group": "compute",
+          "visibleIf": "config.type === 'serverless'"
+        },
+        {
+          "key": "invocationsM",
+          "label": "Invocations (Millions)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 10000,
+          "group": "compute",
+          "visibleIf": "config.type === 'serverless'"
+        },
+        {
+          "key": "trainingHours",
+          "label": "Training Hours / Mo",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 730,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "computeCost",
+        "components": [
+          {
+            "id": "compute",
+            "name": "SageMaker Inference",
+            "formula": "inferenceType === 'provisioned' ? hours × $0.05/hr : secondsM × $20.00/Million",
+            "variables": [
+              "inferenceType",
+              "hoursPerMonth",
+              "inferenceDurationSecondsM"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "instances": {
+          "ml.t3.medium": 0.056,
+          "ml.m5.large": 0.134,
+          "ml.p3.2xlarge": 4.284
+        },
+        "serverlessGBsec": 0.00002,
+        "serverlessReqM": 0.2,
+        "trainingHourly": 1.5
+      }
+    },
+    "appSync": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "requestsM",
+          "label": "GraphQL Reqs (Millions)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        },
+        {
+          "key": "dtGB",
+          "label": "Data Transfer Out (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 10000,
+          "group": "networking"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "queryCost + realtimeCost",
+        "components": [
+          {
+            "id": "queries",
+            "name": "GraphQL Query execution",
+            "formula": "queriesM × $4.00/Million",
+            "variables": [
+              "queriesM"
+            ]
+          },
+          {
+            "id": "realtime",
+            "name": "Real-time Subscriptions",
+            "formula": "connectionMinsM × $0.08/Million",
+            "variables": [
+              "realtimeConnectionsM"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "reqM": 4,
+        "dtGB": 0.09
+      }
+    },
+    "iotCore": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "messagesM",
+          "label": "Messages (Millions)",
+          "type": "number",
+          "default": 50,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute"
+        },
+        {
+          "key": "rulesM",
+          "label": "Rules Executed (M)",
+          "type": "number",
+          "default": 50,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "connectivityCost + messagingCost",
+        "components": [
+          {
+            "id": "connectivity",
+            "name": "Device Connectivity",
+            "formula": "devices × 43,800 mins/mo × $0.08/Million",
+            "variables": [
+              "devicesCount"
+            ]
+          },
+          {
+            "id": "messages",
+            "name": "Messaging Traffic",
+            "formula": "messagesM × $1.00/Million",
+            "variables": [
+              "messagesM"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "msgM": 1,
+        "ruleM": 0.15
+      }
+    },
+    "rekognition": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "imagesM",
+          "label": "Images Processed (M)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "analysisCost",
+        "components": [
+          {
+            "id": "analysis",
+            "name": "Image Detection API",
+            "formula": "imagesK × $1.00/1,000 images",
+            "variables": [
+              "imagesAnalyzedK"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "imageM": 1000
+      }
+    },
+    "textract": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "pagesM",
+          "label": "Pages Extracted (M)",
+          "type": "number",
+          "default": 0.1,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "standardCost + tablesCost",
+        "components": [
+          {
+            "id": "standard",
+            "name": "Standard Documents API",
+            "formula": "standardK × $1.50/1k pages",
+            "variables": [
+              "standardPagesK"
+            ]
+          },
+          {
+            "id": "tables",
+            "name": "Tables Data API",
+            "formula": "tableK × $15.00/1k pages",
+            "variables": [
+              "tablePagesK"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "pageM": 1500
+      }
+    },
+    "mediaConvert": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "minutesHD",
+          "label": "HD Output Minutes",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "transcodeCost",
+        "components": [
+          {
+            "id": "transcode",
+            "name": "Output Transcoding runs",
+            "formula": "minutes × tierRate",
+            "variables": [
+              "transcodingTier",
+              "outputMinutes"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "minHD": 0.017
+      }
+    },
+    "cloudTrail": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "eventsM",
+          "label": "Data Events (M)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "auditTrailCost",
+        "components": [
+          {
+            "id": "audit",
+            "name": "Trail Copies Ingestion",
+            "formula": "eventsK × $0.10/100k events",
+            "variables": [
+              "additionalEventCopiesK"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "First copy of management events in each region is free."
+        }
+      },
+      "pricingFactors": {
+        "eventM": 1
+      }
+    },
+    "backup": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "warmGB",
+          "label": "Warm Backup (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "storage"
+        },
+        {
+          "key": "coldGB",
+          "label": "Cold Backup (GB)",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 1000000,
+          "group": "storage"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "warmCost + coldCost",
+        "components": [
+          {
+            "id": "warm",
+            "name": "Warm Storage Recovery",
+            "formula": "warmGB × $0.05/GB",
+            "variables": [
+              "warmStorageGB"
+            ]
+          },
+          {
+            "id": "cold",
+            "name": "Cold Storage Archival",
+            "formula": "coldGB × $0.01/GB",
+            "variables": [
+              "coldStorageGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "warmGB": 0.05,
+        "coldGB": 0.01
+      }
+    },
+    "appRunner": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "instances",
+          "label": "Active Instances",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 100,
+          "group": "compute"
+        },
+        {
+          "key": "vcpu",
+          "label": "vCPU per Instance",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 4,
+          "group": "compute"
+        },
+        {
+          "key": "memGB",
+          "label": "Memory (GB)",
+          "type": "number",
+          "default": 2,
+          "min": 2,
+          "max": 12,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "cpuCost + memoryCost",
+        "components": [
+          {
+            "id": "cpu",
+            "name": "Container vCPU Fee",
+            "formula": "instances × vCPU × $0.007/hr × 730 hrs",
+            "variables": [
+              "vcpu",
+              "activeInstances"
+            ]
+          },
+          {
+            "id": "memory",
+            "name": "Container Memory Fee",
+            "formula": "instances × memoryGB × $0.0009/hr × 730 hrs",
+            "variables": [
+              "memoryGB",
+              "activeInstances"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "cpuHour": 0.064,
+        "memHour": 0.007
+      }
+    },
+    "elasticBeanstalk": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "instanceFamily",
+          "label": "Instance Family",
+          "type": "enum",
+          "default": "t3",
+          "group": "compute",
+          "options": [
+            {
+              "value": "t3",
+              "label": "General Purpose (t3)"
+            },
+            {
+              "value": "m5",
+              "label": "General Purpose (m5)"
+            },
+            {
+              "value": "m6g",
+              "label": "General Purpose ARM (m6g)"
+            },
+            {
+              "value": "c5",
+              "label": "Compute Optimized (c5)"
+            },
+            {
+              "value": "c6g",
+              "label": "Compute Optimized ARM (c6g)"
+            },
+            {
+              "value": "r5",
+              "label": "Memory Optimized (r5)"
+            },
+            {
+              "value": "r6g",
+              "label": "Memory Optimized ARM (r6g)"
+            }
+          ]
+        },
+        {
+          "key": "instanceSize",
+          "label": "Instance Size",
+          "type": "enum",
+          "default": "medium",
+          "group": "compute",
+          "options": [
+            {
+              "value": "micro",
+              "label": "micro"
+            },
+            {
+              "value": "small",
+              "label": "small"
+            },
+            {
+              "value": "medium",
+              "label": "medium"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            },
+            {
+              "value": "xlarge",
+              "label": "xlarge"
+            },
+            {
+              "value": "2xlarge",
+              "label": "2xlarge"
+            },
+            {
+              "value": "4xlarge",
+              "label": "4xlarge"
+            }
+          ]
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "group": "compute"
+        },
+        {
+          "key": "purchaseOption",
+          "label": "Purchase Option",
+          "type": "enum",
+          "default": "on-demand",
+          "group": "compute",
+          "options": [
+            {
+              "value": "on-demand",
+              "label": "On-Demand"
+            },
+            {
+              "value": "reserved-1yr",
+              "label": "Reserved (1yr, No Upfront)"
+            },
+            {
+              "value": "reserved-3yr",
+              "label": "Reserved (3yr, No Upfront)"
+            },
+            {
+              "value": "spot",
+              "label": "Spot Instance"
+            }
+          ]
+        },
+        {
+          "key": "storageType",
+          "label": "EBS Volume Type",
+          "type": "enum",
+          "default": "gp3",
+          "group": "storage",
+          "options": [
+            {
+              "value": "gp2",
+              "label": "General Purpose SSD (gp2)"
+            },
+            {
+              "value": "gp3",
+              "label": "General Purpose SSD (gp3)"
+            },
+            {
+              "value": "io2",
+              "label": "Provisioned IOPS SSD (io2)"
+            }
+          ]
+        },
+        {
+          "key": "storageSize",
+          "label": "EBS Size per Node (GB)",
+          "type": "number",
+          "default": 30,
+          "min": 8,
+          "max": 16000,
+          "group": "storage"
+        },
+        {
+          "key": "dataTransferOut",
+          "label": "Data Transfer Out (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "Free",
+        "components": [],
+        "freeTier": {
+          "description": "Elastic Beanstalk is free. You pay only for the EC2 nodes, ALB, and databases it spins up."
+        }
+      },
+      "pricingFactors": {
+        "familyRatesLarge": {
+          "t3": 0.0832,
+          "m5": 0.096,
+          "m6g": 0.077,
+          "c5": 0.085,
+          "c6g": 0.068,
+          "r5": 0.126,
+          "r6g": 0.1008
+        },
+        "sizeMultipliers": {
+          "micro": 0.125,
+          "small": 0.25,
+          "medium": 0.5,
+          "large": 1,
+          "xlarge": 2,
+          "2xlarge": 4,
+          "4xlarge": 8
+        },
+        "purchaseDiscounts": {
+          "on-demand": 0,
+          "reserved-1yr": 0.4,
+          "reserved-3yr": 0.6,
+          "spot": 0.7
+        },
+        "ebsRates": {
+          "gp2": 0.1,
+          "gp3": 0.08,
+          "io2": 0.125
+        },
+        "dataTransferGB": 0.09
+      }
+    },
+    "fsx": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "type",
+          "label": "FSx Type",
+          "type": "enum",
+          "default": "windows",
+          "group": "compute",
+          "options": [
+            {
+              "value": "windows",
+              "label": "Windows File Server"
+            },
+            {
+              "value": "lustre",
+              "label": "Lustre"
+            },
+            {
+              "value": "ontap",
+              "label": "NetApp ONTAP"
+            }
+          ]
+        },
+        {
+          "key": "deployment",
+          "label": "Deployment",
+          "type": "enum",
+          "default": "singleAz",
+          "group": "compute",
+          "options": [
+            {
+              "value": "singleAz",
+              "label": "Single-AZ"
+            },
+            {
+              "value": "multiAz",
+              "label": "Multi-AZ"
+            }
+          ]
+        },
+        {
+          "key": "storageGB",
+          "label": "SSD Storage (GB)",
+          "type": "number",
+          "default": 500,
+          "min": 32,
+          "max": 65536,
+          "group": "storage"
+        },
+        {
+          "key": "throughputMBps",
+          "label": "Throughput (MB/s)",
+          "type": "number",
+          "default": 8,
+          "min": 8,
+          "max": 2048,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "storageCost",
+        "components": [
+          {
+            "id": "storage",
+            "name": "FSx Storage Volume",
+            "formula": "storageGB × pricePerGB",
+            "variables": [
+              "fsxType",
+              "storageGB"
+            ]
+          }
+        ]
+      },
+      "pricingFactors": {
+        "windowsSingle": 0.13,
+        "windowsMulti": 0.23,
+        "lustreSingle": 0.14,
+        "lustreMulti": 0.14,
+        "ontapSingle": 0.13,
+        "ontapMulti": 0.26,
+        "throughputRate": 1.18
+      }
+    },
+    "certificateManager": {
+      "primaryParams": [],
+      "costParams": [],
+      "costEvaluation": {
+        "formula": "caCost",
+        "components": [
+          {
+            "id": "ca",
+            "name": "Private CAs",
+            "formula": "privateCasCount × $400.00/mo",
+            "variables": [
+              "privateCertificates",
+              "privateCasCount"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "Public SSL/TLS Certificates generated through ACM are 100% Free."
+        }
+      },
+      "pricingFactors": {}
+    },
+    "systemsManager": {
+      "primaryParams": [],
+      "costParams": [
+        {
+          "key": "advancedInst",
+          "label": "Advanced Instances",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 10000,
+          "group": "compute"
+        },
+        {
+          "key": "paramCallsM",
+          "label": "Parameter Calls (M)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "advancedParamsCost",
+        "components": [
+          {
+            "id": "parameters",
+            "name": "Advanced Parameter Store keys",
+            "formula": "advancedParameters × $0.05/parameter/mo",
+            "variables": [
+              "advancedParameters"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "Standard Parameters, Run Command, Patch Manager, Session Manager are free."
+        }
+      },
+      "pricingFactors": {
+        "instHour": 0.00695,
+        "callM": 0.05
+      }
+    },
+    "ecr": {
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Capacity (RPS)",
+          "type": "number",
+          "unit": "rps",
+          "default": 100,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Management of pull requests and API throughput."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "storageGB",
+          "label": "Storage (GB)",
+          "type": "number",
+          "default": 50,
+          "min": 0,
+          "max": 10000,
+          "group": "storage"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "storageCost + dataTransferCost",
+        "components": [
+          {
+            "id": "storageCost",
+            "name": "Image Storage Cost",
+            "formula": "storedGB × $0.10/GB/mo",
+            "variables": [
+              "storedGB"
+            ]
+          },
+          {
+            "id": "dataTransferCost",
+            "name": "Egress Transfer Cost",
+            "formula": "dataTransferOutGB × $0.09/GB",
+            "variables": [
+              "dataTransferOutGB"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "500 MB storage free per month as part of AWS Free Tier."
+        }
+      },
+      "pricingFactors": {
+        "storageGB": 0.1
+      }
+    },
+    "privateLink": {
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Capacity (RPS)",
+          "type": "number",
+          "unit": "rps",
+          "default": 500,
+          "min": 1,
+          "max": 10000,
+          "costDriver": "Private endpoint connection throughput limit."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "endpoints",
+          "label": "Interface Endpoints",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "group": "networking"
+        },
+        {
+          "key": "dataGB",
+          "label": "Data Processed (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking"
+        }
+      ],
+      "costEvaluation": {
+        "formula": "endpointHourlyCost + dataProcessedCost",
+        "components": [
+          {
+            "id": "endpointHourlyCost",
+            "name": "Endpoint Connection Cost",
+            "formula": "endpointCount × 730 hours × $0.01/hr",
+            "variables": [
+              "endpointCount"
+            ]
+          },
+          {
+            "id": "dataProcessedCost",
+            "name": "Data Processing Cost",
+            "formula": "dataProcessedGB × $0.01/GB",
+            "variables": [
+              "dataProcessedGB"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "No default free tier for PrivateLink endpoint connections."
+        }
+      },
+      "pricingFactors": {
+        "endpointHourly": 0.01,
+        "dataGB": 0.01
       }
     }
   }

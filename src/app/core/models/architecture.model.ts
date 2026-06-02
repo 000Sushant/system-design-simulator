@@ -20,7 +20,50 @@ export type AwsServiceType =
   | 'stepFunctions'
   | 'natGateway'
   | 'securityGroup'
-  | 'batch';
+  | 'batch'
+  | 'eks'
+  | 'aurora'
+  | 'eventBridge'
+  | 'kinesis'
+  | 'msk'
+  | 'cognito'
+  | 'waf'
+  | 'efs'
+  | 'athena'
+  | 'secretsManager'
+  | 'transitGateway'
+  | 'directConnect'
+  | 'globalAccelerator'
+  | 'xray'
+  | 'openSearch'
+  | 'redshift'
+  | 'glue'
+  | 'emr'
+  | 'kinesisFirehose'
+  | 'mq'
+  | 'kms'
+  | 'shield'
+  | 'organizations'
+  | 'codePipeline'
+  | 'codeBuild'
+  | 'codeDeploy'
+  | 'bedrock'
+  | 'sageMaker'
+  | 'appSync'
+  | 'iotCore'
+  | 'rekognition'
+  | 'textract'
+  | 'mediaConvert'
+  | 'cloudTrail'
+  | 'backup'
+  | 'appRunner'
+  | 'elasticBeanstalk'
+  | 'fsx'
+  | 'certificateManager'
+  | 'systemsManager'
+  | 'ecr'
+  | 'privateLink';
+
 
 export type PortDirection = 'input' | 'output';
 export type PortType =
@@ -95,7 +138,7 @@ export interface AwsServiceDefinition {
   type: AwsServiceType;
   name: string;
   shortName: string;
-  category: 'Entry' | 'Network' | 'Compute' | 'Integration' | 'Storage' | 'Data' | 'Security' | 'Observability';
+  category: 'Compute' | 'Containers' | 'Networking & Content Delivery' | 'Storage' | 'Database' | 'Analytics' | 'Machine Learning' | 'Application Integration' | 'Developer Tools' | 'Management & Governance' | 'Security, Identity, & Compliance' | 'Media Services' | 'Internet of Things' | 'Client / External';
   description: string;
   color: string;
   icon: string;
@@ -167,6 +210,7 @@ export interface ArchitectureProject {
   connections: ArchitectureConnection[];
   annotations?: Annotation[];
   currency: Currency;
+  region?: string;
   updatedAt: string;
 }
 

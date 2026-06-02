@@ -3,7 +3,7 @@
 [![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
 
 > **Design. Simulate. Optimize.** The ultimate playground for Cloud Architects to visualize data flows, identify bottlenecks, and estimate costs before deploying a single line of code.
 
@@ -87,4 +87,4 @@ I build tools that help developers and architects understand complex systems wit
 - Restructured and added more information in about section
 - Minor bug fix
 
-Built with ❤️ for the Cloud Community. Licensed under the [MIT License](LICENSE).
+Built with ❤️ for the Cloud Community. Licensed under the [GNU General Public License v3.0](LICENSE).

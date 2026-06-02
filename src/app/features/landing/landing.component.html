@@ -1,0 +1,171 @@
+<main class="landing-shell" #shell (scroll)="onShellScroll($event)">
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+  </div>
+
+  <nav class="landing-nav glass-panel" [class.nav-scrolled]="navScrolled">
+    <a class="brand-mark" href="#" aria-label="Sr. Architect home">
+      <img src="favicon.svg" alt="" />
+      <span>Sr. Architect</span>
+      <small>BETA</small>
+    </a>
+    <div class="nav-actions">
+      <a href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">GitHub</a>
+      <button type="button" class="mini-launch" (click)="scrollToModes()" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
+        <span>Launch</span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="hero-section">
+    <div class="hero-copy">
+      <div class="eyebrow glass-pill">
+        <i class="fas fa-circle"></i> Live AWS architecture playground
+      </div>
+      <h1>
+        <span class="eyebrow-pre">A unified playground for</span><br />
+        system design,<br />traffic simulation<br />and cost estimation.
+      </h1>
+      <p>
+        Sr. Architect transforms AWS system design into a live interactive
+        simulation playground where developers can visualize traffic flow,
+        scaling behavior, performance metrics, and infrastructure cost in real
+        time.
+      </p>
+      <div class="hero-actions">
+        <button type="button" class="cta-button primary" (click)="scrollToModes()"
+          (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+          <span>Launch Simulator</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <a class="cta-button ghost" href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
+          (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+          <span>GitHub</span>
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+
+    <app-simulation-canvas></app-simulation-canvas>
+  </section>
+
+  <section class="mode-section" aria-labelledby="mode-title">
+    <div class="mode-ambient" aria-hidden="true">
+      <span class="mode-orb mode-orb-a"></span>
+      <span class="mode-orb mode-orb-b"></span>
+      <span class="mode-link mode-link-a"></span>
+      <span class="mode-link mode-link-b"></span>
+      <span class="mode-speck speck-a"></span>
+      <span class="mode-speck speck-b"></span>
+      <span class="mode-speck speck-c"></span>
+    </div>
+    <div class="section-heading centered">
+      <span class="section-kicker">Choose your experience</span>
+      <h2 id="mode-title">Choose your experience</h2>
+      <p>
+        Whether you're learning system design or building production-scale cloud
+        architectures, Sr. Architect adapts to your workflow.
+      </p>
+    </div>
+
+    <div class="mode-grid">
+      <article class="mode-card glass-panel" *ngFor="let mode of modes" [class]="mode.id"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <div class="mode-card-top">
+          <span class="mode-badge">{{ mode.badge }}</span>
+          <span class="mode-icon"><i [class]="mode.icon"></i></span>
+        </div>
+        <div class="mode-visual" [class]="mode.visual" aria-hidden="true">
+          <span class="mini-node node-one"></span>
+          <span class="mini-node node-two"></span>
+          <span class="mini-node node-three"></span>
+          <span class="mini-line line-one"></span>
+          <span class="mini-line line-two"></span>
+          <span class="mini-packet packet-one"></span>
+          <span class="mini-packet packet-two"></span>
+          <span class="mini-metric metric-one"></span>
+          <span class="mini-metric metric-two"></span>
+        </div>
+        <h3>{{ mode.title }}</h3>
+        <p>{{ mode.description }}</p>
+        <ul>
+          <li *ngFor="let feature of mode.features">
+            <i class="fas fa-check"></i>{{ feature }}
+          </li>
+        </ul>
+        <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
+          <span>{{ mode.button }}</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </article>
+    </div>
+    <p class="mode-microcopy">Start simple. Scale infinitely.</p>
+  </section>
+
+  <section class="trust-strip glass-panel" aria-label="Project status">
+    <span *ngFor="let pill of trustPills">{{ pill }}</span>
+  </section>
+
+  <section class="feature-section" id="features">
+    <div class="section-heading">
+      <span class="section-kicker">System Design, But Alive</span>
+      <h2>A premium simulator for cloud architecture decisions.</h2>
+    </div>
+    <div class="feature-grid">
+      <article class="feature-card glass-panel" *ngFor="let feature of features" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
+        <div class="feature-icon"><i [class]="feature.icon"></i></div>
+        <div class="feature-title">
+          <h3>{{ feature.title }}</h3>
+          <small *ngIf="feature.badge">{{ feature.badge }}</small>
+        </div>
+        <p>{{ feature.description }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="creator-card glass-panel">
+    <div class="creator-glow" aria-hidden="true"></div>
+    <div class="creator-avatar">SK</div>
+    <div class="creator-copy">
+      <span class="section-kicker">Creator</span>
+      <h2>Made with <span class="beating-heart">❤️</span> by Sushant Kumar</h2>
+      <p>
+        Backend-focused full stack developer passionate about cloud
+        architecture, scalable systems, simulations, and interactive engineering
+        tools.
+      </p>
+      <div class="creator-badges">
+        <span>Open Source</span>
+        <span>MIT Licensed</span>
+        <span>Contributions Welcome</span>
+      </div>
+    </div>
+    <div class="social-links">
+      <a *ngFor="let link of socialLinks" [href]="link.href" target="_blank" rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <i [class]="link.icon"></i>{{ link.label }}
+      </a>
+    </div>
+  </section>
+
+  <section class="final-cta glass-panel">
+    <span class="section-kicker">Start Now</span>
+    <h2>Start building architectures that behave like real systems.</h2>
+    <div class="hero-actions center">
+      <button type="button" class="cta-button primary" (click)="launch.emit('architect')"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span>Launch Sr. Architect</span>
+      </button>
+      <a class="cta-button secondary" href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)"><span>Explore
+          GitHub</span></a>
+      <a class="cta-button ghost" href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
+    </div>
+  </section>
+</main>

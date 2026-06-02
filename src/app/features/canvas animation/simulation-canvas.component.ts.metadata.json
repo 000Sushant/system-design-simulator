@@ -1,0 +1,5 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_OTHER",
+  "summary":  "Rewrote component logic to remove Three.js and use pure DOM state.",
+  "updatedAt":  "2026-05-28T09:54:56.402284300Z"
+}

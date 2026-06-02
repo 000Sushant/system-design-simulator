@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AboutComponent } from '../about/about.component';
+
 import {
   FCanvasChangeEvent,
   FCanvasComponent,
@@ -22,7 +22,8 @@ import {
   HealthStatus,
   ServiceConfig,
   ServicePort,
-  ValidationResult
+  ValidationResult,
+  SimulationMode
 } from '../../core/models/architecture.model';
 import { ArchitectureFactoryService } from '../../core/services/architecture-factory.service';
 import { AwsCatalogService } from '../../core/services/aws-catalog.service';
@@ -37,6 +38,25 @@ import serviceCostModelData from '../../core/data/service-cost-model.json';
 interface PortSelection {
   node: ArchitectureNode;
   port: ServicePort;
+}
+
+export interface CanvasTab {
+  id: string;
+  name: string;
+  projectName: string;
+  nodes: ArchitectureNode[];
+  connections: ArchitectureConnection[];
+  annotations: Annotation[];
+  packets: DataPacket[];
+  selectedNodeIds: string[];
+  selectedConnectionIds: string[];
+  zoom: number;
+  pan: { x: number; y: number };
+  globalCurrency: Currency;
+  globalRegion: string;
+  simulationMode: SimulationMode;
+  totals: { processed: number; dropped: number; avgLatency: number };
+  tick: number;
 }
 
 interface ConfigField {
@@ -61,7 +81,7 @@ interface SelectField {
 @Component({
   selector: 'app-simulator',
   standalone: true,
-  imports: [CommonModule, FFlowModule, FormsModule, AboutComponent],
+  imports: [CommonModule, FFlowModule, FormsModule],
   templateUrl: './simulator.component.html',
   styleUrls: ['./simulator.component.css']
 })
@@ -244,8 +264,17 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     ]
   };
 
+  tabs: CanvasTab[] = [];
+  activeTabIndex = 0;
+  editingTabIndex: number | null = null;
+  showSaveLoader = false;
+  showSaveSuccess = false;
+  roleMode: 'developer' | 'architect' = 'architect';
+
   projectName = 'Untitled AWS Architecture';
   globalCurrency: Currency = 'USD';
+  globalRegion: string = 'us-east-1';
+  showAllServices: boolean = false;
   paletteSearch = '';
   leftCollapsed = false;
   rightCollapsed = false;
@@ -273,7 +302,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   minimapVisible = false;
   runStatsExpanded = false;
   mode = 'idle';
-  showAbout = false;
+
   showMobileWarning = true;
   mobileWarningDismissed = false;
   totals = { processed: 0, dropped: 0, avgLatency: 0 };
@@ -298,6 +327,14 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    if (typeof window !== 'undefined' && window.location) {
+      const params = new URLSearchParams(window.location.search);
+      const modeParam = params.get('mode');
+      if (modeParam === 'developer' || modeParam === 'architect') {
+        this.roleMode = modeParam;
+      }
+    }
+
     this.updateMobileViewport();
     this.mobileMediaQuery = window.matchMedia(SimulatorComponent.mobileMediaQueryList);
     this.mobileMediaQuery.addEventListener('change', this.onMobileViewportChange);
@@ -599,7 +636,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get costBreakdown(): CostBreakdown | null {
     if (!this.selectedNode) return null;
-    return this.costService.getCostBreakdown(this.selectedNode);
+    return this.costService.getCostBreakdown(this.selectedNode, this.globalRegion);
   }
 
   get selectedConnection(): ArchitectureConnection | undefined {
@@ -618,10 +655,34 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get filteredCatalog(): AwsServiceDefinition[] {
     const query = this.paletteSearch.trim().toLowerCase();
-    if (!query) {
-      return this.catalog;
+    let services = this.catalog;
+
+    const devServices = new Set([
+      'client', 'route53', 'cloudfront', 'apiGateway', 'alb', 'lambda', 
+      'ec2', 'ecs', 'eks', 'appRunner', 's3', 'efs', 'rds', 'aurora', 
+      'dynamoDb', 'elastiCache', 'sqs', 'sns', 'eventBridge', 'stepFunctions', 
+      'cloudWatch', 'xray', 'cognito', 'appSync', 'bedrock'
+    ]);
+
+    if (this.roleMode === 'developer') {
+      services = services.filter(s => devServices.has(s.type));
+    } else {
+      // Architect Mode
+      if (!this.showAllServices) {
+        services = services.filter(s => devServices.has(s.type));
+      } else {
+        // Exclude governance/security services from being primary draggable blocks
+        const primaryExclusions = new Set([
+          'iam', 'kms', 'securityGroup', 'certificateManager', 'backup', 'cloudTrail'
+        ]);
+        services = services.filter(s => !primaryExclusions.has(s.type));
+      }
     }
-    return this.catalog.filter((service) =>
+
+    if (!query) {
+      return services;
+    }
+    return services.filter((service) =>
       service.name.toLowerCase().includes(query) ||
       service.category.toLowerCase().includes(query) ||
       service.type.toLowerCase().includes(query)
@@ -639,7 +700,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get totalCost(): number {
-    return this.costService.calculateTotalMonthlyCost(this.nodes, this.globalCurrency);
+    return this.costService.calculateTotalMonthlyCost(this.nodes, this.globalCurrency, this.globalRegion);
   }
 
   get totalCostFormatted(): string {
@@ -658,7 +719,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getNodeCostFormatted(node: ArchitectureNode): string {
-    const cost = this.costService.calculateNodeCostUsd(node) * (this.globalCurrency === 'USD' ? 1 : this.costService['conversionRates'][this.globalCurrency]);
+    const cost = this.costService.calculateNodeCostUsd(node, this.globalRegion) * (this.globalCurrency === 'USD' ? 1 : this.costService['conversionRates'][this.globalCurrency]);
     const symbol = this.costService.getCurrencySymbol(this.globalCurrency);
     return `${symbol}${cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
@@ -667,8 +728,25 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalCurrency = currency;
   }
 
+  setRegion(region: string): void {
+    this.globalRegion = region;
+    this.onConfigChange();
+  }
+
+  goHome(): void {
+    window.history.pushState(null, "", "/");
+    window.dispatchEvent(new Event("popstate"));
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
+    const isSaveHotkey = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's';
+    if (isSaveHotkey) {
+      event.preventDefault();
+      this.triggerSaveWithLoader();
+      return;
+    }
+
     if (event.key === 'Control' || event.key === 'Meta' || event.key === 'Shift') {
       this.ctrlPressed = true;
       return;
@@ -991,9 +1069,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMessage('Simulation stopped.', 'neutral');
   }
 
-  toggleAbout(): void {
-    this.showAbout = !this.showAbout;
-  }
+
 
   dismissMobileWarning(): void {
     this.mobileWarningDismissed = true;
@@ -1002,23 +1078,39 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 500);
   }
 
+  triggerSaveWithLoader(): void {
+    this.saveActiveTabState();
+    this.showSaveLoader = true;
+    setTimeout(() => {
+      this.showSaveLoader = false;
+      this.showSaveSuccess = true;
+      const project = this.currentProject();
+      this.storage.save(project).subscribe();
+      this.setMessage('Architecture saved successfully.', 'success');
+      setTimeout(() => {
+        this.showSaveSuccess = false;
+      }, 2000);
+    }, 850);
+  }
+
   saveProject(): void {
-    const project = this.currentProject();
-    this.storage.save(project).subscribe(() => {
-      this.setMessage('Architecture saved locally.', 'success');
-    });
+    this.triggerSaveWithLoader();
   }
 
   downloadProject(): void {
     const project = this.currentProject();
+    const tabName = this.tabs[this.activeTabIndex]?.name || 'hld-architecture';
+    const safeName = tabName.replace(/[/\\?%*:|"<> ]/g, '-').replace(/-+/g, '-').trim().toLowerCase();
+    const fileName = `${safeName || 'architecture'}.json`;
+
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(project, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "hld-architecture.json");
+    downloadAnchorNode.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-    this.setMessage('Project downloaded to device.', 'success');
+    this.setMessage(`Project exported as ${fileName}.`, 'success');
   }
 
   importProject(event: any): void {
@@ -1221,6 +1313,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   private applyProject(project: ArchitectureProject): void {
     this.projectName = project.name;
     this.globalCurrency = project.currency || 'USD';
+    this.globalRegion = project.region || 'us-east-1';
     this.nodes = project.nodes;
     this.connections = project.connections;
     this.annotations = project.annotations || [];
@@ -1238,6 +1331,156 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.revealMinimap();
+
+    if (this.tabs.length === 0) {
+      this.tabs = [{
+        id: `tab-${Date.now()}`,
+        name: project.name || 'Canvas 1',
+        projectName: project.name || 'Untitled AWS Architecture',
+        nodes: [...this.nodes],
+        connections: [...this.connections],
+        annotations: [...this.annotations],
+        packets: [],
+        selectedNodeIds: [],
+        selectedConnectionIds: [],
+        zoom: this.zoom,
+        pan: { ...this.pan },
+        globalCurrency: this.globalCurrency,
+        globalRegion: this.globalRegion,
+        simulationMode: 'idle',
+        totals: { processed: 0, dropped: 0, avgLatency: 0 },
+        tick: 0
+      }];
+      this.activeTabIndex = 0;
+    } else {
+      const tab = this.tabs[this.activeTabIndex];
+      tab.name = project.name || `Canvas ${this.activeTabIndex + 1}`;
+      tab.projectName = project.name || 'Untitled AWS Architecture';
+      tab.nodes = [...this.nodes];
+      tab.connections = [...this.connections];
+      tab.annotations = [...this.annotations];
+      tab.packets = [];
+      tab.selectedNodeIds = [];
+      tab.selectedConnectionIds = [];
+      tab.zoom = this.zoom;
+      tab.pan = { ...this.pan };
+      tab.globalCurrency = this.globalCurrency;
+      tab.globalRegion = this.globalRegion;
+      tab.simulationMode = 'idle';
+      tab.totals = { processed: 0, dropped: 0, avgLatency: 0 };
+      tab.tick = 0;
+    }
+  }
+
+  saveActiveTabState(): void {
+    if (this.activeTabIndex < 0 || this.activeTabIndex >= this.tabs.length) return;
+    const tab = this.tabs[this.activeTabIndex];
+    tab.projectName = this.projectName;
+    tab.nodes = [...this.nodes];
+    tab.connections = [...this.connections];
+    tab.annotations = [...this.annotations];
+    tab.packets = [...this.packets];
+    tab.selectedNodeIds = [...this.selectedNodeIds];
+    tab.selectedConnectionIds = [...this.selectedConnectionIds];
+    tab.zoom = this.zoom;
+    tab.pan = { ...this.pan };
+    tab.globalCurrency = this.globalCurrency;
+    tab.globalRegion = this.globalRegion;
+    tab.simulationMode = this.mode as SimulationMode;
+    tab.totals = { ...this.totals };
+    tab.tick = this.simulation.tick;
+  }
+
+  loadTabState(index: number): void {
+    this.activeTabIndex = index;
+    const tab = this.tabs[index];
+    this.projectName = tab.projectName;
+    this.nodes = [...tab.nodes];
+    this.connections = [...tab.connections];
+    this.annotations = [...tab.annotations];
+    this.packets = [...tab.packets];
+    this.selectedNodeIds = [...tab.selectedNodeIds];
+    this.selectedConnectionIds = [...tab.selectedConnectionIds];
+    this.zoom = tab.zoom;
+    this.pan = { ...tab.pan };
+    this.globalCurrency = tab.globalCurrency;
+    this.globalRegion = tab.globalRegion;
+    this.mode = tab.simulationMode;
+    this.totals = { ...tab.totals };
+
+    if (this.flowCanvas) {
+      this.flowCanvas.setScale(this.zoom);
+      this.flowCanvas._setPosition(this.pan);
+      this.flowCanvas.redraw();
+    }
+
+    this.simulation.switchTab(
+      this.nodes,
+      this.connections,
+      this.packets,
+      tab.tick,
+      tab.simulationMode
+    );
+  }
+
+  switchCanvasTab(index: number): void {
+    if (index === this.activeTabIndex || index < 0 || index >= this.tabs.length) return;
+    this.saveActiveTabState();
+    this.loadTabState(index);
+  }
+
+  addNewTab(): void {
+    this.saveActiveTabState();
+    const tabIndex = this.tabs.length;
+    const newTab: CanvasTab = {
+      id: `tab-${Date.now()}`,
+      name: `Canvas ${tabIndex + 1}`,
+      projectName: `Untitled AWS Architecture ${tabIndex + 1}`,
+      nodes: [],
+      connections: [],
+      annotations: [],
+      packets: [],
+      selectedNodeIds: [],
+      selectedConnectionIds: [],
+      zoom: this.isMobileViewport ? 0.65 : 0.85,
+      pan: { x: 40, y: 40 },
+      globalCurrency: 'USD',
+      globalRegion: 'us-east-1',
+      simulationMode: 'idle',
+      totals: { processed: 0, dropped: 0, avgLatency: 0 },
+      tick: 0
+    };
+    this.tabs.push(newTab);
+    this.loadTabState(tabIndex);
+    this.setMessage('New canvas tab added.', 'success');
+  }
+
+  closeTab(index: number, event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.tabs.length <= 1) {
+      this.setMessage('Cannot close the only remaining canvas.', 'error');
+      return;
+    }
+    this.tabs.splice(index, 1);
+    if (index === this.activeTabIndex) {
+      const nextIndex = Math.min(index, this.tabs.length - 1);
+      this.loadTabState(nextIndex);
+    } else if (index < this.activeTabIndex) {
+      this.activeTabIndex--;
+    }
+    this.setMessage('Canvas tab closed.', 'neutral');
+  }
+
+  startRenameTab(index: number, event: MouseEvent): void {
+    event.stopPropagation();
+    this.editingTabIndex = index;
+  }
+
+  finishRenameTab(index: number, newName: string): void {
+    if (newName.trim()) {
+      this.tabs[index].name = newName.trim();
+    }
+    this.editingTabIndex = null;
   }
 
   private currentProject(): ArchitectureProject {
@@ -1248,6 +1491,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       connections: this.connections,
       annotations: this.annotations,
       currency: this.globalCurrency,
+      region: this.globalRegion,
       updatedAt: new Date().toISOString()
     };
   }
