@@ -1,29 +1,34 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { SimulatorComponent } from "./features/simulator/simulator.component";
 import { LandingComponent } from "./features/landing/landing.component";
+import { DocumentationComponent } from "./features/documentation/documentation.component";
 
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [LandingComponent, SimulatorComponent],
+  imports: [LandingComponent, SimulatorComponent, DocumentationComponent],
   template: `
-    @if (!simulatorOpen) {
-      <app-landing (launch)="openSimulator($event)" />
-    } @else {
+    @if (docsOpen) {
+      <app-documentation />
+    } @else if (simulatorOpen) {
       <app-simulator />
+    } @else {
+      <app-landing (launch)="openSimulator($event)" />
     }
   `,
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   simulatorOpen = false;
+  docsOpen = false;
 
   private onPop = () => {
-    const isPlayground = window.location.pathname.startsWith("/playground");
-    this.simulatorOpen = isPlayground;
+    this.simulatorOpen = window.location.pathname.startsWith("/playground");
+    this.docsOpen = window.location.pathname.startsWith("/docs");
   };
 
   ngOnInit(): void {
     this.simulatorOpen = window.location.pathname.startsWith("/playground");
+    this.docsOpen = window.location.pathname.startsWith("/docs");
     window.addEventListener("popstate", this.onPop);
   }
 
@@ -36,5 +41,6 @@ export class AppComponent {
     // push a new history entry so Back returns to landing
     window.history.pushState(null, "", url);
     this.simulatorOpen = true;
+    this.docsOpen = false;
   }
 }

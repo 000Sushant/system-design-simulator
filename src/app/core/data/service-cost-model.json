@@ -160,6 +160,7 @@
       }
     },
     "route53": {
+      "regionOverride": true,
       "primaryParams": [
         {
           "key": "throughput",
@@ -169,7 +170,8 @@
           "default": 1000,
           "min": 1,
           "max": 10000,
-          "costDriver": "Maximum requests per second before degradation."
+          "affectsCost": true,
+          "costDriver": "Maximum requests per second before degradation. DNS queries are billed based on this volume."
         },
         {
           "key": "latency",
@@ -200,36 +202,18 @@
           "default": 1,
           "min": 0,
           "max": 1000,
-          "group": "networking"
-        },
-        {
-          "key": "queriesM",
-          "label": "Standard Queries (Millions)",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 10000,
-          "group": "networking"
-        },
-        {
-          "key": "latencyQueriesM",
-          "label": "Latency Queries (Millions)",
-          "type": "number",
-          "default": 0,
-          "min": 0,
-          "max": 10000,
-          "group": "networking"
+          "costDriver": "First 25 zones at $0.50/mo, additional at $0.10/mo"
         }
       ],
       "costEvaluation": {
-        "formula": "hostedZoneCost + queryRoutingCost + healthCheckCost",
+        "formula": "hostedZoneCost + queryRoutingCost",
         "components": [
           {
             "id": "hostedZoneCost",
             "name": "Hosted Zone Cost",
             "formula": "min(hostedZones, 25) × $0.50 + max(0, hostedZones − 25) × $0.10",
             "variables": [
-              "hostedZoneCount"
+              "hostedZones"
             ],
             "note": "First 25 zones at $0.50/mo, additional at $0.10/mo"
           },
@@ -238,33 +222,18 @@
             "name": "DNS Query Cost",
             "formula": "dnsQueryVolume × queryPricePerMillion",
             "variables": [
-              "dnsQueryVolume",
-              "routingPolicyType"
+              "throughput"
             ],
-            "note": "Simple=$0.40/M, Latency=$0.60/M, Geo=$0.70/M, IP=$0.80/M"
-          },
-          {
-            "id": "healthCheckCost",
-            "name": "Health Check Cost",
-            "formula": "max(0, healthChecks − 50 free) × pricePerMonth",
-            "variables": [
-              "healthCheckCount",
-              "healthCheckType"
-            ],
-            "note": "First 50 AWS endpoint checks free"
+            "note": "First 1B queries at $0.40/M, above 1B at $0.20/M"
           }
         ],
         "freeTier": {
-          "description": "50 AWS endpoint health checks free. Alias queries to AWS resources free.",
-          "limits": {
-            "healthChecks": 50
-          }
+          "description": "Alias queries to AWS resources are free."
         }
       },
       "pricingFactors": {
         "zoneMonthly": 0.5,
-        "standardM": 0.4,
-        "latencyM": 0.6
+        "standardM": 0.4
       }
     },
     "cloudfront": {
@@ -2453,8 +2422,129 @@
           "unit": "rps",
           "default": 100,
           "min": 1,
-          "max": 100000,
+          "max": 1000,
           "costDriver": "Source of simulation traffic."
+        },
+        {
+          "key": "requestRegion",
+          "label": "Request Region",
+          "type": "enum",
+          "default": "global",
+          "costDriver": "Select the region from where you are receiving maximum traffic",
+          "options": [
+            {
+              "value": "global",
+              "label": "Global (Mixed)"
+            },
+            {
+              "value": "us-east-1",
+              "label": "us-east-1 - US East (N. Virginia)"
+            },
+            {
+              "value": "us-east-2",
+              "label": "us-east-2 - US East (Ohio)"
+            },
+            {
+              "value": "us-west-1",
+              "label": "us-west-1 - US West (N. California)"
+            },
+            {
+              "value": "us-west-2",
+              "label": "us-west-2 - US West (Oregon)"
+            },
+            {
+              "value": "ca-central-1",
+              "label": "ca-central-1 - Canada (Central)"
+            },
+            {
+              "value": "eu-west-1",
+              "label": "eu-west-1 - Europe (Ireland)"
+            },
+            {
+              "value": "eu-west-2",
+              "label": "eu-west-2 - Europe (London)"
+            },
+            {
+              "value": "eu-west-3",
+              "label": "eu-west-3 - Europe (Paris)"
+            },
+            {
+              "value": "eu-central-1",
+              "label": "eu-central-1 - Europe (Frankfurt)"
+            },
+            {
+              "value": "eu-central-2",
+              "label": "eu-central-2 - Europe (Zurich)"
+            },
+            {
+              "value": "eu-north-1",
+              "label": "eu-north-1 - Europe (Stockholm)"
+            },
+            {
+              "value": "eu-south-1",
+              "label": "eu-south-1 - Europe (Milan)"
+            },
+            {
+              "value": "eu-south-2",
+              "label": "eu-south-2 - Europe (Spain)"
+            },
+            {
+              "value": "ap-east-1",
+              "label": "ap-east-1 - Asia Pacific (Hong Kong)"
+            },
+            {
+              "value": "ap-south-1",
+              "label": "ap-south-1 - Asia Pacific (Mumbai)"
+            },
+            {
+              "value": "ap-south-2",
+              "label": "ap-south-2 - Asia Pacific (Hyderabad)"
+            },
+            {
+              "value": "ap-northeast-1",
+              "label": "ap-northeast-1 - Asia Pacific (Tokyo)"
+            },
+            {
+              "value": "ap-northeast-2",
+              "label": "ap-northeast-2 - Asia Pacific (Seoul)"
+            },
+            {
+              "value": "ap-northeast-3",
+              "label": "ap-northeast-3 - Asia Pacific (Osaka)"
+            },
+            {
+              "value": "ap-southeast-1",
+              "label": "ap-southeast-1 - Asia Pacific (Singapore)"
+            },
+            {
+              "value": "ap-southeast-2",
+              "label": "ap-southeast-2 - Asia Pacific (Sydney)"
+            },
+            {
+              "value": "ap-southeast-3",
+              "label": "ap-southeast-3 - Asia Pacific (Jakarta)"
+            },
+            {
+              "value": "ap-southeast-4",
+              "label": "ap-southeast-4 - Asia Pacific (Melbourne)"
+            },
+            {
+              "value": "me-south-1",
+              "label": "me-south-1 - Middle East (Bahrain)"
+            },
+            {
+              "value": "me-central-1",
+              "label": "me-central-1 - Middle East (UAE)"
+            },
+            {
+              "value": "sa-east-1",
+              "label": "sa-east-1 - South America (São Paulo)"
+            },
+            {
+              "value": "af-south-1",
+              "label": "af-south-1 - Africa (Cape Town)"
+            }
+          ]
         }
       ],
       "costParams": [],

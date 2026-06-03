@@ -52,7 +52,7 @@ export class SimulationCanvasComponent implements OnDestroy {
     {
       id: "client",
       name: "client",
-      label: "Client Apps",
+      label: "Users",
       sublabel: "web & mobile",
       color: "#38bdf8", // Electric Blue
       icon: "fas fa-mobile-alt",

@@ -136,7 +136,7 @@ export class AwsCatalogService {
       'Security, Identity, & Compliance': '#78716c', // Stone
       'Media Services': '#eab308', // Yellow
       'Internet of Things': '#14b8a6', // Teal
-      'Client / External': '#84cc16' // Lime
+      'Users / External': '#84cc16' // Lime
     };
     return colors[category] || '#94a3b8';
   }

@@ -2,8 +2,8 @@
   "services": [
     {
       "type": "client",
-      "name": "Client",
-      "category": "Client / External",
+      "name": "Users",
+      "category": "Users / External",
       "inputs": [
         "http"
       ],
@@ -99,6 +99,12 @@
       "mandatoryOutput": true,
       "allowFanIn": true,
       "allowFanOut": true,
+      "defaults": {
+        "throughput": 1000,
+        "latency": 15,
+        "failureThreshold": 90,
+        "hostedZones": 1
+      },
       "rules": [
         {
           "target": "cloudfront",

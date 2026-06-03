@@ -102,20 +102,45 @@ export class CostService {
 
         break;
       }
-
-      case 'route53': {
+         case 'route53': {
         const pf = model?.pricingFactors || {};
-        const zones = config.hostedZones || 1;
-        const zoneCost = zones * (pf.zoneMonthly || 0.50);
-        lines.push({ label: 'Hosted Zones', formula: zones + ' Zones × $0.50/mo', value: zoneCost });
-        const stdM = config.queriesM || 10;
-        const stdCost = stdM * (pf.standardM || 0.40);
-        if (stdCost > 0) lines.push({ label: 'Standard Queries', formula: stdM + 'M × $0.40/M', value: stdCost });
-        const latM = config.latencyQueriesM || 0;
-        const latCost = latM * (pf.latencyM || 0.60);
-        if (latCost > 0) lines.push({ label: 'Latency Queries', formula: latM + 'M × $0.60/M', value: latCost });
-        total = zoneCost + stdCost + latCost;
+        
+        // Hosted Zone Cost:
+        // First 25 zones: $0.50 / zone / month
+        // Additional zones: $0.10 / zone / month
+        const zones = config.hostedZones !== undefined ? config.hostedZones : 1;
+        let zoneCost = 0;
+        let zoneFormula = '';
+        if (zones <= 25) {
+          zoneCost = zones * (pf.zoneMonthly || 0.50);
+          zoneFormula = `${zones} Zones × $${(pf.zoneMonthly || 0.50).toFixed(2)}/zone/mo`;
+        } else {
+          zoneCost = (25 * (pf.zoneMonthly || 0.50)) + ((zones - 25) * 0.10);
+          zoneFormula = `(25 Zones × $${(pf.zoneMonthly || 0.50).toFixed(2)}) + (${zones - 25} Zones × $0.10)/mo`;
+        }
+        lines.push({ label: 'Hosted Zones', formula: zoneFormula, value: zoneCost });
 
+        // Standard DNS Queries:
+        // throughput is capacity (RPS)
+        // Convert capacity (RPS) to monthly queries in millions: C rps × 730 hours × 3600 seconds = C × 2.628 million queries/mo
+        const capacity = config.throughput !== undefined ? config.throughput : 1000;
+        const queriesM = capacity * 2.628;
+
+        // First 1 billion queries/month (1000M): $0.40 / million
+        // Above 1 billion queries/month: $0.20 / million
+        const stdRate = pf.standardM || 0.40;
+        let queryCost = 0;
+        let queryFormula = '';
+        if (queriesM <= 1000) {
+          queryCost = queriesM * stdRate;
+          queryFormula = `${queriesM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M queries × $${stdRate.toFixed(2)}/M`;
+        } else {
+          queryCost = (1000 * stdRate) + ((queriesM - 1000) * 0.20);
+          queryFormula = `(1,000M × $${stdRate.toFixed(2)}) + (${(queriesM - 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $0.20)/M`;
+        }
+        lines.push({ label: 'Standard DNS Queries', formula: queryFormula, value: queryCost });
+
+        total = zoneCost + queryCost;
         break;
       }
 
@@ -911,7 +936,7 @@ export class CostService {
     }
 
     const regOpt = this.regions.find(r => r.code === region) || this.regions[0];
-    const multiplier = regOpt.multiplier;
+    const multiplier = model?.regionOverride ? 1.0 : regOpt.multiplier;
     let finalTotal = total;
 
     if (multiplier !== 1.0 && total > 0) {

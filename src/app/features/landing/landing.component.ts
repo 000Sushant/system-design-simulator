@@ -26,6 +26,12 @@ export class LandingComponent {
     this.navScrolled = el.scrollTop > 60;
   }
 
+  openDocs(event: Event) {
+    event.preventDefault();
+    window.history.pushState(null, '', '/docs');
+    window.dispatchEvent(new Event('popstate'));
+  }
+
   onButtonMouseMove(event: MouseEvent) {
     const btn = event.currentTarget as HTMLElement;
     const rect = btn.getBoundingClientRect();

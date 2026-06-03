@@ -1,0 +1,826 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100vh;
+  font-family: "Inter", "SF Pro Display", -apple-system, sans-serif;
+  color: #1f2937;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(124, 58, 237, 0.12), transparent 22%),
+    radial-gradient(circle at 88% 15%, rgba(6, 182, 212, 0.1), transparent 22%),
+    linear-gradient(135deg, #f8f7ff 0%, #f5fbff 46%, #f7f8ff 100%);
+}
+
+.docs-shell {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 88px clamp(12px, 3vw, 42px) 34px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mesh-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.orb {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  filter: blur(80px);
+  opacity: 0.14;
+}
+
+.orb-a {
+  top: -60px;
+  left: -80px;
+  background: #7c3aed;
+}
+
+.orb-b {
+  top: 80px;
+  right: -100px;
+  background: #06b6d4;
+}
+
+/* ── Glassmorphic Neumorphic Panels ────────────────────────── */
+.glass-panel {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.84),
+      rgba(255, 255, 255, 0.44)
+    ),
+    rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  box-shadow:
+    0 18px 46px rgba(124, 58, 237, 0.08),
+    0 8px 18px rgba(15, 23, 42, 0.04),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.98),
+    inset 0 -1.5px 2px rgba(124, 58, 237, 0.05);
+}
+
+/* ── Liquid Glass Dynamic Header (Dynamic Island) ────────── */
+.docs-nav {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  width: calc(100% - 48px);
+  max-width: 1200px;
+  height: 56px;
+  border-radius: 20px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  /* Matches landing navbar style exactly */
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  /* Smooth morph transition */
+  transition:
+    width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+    max-width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-radius 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+    padding 0.4s ease,
+    top 0.4s ease,
+    background 0.4s ease,
+    backdrop-filter 0.4s ease,
+    box-shadow 0.4s ease;
+
+  will-change: width, border-radius;
+}
+
+/* Scrolled: Compact Dark Glass Dynamic Island Pill */
+.docs-nav.nav-scrolled {
+  top: 14px;
+  width: auto;
+  max-width: 480px; /* fit back button and search bar */
+  border-radius: 999px;
+  padding: 0 10px 0 14px;
+  background: rgba(10, 12, 24, 0.9);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 4px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Claymorphic back button */
+.back-btn {
+  position: relative;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.32);
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  transition: 
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.back-btn:hover {
+  border-color: rgba(124, 58, 237, 0.6);
+  color: #7c3aed;
+}
+
+/* Scrolled back button dark theme style */
+.docs-nav.nav-scrolled .back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(241, 245, 249, 0.9);
+  box-shadow: none;
+}
+
+.docs-nav.nav-scrolled .back-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+  transition: opacity 0.3s ease, max-width 0.3s ease;
+}
+
+.brand-mark img {
+  width: 28px;
+  height: 28px;
+}
+
+.brand-mark small {
+  padding: 2.5px 7px;
+  border-radius: 999px;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.05em;
+}
+
+/* Hide entire brand mark in scrolled mode to make room for Search & Back button */
+.docs-nav.nav-scrolled .brand-mark {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  margin: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, max-width 0.35s ease, margin 0.35s ease;
+}
+
+/* Claymorphic search bar */
+.nav-search {
+  position: relative;
+  flex: 1;
+  max-width: 440px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  backdrop-filter: blur(12px);
+  transition: 
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Scrolled search bar dark style */
+.docs-nav.nav-scrolled .nav-search {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.search-icon {
+  color: #9ca3af;
+  font-size: 13px;
+  margin-right: 8px;
+  transition: color 0.3s ease;
+}
+
+.docs-nav.nav-scrolled .search-icon {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.nav-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  transition: color 0.3s ease;
+}
+
+.docs-nav.nav-scrolled .nav-search input {
+  color: #f1f5f9;
+}
+
+.nav-search input::placeholder {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.docs-nav.nav-scrolled .nav-search input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.clear-search {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.clear-search:hover {
+  color: #4b5563;
+}
+
+.docs-nav.nav-scrolled .clear-search {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.docs-nav.nav-scrolled .clear-search:hover {
+  color: #fff;
+}
+
+/* ── Split Docs Workspace Layout ────────────────────────── */
+.docs-workspace {
+  position: relative;
+  z-index: 5;
+  max-width: 1200px;
+  margin: 16px auto 0;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+/* ── Left Sidebar Neumorphic Category Navigation ─────────── */
+.docs-sidebar {
+  border-radius: 22px;
+  padding: 16px;
+  position: sticky;
+  top: 88px;
+}
+
+.docs-sidebar h3 {
+  margin: 0 0 12px 6px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.06em;
+}
+
+.category-nav {
+  position: relative; /* crucial to anchor the absolute active indicator pill */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Liquid Glass Active Indicator Background Pill */
+.active-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.95),
+      rgba(255, 255, 255, 0.55)
+    ),
+    rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(124, 58, 237, 0.28);
+  box-shadow:
+    0 8px 22px rgba(124, 58, 237, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
+  
+  /* High-end springy morph transition matching homepage */
+  transition: 
+    transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), 
+    width 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), 
+    height 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), 
+    opacity 0.25s ease;
+    
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Claymorphic Category Button (Background transparent to show sliding active indicator) */
+.category-btn {
+  position: relative;
+  z-index: 1; /* float text/icons above sliding indicator */
+  width: 100%;
+  min-height: 42px;
+  border-radius: 14px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  outline: none;
+  transition: color 0.25s ease;
+}
+
+.category-btn:hover,
+.category-btn.active {
+  color: #7c3aed;
+}
+
+.cat-icon-wrapper {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  color: #7c3aed;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.category-btn.active .cat-icon-wrapper {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+/* ── Right Content Reader Pane ─────────────────────────── */
+.docs-content-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.section-kicker {
+  width: max-content;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 85, 247, 0.16);
+  background: rgba(255, 255, 255, 0.66);
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  padding: 6px 12px;
+}
+
+.docs-content-pane h2 {
+  margin: 12px 0 18px;
+  color: #111827;
+  font-size: clamp(26px, 4vw, 42px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  font-weight: 950;
+}
+
+/* ── Grouped Category Scroll-Spy Sections ─────────────── */
+.docs-category-section {
+  margin-bottom: 46px;
+  scroll-margin-top: 100px; /* offset for dynamic island header */
+}
+
+.category-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 850;
+  color: #1e293b;
+  margin: 0 0 18px 4px;
+  letter-spacing: -0.02em;
+}
+
+.category-section-title .cat-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(124, 58, 237, 0.07);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  font-size: 13px;
+  color: #7c3aed;
+}
+
+/* Grid Layout for Cards */
+.docs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+/* ── Interactive Claymorphic Guide Card ─────────────────── */
+.doc-card {
+  border-radius: 24px;
+  padding: 22px;
+  isolation: isolate;
+  overflow: hidden;
+  
+  /* Polished transitions */
+  transition: border-color 0.25s ease;
+}
+
+/* Children Stack Layer */
+.doc-card > * {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Hover static border glow */
+.doc-card:hover {
+  border-color: rgba(167, 139, 250, 0.45);
+}
+
+.doc-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.doc-badge {
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #4c1d95;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 #fff;
+}
+
+.doc-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #7c3aed;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.92),
+      rgba(255, 255, 255, 0.4)
+    ),
+    rgba(255, 255, 255, 0.54);
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  box-shadow:
+    0 10px 20px rgba(124, 58, 237, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+}
+
+.doc-card h3 {
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.doc-summary {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.doc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 14px;
+  margin-bottom: 16px;
+}
+
+.doc-para {
+  font-size: 13.5px;
+  color: #4b5563;
+  line-height: 1.62;
+  font-weight: 500;
+}
+
+.doc-body strong {
+  color: #0f172a;
+  font-weight: 750;
+}
+
+.doc-body code {
+  background: rgba(124, 58, 237, 0.05);
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: "Fira Code", "Courier New", Courier, monospace;
+  font-size: 12px;
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+/* Styled lists inside paragraphs */
+.doc-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doc-body li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.doc-body li::before {
+  content: "✦";
+  position: absolute;
+  left: 2px;
+  top: 0px;
+  color: #7c3aed;
+  font-size: 11px;
+}
+
+/* Beautiful color text classes */
+.text-purple {
+  color: #7c3aed !important;
+  font-weight: 700;
+}
+
+.text-orange {
+  color: #ea580c !important;
+  font-weight: 700;
+}
+
+.text-blue {
+  color: #2563eb !important;
+  font-weight: 700;
+}
+
+.text-emerald {
+  color: #059669 !important;
+  font-weight: 700;
+}
+
+/* ── Pro Tips Sub-Card ────────────────────────────── */
+.doc-tips {
+  border-radius: 16px;
+  padding: 12px 16px;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  background: rgba(245, 158, 11, 0.035);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.tips-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #d97706;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.tips-header i {
+  font-size: 12px;
+}
+
+.doc-tips ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.doc-tips li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 12px;
+  color: #78350f;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.doc-tips li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #d97706;
+}
+
+/* Special High-End Glowing Claymorphic Roadmap Card */
+.doc-card.featured-roadmap {
+  border: 1.5px solid rgba(124, 58, 237, 0.38) !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(252, 243, 255, 0.96),
+      rgba(240, 249, 255, 0.9)
+    ) !important;
+  box-shadow:
+    0 22px 50px rgba(124, 58, 237, 0.14),
+    0 10px 24px rgba(6, 182, 212, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.98),
+    inset 0 -2px 3px rgba(124, 58, 237, 0.07) !important;
+}
+
+.doc-card.featured-roadmap:hover {
+  border-color: rgba(124, 58, 237, 0.55) !important;
+}
+
+.doc-card.featured-roadmap .doc-badge {
+  color: #fff !important;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4) !important;
+  border: none !important;
+  font-weight: 950 !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28) !important;
+  text-shadow: none !important;
+}
+
+.doc-card.featured-roadmap h3 {
+  color: #5b21b6 !important;
+  background: linear-gradient(135deg, #7c3aed, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.doc-card.featured-roadmap .doc-icon {
+  color: #fff !important;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.2) !important;
+}
+
+/* ── Empty State Neumorphic ────────────────────────────── */
+.empty-docs {
+  border-radius: 24px;
+  padding: 42px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-icon {
+  font-size: 42px;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+}
+
+.empty-docs h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #1f2937;
+  font-weight: 900;
+}
+
+.empty-docs p {
+  margin: 0 0 20px;
+  max-width: 400px;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.reset-btn {
+  position: relative;
+  min-height: 38px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: #111827;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.16);
+  transition: box-shadow 0.15s ease-out, background-color 0.25s ease;
+  outline: none;
+}
+
+.reset-btn:hover {
+  background: #1e293b;
+}
+
+.docs-footer {
+  margin-top: 38px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.docs-footer p {
+  margin: 0;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+/* ── Responsive Styling ────────────────────────────── */
+@media (max-width: 980px) {
+  .docs-workspace {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  
+  .docs-sidebar {
+    position: static;
+  }
+  
+  .category-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .category-btn {
+    width: auto;
+  }
+}
+
+@media (max-width: 680px) {
+  .docs-shell {
+    padding: 82px 10px 24px;
+  }
+  
+  .docs-nav {
+    top: 8px;
+    width: calc(100% - 20px);
+  }
+  
+  .back-btn span,
+  .brand-mark span,
+  .brand-mark small {
+    display: none;
+  }
+}

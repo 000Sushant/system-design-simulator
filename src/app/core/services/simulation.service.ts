@@ -142,7 +142,9 @@ export class SimulationService {
         ? ({ 'round-robin': 1, 'least-connection': 1.12, 'consistent-hash': 1.06 }[node.config.routingAlgorithm || 'round-robin'] ?? 1)
         : 1;
       const batchBonus = ['sqs', 'cloudWatch'].includes(node.type) ? 1 + Math.min(node.config.batchSize || 1, 100) / 220 : 1;
-      const capacity = isOffline ? 0 : Math.max(1, (node.config.throughput || 100) * scaleBonus * cacheBonus * routingBonus * batchBonus);
+      const capacity = isOffline ? 0 : Math.max(1, node.type === 'client'
+        ? (node.config.requestRate || 1000)
+        : (node.config.throughput || 100) * scaleBonus * cacheBonus * routingBonus * batchBonus);
       const totalDemand = Math.max(0, baseRate + node.metrics.queueSize);
       const processed = isOffline ? 0 : Math.min(totalDemand, capacity);
       const queued = isOffline ? node.metrics.queueSize : Math.max(0, totalDemand - processed);

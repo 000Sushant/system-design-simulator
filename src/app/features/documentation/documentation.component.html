@@ -1,0 +1,118 @@
+<main class="docs-shell" (scroll)="onScroll($event)">
+  <!-- Mesh Ambient Decorative Glows -->
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+  </div>
+
+  <!-- Polished Liquid-Glass Header -->
+  <nav class="docs-nav glass-panel" [class.nav-scrolled]="navScrolled">
+    <div class="nav-left">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> <span>Back</span>
+      </button>
+      <div class="brand-mark">
+        <img src="favicon.svg" alt="Sr. Architect" />
+        <span>Sr. Architect</span>
+        <small>DOCS</small>
+      </div>
+    </div>
+    
+    <div class="nav-search glass-pill">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search guides, AWS rules, billing..." />
+      <button *ngIf="searchQuery" class="clear-search" (click)="searchQuery = ''">&times;</button>
+    </div>
+  </nav>
+
+  <!-- Split Docs Workspace Layout -->
+  <div class="docs-workspace">
+    
+    <!-- Sidebar Neumorphic Category Navigation -->
+    <aside class="docs-sidebar glass-panel">
+      <h3>Categories</h3>
+      <nav class="category-nav">
+        <!-- Liquid Glass Active Indicator Background Pill -->
+        <div class="active-indicator" [ngStyle]="indicatorStyle"></div>
+
+        <button 
+          *ngFor="let cat of categories" 
+          class="category-btn"
+          [class.active]="activeCategoryId === cat.id"
+          (click)="selectCategory(cat.id)"
+        >
+          <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
+          <span>{{ cat.name }}</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content Reader Container -->
+    <section class="docs-content-pane">
+      <div class="section-kicker">AWS Playground Reference Guide</div>
+      <h2>Learn System Design Visually</h2>
+
+      <div class="docs-sections-container" *ngIf="displayedCategories.length > 0; else emptyState">
+        
+        <!-- Category Section (Grouped Scroll-Spy Layout) -->
+        <div 
+          *ngFor="let cat of displayedCategories"
+          [id]="'section-' + cat.id"
+          class="docs-category-section"
+        >
+          <h3 class="category-section-title">
+            <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
+            <span>{{ cat.name }}</span>
+          </h3>
+
+          <div class="docs-grid">
+            <!-- Interactive Claymorphic Guide Card -->
+            <article 
+              *ngFor="let art of getArticlesByCategory(cat.id)" 
+              class="doc-card glass-panel"
+            >
+              <div class="doc-card-header">
+                <span class="doc-badge">{{ cat.name }}</span>
+                <div class="doc-icon"><i [class]="art.icon"></i></div>
+              </div>
+              
+              <h3>{{ art.title }}</h3>
+              <p class="doc-summary">{{ art.summary }}</p>
+
+              <div class="doc-body">
+                <div *ngFor="let para of art.content" class="doc-para" [innerHTML]="para"></div>
+              </div>
+
+              <div class="doc-tips" *ngIf="art.tips && art.tips.length > 0">
+                <div class="tips-header">
+                  <i class="fas fa-lightbulb"></i>
+                  <span>Pro Architect Tip</span>
+                </div>
+                <ul>
+                  <li *ngFor="let tip of art.tips">{{ tip }}</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </div>
+
+      </div>
+
+      <ng-template #emptyState>
+        <div class="empty-docs glass-panel">
+          <i class="fas fa-search-minus empty-icon"></i>
+          <h3>No documentation found</h3>
+          <p>We couldn't find any guides matching "{{ searchQuery }}". Try adjusting your keywords or selecting another category.</p>
+          <button class="reset-btn" (click)="searchQuery = ''; selectCategory('overview')">
+            Reset Filters
+          </button>
+        </div>
+      </ng-template>
+
+      <footer class="docs-footer">
+        <p>AWS System Design Simulator · MIT Licensed · Open Source</p>
+      </footer>
+    </section>
+
+  </div>
+</main>

@@ -559,6 +559,10 @@
               >{{ selectedDefinition?.category }}</small
             >
           </div>
+          <div *ngIf="selectedNode.type === 'client'" class="client-info-msg" style="margin-top: 12px; margin-bottom: 12px;">
+            <i class="fas fa-info-circle"></i>
+            <span>Simulates the traffic similar to users requesting per second. There are no AWS costs associated with this node.</span>
+          </div>
           <div class="summary-grid">
             <div>
               <strong>{{ node.metrics.received | number }}</strong
@@ -682,8 +686,14 @@
                 <span
                   [title]="field.costDriver || field.notes || ''"
                   class="field-label-with-info"
+                  [class.cost-field]="field.affectsCost"
                 >
                   {{ field.label }}
+                  <i
+                    *ngIf="field.affectsCost"
+                    class="fas fa-coins info-icon cost-icon"
+                    title="Affects monthly cost"
+                  ></i>
                   <i
                     *ngIf="field.costDriver"
                     class="fas fa-info-circle info-icon"
@@ -739,6 +749,8 @@
                 </div>
               </label>
             </div>
+
+
 
             <!-- Cost Configuration -->
             <div
@@ -1194,6 +1206,13 @@
                     >MIT Licensed · Open Source</small
                   >
                 </div>
+                <button
+                  type="button"
+                  class="about-link-btn"
+                  (click)="openDocs()"
+                >
+                  <i class="fas fa-book-open"></i> Reference Documentation
+                </button>
 
               </div>
             </div>
@@ -1208,6 +1227,7 @@
     [class.run-stats--open]="runStatsExpanded"
     [class.is-running]="mode === 'running'"
     (mousemove)="onMouseMove($event)"
+    (mouseleave)="onRunStatsMouseLeave()"
   >
     <!-- Liquid Glass Layers -->
     <div class="glass-reflection"></div>
