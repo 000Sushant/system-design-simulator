@@ -771,6 +771,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     window.dispatchEvent(new Event("popstate"));
   }
 
+  goDocs(): void {
+    window.history.pushState(null, "", "/docs");
+    window.dispatchEvent(new Event("popstate"));
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const isSaveHotkey = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's';
@@ -1198,6 +1203,19 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   onRunStatsMouseLeave(): void {
     const selects = document.querySelectorAll('.run-stats select');
     selects.forEach((select) => (select as HTMLElement).blur());
+  }
+
+  onPanelClick(event: MouseEvent): void {
+    if (!this.isMobileViewport) return;
+    const target = event.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('select') ||
+      target.closest('.region-select-wrapper')
+    ) {
+      return;
+    }
+    this.toggleRunStats();
   }
 
   closeMobileSidebars(): void {

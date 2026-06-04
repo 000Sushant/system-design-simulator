@@ -160,7 +160,7 @@ export class AwsCatalogService {
       name,
       shortName,
       category,
-      description: `${name} architecture component`,
+      description: config?.description || `${name} architecture component`,
       color: this.categoryColor(category),
       icon,
       iconUrl: iconUrls[type],

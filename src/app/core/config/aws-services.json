@@ -82,7 +82,8 @@
           "type": "identity",
           "description": "Users authenticate with Cognito."
         }
-      ]
+      ],
+      "description": "Simulates the traffic similar to users requesting per second. There are no AWS costs associated with this node."
     },
     {
       "type": "route53",
@@ -140,7 +141,8 @@
           "type": "dns",
           "description": "Route 53 can resolve to ALB."
         }
-      ]
+      ],
+      "description": "Amazon Route 53 is a highly available and scalable cloud Domain Name System (DNS) web service."
     },
     {
       "type": "cloudfront",
@@ -215,7 +217,8 @@
           "type": "http",
           "description": "CloudFront routes to App Runner."
         }
-      ]
+      ],
+      "description": "Amazon CloudFront is a fast content delivery network (CDN) service that securely delivers data, videos, applications, and APIs to customers globally with low latency."
     },
     {
       "type": "apiGateway",
@@ -356,7 +359,8 @@
           "type": "http",
           "description": "API Gateway integrates with AppSync."
         }
-      ]
+      ],
+      "description": "Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale."
     },
     {
       "type": "alb",
@@ -441,7 +445,8 @@
           "type": "http",
           "description": "ALB routes traffic to App Runner."
         }
-      ]
+      ],
+      "description": "Application Load Balancer distributes incoming application traffic across multiple targets, such as EC2 instances, in multiple Availability Zones."
     },
     {
       "type": "lambda",
@@ -841,7 +846,8 @@
           "type": "network",
           "description": "Lambda functions connect to VPC endpoints via PrivateLink."
         }
-      ]
+      ],
+      "description": "AWS Lambda lets you run code without provisioning or managing servers. You pay only for the compute time you consume."
     },
     {
       "type": "ec2",
@@ -1207,7 +1213,8 @@
           "type": "network",
           "description": "EC2 instances connect to VPC endpoints via PrivateLink."
         }
-      ]
+      ],
+      "description": "Amazon Elastic Compute Cloud (EC2) provides secure, resizable compute capacity in the cloud."
     },
     {
       "type": "ecs",
@@ -1573,7 +1580,8 @@
           "type": "network",
           "description": "ECS tasks connect to VPC endpoints via PrivateLink."
         }
-      ]
+      ],
+      "description": "Amazon Elastic Container Service (ECS) is a highly scalable, fast, container management service that makes it easy to run, stop, and manage Docker containers on a cluster."
     },
     {
       "type": "sqs",
@@ -1640,7 +1648,8 @@
           "type": "observability",
           "description": "SQS emits metrics to CloudWatch."
         }
-      ]
+      ],
+      "description": "Amazon Simple Queue Service (SQS) is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications."
     },
     {
       "type": "sns",
@@ -1739,7 +1748,8 @@
           "type": "event",
           "description": "SNS can trigger AWS Batch jobs via event notifications."
         }
-      ]
+      ],
+      "description": "Amazon Simple Notification Service (SNS) is a fully managed pub/sub messaging service for both microservices-to-microservices and developer-to-person communication."
     },
     {
       "type": "s3",
@@ -1796,7 +1806,8 @@
           "type": "observability",
           "description": "S3 emits usage and performance metrics to CloudWatch."
         }
-      ]
+      ],
+      "description": "Amazon Simple Storage Service (S3) is an object storage service offering industry-leading scalability, data availability, security, and performance."
     },
     {
       "type": "rds",
@@ -1815,7 +1826,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Relational Database Service (RDS) makes it easy to set up, operate, and scale a relational database in the cloud."
     },
     {
       "type": "dynamoDb",
@@ -1847,7 +1859,8 @@
           "type": "observability",
           "description": "DynamoDB emits operational metrics to CloudWatch."
         }
-      ]
+      ],
+      "description": "Amazon DynamoDB is a key-value and document database that delivers single-digit millisecond performance at any scale."
     },
     {
       "type": "elastiCache",
@@ -1866,7 +1879,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon ElastiCache is a fully managed in-memory data store and cache service, supporting Memcached and Redis, to power real-time applications with sub-millisecond latency."
     },
     {
       "type": "cloudWatch",
@@ -1899,7 +1913,8 @@
           "type": "event",
           "description": "CloudWatch Alarms and Events can trigger SNS."
         }
-      ]
+      ],
+      "description": "Amazon CloudWatch is a monitoring and management service built for developers, system operators, site reliability engineers, and IT managers."
     },
     {
       "type": "stepFunctions",
@@ -1977,7 +1992,8 @@
           "type": "http",
           "description": "Step Functions can call external APIs."
         }
-      ]
+      ],
+      "description": "AWS Step Functions is a low-code, visual workflow service that developers use to build distributed applications, automate IT and business processes, and build pipelines."
     },
     {
       "type": "vpc",
@@ -2182,7 +2198,8 @@
           "type": "network",
           "description": "VPC contains FSX."
         }
-      ]
+      ],
+      "description": "Amazon Virtual Private Cloud (VPC) lets you provision a logically isolated section of the AWS Cloud where you can launch AWS resources in a virtual network."
     },
     {
       "type": "iam",
@@ -2210,7 +2227,8 @@
           "type": "identity",
           "description": "IAM grants service permissions."
         }
-      ]
+      ],
+      "description": "AWS Identity and Access Management (IAM) enables you to manage access to AWS services and resources securely."
     },
     {
       "type": "autoScalingGroup",
@@ -2478,7 +2496,8 @@
           "type": "compute",
           "description": "AUTOSCALINGGROUP calls Textract API."
         }
-      ]
+      ],
+      "description": "AWS Auto Scaling monitors your applications and automatically adjusts capacity to maintain steady, predictable performance at the lowest possible cost."
     },
     {
       "type": "securityGroup",
@@ -2563,7 +2582,8 @@
           "type": "network",
           "description": "Security Group protects Lambda."
         }
-      ]
+      ],
+      "description": "Security Groups act as a virtual firewall for your EC2 instances to control incoming and outgoing traffic."
     },
     {
       "type": "natGateway",
@@ -2641,7 +2661,8 @@
           "type": "network",
           "description": "NAT Gateway allows outbound CloudWatch access."
         }
-      ]
+      ],
+      "description": "NAT Gateway is a Network Address Translation (NAT) service that enables instances in a private subnet to connect to services outside your VPC."
     },
     {
       "type": "batch",
@@ -3007,7 +3028,8 @@
           "type": "compute",
           "description": "BATCH calls Textract API."
         }
-      ]
+      ],
+      "description": "AWS Batch enables developers, scientists, and engineers to easily and efficiently run hundreds of thousands of batch computing jobs on AWS."
     },
     {
       "type": "eks",
@@ -3097,7 +3119,8 @@
           "type": "network",
           "description": "EKS pods connect to VPC endpoints via PrivateLink."
         }
-      ]
+      ],
+      "description": "Amazon Elastic Kubernetes Service (EKS) is a managed service that makes it easy for you to run Kubernetes on AWS."
     },
     {
       "type": "aurora",
@@ -3116,7 +3139,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Aurora is a fully managed relational database engine that's compatible with MySQL and PostgreSQL."
     },
     {
       "type": "eventBridge",
@@ -3169,7 +3193,8 @@
           "type": "workflow",
           "description": "EventBridge triggers Step Functions."
         }
-      ]
+      ],
+      "description": "Amazon EventBridge is a serverless event bus that makes it easy to connect applications together using data from your own applications."
     },
     {
       "type": "kinesis",
@@ -3211,7 +3236,8 @@
           "type": "event",
           "description": "Kinesis streams write to Firehose."
         }
-      ]
+      ],
+      "description": "Amazon Kinesis makes it easy to collect, process, and analyze real-time, streaming data so you can get timely insights."
     },
     {
       "type": "msk",
@@ -3253,7 +3279,8 @@
           "type": "compute",
           "description": "MSK consumer runs in ECS."
         }
-      ]
+      ],
+      "description": "Amazon Managed Streaming for Apache Kafka (Amazon MSK) is a fully managed service that makes it easy for you to build and run applications that use Apache Kafka."
     },
     {
       "type": "cognito",
@@ -3269,7 +3296,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Cognito lets you add user sign-up, sign-in, and access control to your web and mobile apps quickly and easily."
     },
     {
       "type": "waf",
@@ -3319,7 +3347,8 @@
           "type": "http",
           "description": "WAF filters Application Load Balancer traffic."
         }
-      ]
+      ],
+      "description": "AWS WAF is a web application firewall that helps protect your web applications or APIs against common web exploits."
     },
     {
       "type": "efs",
@@ -3337,7 +3366,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Elastic File System (EFS) provides a simple, serverless, set-and-forget, elastic file system for use with AWS Cloud services."
     },
     {
       "type": "athena",
@@ -3367,7 +3397,8 @@
           "type": "storage",
           "description": "Athena queries S3 data lakes."
         }
-      ]
+      ],
+      "description": "Amazon Athena is an interactive query service that makes it easy to analyze data in Amazon S3 using standard SQL."
     },
     {
       "type": "secretsManager",
@@ -3384,7 +3415,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "AWS Secrets Manager helps you protect secrets needed to access your applications, services, and IT resources."
     },
     {
       "type": "transitGateway",
@@ -3412,7 +3444,8 @@
           "type": "network",
           "description": "Transit Gateway connects VPCs."
         }
-      ]
+      ],
+      "description": "AWS Transit Gateway connects VPCs and on-premises networks through a central hub."
     },
     {
       "type": "directConnect",
@@ -3451,7 +3484,8 @@
           "type": "network",
           "description": "Direct Connect interfaces with VPC."
         }
-      ]
+      ],
+      "description": "AWS Direct Connect links your internal network to an AWS Direct Connect location over a standard Ethernet fiber-optic cable."
     },
     {
       "type": "globalAccelerator",
@@ -3492,7 +3526,8 @@
           "type": "http",
           "description": "Global Accelerator points to CloudFront endpoint."
         }
-      ]
+      ],
+      "description": "AWS Global Accelerator is a networking service that improves the availability and performance of the applications that you offer to your global users."
     },
     {
       "type": "xray",
@@ -3509,7 +3544,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "AWS X-Ray helps developers analyze and debug distributed applications, such as those built using a microservices architecture."
     },
     {
       "type": "openSearch",
@@ -3528,7 +3564,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon OpenSearch Service makes it easy to perform interactive log analytics, real-time application monitoring, website search, and more."
     },
     {
       "type": "redshift",
@@ -3547,7 +3584,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Redshift is a fast, fully managed, petabyte-scale data warehouse that makes it simple and cost-effective to analyze all your data using standard SQL."
     },
     {
       "type": "glue",
@@ -3599,7 +3637,8 @@
           "type": "database",
           "description": "Glue loads data warehouses."
         }
-      ]
+      ],
+      "description": "AWS Glue is a serverless data integration service that makes it easy to discover, prepare, and combine data for analytics, machine learning, and application development."
     },
     {
       "type": "emr",
@@ -3641,7 +3680,8 @@
           "type": "database",
           "description": "EMR uses Glue Data Catalog."
         }
-      ]
+      ],
+      "description": "Amazon EMR is the industry-leading cloud big data platform for processing vast amounts of data using open source tools."
     },
     {
       "type": "kinesisFirehose",
@@ -3693,7 +3733,8 @@
           "type": "database",
           "description": "Firehose indexes into OpenSearch."
         }
-      ]
+      ],
+      "description": "Amazon Data Firehose is the easiest way to reliably load streaming data into data lakes, data stores, and analytics services."
     },
     {
       "type": "mq",
@@ -3724,7 +3765,8 @@
           "type": "compute",
           "description": "MQ triggers Lambda consumers."
         }
-      ]
+      ],
+      "description": "Amazon MQ is a managed message broker service for Apache ActiveMQ and RabbitMQ that makes it easy to set up and operate message brokers in the cloud."
     },
     {
       "type": "kms",
@@ -3740,7 +3782,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "AWS Key Management Service (KMS) makes it easy for you to create and manage cryptographic keys and control their use."
     },
     {
       "type": "shield",
@@ -3780,7 +3823,8 @@
           "type": "network",
           "description": "Shield protects Route 53 DNS."
         }
-      ]
+      ],
+      "description": "AWS Shield is a managed Distributed Denial of Service (DDoS) protection service that safeguards applications running on AWS."
     },
     {
       "type": "organizations",
@@ -3796,7 +3840,8 @@
       "mandatoryOutput": true,
       "allowFanIn": true,
       "allowFanOut": true,
-      "rules": []
+      "rules": [],
+      "description": "AWS Organizations helps you centrally manage and govern your environment as you grow and scale your AWS resources."
     },
     {
       "type": "codePipeline",
@@ -3836,7 +3881,8 @@
           "type": "workflow",
           "description": "CodePipeline invokes CodeDeploy."
         }
-      ]
+      ],
+      "description": "AWS CodePipeline is a fully managed continuous delivery service that helps you automate your release pipelines for fast and reliable application and infrastructure updates."
     },
     {
       "type": "codeBuild",
@@ -3866,7 +3912,8 @@
           "type": "storage",
           "description": "CodeBuild uploads build artifacts to S3."
         }
-      ]
+      ],
+      "description": "AWS CodeBuild is a fully managed build service that compiles source code, runs tests, and produces software packages that are ready to deploy."
     },
     {
       "type": "codeDeploy",
@@ -3906,7 +3953,8 @@
           "type": "compute",
           "description": "CodeDeploy deploys tasks to ECS."
         }
-      ]
+      ],
+      "description": "AWS CodeDeploy is a fully managed deployment service that automates software deployments to a variety of compute services."
     },
     {
       "type": "bedrock",
@@ -3924,7 +3972,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": true,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Bedrock is a fully managed service that offers a choice of high-performing foundation models (FMs) from leading AI companies."
     },
     {
       "type": "sageMaker",
@@ -3955,7 +4004,8 @@
           "type": "storage",
           "description": "SageMaker stores models/datasets in S3."
         }
-      ]
+      ],
+      "description": "Amazon SageMaker is a fully managed service that provides every developer and data scientist with the ability to build, train, and deploy machine learning models quickly."
     },
     {
       "type": "appSync",
@@ -3997,7 +4047,8 @@
           "type": "compute",
           "description": "AppSync triggers Lambda resolvers."
         }
-      ]
+      ],
+      "description": "AWS AppSync is a fully managed service that makes it easy to develop GraphQL and Pub/Sub APIs."
     },
     {
       "type": "iotCore",
@@ -4038,7 +4089,8 @@
           "type": "compute",
           "description": "IoT rules route messages to Lambda."
         }
-      ]
+      ],
+      "description": "AWS IoT Core lets you connect IoT devices to the AWS Cloud without having to provision or manage servers."
     },
     {
       "type": "rekognition",
@@ -4055,7 +4107,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Rekognition makes it easy to add image and video analysis to your applications using proven, highly scalable, deep learning technology."
     },
     {
       "type": "textract",
@@ -4072,7 +4125,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon Textract is a machine learning service that automatically extracts text, handwriting, and data from scanned documents."
     },
     {
       "type": "mediaConvert",
@@ -4101,7 +4155,8 @@
           "type": "storage",
           "description": "MediaConvert writes videos to S3."
         }
-      ]
+      ],
+      "description": "AWS Elemental MediaConvert is a file-based video transcoding service with broadcast-grade features."
     },
     {
       "type": "cloudTrail",
@@ -4131,7 +4186,8 @@
           "type": "storage",
           "description": "CloudTrail stores audit trails in S3."
         }
-      ]
+      ],
+      "description": "AWS CloudTrail monitors and records account activity across your AWS infrastructure."
     },
     {
       "type": "backup",
@@ -4148,7 +4204,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "AWS Backup is a fully managed backup service that makes it easy to centrally configure backup policies and monitor backup activity."
     },
     {
       "type": "appRunner",
@@ -4190,7 +4247,8 @@
           "type": "observability",
           "description": "App Runner sends logs to CloudWatch."
         }
-      ]
+      ],
+      "description": "AWS AppRunner is a fully managed container application service that makes it easy for developers to quickly deploy containerized web applications and APIs."
     },
     {
       "type": "elasticBeanstalk",
@@ -4220,7 +4278,8 @@
           "type": "database",
           "description": "Beanstalk connects to RDS DB."
         }
-      ]
+      ],
+      "description": "AWS Elastic Beanstalk is an easy-to-use service for deploying and scaling web applications and services."
     },
     {
       "type": "fsx",
@@ -4238,7 +4297,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "Amazon FSx makes it easy and cost-effective to launch, run, and scale feature-rich, high-performance file systems in the cloud."
     },
     {
       "type": "certificateManager",
@@ -4254,7 +4314,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "AWS Certificate Manager (ACM) makes it easy to provision, manage, and deploy public and private Secure Sockets Layer/Transport Layer Security (SSL/TLS) certificates."
     },
     {
       "type": "systemsManager",
@@ -4271,7 +4332,8 @@
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,
-      "rules": []
+      "rules": [],
+      "description": "AWS Systems Manager is a secure end-to-end management solution for resources on AWS."
     },
     {
       "type": "ecr",
@@ -4300,7 +4362,8 @@
           "type": "storage",
           "description": "ECR stores container image layers in Amazon S3."
         }
-      ]
+      ],
+      "description": "Amazon Elastic Container Registry (ECR) is a fully managed container registry that makes it easy for developers to share and deploy container images."
     },
     {
       "type": "privateLink",
@@ -4336,7 +4399,8 @@
           "type": "network",
           "description": "PrivateLink endpoints provide secure private access to AWS services."
         }
-      ]
+      ],
+      "description": "AWS PrivateLink provides secure, private connectivity between VPCs, AWS services, and your on-premises networks."
     }
   ]
 }

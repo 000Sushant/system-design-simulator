@@ -9,12 +9,11 @@
 >
   <header class="toolbar" (mousemove)="onMouseMove($event)">
     <div class="brand">
-      <div class="brand-logo">
-        <img src="favicon.svg" alt="SA" class="logo-icon" />
-        <span class="logo-text"
-          >Sr. Architect <span class="beta-badge">BETA</span></span
-        >
-      </div>
+      <a class="brand-mark" (click)="goHome()" style="cursor: pointer;" aria-label="Sr. Architect home">
+        <img src="favicon.svg" alt="" />
+        <span>Sr. Architect</span>
+        <small>BETA</small>
+      </a>
     </div>
 
     <div class="toolbar-actions">
@@ -26,6 +25,14 @@
           (click)="goHome()"
         >
           <i class="fas fa-home"></i> Home
+        </button>
+        <button
+          type="button"
+          class="action-btn"
+          (mousemove)="onMouseMove($event)"
+          (click)="goDocs()"
+        >
+          <i class="fas fa-book"></i> Docs
         </button>
         <span class="divider"></span>
         <button
@@ -101,7 +108,10 @@
       </button>
       <div class="sidebar-content">
         <div class="panel-heading">
-          <span>Service Palette</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-cubes" style="color: #7c3aed; font-size: 14px;"></i>
+            <span>Service Palette</span>
+          </div>
           <small>{{ filteredCatalog.length }} / {{ catalog.length }}</small>
         </div>
         <label class="search-box" (mousemove)="onMouseMove($event)">
@@ -487,7 +497,11 @@
       </f-flow>
     </section>
 
-    <aside class="inspector">
+    <aside
+      class="inspector"
+      [style.--service-theme-color]="selectedNode ? serviceColor(selectedNode.type) + '08' : null"
+      [style.--service-theme-color-solid]="selectedNode ? serviceColor(selectedNode.type) : null"
+    >
       <button
         type="button"
         class="sidebar-toggle right-toggle"
@@ -550,18 +564,36 @@
               border-left-width: 4px;
               border-left-style: solid;
               padding-left: 12px;
+              display: flex;
+              align-items: center;
+              gap: 12px;
             "
           >
-            <span>{{ node.name }}</span>
-            <small
-              [style.background]="serviceColor(node.type)"
-              style="color: white; border-radius: 999px"
-              >{{ selectedDefinition?.category }}</small
+            <span
+              class="panel-heading-icon"
+              [style.--service-color]="serviceColor(node.type)"
             >
+              <img
+                [src]="awsCatalog.getByType(node.type).iconUrl"
+                alt=""
+                style="width: 22px; height: 22px; object-fit: contain;"
+              />
+              <div
+                class="tint-overlay"
+                [style.background]="serviceColor(node.type)"
+                style="position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.92;"
+              ></div>
+            </span>
+            <div class="panel-heading-text" style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2;">{{ node.name }}</span>
+              <div style="display: flex; align-items: center;">
+                <small>{{ selectedDefinition?.category }}</small>
+              </div>
+            </div>
           </div>
-          <div *ngIf="selectedNode.type === 'client'" class="client-info-msg" style="margin-top: 12px; margin-bottom: 12px;">
+          <div *ngIf="selectedDefinition?.description" class="client-info-msg" style="margin-top: 12px; margin-bottom: 12px;">
             <i class="fas fa-info-circle"></i>
-            <span>Simulates the traffic similar to users requesting per second. There are no AWS costs associated with this node.</span>
+            <span>{{ selectedDefinition?.description }}</span>
           </div>
           <div class="summary-grid">
             <div>
@@ -1226,8 +1258,10 @@
     class="run-stats"
     [class.run-stats--open]="runStatsExpanded"
     [class.is-running]="mode === 'running'"
+    [class.developer-mode]="roleMode === 'developer'"
     (mousemove)="onMouseMove($event)"
     (mouseleave)="onRunStatsMouseLeave()"
+    (click)="onPanelClick($event)"
   >
     <!-- Liquid Glass Layers -->
     <div class="glass-reflection"></div>
