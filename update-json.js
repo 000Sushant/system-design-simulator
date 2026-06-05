@@ -82,10 +82,12 @@ Object.assign(data.serviceCostModel, {
       { key: 'latency', label: 'Latency (ms)', type: 'number', unit: 'ms', default: 5, min: 1, max: 100, costDriver: 'DynamoDB provides single-digit ms latency.' }
     ],
     costParams: [
-      { key: 'capacityMode', label: 'Capacity Mode', type: 'enum', default: 'provisioned', group: 'billing', options: [
-        { value: 'provisioned', label: 'Provisioned', description: 'Pay for provisioned WCU/RCU.', wcuCost: 0.00065, rcuCost: 0.00013 },
-        { value: 'ondemand', label: 'On-Demand', description: 'Pay per million requests.', wruCost: 1.25, rruCost: 0.25 }
-      ] },
+      {
+        key: 'capacityMode', label: 'Capacity Mode', type: 'enum', default: 'provisioned', group: 'billing', options: [
+          { value: 'provisioned', label: 'Provisioned', description: 'Pay for provisioned WCU/RCU.', wcuCost: 0.00065, rcuCost: 0.00013 },
+          { value: 'ondemand', label: 'On-Demand', description: 'Pay per million requests.', wruCost: 1.25, rruCost: 0.25 }
+        ]
+      },
       { key: 'wcu', label: 'Provisioned WCU', type: 'number', unit: 'count', default: 100, min: 1, max: 100000, costDriver: '$0.00065 per WCU/hr.' },
       { key: 'rcu', label: 'Provisioned RCU', type: 'number', unit: 'count', default: 100, min: 1, max: 100000, costDriver: '$0.00013 per RCU/hr.' },
       { key: 'wruM', label: 'On-Demand Writes (M/mo)', type: 'number', unit: 'M', default: 1, min: 0, max: 10000, costDriver: '$1.25 per million writes.' },
@@ -111,14 +113,16 @@ Object.assign(data.serviceCostModel, {
       { key: 'latency', label: 'Latency (ms)', type: 'number', unit: 'ms', default: 10, min: 1, max: 1000, costDriver: 'Query latency.' }
     ],
     costParams: [
-      { key: 'instanceType', label: 'Instance Type', type: 'enum', default: 'db.t3.medium', group: 'compute', options: [
-        { value: 'db.t3.micro', label: 'db.t3.micro', hourly: 0.017 },
-        { value: 'db.t3.small', label: 'db.t3.small', hourly: 0.034 },
-        { value: 'db.t3.medium', label: 'db.t3.medium', hourly: 0.068 },
-        { value: 'db.m5.large', label: 'db.m5.large', hourly: 0.171 },
-        { value: 'db.m5.xlarge', label: 'db.m5.xlarge', hourly: 0.342 },
-        { value: 'db.m5.2xlarge', label: 'db.m5.2xlarge', hourly: 0.684 }
-      ] },
+      {
+        key: 'instanceType', label: 'Instance Type', type: 'enum', default: 'db.t3.medium', group: 'compute', options: [
+          { value: 'db.t3.micro', label: 'db.t3.micro', hourly: 0.017 },
+          { value: 'db.t3.small', label: 'db.t3.small', hourly: 0.034 },
+          { value: 'db.t3.medium', label: 'db.t3.medium', hourly: 0.068 },
+          { value: 'db.m5.large', label: 'db.m5.large', hourly: 0.171 },
+          { value: 'db.m5.xlarge', label: 'db.m5.xlarge', hourly: 0.342 },
+          { value: 'db.m5.2xlarge', label: 'db.m5.2xlarge', hourly: 0.684 }
+        ]
+      },
       { key: 'multiAZ', label: 'Multi-AZ Deployment', type: 'boolean', default: false, costDriver: 'Doubles compute and storage cost.' },
       { key: 'storageGB', label: 'Storage (GB)', type: 'number', unit: 'GB', default: 100, min: 20, max: 65536, costDriver: '$0.115 per GB/mo (gp3).' }
     ],
@@ -140,13 +144,15 @@ Object.assign(data.serviceCostModel, {
       { key: 'latency', label: 'Latency (ms)', type: 'number', unit: 'ms', default: 1, min: 1, max: 100, costDriver: 'Sub-millisecond latency.' }
     ],
     costParams: [
-      { key: 'instanceType', label: 'Node Type', type: 'enum', default: 'cache.t3.medium', group: 'compute', options: [
-        { value: 'cache.t3.micro', label: 'cache.t3.micro', hourly: 0.017 },
-        { value: 'cache.t3.small', label: 'cache.t3.small', hourly: 0.034 },
-        { value: 'cache.t3.medium', label: 'cache.t3.medium', hourly: 0.068 },
-        { value: 'cache.m5.large', label: 'cache.m5.large', hourly: 0.156 },
-        { value: 'cache.m5.xlarge', label: 'cache.m5.xlarge', hourly: 0.312 }
-      ] },
+      {
+        key: 'instanceType', label: 'Node Type', type: 'enum', default: 'cache.t3.medium', group: 'compute', options: [
+          { value: 'cache.t3.micro', label: 'cache.t3.micro', hourly: 0.017 },
+          { value: 'cache.t3.small', label: 'cache.t3.small', hourly: 0.034 },
+          { value: 'cache.t3.medium', label: 'cache.t3.medium', hourly: 0.068 },
+          { value: 'cache.m5.large', label: 'cache.m5.large', hourly: 0.156 },
+          { value: 'cache.m5.xlarge', label: 'cache.m5.xlarge', hourly: 0.312 }
+        ]
+      },
       { key: 'nodes', label: 'Number of Nodes', type: 'number', unit: 'count', default: 2, min: 1, max: 500, costDriver: 'Nodes in cluster.' },
       { key: 'backupGB', label: 'Backup Storage (GB)', type: 'number', unit: 'GB', default: 0, min: 0, max: 10000, costDriver: '$0.085 per GB/mo.' }
     ],
@@ -169,9 +175,11 @@ Object.assign(data.serviceCostModel, {
     ],
     costParams: [
       { key: 'tasks', label: 'Fargate Tasks', type: 'number', unit: 'count', default: 2, min: 1, max: 1000, costDriver: 'Number of running tasks.' },
-      { key: 'vCPU', label: 'vCPU per Task', type: 'enum', default: '0.5', group: 'compute', options: [
-        { value: '0.25', label: '0.25 vCPU' }, { value: '0.5', label: '0.5 vCPU' }, { value: '1', label: '1 vCPU' }, { value: '2', label: '2 vCPU' }, { value: '4', label: '4 vCPU' }
-      ], costDriver: '$0.04048 per vCPU/hour.' },
+      {
+        key: 'vCPU', label: 'vCPU per Task', type: 'enum', default: '0.5', group: 'compute', options: [
+          { value: '0.25', label: '0.25 vCPU' }, { value: '0.5', label: '0.5 vCPU' }, { value: '1', label: '1 vCPU' }, { value: '2', label: '2 vCPU' }, { value: '4', label: '4 vCPU' }
+        ], costDriver: '$0.04048 per vCPU/hour.'
+      },
       { key: 'memoryGB', label: 'Memory per Task (GB)', type: 'number', unit: 'GB', default: 1, min: 0.5, max: 30, costDriver: '$0.004445 per GB/hour.' }
     ],
     costEvaluation: {
@@ -208,10 +216,12 @@ Object.assign(data.serviceCostModel, {
       { key: 'throughput', label: 'Throughput (RPS)', type: 'number', unit: 'rps', default: 1000, min: 1, max: 100000, costDriver: 'Message processing.' }
     ],
     costParams: [
-      { key: 'queueType', label: 'Queue Type', type: 'enum', default: 'standard', group: 'queue', options: [
-        { value: 'standard', label: 'Standard Queue', priceM: 0.40 },
-        { value: 'fifo', label: 'FIFO Queue', priceM: 0.50 }
-      ] },
+      {
+        key: 'queueType', label: 'Queue Type', type: 'enum', default: 'standard', group: 'queue', options: [
+          { value: 'standard', label: 'Standard Queue', priceM: 0.40 },
+          { value: 'fifo', label: 'FIFO Queue', priceM: 0.50 }
+        ]
+      },
       { key: 'requestsM', label: 'Requests (M/mo)', type: 'number', unit: 'M', default: 10, min: 0, max: 100000, costDriver: 'Billed per 64KB chunk.' }
     ],
     costEvaluation: {
@@ -246,10 +256,12 @@ Object.assign(data.serviceCostModel, {
       { key: 'throughput', label: 'Throughput (RPS)', type: 'number', unit: 'rps', default: 100, min: 1, max: 10000, costDriver: 'Workflow executions.' }
     ],
     costParams: [
-      { key: 'workflowType', label: 'Workflow Type', type: 'enum', default: 'standard', group: 'type', options: [
-        { value: 'standard', label: 'Standard (State Transitions)' },
-        { value: 'express', label: 'Express (Requests + Compute)' }
-      ] },
+      {
+        key: 'workflowType', label: 'Workflow Type', type: 'enum', default: 'standard', group: 'type', options: [
+          { value: 'standard', label: 'Standard (State Transitions)' },
+          { value: 'express', label: 'Express (Requests + Compute)' }
+        ]
+      },
       { key: 'transitionsM', label: 'Transitions (M/mo)', type: 'number', unit: 'M', default: 1, min: 0, max: 10000, costDriver: '$25.00 per million (Standard).' },
       { key: 'expressRequestsM', label: 'Express Requests (M/mo)', type: 'number', unit: 'M', default: 0, min: 0, max: 10000, costDriver: '$1.00 per million (Express).' },
       { key: 'expressGBsecM', label: 'Express GB-sec (M/mo)', type: 'number', unit: 'M', default: 0, min: 0, max: 10000, costDriver: '$16.67 per million GB-sec (Express).' }
@@ -290,7 +302,7 @@ Object.assign(data.serviceCostModel, {
     costEvaluation: {
       formula: 'N/A',
       components: [],
-      freeTier: { description: 'Client node represents external users. No AWS cost associated.' }
+      freeTier: { description: 'Users node represents external users. No AWS cost associated.' }
     }
   },
   autoScalingGroup: {

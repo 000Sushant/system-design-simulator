@@ -625,6 +625,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.selectedNode ? this.awsCatalog.getByType(this.selectedNode.type) : undefined;
   }
 
+  openDocsForService(type: string): void {
+    const docsUrl = `${window.location.origin}/docs?service=${type}`;
+    window.open(docsUrl, '_blank', 'noopener,noreferrer');
+  }
+
   get selectedConfigFields(): ConfigField[] {
     if (!this.selectedNode) {
       return [];

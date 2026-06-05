@@ -17,7 +17,7 @@
         <small>DOCS</small>
       </div>
     </div>
-    
+
     <div class="nav-search glass-pill">
       <i class="fas fa-search search-icon"></i>
       <input type="text" [(ngModel)]="searchQuery" placeholder="Search guides, AWS rules, billing..." />
@@ -27,7 +27,7 @@
 
   <!-- Split Docs Workspace Layout -->
   <div class="docs-workspace">
-    
+
     <!-- Sidebar Neumorphic Category Navigation -->
     <aside class="docs-sidebar glass-panel">
       <h3>Categories</h3>
@@ -35,12 +35,8 @@
         <!-- Liquid Glass Active Indicator Background Pill -->
         <div class="active-indicator" [ngStyle]="indicatorStyle"></div>
 
-        <button 
-          *ngFor="let cat of categories" 
-          class="category-btn"
-          [class.active]="activeCategoryId === cat.id"
-          (click)="selectCategory(cat.id)"
-        >
+        <button *ngFor="let cat of categories" class="category-btn" [class.active]="activeCategoryId === cat.id"
+          (click)="selectCategory(cat.id)">
           <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
           <span>{{ cat.name }}</span>
         </button>
@@ -50,64 +46,292 @@
     <!-- Main Content Reader Container -->
     <section class="docs-content-pane">
       <div class="section-kicker">AWS Playground Reference Guide</div>
-      <h2>Learn System Design Visually</h2>
+      <h2>Service Library</h2>
 
-      <div class="docs-sections-container" *ngIf="displayedCategories.length > 0; else emptyState">
-        
-        <!-- Category Section (Grouped Scroll-Spy Layout) -->
-        <div 
-          *ngFor="let cat of displayedCategories"
-          [id]="'section-' + cat.id"
-          class="docs-category-section"
-        >
-          <h3 class="category-section-title">
-            <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
-            <span>{{ cat.name }}</span>
-          </h3>
+      <!-- Service Deep Dive View -->
+      <div *ngIf="selectedServiceType as serviceType" class="service-deep-dive">
+        <div class="service-switcher glass-panel">
+          <div>
+            <span class="switcher-kicker">Service documentation</span>
+            <strong>Know about AWS services</strong>
+          </div>
+          <select [ngModel]="serviceType" (ngModelChange)="openServiceDoc($event)" aria-label="Choose a service guide">
+            <option *ngFor="let service of awsCatalog.services" [value]="service.type">
+              {{ service.name }} - {{ service.category }}
+            </option>
+          </select>
+        </div>
 
-          <div class="docs-grid">
-            <!-- Interactive Claymorphic Guide Card -->
-            <article 
-              *ngFor="let art of getArticlesByCategory(cat.id)" 
-              class="doc-card glass-panel"
-            >
-              <div class="doc-card-header">
-                <span class="doc-badge">{{ cat.name }}</span>
-                <div class="doc-icon"><i [class]="art.icon"></i></div>
+        <div class="deep-dive-grid">
+          <!-- Left Panel: Core Service Info -->
+          <div class="deep-dive-left glass-panel">
+            <div class="service-header-row">
+              <span class="service-icon-lg" [style.--service-color]="serviceColor(serviceType)">
+                <img [src]="awsCatalog.getByType(serviceType).iconUrl" alt="" />
+                <div class="tint-overlay" [style.background]="serviceColor(serviceType)"></div>
+              </span>
+              <div>
+                <span class="category-badge">{{ awsCatalog.getByType(serviceType).category }}</span>
+                <h2>{{ awsCatalog.getByType(serviceType).name }}</h2>
               </div>
-              
-              <h3>{{ art.title }}</h3>
-              <p class="doc-summary">{{ art.summary }}</p>
+            </div>
 
-              <div class="doc-body">
-                <div *ngFor="let para of art.content" class="doc-para" [innerHTML]="para"></div>
+            <div class="doc-section">
+              <h4>What it does and why it matters</h4>
+              <p class="service-desc-text">{{ getServiceDoc(serviceType).whyNeeded }}</p>
+            </div>
+
+            <div class="doc-section">
+              <h4>Beginner-friendly mental model</h4>
+              <p class="service-desc-text">{{ getServiceDoc(serviceType).beginnerExplanation }}</p>
+            </div>
+
+            <div class="doc-section service-notes-stack">
+              <div>
+                <h4>When to use it</h4>
+                <p class="service-desc-text">{{ getServiceDoc(serviceType).whenToUse }}</p>
               </div>
+              <div>
+                <h4>When to keep it simpler</h4>
+                <p class="service-desc-text">{{ getServiceDoc(serviceType).whenNotToUse }}</p>
+              </div>
+            </div>
 
-              <div class="doc-tips" *ngIf="art.tips && art.tips.length > 0">
-                <div class="tips-header">
-                  <i class="fas fa-lightbulb"></i>
-                  <span>Pro Architect Tip</span>
+            <div class="doc-section">
+              <h4>Practical & Simple Example</h4>
+              <div class="example-box">
+                <i class="fas fa-project-diagram example-icon"></i>
+                <p>{{ getServiceDoc(serviceType).practicalExample }}</p>
+              </div>
+            </div>
+
+
+            <div class="doc-section">
+              <h4>Common use cases</h4>
+              <ul class="service-doc-list">
+                <li *ngFor="let useCase of getServiceDoc(serviceType).useCases">{{ useCase }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Right Panel: Connectivity & Visual Map -->
+          <div class="deep-dive-right glass-panel">
+            <h4>Architecture & Connectivity Map</h4>
+            <p class="subtitle">Valid source and target connection paths supported in the simulator</p>
+
+            <div class="connectivity-map-container">
+              <svg viewBox="0 0 600 300" width="100%" height="280">
+                <defs>
+                  <filter id="glow-soft" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="3.5" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+
+                  <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0.8" />
+                  </linearGradient>
+                </defs>
+
+                <!-- Connection Lines (Inbound to Center) -->
+                <g *ngFor="let node of inboundNodes; let i = index">
+                  <path [attr.d]="'M 100 ' + node.y + ' Q 180 ' + (node.y + 150) / 2 + ' 260 150'"
+                    stroke="url(#flowGrad)" stroke-width="2.5" fill="none" opacity="0.3" stroke-dasharray="6 4" />
+                  <!-- Pulsing Data Packet -->
+                  <circle r="4.5" fill="#10b981" filter="url(#glow-soft)">
+                    <animateMotion dur="2.4s" repeatCount="indefinite"
+                      [attr.path]="'M 100 ' + node.y + ' Q 180 ' + (node.y + 150) / 2 + ' 260 150'" />
+                  </circle>
+                </g>
+
+                <!-- Connection Lines (Center to Outbound) -->
+                <g *ngFor="let node of outboundNodes; let i = index">
+                  <path [attr.d]="'M 340 150 Q 420 ' + (node.y + 150) / 2 + ' 500 ' + node.y" stroke="url(#flowGrad)"
+                    stroke-width="2.5" fill="none" opacity="0.3" stroke-dasharray="6 4" />
+                  <!-- Pulsing Data Packet -->
+                  <circle r="4.5" fill="#3b82f6" filter="url(#glow-soft)">
+                    <animateMotion dur="2s" repeatCount="indefinite"
+                      [attr.path]="'M 340 150 Q 420 ' + (node.y + 150) / 2 + ' 500 ' + node.y" />
+                  </circle>
+                </g>
+
+                <!-- Left Nodes (Inbound Source Services) -->
+                <g *ngFor="let node of inboundNodes; let i = index" [attr.transform]="'translate(100, ' + node.y + ')'">
+                  <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+                  <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
+                  <text y="36" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">{{ node.name
+                    }}</text>
+                </g>
+                <text *ngIf="inboundNodes.length === 0" x="100" y="150" text-anchor="middle" font-size="11"
+                  font-weight="600" fill="#94a3b8">No Direct Inputs</text>
+
+                <!-- Right Nodes (Outbound Target Services) -->
+                <g *ngFor="let node of outboundNodes; let i = index"
+                  [attr.transform]="'translate(500, ' + node.y + ')'">
+                  <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+                  <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
+                  <text y="36" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">{{ node.name
+                    }}</text>
+                </g>
+                <text *ngIf="outboundNodes.length === 0" x="500" y="150" text-anchor="middle" font-size="11"
+                  font-weight="600" fill="#94a3b8">Terminal Node</text>
+
+                <!-- Center Node (Selected Service) -->
+                <g transform="translate(300, 150)">
+                  <circle r="38" [attr.fill]="serviceColor(serviceType) + '1f'" filter="url(#glow-soft)" />
+                  <circle r="32" fill="#ffffff" [attr.stroke]="serviceColor(serviceType)" stroke-width="2.5" />
+                  <image [attr.href]="awsCatalog.getByType(serviceType).iconUrl" x="-18" y="-18" width="36"
+                    height="36" />
+                  <text y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">{{
+                    awsCatalog.getByType(serviceType).name }}</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class="doc-section">
+              <h4>Interactive Architecture Diagram</h4>
+              <div class="illustration-card" [innerHTML]="getServiceDoc(serviceType).illustrationSvg"></div>
+            </div>
+
+            <!-- List of Allowed Integrations -->
+            <div class="integrations-list-wrapper">
+              <h4>Supported Integrations ({{ rules.length }} rules)</h4>
+              <div class="rules-scroll">
+                <div *ngFor="let r of rules" class="integration-rule-card">
+                  <div class="rule-header">
+                    <span class="port-badge source">{{ r.type === 'identity' ? 'IAM' : r.type | uppercase }}</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span class="target-name">{{ r.targetName }}</span>
+                  </div>
+                  <p>{{ r.description }}</p>
                 </div>
-                <ul>
-                  <li *ngFor="let tip of art.tips">{{ tip }}</li>
-                </ul>
+                <div *ngIf="rules.length === 0" class="no-rules-message">
+                  <i class="fas fa-info-circle"></i>
+                  <span>No defined outbound connection rules exist for this node in the sandbox.</span>
+                </div>
               </div>
-            </article>
+            </div>
+
+            <div class="capabilities-panel">
+              <h4>Design Notes</h4>
+              <ul class="service-doc-list compact">
+                <li *ngFor="let capability of getServiceDoc(serviceType).keyCapabilities">{{ capability }}</li>
+              </ul>
+            </div>
+
           </div>
         </div>
-
       </div>
 
-      <ng-template #emptyState>
-        <div class="empty-docs glass-panel">
-          <i class="fas fa-search-minus empty-icon"></i>
-          <h3>No documentation found</h3>
-          <p>We couldn't find any guides matching "{{ searchQuery }}". Try adjusting your keywords or selecting another category.</p>
-          <button class="reset-btn" (click)="searchQuery = ''; selectCategory('overview')">
-            Reset Filters
-          </button>
+      <!-- Standard Guides View -->
+      <ng-container *ngIf="!selectedServiceType">
+        <div class="docs-sections-container" *ngIf="displayedCategories.length > 0; else emptyState">
+
+          <!-- Category Section (Grouped Scroll-Spy Layout) -->
+          <div *ngFor="let cat of displayedCategories" [id]="'section-' + cat.id" class="docs-category-section">
+            <h3 class="category-section-title">
+              <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
+              <span>{{ cat.name }}</span>
+            </h3>
+
+            <div *ngIf="cat.id === 'services'; else articleGrid" class="services-directory">
+              <div class="services-directory-header glass-panel">
+                <div>
+                  <span class="section-kicker mini">Complete AWS Service Guide</span>
+                  <h3>Browse all {{ awsCatalog.services.length }} supported services</h3>
+                  <p>Each guide includes a beginner-friendly explanation, when-to-use guidance, a practical example, and
+                    a simulator connectivity diagram.</p>
+                </div>
+                <div class="service-count-figure">
+                  <strong>{{ filteredServices.length }}</strong>
+                  <span>matching services</span>
+                </div>
+              </div>
+
+              <div *ngFor="let group of serviceDirectoryGroups" class="service-group">
+                <div class="service-group-heading">
+                  <span class="service-group-dot" [style.background]="awsCatalog.categoryColor(group.category)"></span>
+                  <h4>{{ group.category }}</h4>
+                  <small>{{ group.services.length }} services</small>
+                </div>
+
+                <div class="service-doc-grid">
+                  <article *ngFor="let service of group.services" class="service-doc-card glass-panel">
+                    <div class="service-doc-card-top">
+                      <span class="service-mini-icon" [style.--service-color]="serviceColor(service.type)">
+                        <img [src]="service.iconUrl" alt="" />
+                      </span>
+                      <div>
+                        <h3>{{ service.name }}</h3>
+                        <small>{{ service.type }}</small>
+                      </div>
+                    </div>
+                    <p>{{ service.description }}</p>
+                    <div class="service-card-figure" [style.--service-color]="serviceColor(service.type)">
+                      <span>Input</span>
+                      <i class="fas fa-arrow-right"></i>
+                      <strong>{{ service.shortName }}</strong>
+                      <i class="fas fa-arrow-right"></i>
+                      <span>Target</span>
+                    </div>
+                    <div class="service-doc-actions">
+                      <button type="button" class="read-guide-btn" (click)="openServiceDoc(service.type)">
+                        <i class="fas fa-book-open"></i>
+                        <span>Read guide</span>
+                      </button>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #articleGrid>
+              <div class="docs-grid">
+                <!-- Interactive Claymorphic Guide Card -->
+                <article *ngFor="let art of getArticlesByCategory(cat.id)" class="doc-card glass-panel">
+                  <div class="doc-card-header">
+                    <span class="doc-badge">{{ cat.name }}</span>
+                    <div class="doc-icon"><i [class]="art.icon"></i></div>
+                  </div>
+
+                  <h3>{{ art.title }}</h3>
+                  <p class="doc-summary">{{ art.summary }}</p>
+
+                  <div class="doc-body">
+                    <div *ngFor="let para of art.content" class="doc-para" [innerHTML]="para"></div>
+                  </div>
+
+                  <div class="doc-tips" *ngIf="art.tips && art.tips.length > 0">
+                    <div class="tips-header">
+                      <i class="fas fa-lightbulb"></i>
+                      <span>Pro Architect Tip</span>
+                    </div>
+                    <ul>
+                      <li *ngFor="let tip of art.tips">{{ tip }}</li>
+                    </ul>
+                  </div>
+                </article>
+              </div>
+            </ng-template>
+          </div>
+
         </div>
-      </ng-template>
+
+        <ng-template #emptyState>
+          <div class="empty-docs glass-panel">
+            <i class="fas fa-search-minus empty-icon"></i>
+            <h3>No documentation found</h3>
+            <p>We couldn't find any guides matching "{{ searchQuery }}". Try adjusting your keywords or selecting
+              another category.</p>
+            <button class="reset-btn" (click)="searchQuery = ''; selectCategory('overview')">
+              Reset Filters
+            </button>
+          </div>
+        </ng-template>
+      </ng-container>
 
       <footer class="docs-footer">
         <p>AWS System Design Simulator · MIT Licensed · Open Source</p>

@@ -1952,7 +1952,7 @@ small {
   padding: 10px;
   cursor: move;
   user-select: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: visible;
 }
@@ -3653,7 +3653,7 @@ small {
   z-index: 20;
   border-radius: 8px;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .annotation-node:hover {
@@ -4338,6 +4338,43 @@ small {
   flex-shrink: 0;
 }
 
+.docs-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--service-theme-color-solid, #7c3aed);
+  border: 1px solid var(--service-theme-color-solid, #7c3aed);
+  color: #ffffff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--service-theme-color-solid, #7c3aed) 18%, transparent);
+}
+
+.docs-action-btn:hover {
+  background: color-mix(in srgb, var(--service-theme-color-solid, #7c3aed) 88%, #000000);
+  border-color: color-mix(in srgb, var(--service-theme-color-solid, #7c3aed) 88%, #000000);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--service-theme-color-solid, #7c3aed) 28%, transparent);
+}
+
+.docs-action-btn:active {
+  transform: translateY(0);
+}
+
+.docs-action-btn i {
+  color: #ffffff !important;
+  font-size: 11px !important;
+  margin-top: 0 !important;
+  flex-shrink: 0;
+}
+
 /* ==========================================================================
    Developer Mode Sizing & Redesign
    --------------------------------------------------------------------------
@@ -4462,4 +4499,14 @@ small {
     gap: 4px;
   }
 }
+
+/* Hide all cost elements in developer mode */
+.developer-mode .cost-badge,
+.developer-mode .node-cost-highlight,
+.developer-mode .island-cost,
+.developer-mode .cost-highlight,
+.developer-mode .stat-divider {
+  display: none !important;
+}
+
 

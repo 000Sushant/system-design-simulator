@@ -25,6 +25,28 @@ const baseDefaults: ServiceConfig = {
   dataTransferOut: 0
 };
 
+const serviceDescriptions: Partial<Record<AwsServiceType, string>> = {
+  client: 'Represents the external users, devices, or client applications that send traffic into an architecture for simulation and testing.',
+  route53: 'Route 53 provides DNS routing that translates user-friendly domain names into the AWS endpoints that serve an application.',
+  cloudfront: 'CloudFront delivers cached content from edge locations close to users, reducing latency and lowering load on origin services.',
+  apiGateway: 'API Gateway provides a managed front door for HTTP APIs, routing client requests to backend services while supporting authorization, throttling, and request controls.',
+  alb: 'Application Load Balancer distributes HTTP and HTTPS traffic across healthy backend targets to improve availability and scale request handling.',
+  lambda: 'Lambda runs backend code in response to events without requiring server management, scaling automatically for short-lived workloads.',
+  ec2: 'EC2 provides configurable virtual servers for applications that need operating-system access, long-running processes, or custom runtime control.',
+  ecs: 'ECS runs containerized services on managed AWS compute, helping teams deploy and scale Docker-based applications.',
+  sqs: 'SQS buffers messages between services so producers and consumers can work independently during traffic spikes or downstream slowdowns.',
+  sns: 'SNS publishes messages to multiple subscribers, supporting fan-out notification and event-distribution patterns.',
+  s3: 'S3 stores objects such as static assets, uploads, backups, and logs with high durability and elastic capacity.',
+  rds: 'RDS provides managed relational databases for structured data that needs SQL queries, transactions, backups, and read scaling.',
+  dynamoDb: 'DynamoDB provides a managed NoSQL database for high-throughput key-value and document access with predictable low latency.',
+  elastiCache: 'ElastiCache provides in-memory caching to serve frequent reads quickly and reduce pressure on databases or application backends.',
+  cloudWatch: 'CloudWatch collects metrics, logs, alarms, and operational signals that help monitor applications and trigger automated actions.',
+  stepFunctions: 'Step Functions coordinates multi-step workflows across AWS services with state tracking, branching, retries, and error handling.',
+  eventBridge: 'EventBridge provides a serverless event bus that routes application and AWS service events to matching downstream targets.',
+  cognito: 'Cognito manages user sign-up, sign-in, identity federation, and access tokens for web and mobile applications.',
+  waf: 'AWS WAF filters web traffic before it reaches applications, helping block common attacks, abusive requests, and unwanted patterns.'
+};
+
 const iconBase = 'https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main';
 const iconUrls: Record<AwsServiceType, string> = {
   client: `${iconBase}/Resource-Icons_02072025/Res_General-Icons/Res_48_Light/Res_Users_48_Light.svg`,
@@ -123,20 +145,20 @@ export class AwsCatalogService {
 
   categoryColor(category: string): string {
     const colors: Record<string, string> = {
-      'Compute': '#d946ef',       // Fuchsia
-      'Containers': '#0284c7',    // Light Blue
-      'Networking & Content Delivery': '#64748b', // Slate
-      'Storage': '#0d9488',       // Teal
-      'Database': '#7c3aed',      // Deep Purple
-      'Analytics': '#8b5cf6',     // Violet
-      'Machine Learning': '#10b981', // Emerald
-      'Application Integration': '#f97316', // Bright Orange
-      'Developer Tools': '#0ea5e9', // Sky
-      'Management & Governance': '#ec4899', // Pink/Rose
-      'Security, Identity, & Compliance': '#78716c', // Stone
-      'Media Services': '#eab308', // Yellow
-      'Internet of Things': '#14b8a6', // Teal
-      'Users / External': '#84cc16' // Lime
+      'Compute': '#be123c',       // Rose (Deep Crimson/Rose)
+      'Containers': '#0369a1',    // Sky (Deep Ocean Blue)
+      'Networking & Content Delivery': '#475569', // Slate (Dark gray-blue)
+      'Storage': '#0f766e',       // Teal (Deep Teal - S3 style)
+      'Database': '#6d28d9',      // Purple (Royal Purple)
+      'Analytics': '#5b21b6',     // Violet (Deep violet-blue)
+      'Machine Learning': '#047857', // Emerald (Deep forest emerald)
+      'Application Integration': '#c2410c', // Orange (Burnt Orange)
+      'Developer Tools': '#0284c7', // Sky-600 (Medium-dark sky blue)
+      'Management & Governance': '#9f1239', // Rose-800 (Deep Crimson)
+      'Security, Identity, & Compliance': '#57534e', // Stone (Deep gray-brown)
+      'Media Services': '#b45309', // Amber (Warm Amber/Ochre)
+      'Internet of Things': '#0f766e', // Teal (Deep Teal)
+      'Users': '#0891b2',         // Cyan (Deep Cyan)
     };
     return colors[category] || '#94a3b8';
   }
@@ -160,7 +182,7 @@ export class AwsCatalogService {
       name,
       shortName,
       category,
-      description: config?.description || `${name} architecture component`,
+      description: serviceDescriptions[type] || config?.description || `${name} architecture component`,
       color: this.categoryColor(category),
       icon,
       iconUrl: iconUrls[type],

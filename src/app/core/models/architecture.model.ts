@@ -138,7 +138,7 @@ export interface AwsServiceDefinition {
   type: AwsServiceType;
   name: string;
   shortName: string;
-  category: 'Compute' | 'Containers' | 'Networking & Content Delivery' | 'Storage' | 'Database' | 'Analytics' | 'Machine Learning' | 'Application Integration' | 'Developer Tools' | 'Management & Governance' | 'Security, Identity, & Compliance' | 'Media Services' | 'Internet of Things' | 'Client / External';
+  category: 'Compute' | 'Containers' | 'Networking & Content Delivery' | 'Storage' | 'Database' | 'Analytics' | 'Machine Learning' | 'Application Integration' | 'Developer Tools' | 'Management & Governance' | 'Security, Identity, & Compliance' | 'Media Services' | 'Internet of Things' | 'Users';
   description: string;
   color: string;
   icon: string;

@@ -3,7 +3,7 @@
     {
       "type": "client",
       "name": "Users",
-      "category": "Users / External",
+      "category": "Users",
       "inputs": [
         "http"
       ],
@@ -83,7 +83,7 @@
           "description": "Users authenticate with Cognito."
         }
       ],
-      "description": "Simulates the traffic similar to users requesting per second. There are no AWS costs associated with this node."
+      "description": "Needed to represent external clients (browsers, mobile apps, IoT) generating request traffic and latency benchmarks for testing."
     },
     {
       "type": "route53",
@@ -142,7 +142,7 @@
           "description": "Route 53 can resolve to ALB."
         }
       ],
-      "description": "Amazon Route 53 is a highly available and scalable cloud Domain Name System (DNS) web service."
+      "description": "Needed to resolve user-friendly domains (e.g. app.com) into AWS resource endpoints like CloudFront or Application Load Balancers."
     },
     {
       "type": "cloudfront",
@@ -218,7 +218,7 @@
           "description": "CloudFront routes to App Runner."
         }
       ],
-      "description": "Amazon CloudFront is a fast content delivery network (CDN) service that securely delivers data, videos, applications, and APIs to customers globally with low latency."
+      "description": "Needed to cache static assets close to users, dramatically reducing latency, bandwidth costs, and load on origin servers."
     },
     {
       "type": "apiGateway",
@@ -360,7 +360,7 @@
           "description": "API Gateway integrates with AppSync."
         }
       ],
-      "description": "Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale."
+      "description": "Needed as a secure, unified entry point to route HTTP API requests to backend services like Lambda, handling auth and traffic rates."
     },
     {
       "type": "alb",
@@ -446,7 +446,7 @@
           "description": "ALB routes traffic to App Runner."
         }
       ],
-      "description": "Application Load Balancer distributes incoming application traffic across multiple targets, such as EC2 instances, in multiple Availability Zones."
+      "description": "Needed to distribute HTTP traffic across multiple compute targets, ensuring high availability and handling load scaling."
     },
     {
       "type": "lambda",
@@ -847,7 +847,7 @@
           "description": "Lambda functions connect to VPC endpoints via PrivateLink."
         }
       ],
-      "description": "AWS Lambda lets you run code without provisioning or managing servers. You pay only for the compute time you consume."
+      "description": "Needed to execute backend business logic serverlessly on an event-driven basis, paying only for the exact milliseconds consumed."
     },
     {
       "type": "ec2",
@@ -1214,7 +1214,7 @@
           "description": "EC2 instances connect to VPC endpoints via PrivateLink."
         }
       ],
-      "description": "Amazon Elastic Compute Cloud (EC2) provides secure, resizable compute capacity in the cloud."
+      "description": "Needed when you require full OS-level control, custom software configurations, or long-running stateful services that run continuously."
     },
     {
       "type": "ecs",
@@ -1581,7 +1581,7 @@
           "description": "ECS tasks connect to VPC endpoints via PrivateLink."
         }
       ],
-      "description": "Amazon Elastic Container Service (ECS) is a highly scalable, fast, container management service that makes it easy to run, stop, and manage Docker containers on a cluster."
+      "description": "Needed to deploy containerized microservices (Docker) at scale on Fargate serverless compute, bypassing virtual machine management."
     },
     {
       "type": "sqs",
@@ -1649,7 +1649,7 @@
           "description": "SQS emits metrics to CloudWatch."
         }
       ],
-      "description": "Amazon Simple Queue Service (SQS) is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications."
+      "description": "Needed to buffer and queue requests asynchronously, decoupling services so spikes in traffic do not cause downstream outages."
     },
     {
       "type": "sns",
@@ -1749,7 +1749,7 @@
           "description": "SNS can trigger AWS Batch jobs via event notifications."
         }
       ],
-      "description": "Amazon Simple Notification Service (SNS) is a fully managed pub/sub messaging service for both microservices-to-microservices and developer-to-person communication."
+      "description": "Needed to broadcast notification events to multiple subscribers (fan-out pattern) asynchronously without hardcoding service linkages."
     },
     {
       "type": "s3",
@@ -1807,7 +1807,7 @@
           "description": "S3 emits usage and performance metrics to CloudWatch."
         }
       ],
-      "description": "Amazon Simple Storage Service (S3) is an object storage service offering industry-leading scalability, data availability, security, and performance."
+      "description": "Needed as a highly durable, cheap, and scalable object store for static assets, media uploads, database backups, and data logs."
     },
     {
       "type": "rds",
@@ -1827,7 +1827,7 @@
       "allowFanIn": true,
       "allowFanOut": false,
       "rules": [],
-      "description": "Amazon Relational Database Service (RDS) makes it easy to set up, operate, and scale a relational database in the cloud."
+      "description": "Needed for structured SQL data storage supporting ACID transactions, automated backups, and read replicas for high-concurrency scaling."
     },
     {
       "type": "dynamoDb",
@@ -1860,7 +1860,7 @@
           "description": "DynamoDB emits operational metrics to CloudWatch."
         }
       ],
-      "description": "Amazon DynamoDB is a key-value and document database that delivers single-digit millisecond performance at any scale."
+      "description": "Needed as a NoSQL database that delivers predictable single-digit millisecond latency at any scale, supporting high-throughput key-value APIs."
     },
     {
       "type": "elastiCache",
@@ -1880,7 +1880,7 @@
       "allowFanIn": true,
       "allowFanOut": false,
       "rules": [],
-      "description": "Amazon ElastiCache is a fully managed in-memory data store and cache service, supporting Memcached and Redis, to power real-time applications with sub-millisecond latency."
+      "description": "Needed as an in-memory database cache to store frequent queries, reducing database load and speeding up reads to microseconds."
     },
     {
       "type": "cloudWatch",
@@ -1914,7 +1914,7 @@
           "description": "CloudWatch Alarms and Events can trigger SNS."
         }
       ],
-      "description": "Amazon CloudWatch is a monitoring and management service built for developers, system operators, site reliability engineers, and IT managers."
+      "description": "Needed to collect metrics, logs, and alarms from all AWS resources, enabling automated scaling actions and system monitoring."
     },
     {
       "type": "stepFunctions",
@@ -1993,7 +1993,7 @@
           "description": "Step Functions can call external APIs."
         }
       ],
-      "description": "AWS Step Functions is a low-code, visual workflow service that developers use to build distributed applications, automate IT and business processes, and build pipelines."
+      "description": "Needed to coordinate complex multi-service workflows and state machines with built-in retries, branching logic, and error handling."
     },
     {
       "type": "vpc",
@@ -3194,7 +3194,7 @@
           "description": "EventBridge triggers Step Functions."
         }
       ],
-      "description": "Amazon EventBridge is a serverless event bus that makes it easy to connect applications together using data from your own applications."
+      "description": "Needed as a serverless event bus to route events from AWS services or custom apps to targeted downstream actions using rules."
     },
     {
       "type": "kinesis",
@@ -3297,7 +3297,7 @@
       "allowFanIn": true,
       "allowFanOut": false,
       "rules": [],
-      "description": "Amazon Cognito lets you add user sign-up, sign-in, and access control to your web and mobile apps quickly and easily."
+      "description": "Needed to handle user sign-up, sign-in, and access tokens for web and mobile apps securely without writing custom auth backends."
     },
     {
       "type": "waf",
@@ -3348,7 +3348,7 @@
           "description": "WAF filters Application Load Balancer traffic."
         }
       ],
-      "description": "AWS WAF is a web application firewall that helps protect your web applications or APIs against common web exploits."
+      "description": "Needed to block malicious web traffic, SQL injections, and DDoS attacks on APIs and CDNs before they reach your backend."
     },
     {
       "type": "efs",

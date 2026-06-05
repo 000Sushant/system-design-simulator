@@ -2552,7 +2552,7 @@
         "formula": "N/A",
         "components": [],
         "freeTier": {
-          "description": "Client node represents external users. No AWS cost associated."
+          "description": "Users node represents external users. No AWS cost associated."
         }
       },
       "pricingFactors": {}
