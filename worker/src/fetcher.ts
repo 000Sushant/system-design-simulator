@@ -152,18 +152,17 @@ export class PricingFetcher {
 
   ec2EbsGp3(regionName: string): Promise<number | null> {
     return this.query('AmazonEC2', [
-      { Type: 'TERM_MATCH', Field: 'location',    Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Storage' },
-      { Type: 'TERM_MATCH', Field: 'volumeType',  Value: 'General Purpose-GP3' },
+      { Type: 'TERM_MATCH', Field: 'volumeApiName', Value: 'gp3' },
     ]);
   }
 
   ec2EbsIo2(regionName: string): Promise<number | null> {
     return this.query('AmazonEC2', [
-      { Type: 'TERM_MATCH', Field: 'location',    Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Storage' },
-      { Type: 'TERM_MATCH', Field: 'volumeType',  Value: 'Provisioned IOPS' },
-      { Type: 'TERM_MATCH', Field: 'group',       Value: 'EBS PIOPS' },
+      { Type: 'TERM_MATCH', Field: 'volumeApiName', Value: 'io2' },
     ]);
   }
 
@@ -274,7 +273,7 @@ export class PricingFetcher {
     return this.query('AmazonECS', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Compute' },
-      { Type: 'TERM_MATCH', Field: 'cputype',       Value: 'perEphemeralStorage' },
+      { Type: 'TERM_MATCH', Field: 'storagetype',    Value: 'default' },
     ]);
   }
 
@@ -390,17 +389,17 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   openSearchInstance(regionName: string, instanceType: string): Promise<number | null> {
-    // Try new service code first; OpenSearch was formerly "AmazonES"
-    return this.query('AmazonOpenSearch', [
+    return this.query('AmazonES', [
       { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
       { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
     ]);
   }
 
   openSearchStorage(regionName: string): Promise<number | null> {
-    return this.query('AmazonOpenSearch', [
+    return this.query('AmazonES', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Storage' },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Amazon OpenSearch Service Volume' },
+      { Type: 'TERM_MATCH', Field: 'storageMedia',   Value: 'GP2' },
     ]);
   }
 
@@ -410,15 +409,17 @@ export class PricingFetcher {
 
   redshiftInstance(regionName: string, instanceType: string): Promise<number | null> {
     return this.query('AmazonRedshift', [
-      { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
+      { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'instanceType',  Value: instanceType },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Compute Instance' },
     ]);
   }
 
   redshiftServerless(regionName: string): Promise<number | null> {
     return this.query('AmazonRedshift', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Redshift Serverless' },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Serverless' },
+      { Type: 'TERM_MATCH', Field: 'operation',     Value: 'RunServerlessCompute:001' },
     ]);
   }
 
@@ -426,12 +427,17 @@ export class PricingFetcher {
   // EMR
   // ────────────────────────────────────────────────────────────────────────
 
-  emrInstance(regionName: string, instanceType: string): Promise<number | null> {
-    return this.query('AmazonEMR', [
+  async emrInstance(regionName: string, instanceType: string): Promise<number | null> {
+    const res = await this.query('ElasticMapReduce', [
       { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
       { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
-      { Type: 'TERM_MATCH', Field: 'osType',       Value: 'Linux' },
     ]);
+    if (res === null && instanceType === 'm5.large') {
+      // EMR does not offer m5.large in AWS Pricing API. Fallback to 50% of m5.xlarge.
+      const xlargePrice = await this.emrInstance(regionName, 'm5.xlarge');
+      return xlargePrice !== null ? xlargePrice * 0.5 : null;
+    }
+    return res;
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -439,9 +445,11 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   mskInstance(regionName: string, instanceType: string): Promise<number | null> {
+    const family = instanceType.replace('kafka.', '');
     return this.query('AmazonMSK', [
-      { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
+      { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'computeFamily', Value: family },
+      { Type: 'TERM_MATCH', Field: 'group',         Value: 'Broker' },
     ]);
   }
 
@@ -450,9 +458,12 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   mqInstance(regionName: string, instanceType: string): Promise<number | null> {
+    const type = instanceType.replace('mq.', '');
     return this.query('AmazonMQ', [
-      { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
+      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'instanceType',     Value: type },
+      { Type: 'TERM_MATCH', Field: 'deploymentOption', Value: 'Single-AZ' },
+      { Type: 'TERM_MATCH', Field: 'brokerEngine',     Value: 'ActiveMQ' },
     ]);
   }
 
@@ -482,7 +493,7 @@ export class PricingFetcher {
   glueDpu(regionName: string): Promise<number | null> {
     return this.query('AWSGlue', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'jobType',  Value: 'Apache Spark' },
+      { Type: 'TERM_MATCH', Field: 'group',    Value: 'ETL Job run' },
     ]);
   }
 
@@ -493,14 +504,14 @@ export class PricingFetcher {
   kinesisShardHour(regionName: string): Promise<number | null> {
     return this.query('AmazonKinesis', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'group',    Value: 'Shards' },
+      { Type: 'TERM_MATCH', Field: 'group',    Value: 'Provisioned shard hour' },
     ]);
   }
 
   kinesisPutUnits(regionName: string): Promise<number | null> {
     return this.query('AmazonKinesis', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'group',    Value: 'WriteUnits' },
+      { Type: 'TERM_MATCH', Field: 'group',    Value: 'Payload Units' },
     ]);
   }
 
@@ -509,10 +520,14 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   efsStorage(regionName: string, storageClass: string): Promise<number | null> {
+    const mappedClass = storageClass === 'Standard' ? 'General Purpose' : 'Infrequent Access';
     return this.query('AmazonEFS', [
       { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'storageClass', Value: storageClass },
-    ]);
+      { Type: 'TERM_MATCH', Field: 'storageClass', Value: mappedClass },
+    ], p => {
+      const usageType = p.product?.attributes?.usagetype || '';
+      return usageType.includes('TimedStorage');
+    });
   }
 
   // ────────────────────────────────────────────────────────────────────────

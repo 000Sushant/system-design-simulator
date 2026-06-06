@@ -112,23 +112,23 @@ export async function buildPricingFile(
   const loc = region.name;
 
   // ── Route53 (global) ────────────────────────────────────────────────────
-  const r53Zone     = await fetcher.route53Zone();
+  const r53Zone = await fetcher.route53Zone();
   const r53QueriesRaw = await fetcher.route53Queries();
-  if (r53Zone !== null)       svc.route53.zoneMonthly = round(r53Zone, 2)!;
+  if (r53Zone !== null) svc.route53.zoneMonthly = round(r53Zone, 2)!;
   // API returns per-query price; we store per-million
-  if (r53QueriesRaw !== null) svc.route53.standardM   = round(r53QueriesRaw * 1_000_000, 2)!;
+  if (r53QueriesRaw !== null) svc.route53.standardM = round(r53QueriesRaw * 1_000_000, 2)!;
 
   // ── ALB ─────────────────────────────────────────────────────────────────
-  const albHr  = await fetcher.albHourly(loc);
+  const albHr = await fetcher.albHourly(loc);
   const albLcu = await fetcher.albLcu(loc);
-  if (albHr  !== null) { svc.alb.hourly  = round(albHr, 4)!; svc.ecs.albHourly = svc.alb.hourly; svc.eks.albHourly = svc.alb.hourly; }
+  if (albHr !== null) { svc.alb.hourly = round(albHr, 4)!; svc.ecs.albHourly = svc.alb.hourly; svc.eks.albHourly = svc.alb.hourly; }
   if (albLcu !== null) svc.alb.lcuHour = round(albLcu, 4)!;
 
   // ── NAT Gateway ─────────────────────────────────────────────────────────
-  const natHr   = await fetcher.natGatewayHourly(loc);
+  const natHr = await fetcher.natGatewayHourly(loc);
   const natData = await fetcher.natGatewayData(loc);
-  if (natHr   !== null) { svc.natGateway.hourly = round(natHr, 4)!; svc.eks.natHourly = svc.natGateway.hourly; }
-  if (natData !== null) { svc.natGateway.dataGB  = round(natData, 4)!; svc.eks.natDataGB = svc.natGateway.dataGB; }
+  if (natHr !== null) { svc.natGateway.hourly = round(natHr, 4)!; svc.eks.natHourly = svc.natGateway.hourly; }
+  if (natData !== null) { svc.natGateway.dataGB = round(natData, 4)!; svc.eks.natDataGB = svc.natGateway.dataGB; }
 
   // ── EC2 instances ────────────────────────────────────────────────────────
   const families = ['t3', 'm5', 'm6g', 'c5', 'c6g', 'r5', 'r6g'] as const;
@@ -143,7 +143,7 @@ export async function buildPricingFile(
       // EKS ec2 instances list uses the same base rate
       if (fam === 't3') svc.eks.instances['t3.large'] = round(price, 6)!;
       if (fam === 'm5') {
-        svc.eks.instances['m5.large']  = round(price, 6)!;
+        svc.eks.instances['m5.large'] = round(price, 6)!;
         svc.eks.instances['m5.xlarge'] = round(price * 2, 6)!;
       }
     }
@@ -162,124 +162,124 @@ export async function buildPricingFile(
   svc.eks.ebsGBMonth = svc.ec2.ebsRates.gp3;
 
   // ── ECS Fargate ──────────────────────────────────────────────────────────
-  const cpuX86  = await fetcher.ecsFargateCpu(loc);
-  const memX86  = await fetcher.ecsFargateMemory(loc);
-  const cpuArm  = await fetcher.ecsFargateArmCpu(loc);
-  const memArm  = await fetcher.ecsFargateArmMemory(loc);
-  const eph     = await fetcher.ecsFargateEphemeral(loc);
+  const cpuX86 = await fetcher.ecsFargateCpu(loc);
+  const memX86 = await fetcher.ecsFargateMemory(loc);
+  const cpuArm = await fetcher.ecsFargateArmCpu(loc);
+  const memArm = await fetcher.ecsFargateArmMemory(loc);
+  const eph = await fetcher.ecsFargateEphemeral(loc);
 
   if (cpuX86 !== null) { svc.ecs.cpuHour = round(cpuX86, 6)!; svc.eks.cpuHour = svc.ecs.cpuHour; svc.batch.cpuHour = svc.ecs.cpuHour; }
   if (memX86 !== null) { svc.ecs.memHour = round(memX86, 6)!; svc.eks.memHour = svc.ecs.memHour; svc.batch.memHour = svc.ecs.memHour; }
   if (cpuArm !== null) { svc.ecs.armCpuHour = round(cpuArm, 6)!; svc.eks.armCpuHour = svc.ecs.armCpuHour; svc.batch.armCpuHour = svc.ecs.armCpuHour; }
   if (memArm !== null) { svc.ecs.armMemHour = round(memArm, 6)!; svc.eks.armMemHour = svc.ecs.armMemHour; svc.batch.armMemHour = svc.ecs.armMemHour; }
-  if (eph    !== null) { svc.ecs.ephemeralGBHour = round(eph, 8)!; svc.eks.ephemeralGBHour = svc.ecs.ephemeralGBHour; }
+  if (eph !== null) { svc.ecs.ephemeralGBHour = round(eph, 8)!; svc.eks.ephemeralGBHour = svc.ecs.ephemeralGBHour; }
 
   // ── Lambda ───────────────────────────────────────────────────────────────
   const lambdaReqRaw = await fetcher.lambdaRequests(loc);
   const lambdaDurX86 = await fetcher.lambdaDurationX86(loc);
   // ARM duration = x86 × 0.8 (consistent ratio across all regions)
-  if (lambdaReqRaw !== null) svc.lambda.requestM  = round(lambdaReqRaw * 1_000_000, 4)!;
+  if (lambdaReqRaw !== null) svc.lambda.requestM = round(lambdaReqRaw * 1_000_000, 4)!;
   if (lambdaDurX86 !== null) {
     svc.lambda.gbSec_x86 = round(lambdaDurX86, 10)!;
     svc.lambda.gbSec_arm = round(lambdaDurX86 * 0.8, 10)!;
   }
 
   // ── S3 ───────────────────────────────────────────────────────────────────
-  const s3Std     = await fetcher.s3Storage(loc, 'Standard');
-  const s3Ia      = await fetcher.s3Storage(loc, 'Standard - Infrequent Access');
+  const s3Std = await fetcher.s3Storage(loc, 'Standard');
+  const s3Ia = await fetcher.s3Storage(loc, 'Standard - Infrequent Access');
   const s3Glacier = await fetcher.s3Storage(loc, 'Amazon Glacier');
-  if (s3Std     !== null) { svc.s3.storage.standard = round(s3Std, 4)!; svc.s3.storage.intelligent = svc.s3.storage.standard; }
-  if (s3Ia      !== null) svc.s3.storage.sia     = round(s3Ia, 4)!;
+  if (s3Std !== null) { svc.s3.storage.standard = round(s3Std, 4)!; svc.s3.storage.intelligent = svc.s3.storage.standard; }
+  if (s3Ia !== null) svc.s3.storage.sia = round(s3Ia, 4)!;
   if (s3Glacier !== null) svc.s3.storage.glacier = round(s3Glacier, 4)!;
 
   // ── RDS ──────────────────────────────────────────────────────────────────
-  const rdsT3Med  = await fetcher.rdsInstance(loc, 'db.t3.medium');
-  const rdsM5Lg   = await fetcher.rdsInstance(loc, 'db.m5.large');
-  const rdsR5Lg   = await fetcher.rdsInstance(loc, 'db.r5.large');
-  const rdsR6gLg  = await fetcher.rdsInstance(loc, 'db.r6g.large');
-  const rdsGp2    = await fetcher.rdsStorageGp2(loc);
-  if (rdsT3Med !== null) svc.rds.instances['db.t3.medium']  = round(rdsT3Med, 4)!;
-  if (rdsM5Lg  !== null) svc.rds.instances['db.m5.large']   = round(rdsM5Lg, 4)!;
-  if (rdsR5Lg  !== null) svc.rds.instances['db.r5.large']   = round(rdsR5Lg, 4)!;
-  if (rdsR6gLg !== null) svc.rds.instances['db.r6g.large']  = round(rdsR6gLg, 4)!;
-  if (rdsGp2   !== null) { svc.rds.storage.gp2 = round(rdsGp2, 4)!; svc.rds.storage.gp3 = svc.rds.storage.gp2; }
+  const rdsT3Med = await fetcher.rdsInstance(loc, 'db.t3.medium');
+  const rdsM5Lg = await fetcher.rdsInstance(loc, 'db.m5.large');
+  const rdsR5Lg = await fetcher.rdsInstance(loc, 'db.r5.large');
+  const rdsR6gLg = await fetcher.rdsInstance(loc, 'db.r6g.large');
+  const rdsGp2 = await fetcher.rdsStorageGp2(loc);
+  if (rdsT3Med !== null) svc.rds.instances['db.t3.medium'] = round(rdsT3Med, 4)!;
+  if (rdsM5Lg !== null) svc.rds.instances['db.m5.large'] = round(rdsM5Lg, 4)!;
+  if (rdsR5Lg !== null) svc.rds.instances['db.r5.large'] = round(rdsR5Lg, 4)!;
+  if (rdsR6gLg !== null) svc.rds.instances['db.r6g.large'] = round(rdsR6gLg, 4)!;
+  if (rdsGp2 !== null) { svc.rds.storage.gp2 = round(rdsGp2, 4)!; svc.rds.storage.gp3 = svc.rds.storage.gp2; }
 
   // ── Aurora ───────────────────────────────────────────────────────────────
-  const aurAcu    = await fetcher.auroraServerlessAcu(loc);
-  const aurT3Med  = await fetcher.auroraInstance(loc, 'db.t3.medium');
-  const aurR5Lg   = await fetcher.auroraInstance(loc, 'db.r5.large');
-  const aurR6gLg  = await fetcher.auroraInstance(loc, 'db.r6g.large');
-  if (aurAcu   !== null) svc.aurora.serverlessAcuHour        = round(aurAcu, 4)!;
+  const aurAcu = await fetcher.auroraServerlessAcu(loc);
+  const aurT3Med = await fetcher.auroraInstance(loc, 'db.t3.medium');
+  const aurR5Lg = await fetcher.auroraInstance(loc, 'db.r5.large');
+  const aurR6gLg = await fetcher.auroraInstance(loc, 'db.r6g.large');
+  if (aurAcu !== null) svc.aurora.serverlessAcuHour = round(aurAcu, 4)!;
   if (aurT3Med !== null) svc.aurora.instances['db.t3.medium'] = round(aurT3Med, 4)!;
-  if (aurR5Lg  !== null) svc.aurora.instances['db.r5.large']  = round(aurR5Lg, 4)!;
+  if (aurR5Lg !== null) svc.aurora.instances['db.r5.large'] = round(aurR5Lg, 4)!;
   if (aurR6gLg !== null) svc.aurora.instances['db.r6g.large'] = round(aurR6gLg, 4)!;
 
   // ── ElastiCache ──────────────────────────────────────────────────────────
   const ecT3Micro = await fetcher.elastiCacheInstance(loc, 'cache.t3.micro');
-  const ecT3Med   = await fetcher.elastiCacheInstance(loc, 'cache.t3.medium');
-  const ecM5Lg    = await fetcher.elastiCacheInstance(loc, 'cache.m5.large');
-  const ecR6gLg   = await fetcher.elastiCacheInstance(loc, 'cache.r6g.large');
-  if (ecT3Micro !== null) svc.elastiCache.instances['cache.t3.micro']  = round(ecT3Micro, 4)!;
-  if (ecT3Med   !== null) svc.elastiCache.instances['cache.t3.medium'] = round(ecT3Med, 4)!;
-  if (ecM5Lg    !== null) svc.elastiCache.instances['cache.m5.large']  = round(ecM5Lg, 4)!;
-  if (ecR6gLg   !== null) svc.elastiCache.instances['cache.r6g.large'] = round(ecR6gLg, 4)!;
+  const ecT3Med = await fetcher.elastiCacheInstance(loc, 'cache.t3.medium');
+  const ecM5Lg = await fetcher.elastiCacheInstance(loc, 'cache.m5.large');
+  const ecR6gLg = await fetcher.elastiCacheInstance(loc, 'cache.r6g.large');
+  if (ecT3Micro !== null) svc.elastiCache.instances['cache.t3.micro'] = round(ecT3Micro, 4)!;
+  if (ecT3Med !== null) svc.elastiCache.instances['cache.t3.medium'] = round(ecT3Med, 4)!;
+  if (ecM5Lg !== null) svc.elastiCache.instances['cache.m5.large'] = round(ecM5Lg, 4)!;
+  if (ecR6gLg !== null) svc.elastiCache.instances['cache.r6g.large'] = round(ecR6gLg, 4)!;
 
   // ── DynamoDB ─────────────────────────────────────────────────────────────
-  const ddbReadRaw  = await fetcher.dynamoDbRead(loc);
+  const ddbReadRaw = await fetcher.dynamoDbRead(loc);
   const ddbWriteRaw = await fetcher.dynamoDbWrite(loc);
-  const ddbStorage  = await fetcher.dynamoDbStorage(loc);
+  const ddbStorage = await fetcher.dynamoDbStorage(loc);
   if (ddbReadRaw !== null) {
     const readM = round(ddbReadRaw * 1_000_000, 4)!;
     svc.dynamoDb.std.readM = readM;
-    svc.dynamoDb.ia.readM  = round(readM * 1.25, 4)!;
+    svc.dynamoDb.ia.readM = round(readM * 1.25, 4)!;
   }
   if (ddbWriteRaw !== null) {
     const writeM = round(ddbWriteRaw * 1_000_000, 4)!;
     svc.dynamoDb.std.writeM = writeM;
-    svc.dynamoDb.ia.writeM  = round(writeM * 1.25, 4)!;
+    svc.dynamoDb.ia.writeM = round(writeM * 1.25, 4)!;
   }
   if (ddbStorage !== null) {
     svc.dynamoDb.std.storageGB = round(ddbStorage, 4)!;
-    svc.dynamoDb.ia.storageGB  = round(ddbStorage * 0.4, 4)!; // IA storage = 40% of standard
+    svc.dynamoDb.ia.storageGB = round(ddbStorage * 0.4, 4)!; // IA storage = 40% of standard
   }
 
   // ── OpenSearch ───────────────────────────────────────────────────────────
-  const osT3Med    = await fetcher.openSearchInstance(loc, 't3.medium.search');
-  const osM6gLg    = await fetcher.openSearchInstance(loc, 'm6g.large.search');
-  const osR6gLg    = await fetcher.openSearchInstance(loc, 'r6g.large.search');
-  const osStorage  = await fetcher.openSearchStorage(loc);
-  if (osT3Med   !== null) svc.openSearch.instances['t3.medium']   = round(osT3Med, 4)!;
-  if (osM6gLg   !== null) svc.openSearch.instances['m6g.large']   = round(osM6gLg, 4)!;
-  if (osR6gLg   !== null) svc.openSearch.instances['r6g.large']   = round(osR6gLg, 4)!;
+  const osT3Med = await fetcher.openSearchInstance(loc, 't3.medium.search');
+  const osM6gLg = await fetcher.openSearchInstance(loc, 'm6g.large.search');
+  const osR6gLg = await fetcher.openSearchInstance(loc, 'r6g.large.search');
+  const osStorage = await fetcher.openSearchStorage(loc);
+  if (osT3Med !== null) svc.openSearch.instances['t3.medium'] = round(osT3Med, 4)!;
+  if (osM6gLg !== null) svc.openSearch.instances['m6g.large'] = round(osM6gLg, 4)!;
+  if (osR6gLg !== null) svc.openSearch.instances['r6g.large'] = round(osR6gLg, 4)!;
   if (osStorage !== null) svc.openSearch.storageGB = round(osStorage, 4)!;
 
   // ── Redshift ─────────────────────────────────────────────────────────────
-  const rsXlplus   = await fetcher.redshiftInstance(loc, 'ra3.xlplus');
-  const rs4xlarge  = await fetcher.redshiftInstance(loc, 'ra3.4xlarge');
-  const rsRpu      = await fetcher.redshiftServerless(loc);
-  if (rsXlplus   !== null) svc.redshift.instances['ra3.xlplus']   = round(rsXlplus, 4)!;
-  if (rs4xlarge  !== null) svc.redshift.instances['ra3.4xlarge']  = round(rs4xlarge, 4)!;
-  if (rsRpu      !== null) svc.redshift.rpuHour = round(rsRpu, 4)!;
+  const rsXlplus = await fetcher.redshiftInstance(loc, 'ra3.xlplus');
+  const rs4xlarge = await fetcher.redshiftInstance(loc, 'ra3.4xlarge');
+  const rsRpu = await fetcher.redshiftServerless(loc);
+  if (rsXlplus !== null) svc.redshift.instances['ra3.xlplus'] = round(rsXlplus, 4)!;
+  if (rs4xlarge !== null) svc.redshift.instances['ra3.4xlarge'] = round(rs4xlarge, 4)!;
+  if (rsRpu !== null) svc.redshift.rpuHour = round(rsRpu, 4)!;
 
   // ── EMR ──────────────────────────────────────────────────────────────────
-  const emrM5Lg   = await fetcher.emrInstance(loc, 'm5.large');
-  const emrM5Xl   = await fetcher.emrInstance(loc, 'm5.xlarge');
-  const emrR5Xl   = await fetcher.emrInstance(loc, 'r5.xlarge');
-  if (emrM5Lg !== null) svc.emr.instances['m5.large']   = round(emrM5Lg, 4)!;
-  if (emrM5Xl !== null) svc.emr.instances['m5.xlarge']  = round(emrM5Xl, 4)!;
-  if (emrR5Xl !== null) svc.emr.instances['r5.xlarge']  = round(emrR5Xl, 4)!;
+  const emrM5Lg = await fetcher.emrInstance(loc, 'm5.large');
+  const emrM5Xl = await fetcher.emrInstance(loc, 'm5.xlarge');
+  const emrR5Xl = await fetcher.emrInstance(loc, 'r5.xlarge');
+  if (emrM5Lg !== null) svc.emr.instances['m5.large'] = round(emrM5Lg, 4)!;
+  if (emrM5Xl !== null) svc.emr.instances['m5.xlarge'] = round(emrM5Xl, 4)!;
+  if (emrR5Xl !== null) svc.emr.instances['r5.xlarge'] = round(emrR5Xl, 4)!;
 
   // ── MSK ──────────────────────────────────────────────────────────────────
-  const mskT3Sm   = await fetcher.mskInstance(loc, 'kafka.t3.small');
-  const mskM5Lg   = await fetcher.mskInstance(loc, 'kafka.m5.large');
-  if (mskT3Sm !== null) svc.msk.instances['kafka.t3.small']  = round(mskT3Sm, 4)!;
-  if (mskM5Lg !== null) svc.msk.instances['kafka.m5.large']  = round(mskM5Lg, 4)!;
+  const mskT3Sm = await fetcher.mskInstance(loc, 'kafka.t3.small');
+  const mskM5Lg = await fetcher.mskInstance(loc, 'kafka.m5.large');
+  if (mskT3Sm !== null) svc.msk.instances['kafka.t3.small'] = round(mskT3Sm, 4)!;
+  if (mskM5Lg !== null) svc.msk.instances['kafka.m5.large'] = round(mskM5Lg, 4)!;
 
   // ── Amazon MQ ────────────────────────────────────────────────────────────
   const mqT3Micro = await fetcher.mqInstance(loc, 'mq.t3.micro');
-  const mqM5Lg    = await fetcher.mqInstance(loc, 'mq.m5.large');
-  if (mqT3Micro !== null) svc.mq.instances['mq.t3.micro']  = round(mqT3Micro, 4)!;
-  if (mqM5Lg    !== null) svc.mq.instances['mq.m5.large']  = round(mqM5Lg, 4)!;
+  const mqM5Lg = await fetcher.mqInstance(loc, 'mq.m5.large');
+  if (mqT3Micro !== null) svc.mq.instances['mq.t3.micro'] = round(mqT3Micro, 4)!;
+  if (mqM5Lg !== null) svc.mq.instances['mq.m5.large'] = round(mqM5Lg, 4)!;
 
   // ── Glue ─────────────────────────────────────────────────────────────────
   const glueDpu = await fetcher.glueDpu(loc);
@@ -288,14 +288,14 @@ export async function buildPricingFile(
   // ── Kinesis Data Streams ──────────────────────────────────────────────────
   const kinShard = await fetcher.kinesisShardHour(loc);
   const kinPutRaw = await fetcher.kinesisPutUnits(loc);
-  if (kinShard  !== null) svc.kinesis.shardHour = round(kinShard, 4)!;
-  if (kinPutRaw !== null) svc.kinesis.putM       = round(kinPutRaw * 1_000_000, 4)!;
+  if (kinShard !== null) svc.kinesis.shardHour = round(kinShard, 4)!;
+  if (kinPutRaw !== null) svc.kinesis.putM = round(kinPutRaw * 1_000_000, 4)!;
 
   // ── EFS ──────────────────────────────────────────────────────────────────
   const efsStd = await fetcher.efsStorage(loc, 'Standard');
-  const efsIa  = await fetcher.efsStorage(loc, 'Standard - Infrequent Access');
-  if (efsStd !== null) svc.efs.storage.standard          = round(efsStd, 4)!;
-  if (efsIa  !== null) svc.efs.storage.infrequentAccess  = round(efsIa, 4)!;
+  const efsIa = await fetcher.efsStorage(loc, 'Standard - Infrequent Access');
+  if (efsStd !== null) svc.efs.storage.standard = round(efsStd, 4)!;
+  if (efsIa !== null) svc.efs.storage.infrequentAccess = round(efsIa, 4)!;
 
   console.log(`[Builder] Completed pricing build for ${region.code}. Total API calls made: (see fetcher count).`);
   return svc;

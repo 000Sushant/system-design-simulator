@@ -167,13 +167,13 @@ export class CostService {
         lines.push({ label: type.toUpperCase() + ' API Requests', formula: reqsM + 'M × $' + reqRate.toFixed(2) + '/M', value: reqCost });
         let cacheCost = 0;
         if (type === 'rest' && config.cacheGB && config.cacheGB !== '0') {
-           cacheCost = pf.cacheRates?.[config.cacheGB] || 14.0;
-           lines.push({ label: 'Dedicated Cache', formula: config.cacheGB + ' GB Tier', value: cacheCost });
+          cacheCost = pf.cacheRates?.[config.cacheGB] || 14.0;
+          lines.push({ label: 'Dedicated Cache', formula: config.cacheGB + ' GB Tier', value: cacheCost });
         }
         total = reqCost + cacheCost;
         break;
       }
-      
+
       case 'route53': {
         const zones = this.getVal(config, 'route53', 'hostedZones', 0);
         let zoneCost = 0;
@@ -218,8 +218,8 @@ export class CostService {
         lines.push({ label: 'Requests', formula: reqsM + 'M × $' + reqRate + '/M', value: reqCost });
         let wafCost = 0;
         if (config.wafEnabled) {
-           wafCost = (pf.wafBase || 5.0) + (reqsM * (pf.wafRequestM || 0.60));
-           lines.push({ label: 'WAF Integration', formula: '$' + (pf.wafBase || 5.0).toFixed(2) + ' + (' + reqsM + 'M × $' + (pf.wafRequestM || 0.60).toFixed(2) + '/M)', value: wafCost });
+          wafCost = (pf.wafBase || 5.0) + (reqsM * (pf.wafRequestM || 0.60));
+          lines.push({ label: 'WAF Integration', formula: '$' + (pf.wafBase || 5.0).toFixed(2) + ' + (' + reqsM + 'M × $' + (pf.wafRequestM || 0.60).toFixed(2) + '/M)', value: wafCost });
         }
         total = dtCost + reqCost + wafCost;
         break;
@@ -230,31 +230,31 @@ export class CostService {
         const memoryMB = this.getVal(config, 'lambda', 'memoryMB', 512);
         const invocationsM = this.getVal(config, 'lambda', 'invocationsM', 10);
         const durationMs = this.getVal(config, 'lambda', 'durationMs', 200);
-        
+
         const reqCost = invocationsM * (pf.requestM || 0.20);
         lines.push({ label: 'Requests', formula: `${invocationsM}M × $${(pf.requestM || 0.20).toFixed(2)}/M`, value: reqCost });
-        
+
         const gbSec = invocationsM * 1000000 * (durationMs / 1000) * (memoryMB / 1024);
         const compRate = isArm ? (pf.gbSec_arm || 0.0000133334) : (pf.gbSec_x86 || 0.0000166667);
         const compCost = gbSec * compRate;
-        lines.push({ label: `Compute (${isArm ? 'ARM' : 'x86'})`, formula: `${gbSec.toLocaleString(undefined, {maximumFractionDigits:0})} GB-sec × $${compRate.toFixed(6)}/GB-sec`, value: compCost });
-        
+        lines.push({ label: `Compute (${isArm ? 'ARM' : 'x86'})`, formula: `${gbSec.toLocaleString(undefined, { maximumFractionDigits: 0 })} GB-sec × $${compRate.toFixed(6)}/GB-sec`, value: compCost });
+
         let ephCost = 0;
         const ephMB = this.getVal(config, 'lambda', 'ephemeralMB', 512);
         if (ephMB > 512) {
-           const ephGB = (ephMB - 512) / 1024;
-           ephCost = invocationsM * 1000000 * (durationMs / 1000) * ephGB * (pf.ephemeralGB_Sec || 0.0000000309);
-           lines.push({ label: 'Ephemeral Storage', formula: `${ephGB.toFixed(2)} extra GB × $${(pf.ephemeralGB_Sec || 0.0000000309).toFixed(10)}/GB-sec`, value: ephCost });
+          const ephGB = (ephMB - 512) / 1024;
+          ephCost = invocationsM * 1000000 * (durationMs / 1000) * ephGB * (pf.ephemeralGB_Sec || 0.0000000309);
+          lines.push({ label: 'Ephemeral Storage', formula: `${ephGB.toFixed(2)} extra GB × $${(pf.ephemeralGB_Sec || 0.0000000309).toFixed(10)}/GB-sec`, value: ephCost });
         }
-        
+
         let provCost = 0;
         const provConcurrency = this.getVal(config, 'lambda', 'provConcurrency', 0);
         if (provConcurrency > 0) {
-           const provRate = isArm ? (pf.provConcurrency_arm || 0.012) : (pf.provConcurrency_x86 || 0.015);
-           provCost = provConcurrency * (memoryMB / 1024) * 730 * provRate;
-           lines.push({ label: 'Provisioned Concurrency', formula: `${provConcurrency} Concurrency × ${(memoryMB/1024).toFixed(2)} GB × 730 hrs × $${provRate.toFixed(3)}`, value: provCost });
+          const provRate = isArm ? (pf.provConcurrency_arm || 0.012) : (pf.provConcurrency_x86 || 0.015);
+          provCost = provConcurrency * (memoryMB / 1024) * 730 * provRate;
+          lines.push({ label: 'Provisioned Concurrency', formula: `${provConcurrency} Concurrency × ${(memoryMB / 1024).toFixed(2)} GB × 730 hrs × $${provRate.toFixed(3)}`, value: provCost });
         }
-        
+
         total = reqCost + compCost + ephCost + provCost;
         break;
       }
@@ -266,24 +266,24 @@ export class CostService {
         const baseRate = pf.familyRatesLarge?.[family] || 0.096;
         const multiplier = pf.sizeMultipliers?.[size] || 0.5;
         const hourlyRate = baseRate * multiplier;
-        
+
         const purchase = this.getVal(config, 'ec2', 'purchaseOption', 'on-demand');
         const discount = pf.purchaseDiscounts?.[purchase] || 0;
         const finalRate = hourlyRate * (1 - discount);
-        
+
         const computeCost = count * finalRate * 730;
-        lines.push({ label: `EC2 Compute (${family}.${size})`, formula: `${count} Nodes × $${hourlyRate.toFixed(4)}/hr × 730 hrs × ${((1-discount)*100).toFixed(0)}% rate`, value: computeCost });
-        
+        lines.push({ label: `EC2 Compute (${family}.${size})`, formula: `${count} Nodes × $${hourlyRate.toFixed(4)}/hr × 730 hrs × ${((1 - discount) * 100).toFixed(0)}% rate`, value: computeCost });
+
         const storageType = this.getVal(config, 'ec2', 'storageType', 'gp3');
         const storageSize = this.getVal(config, 'ec2', 'storageSize', 30);
         const storageRate = pf.ebsRates?.[storageType] || 0.08;
         const ebsCost = count * storageSize * storageRate;
         lines.push({ label: `EBS Storage (${storageType})`, formula: `${count} Nodes × ${storageSize} GB × $${storageRate.toFixed(3)}/GB`, value: ebsCost });
-        
+
         const dto = this.getVal(config, 'ec2', 'dataTransferOut', 100);
         const dtoCost = dto * (pf.dataTransferGB || 0.09);
         if (dtoCost > 0) lines.push({ label: 'Data Transfer Out', formula: `${dto} GB × $${(pf.dataTransferGB || 0.09).toFixed(2)}/GB`, value: dtoCost });
-        
+
         total = computeCost + ebsCost + dtoCost;
         break;
       }
@@ -345,12 +345,12 @@ export class CostService {
       }
 
       case 'cloudWatch': {
-        const met = this.getVal(config, 'cloudWatch', 'metrics', 100); 
-        const costMet = met * (pf.metricRate || 0.30); 
-        lines.push({ label: 'Metrics', formula: met + ' Metrics × $' + (pf.metricRate || 0.30).toFixed(2), value: costMet }); 
-        const gb = this.getVal(config, 'cloudWatch', 'logsGB', 50); 
-        const costGb = gb * (pf.logsGB || 0.50); 
-        lines.push({ label: 'Log Ingestion', formula: gb + ' GB × $' + (pf.logsGB || 0.50).toFixed(2), value: costGb }); 
+        const met = this.getVal(config, 'cloudWatch', 'metrics', 100);
+        const costMet = met * (pf.metricRate || 0.30);
+        lines.push({ label: 'Metrics', formula: met + ' Metrics × $' + (pf.metricRate || 0.30).toFixed(2), value: costMet });
+        const gb = this.getVal(config, 'cloudWatch', 'logsGB', 50);
+        const costGb = gb * (pf.logsGB || 0.50);
+        lines.push({ label: 'Log Ingestion', formula: gb + ' GB × $' + (pf.logsGB || 0.50).toFixed(2), value: costGb });
         total = costMet + costGb;
         break;
       }
@@ -359,36 +359,36 @@ export class CostService {
         const mode = this.getVal(config, 'dynamoDb', 'capacityMode', 'on-demand');
         const sClass = this.getVal(config, 'dynamoDb', 'storageClass', 'standard');
         const rates = pf[sClass === 'infrequent-access' ? 'ia' : 'std'] || pf.std;
-        
+
         let computeCost = 0;
         if (mode === 'on-demand') {
-           const readsM = this.getVal(config, 'dynamoDb', 'readsM', 10);
-           const writesM = this.getVal(config, 'dynamoDb', 'writesM', 5);
-           const readCost = readsM * rates.readM;
-           lines.push({ label: 'Read Requests', formula: `${readsM}M × $${rates.readM}/M`, value: readCost });
-           const writeCost = writesM * rates.writeM;
-           lines.push({ label: 'Write Requests', formula: `${writesM}M × $${rates.writeM}/M`, value: writeCost });
-           computeCost = readCost + writeCost;
+          const readsM = this.getVal(config, 'dynamoDb', 'readsM', 10);
+          const writesM = this.getVal(config, 'dynamoDb', 'writesM', 5);
+          const readCost = readsM * rates.readM;
+          lines.push({ label: 'Read Requests', formula: `${readsM}M × $${rates.readM}/M`, value: readCost });
+          const writeCost = writesM * rates.writeM;
+          lines.push({ label: 'Write Requests', formula: `${writesM}M × $${rates.writeM}/M`, value: writeCost });
+          computeCost = readCost + writeCost;
         } else {
-           const wcu = this.getVal(config, 'dynamoDb', 'wcu', 100);
-           const rcu = this.getVal(config, 'dynamoDb', 'rcu', 100);
-           const wCost = wcu * rates.wcuHr * 730;
-           lines.push({ label: 'Provisioned WCU', formula: `${wcu} WCU × $${rates.wcuHr.toFixed(5)}/hr × 730 hrs`, value: wCost });
-           const rCost = rcu * rates.rcuHr * 730;
-           lines.push({ label: 'Provisioned RCU', formula: `${rcu} RCU × $${rates.rcuHr.toFixed(5)}/hr × 730 hrs`, value: rCost });
-           computeCost = wCost + rCost;
+          const wcu = this.getVal(config, 'dynamoDb', 'wcu', 100);
+          const rcu = this.getVal(config, 'dynamoDb', 'rcu', 100);
+          const wCost = wcu * rates.wcuHr * 730;
+          lines.push({ label: 'Provisioned WCU', formula: `${wcu} WCU × $${rates.wcuHr.toFixed(5)}/hr × 730 hrs`, value: wCost });
+          const rCost = rcu * rates.rcuHr * 730;
+          lines.push({ label: 'Provisioned RCU', formula: `${rcu} RCU × $${rates.rcuHr.toFixed(5)}/hr × 730 hrs`, value: rCost });
+          computeCost = wCost + rCost;
         }
-        
+
         const storageGB = this.getVal(config, 'dynamoDb', 'storageGB', 50);
         const storageCost = storageGB * rates.storageGB;
         lines.push({ label: `Storage (${sClass})`, formula: `${storageGB} GB × $${rates.storageGB}/GB`, value: storageCost });
-        
+
         total = computeCost + storageCost;
-        
+
         if (config.globalTables) {
-           const gMult = pf.globalMultiplier || 1.5;
-           lines.push({ label: 'Global Tables Replication', formula: `Total × ${(gMult - 1)*100}% premium`, value: total * (gMult - 1) });
-           total = total * gMult;
+          const gMult = pf.globalMultiplier || 1.5;
+          lines.push({ label: 'Global Tables Replication', formula: `Total × ${(gMult - 1) * 100}% premium`, value: total * (gMult - 1) });
+          total = total * gMult;
         }
         break;
       }
@@ -397,27 +397,27 @@ export class CostService {
         const engine = this.getVal(config, 'rds', 'engine', 'postgresql');
         const instance = this.getVal(config, 'rds', 'instanceClass', 'db.m5.large');
         const count = this.getVal(config, 'rds', 'count', 2);
-        
+
         const baseRate = pf.instances?.[instance] || 0.171;
         const engineMult = pf.engines?.[engine] || 1.0;
         const multiAzMult = config.multiAz ? (pf.multiAzMultiplier || 2.0) : 1.0;
-        
+
         const computeCost = count * baseRate * engineMult * multiAzMult * 730;
         lines.push({ label: `RDS Compute (${instance})`, formula: `${count} Nodes × $${baseRate.toFixed(3)}/hr × ${engineMult} engine × ${multiAzMult} AZ × 730 hrs`, value: computeCost });
-        
+
         const sType = this.getVal(config, 'rds', 'storageType', 'gp3');
         const sGB = this.getVal(config, 'rds', 'storageSize', 100);
         const sRate = pf.storage?.[sType] || 0.115;
         const storageCost = sGB * sRate;
         lines.push({ label: `Storage (${sType})`, formula: `${sGB} GB × $${sRate}/GB`, value: storageCost });
-        
+
         const backupGB = this.getVal(config, 'rds', 'backupStorage', 100);
         const bRate = pf.backupGB || 0.095;
         const backupCost = backupGB > sGB ? (backupGB - sGB) * bRate : 0;
         if (backupCost > 0) {
-           lines.push({ label: 'Backup Storage', formula: `${backupGB - sGB} billed GB × $${bRate}/GB`, value: backupCost });
+          lines.push({ label: 'Backup Storage', formula: `${backupGB - sGB} billed GB × $${bRate}/GB`, value: backupCost });
         }
-        
+
         total = computeCost + storageCost + backupCost;
         break;
       }
@@ -426,16 +426,16 @@ export class CostService {
         const count = this.getVal(config, 'elastiCache', 'count', 2);
         const nodeType = this.getVal(config, 'elastiCache', 'nodeType', 'cache.t3.medium');
         const rate = pf.instances?.[nodeType] || 0.068;
-        
+
         let computeCost = count * rate * 730;
         let formulaStr = `${count} Nodes × $${rate}/hr × 730 hrs`;
-        
+
         if (config.dataTiering) {
-           const mult = pf.tieringPremium || 1.15;
-           computeCost *= mult;
-           formulaStr += ` × ${mult} tiering`;
+          const mult = pf.tieringPremium || 1.15;
+          computeCost *= mult;
+          formulaStr += ` × ${mult} tiering`;
         }
-        
+
         lines.push({ label: `ElastiCache Compute (${nodeType})`, formula: formulaStr, value: computeCost });
         total = computeCost;
         break;
@@ -453,106 +453,106 @@ export class CostService {
           const vcpu = Number(this.getVal(config, node.type, 'vCPU', node.type === 'ecs' ? 0.5 : 2));
           const mem = this.getVal(config, node.type, 'memoryGB', node.type === 'ecs' ? 1 : 4);
           const lbl = node.type === 'batch' ? 'jobs' : 'tasks';
-          
+
           const isArm = config.architecture === 'arm';
           const cpuRate = isArm ? (pf.armCpuHour || 0.03238) : (pf.cpuHour || 0.04048);
           const memRate = isArm ? (pf.armMemHour || 0.00356) : (pf.memHour || 0.004445);
-          
+
           let baseCpuCost = tasks * vcpu * hrs * cpuRate * util;
           let baseMemCost = tasks * mem * hrs * memRate * util;
-          
+
           const spotUsage = (config.spotUsage || 0) / 100;
           const spotDiscount = pf.spotDiscount || 0.70;
           const blendedMultiplier = (1 - spotUsage) + (spotUsage * (1 - spotDiscount));
-          
+
           const cpuCost = baseCpuCost * blendedMultiplier;
-          lines.push({ label: 'Fargate vCPU Cost', formula: `${tasks} ${lbl} × ${vcpu} vCPU × ${hrs} hrs × $${cpuRate.toFixed(5)}/hr × ${(util*100).toFixed(0)}% util × ${(blendedMultiplier*100).toFixed(0)}% blended rate`, value: cpuCost });
+          lines.push({ label: 'Fargate vCPU Cost', formula: `${tasks} ${lbl} × ${vcpu} vCPU × ${hrs} hrs × $${cpuRate.toFixed(5)}/hr × ${(util * 100).toFixed(0)}% util × ${(blendedMultiplier * 100).toFixed(0)}% blended rate`, value: cpuCost });
           const memCost = baseMemCost * blendedMultiplier;
-          lines.push({ label: 'Fargate Memory Cost', formula: `${tasks} ${lbl} × ${mem} GB × ${hrs} hrs × $${memRate.toFixed(5)}/hr × ${(util*100).toFixed(0)}% util × ${(blendedMultiplier*100).toFixed(0)}% blended rate`, value: memCost });
-          
+          lines.push({ label: 'Fargate Memory Cost', formula: `${tasks} ${lbl} × ${mem} GB × ${hrs} hrs × $${memRate.toFixed(5)}/hr × ${(util * 100).toFixed(0)}% util × ${(blendedMultiplier * 100).toFixed(0)}% blended rate`, value: memCost });
+
           let ephCost = 0;
           const ephGB = this.getVal(config, node.type, 'ephemeralStorage', 20);
           if (ephGB > 20) {
             ephCost = tasks * (ephGB - 20) * hrs * (pf.ephemeralGBHour || 0.000111) * util;
             lines.push({ label: 'Ephemeral Storage', formula: `${tasks} ${lbl} × ${ephGB - 20} extra GB × ${hrs} hrs × $${(pf.ephemeralGBHour || 0.000111).toFixed(6)}/hr`, value: ephCost });
           }
-          
+
           computeCost = cpuCost + memCost + ephCost;
         } else {
           const nodeCount = this.getVal(config, node.type, 'nodeCount', 2);
           const nodeType = this.getVal(config, node.type, 'nodeInstanceType', 't3.medium');
           const hourlyRate = pf.instances?.[nodeType] || 0.0416;
-          
+
           const purchase = this.getVal(config, node.type, 'purchaseOption', 'on-demand');
           const discountMap: Record<string, number> = { 'on-demand': 0, 'spot': 0.70, 'reserved': 0.40 };
           const discount = discountMap[purchase] || 0;
-          
+
           const ec2Cost = nodeCount * hourlyRate * hrs * util * (1 - discount);
-          lines.push({ label: `EC2 Nodes (${nodeType})`, formula: `${nodeCount} Nodes × $${hourlyRate.toFixed(4)}/hr × ${hrs} hrs × ${(util*100).toFixed(0)}% util × ${((1 - discount) * 100).toFixed(0)}% rate`, value: ec2Cost });
-          
+          lines.push({ label: `EC2 Nodes (${nodeType})`, formula: `${nodeCount} Nodes × $${hourlyRate.toFixed(4)}/hr × ${hrs} hrs × ${(util * 100).toFixed(0)}% util × ${((1 - discount) * 100).toFixed(0)}% rate`, value: ec2Cost });
+
           const ebsGB = this.getVal(config, node.type, 'ebsStorage', 30);
           const ebsCost = nodeCount * ebsGB * (pf.ebsGBMonth || 0.08);
           lines.push({ label: 'EBS Storage', formula: `${nodeCount} Nodes × ${ebsGB} GB × $${(pf.ebsGBMonth || 0.08).toFixed(2)}/GB`, value: ebsCost });
-          
+
           computeCost = ec2Cost + ebsCost;
         }
-        
+
         const dtGB = this.getVal(config, node.type, 'dataTransferOut', 100);
         const dtCost = dtGB * (pf.dataTransferGB || 0.09);
         lines.push({ label: 'Data Transfer Out', formula: `${dtGB} GB × $${(pf.dataTransferGB || 0.09).toFixed(2)}/GB`, value: dtCost });
-        
+
         const crossAzGB = this.getVal(config, node.type, 'crossAzTraffic', 50);
         const crossAzCost = crossAzGB * (pf.crossAzGB || 0.01);
         lines.push({ label: 'Cross-AZ Traffic', formula: `${crossAzGB} GB × $${(pf.crossAzGB || 0.01).toFixed(2)}/GB`, value: crossAzCost });
-        
+
         let albCost = 0;
         if (config.loadBalancer !== false) {
           albCost = hrs * (pf.albHourly || 0.0225);
           lines.push({ label: 'ALB Hourly Base', formula: `${hrs} hrs × $${(pf.albHourly || 0.0225).toFixed(4)}/hr`, value: albCost });
         }
-        
+
         const logsGB = this.getVal(config, node.type, 'cloudWatchLogs', 10);
         const logsCost = logsGB * (pf.logsGB || 0.50);
         lines.push({ label: 'CloudWatch Logs', formula: `${logsGB} GB × $${(pf.logsGB || 0.50).toFixed(2)}/GB`, value: logsCost });
-        
+
         total = computeCost + dtCost + crossAzCost + albCost + logsCost;
         break;
       }
 
       case 'sqs': {
-        const reqM = this.getVal(config, 'sqs', 'requestsM', 10); 
-        const type = this.getVal(config, 'sqs', 'type', 'standard'); 
-        const rate = pf[type] || 0.40; 
-        const cost = reqM * rate; 
-        lines.push({ label: 'SQS Requests', formula: reqM + 'M × $' + rate.toFixed(2) + '/M', value: cost }); 
+        const reqM = this.getVal(config, 'sqs', 'requestsM', 10);
+        const type = this.getVal(config, 'sqs', 'type', 'standard');
+        const rate = pf[type] || 0.40;
+        const cost = reqM * rate;
+        lines.push({ label: 'SQS Requests', formula: reqM + 'M × $' + rate.toFixed(2) + '/M', value: cost });
         total = cost;
         break;
       }
 
       case 'sns': {
-        const pubM = this.getVal(config, 'sns', 'publishM', 10); 
-        const costPub = pubM * (pf.publish || 0.50); 
-        lines.push({ label: 'Publish', formula: pubM + 'M × $' + (pf.publish || 0.50).toFixed(2) + '/M', value: costPub }); 
-        const delM = this.getVal(config, 'sns', 'httpM', 10); 
-        const costDel = delM * (pf.http || 0.60); 
-        lines.push({ label: 'HTTP Delivery', formula: delM + 'M × $' + (pf.http || 0.60).toFixed(2) + '/M', value: costDel }); 
+        const pubM = this.getVal(config, 'sns', 'publishM', 10);
+        const costPub = pubM * (pf.publish || 0.50);
+        lines.push({ label: 'Publish', formula: pubM + 'M × $' + (pf.publish || 0.50).toFixed(2) + '/M', value: costPub });
+        const delM = this.getVal(config, 'sns', 'httpM', 10);
+        const costDel = delM * (pf.http || 0.60);
+        lines.push({ label: 'HTTP Delivery', formula: delM + 'M × $' + (pf.http || 0.60).toFixed(2) + '/M', value: costDel });
         total = costPub + costDel;
         break;
       }
 
       case 'stepFunctions': {
-        const type = this.getVal(config, 'stepFunctions', 'type', 'standard'); 
-        let cost = 0; 
-        if (type === 'standard') { 
-          const trans = this.getVal(config, 'stepFunctions', 'transitionsM', 1); 
-          cost = trans * (pf.standardM || 25.0); 
-          lines.push({ label: 'Standard Transitions', formula: trans + 'M × $' + (pf.standardM || 25.00).toFixed(2) + '/M', value: cost }); 
-        } else { 
-          const reqM = this.getVal(config, 'stepFunctions', 'expressReqsM', 10); 
-          const gbM = this.getVal(config, 'stepFunctions', 'expressGBsecM', 1); 
-          cost = (reqM * (pf.expressReq || 1.0)) + (gbM * (pf.expressGBsec || 16.67)); 
-          lines.push({ label: 'Express Workflows', formula: reqM + 'M reqs @ $' + (pf.expressReq || 1.0).toFixed(2) + '/M + ' + gbM + 'M GB-s @ $' + (pf.expressGBsec || 16.67).toFixed(2) + '/M', value: cost }); 
-        } 
+        const type = this.getVal(config, 'stepFunctions', 'type', 'standard');
+        let cost = 0;
+        if (type === 'standard') {
+          const trans = this.getVal(config, 'stepFunctions', 'transitionsM', 1);
+          cost = trans * (pf.standardM || 25.0);
+          lines.push({ label: 'Standard Transitions', formula: trans + 'M × $' + (pf.standardM || 25.00).toFixed(2) + '/M', value: cost });
+        } else {
+          const reqM = this.getVal(config, 'stepFunctions', 'expressReqsM', 10);
+          const gbM = this.getVal(config, 'stepFunctions', 'expressGBsecM', 1);
+          cost = (reqM * (pf.expressReq || 1.0)) + (gbM * (pf.expressGBsec || 16.67));
+          lines.push({ label: 'Express Workflows', formula: reqM + 'M reqs @ $' + (pf.expressReq || 1.0).toFixed(2) + '/M + ' + gbM + 'M GB-s @ $' + (pf.expressGBsec || 16.67).toFixed(2) + '/M', value: cost });
+        }
         total = cost;
         break;
       }
@@ -560,38 +560,38 @@ export class CostService {
       case 'aurora': {
         const mode = this.getVal(config, 'aurora', 'mode', 'serverless-v2');
         const count = this.getVal(config, 'aurora', 'count', 2);
-        
+
         let computeCost = 0;
         if (mode === 'serverless-v2') {
-           const acus = this.getVal(config, 'aurora', 'avgAcus', 2);
-           const rate = pf.serverlessAcuHour || 0.12;
-           computeCost = count * acus * rate * 730;
-           lines.push({ label: 'Aurora Serverless', formula: `${count} Instances × ${acus} ACUs × $${rate}/hr × 730 hrs`, value: computeCost });
+          const acus = this.getVal(config, 'aurora', 'avgAcus', 2);
+          const rate = pf.serverlessAcuHour || 0.12;
+          computeCost = count * acus * rate * 730;
+          lines.push({ label: 'Aurora Serverless', formula: `${count} Instances × ${acus} ACUs × $${rate}/hr × 730 hrs`, value: computeCost });
         } else {
-           const inst = this.getVal(config, 'aurora', 'instanceClass', 'db.r6g.large');
-           const rate = pf.instances?.[inst] || 0.26;
-           computeCost = count * rate * 730;
-           lines.push({ label: `Aurora Provisioned (${inst})`, formula: `${count} Instances × $${rate}/hr × 730 hrs`, value: computeCost });
+          const inst = this.getVal(config, 'aurora', 'instanceClass', 'db.r6g.large');
+          const rate = pf.instances?.[inst] || 0.26;
+          computeCost = count * rate * 730;
+          lines.push({ label: `Aurora Provisioned (${inst})`, formula: `${count} Instances × $${rate}/hr × 730 hrs`, value: computeCost });
         }
-        
+
         const sGB = this.getVal(config, 'aurora', 'storageSize', 100);
         const sRate = pf.storageGB || 0.10;
         const storageCost = sGB * sRate;
         lines.push({ label: 'Storage', formula: `${sGB} GB × $${sRate}/GB`, value: storageCost });
-        
+
         const ioM = this.getVal(config, 'aurora', 'ioRequestsM', 10);
         const ioRate = pf.ioRequestPerM || 0.20;
         const ioCost = ioM * ioRate;
         if (ioCost > 0) lines.push({ label: 'I/O Requests', formula: `${ioM}M × $${ioRate}/M`, value: ioCost });
-        
+
         total = computeCost + storageCost + ioCost;
         break;
       }
 
       case 'eventBridge': {
-        const evM = this.getVal(config, 'eventBridge', 'eventsM', 10); 
-        const cost = evM * (pf.eventM || 1.00); 
-        lines.push({ label: 'Events Published', formula: evM + 'M × $' + (pf.eventM || 1.00).toFixed(2) + '/M', value: cost }); 
+        const evM = this.getVal(config, 'eventBridge', 'eventsM', 10);
+        const cost = evM * (pf.eventM || 1.00);
+        lines.push({ label: 'Events Published', formula: evM + 'M × $' + (pf.eventM || 1.00).toFixed(2) + '/M', value: cost });
         total = cost;
         break;
       }
@@ -624,23 +624,23 @@ export class CostService {
       }
 
       case 'cognito': {
-        const mau = this.getVal(config, 'cognito', 'mau', 50000); 
-        const billable = Math.max(0, mau - (pf.freeTier || 50000)); 
-        const cost = billable * (pf.ratePerUser || 0.0055); 
-        lines.push({ label: 'MAUs', formula: billable + ' Billable MAUs × $' + (pf.ratePerUser || 0.0055).toFixed(4), value: cost }); 
+        const mau = this.getVal(config, 'cognito', 'mau', 50000);
+        const billable = Math.max(0, mau - (pf.freeTier || 50000));
+        const cost = billable * (pf.ratePerUser || 0.0055);
+        lines.push({ label: 'MAUs', formula: billable + ' Billable MAUs × $' + (pf.ratePerUser || 0.0055).toFixed(4), value: cost });
         total = cost;
         break;
       }
 
       case 'waf': {
-        const acls = this.getVal(config, 'waf', 'acls', 1); 
-        const costAcl = acls * (pf.aclMonth || 5.0); 
-        const rules = this.getVal(config, 'waf', 'rules', 5); 
-        const costRules = acls * rules * (pf.ruleMonth || 1.0); 
-        const reqs = this.getVal(config, 'waf', 'requestsM', 10); 
-        const costReqs = reqs * (pf.reqM || 0.60); 
-        lines.push({ label: 'WAF ACLs & Rules', formula: acls + ' ACLs, ' + rules + ' Rules', value: costAcl + costRules }); 
-        lines.push({ label: 'Requests Analyzed', formula: reqs + 'M × $' + (pf.reqM || 0.60).toFixed(2) + '/M', value: costReqs }); 
+        const acls = this.getVal(config, 'waf', 'acls', 1);
+        const costAcl = acls * (pf.aclMonth || 5.0);
+        const rules = this.getVal(config, 'waf', 'rules', 5);
+        const costRules = acls * rules * (pf.ruleMonth || 1.0);
+        const reqs = this.getVal(config, 'waf', 'requestsM', 10);
+        const costReqs = reqs * (pf.reqM || 0.60);
+        lines.push({ label: 'WAF ACLs & Rules', formula: acls + ' ACLs, ' + rules + ' Rules', value: costAcl + costRules });
+        lines.push({ label: 'Requests Analyzed', formula: reqs + 'M × $' + (pf.reqM || 0.60).toFixed(2) + '/M', value: costReqs });
         total = costAcl + costRules + costReqs;
         break;
       }
@@ -668,12 +668,12 @@ export class CostService {
       }
 
       case 'secretsManager': {
-        const sec = this.getVal(config, 'secretsManager', 'secrets', 10); 
-        const costSec = sec * (pf.secretMonth || 0.40); 
-        lines.push({ label: 'Secrets Stored', formula: sec + ' Secrets × $' + (pf.secretMonth || 0.40).toFixed(2), value: costSec }); 
-        const calls = this.getVal(config, 'secretsManager', 'callsM', 1); 
-        const costCall = calls * (pf.callM || 0.05); 
-        lines.push({ label: 'API Calls', formula: calls + 'M × $' + (pf.callM || 0.05).toFixed(2) + '/M', value: costCall }); 
+        const sec = this.getVal(config, 'secretsManager', 'secrets', 10);
+        const costSec = sec * (pf.secretMonth || 0.40);
+        lines.push({ label: 'Secrets Stored', formula: sec + ' Secrets × $' + (pf.secretMonth || 0.40).toFixed(2), value: costSec });
+        const calls = this.getVal(config, 'secretsManager', 'callsM', 1);
+        const costCall = calls * (pf.callM || 0.05);
+        lines.push({ label: 'API Calls', formula: calls + 'M × $' + (pf.callM || 0.05).toFixed(2) + '/M', value: costCall });
         total = costSec + costCall;
         break;
       }
@@ -713,12 +713,12 @@ export class CostService {
       }
 
       case 'xray': {
-        const tr = this.getVal(config, 'xray', 'tracesM', 1); 
-        const costTr = tr * (pf.recordM || 5.0); 
-        lines.push({ label: 'Traces Recorded', formula: tr + 'M × $' + (pf.recordM || 5.00).toFixed(2) + '/M', value: costTr }); 
-        const sc = this.getVal(config, 'xray', 'scansM', 10); 
-        const costSc = sc * (pf.scanM || 0.50); 
-        lines.push({ label: 'Traces Scanned', formula: sc + 'M × $' + (pf.scanM || 0.50).toFixed(2) + '/M', value: costSc }); 
+        const tr = this.getVal(config, 'xray', 'tracesM', 1);
+        const costTr = tr * (pf.recordM || 5.0);
+        lines.push({ label: 'Traces Recorded', formula: tr + 'M × $' + (pf.recordM || 5.00).toFixed(2) + '/M', value: costTr });
+        const sc = this.getVal(config, 'xray', 'scansM', 10);
+        const costSc = sc * (pf.scanM || 0.50);
+        lines.push({ label: 'Traces Scanned', formula: sc + 'M × $' + (pf.scanM || 0.50).toFixed(2) + '/M', value: costSc });
         total = costTr + costSc;
         break;
       }
@@ -742,16 +742,16 @@ export class CostService {
         const hours = this.getVal(config, 'redshift', 'hours', 730);
         let compCost = 0;
         if (type === 'provisioned') {
-           const nodes = this.getVal(config, 'redshift', 'nodes', 2);
-           const inst = this.getVal(config, 'redshift', 'instance', 'ra3.xlplus');
-           const rate = pf.instances?.[inst] || 1.086;
-           compCost = nodes * rate * hours;
-           lines.push({ label: 'Provisioned Nodes (' + inst + ')', formula: nodes + ' Nodes × $' + rate + '/hr × ' + hours + ' hrs', value: compCost });
+          const nodes = this.getVal(config, 'redshift', 'nodes', 2);
+          const inst = this.getVal(config, 'redshift', 'instance', 'ra3.xlplus');
+          const rate = pf.instances?.[inst] || 1.086;
+          compCost = nodes * rate * hours;
+          lines.push({ label: 'Provisioned Nodes (' + inst + ')', formula: nodes + ' Nodes × $' + rate + '/hr × ' + hours + ' hrs', value: compCost });
         } else {
-           const rpus = this.getVal(config, 'redshift', 'rpus', 32);
-           const rate = pf.rpuHour || 0.36;
-           compCost = rpus * rate * hours;
-           lines.push({ label: 'Serverless Compute', formula: rpus + ' RPUs × $' + rate + '/hr × ' + hours + ' hrs', value: compCost });
+          const rpus = this.getVal(config, 'redshift', 'rpus', 32);
+          const rate = pf.rpuHour || 0.36;
+          compCost = rpus * rate * hours;
+          lines.push({ label: 'Serverless Compute', formula: rpus + ' RPUs × $' + rate + '/hr × ' + hours + ' hrs', value: compCost });
         }
         const tb = this.getVal(config, 'redshift', 'storageTB', 1);
         const sRate = pf.storageTB || 24.576;
@@ -792,74 +792,74 @@ export class CostService {
         lines.push({ label: 'Data Ingestion', formula: gb + ' GB × $' + rate + '/GB', value: ingestCost });
         let convCost = 0;
         if (config.conversion) {
-           const cRate = pf.convertGB || 0.018;
-           convCost = gb * cRate;
-           lines.push({ label: 'Format Conversion', formula: gb + ' GB × $' + cRate + '/GB', value: convCost });
+          const cRate = pf.convertGB || 0.018;
+          convCost = gb * cRate;
+          lines.push({ label: 'Format Conversion', formula: gb + ' GB × $' + cRate + '/GB', value: convCost });
         }
         total = ingestCost + convCost;
         break;
       }
 
       case 'mq': {
-        const b = this.getVal(config, 'mq', 'brokers', 1); 
-        const inst = this.getVal(config, 'mq', 'instance', 'mq.m5.large'); 
-        const rate = pf.instances?.[inst] || 0.34; 
-        const cost = b * rate * 730; 
-        lines.push({ label: 'MQ Brokers', formula: b + ' Brokers × $' + rate + '/hr × 730 hrs', value: cost }); 
+        const b = this.getVal(config, 'mq', 'brokers', 1);
+        const inst = this.getVal(config, 'mq', 'instance', 'mq.m5.large');
+        const rate = pf.instances?.[inst] || 0.34;
+        const cost = b * rate * 730;
+        lines.push({ label: 'MQ Brokers', formula: b + ' Brokers × $' + rate + '/hr × 730 hrs', value: cost });
         total = cost;
         break;
       }
 
       case 'kms': {
-        const keys = this.getVal(config, 'kms', 'keys', 5); 
-        const costKeys = keys * (pf.keyMonth || 1.0); 
-        lines.push({ label: 'CMKs', formula: keys + ' Keys × $' + (pf.keyMonth || 1.00).toFixed(2), value: costKeys }); 
-        const reqM = this.getVal(config, 'kms', 'requestsM', 10); 
-        const costReq = reqM * (pf.reqM || 0.03); 
-        lines.push({ label: 'API Requests', formula: reqM + 'M × $' + (pf.reqM || 0.03).toFixed(2) + '/M', value: costReq }); 
+        const keys = this.getVal(config, 'kms', 'keys', 5);
+        const costKeys = keys * (pf.keyMonth || 1.0);
+        lines.push({ label: 'CMKs', formula: keys + ' Keys × $' + (pf.keyMonth || 1.00).toFixed(2), value: costKeys });
+        const reqM = this.getVal(config, 'kms', 'requestsM', 10);
+        const costReq = reqM * (pf.reqM || 0.03);
+        lines.push({ label: 'API Requests', formula: reqM + 'M × $' + (pf.reqM || 0.03).toFixed(2) + '/M', value: costReq });
         total = costKeys + costReq;
         break;
       }
 
       case 'shield': {
-        const adv = this.getVal(config, 'shield', 'advanced', false); 
-        const cost = adv ? (pf.advancedMonth || 3000) : 0; 
+        const adv = this.getVal(config, 'shield', 'advanced', false);
+        const cost = adv ? (pf.advancedMonth || 3000) : 0;
         if (adv) {
-          lines.push({ label: 'Shield Advanced', formula: '$' + (pf.advancedMonth || 3000) + ' / month flat', value: cost }); 
+          lines.push({ label: 'Shield Advanced', formula: '$' + (pf.advancedMonth || 3000) + ' / month flat', value: cost });
         }
         total = cost;
         break;
       }
 
       case 'organizations': {
-        lines.push({ label: 'AWS Organizations is free', formula: '0.00', value: 0 }); 
+        lines.push({ label: 'AWS Organizations is free', formula: '0.00', value: 0 });
         total = 0;
         break;
       }
 
       case 'codePipeline': {
-        const p = this.getVal(config, 'codePipeline', 'pipelines', 5); 
-        const cost = p * (pf.pipelineMonth || 1.0); 
-        lines.push({ label: 'Active Pipelines', formula: p + ' Pipelines × $' + (pf.pipelineMonth || 1.00).toFixed(2), value: cost }); 
+        const p = this.getVal(config, 'codePipeline', 'pipelines', 5);
+        const cost = p * (pf.pipelineMonth || 1.0);
+        lines.push({ label: 'Active Pipelines', formula: p + ' Pipelines × $' + (pf.pipelineMonth || 1.00).toFixed(2), value: cost });
         total = cost;
         break;
       }
 
       case 'codeBuild': {
-        const min = this.getVal(config, 'codeBuild', 'minutes', 1000); 
-        const type = this.getVal(config, 'codeBuild', 'computeType', 'general1.small'); 
-        const rate = pf.rates?.[type] || 0.005; 
-        const cost = min * rate; 
-        lines.push({ label: 'Build Compute', formula: min + ' min × $' + rate + '/min', value: cost }); 
+        const min = this.getVal(config, 'codeBuild', 'minutes', 1000);
+        const type = this.getVal(config, 'codeBuild', 'computeType', 'general1.small');
+        const rate = pf.rates?.[type] || 0.005;
+        const cost = min * rate;
+        lines.push({ label: 'Build Compute', formula: min + ' min × $' + rate + '/min', value: cost });
         total = cost;
         break;
       }
 
       case 'codeDeploy': {
-        const up = this.getVal(config, 'codeDeploy', 'onPremUpdates', 0); 
-        const cost = up * (pf.updateRate || 0.02); 
+        const up = this.getVal(config, 'codeDeploy', 'onPremUpdates', 0);
+        const cost = up * (pf.updateRate || 0.02);
         if (cost > 0) {
-          lines.push({ label: 'On-Prem Updates', formula: up + ' Updates × $' + (pf.updateRate || 0.02).toFixed(2), value: cost }); 
+          lines.push({ label: 'On-Prem Updates', formula: up + ' Updates × $' + (pf.updateRate || 0.02).toFixed(2), value: cost });
         }
         total = cost;
         break;
@@ -883,23 +883,23 @@ export class CostService {
         const type = this.getVal(config, 'sageMaker', 'type', 'instance');
         let computeCost = 0;
         if (type === 'instance') {
-           const inst = this.getVal(config, 'sageMaker', 'instance', 'ml.m5.large');
-           const count = this.getVal(config, 'sageMaker', 'count', 1);
-           const rate = pf.instances?.[inst] || 0.134;
-           computeCost = count * rate * 730;
-           lines.push({ label: 'Hosting (' + inst + ')', formula: count + ' Instances × $' + rate + '/hr × 730 hrs', value: computeCost });
+          const inst = this.getVal(config, 'sageMaker', 'instance', 'ml.m5.large');
+          const count = this.getVal(config, 'sageMaker', 'count', 1);
+          const rate = pf.instances?.[inst] || 0.134;
+          computeCost = count * rate * 730;
+          lines.push({ label: 'Hosting (' + inst + ')', formula: count + ' Instances × $' + rate + '/hr × 730 hrs', value: computeCost });
         } else {
-           const mem = this.getVal(config, 'sageMaker', 'memoryMB', 2048);
-           const dur = this.getVal(config, 'sageMaker', 'durationMs', 500);
-           const invM = this.getVal(config, 'sageMaker', 'invocationsM', 1);
-           const gbSec = invM * 1000000 * (dur/1000) * (mem/1024);
-           const rate = pf.serverlessGBsec || 0.000020;
-           const reqRate = pf.serverlessReqM || 0.20;
-           const gbCost = gbSec * rate;
-           const reqCost = invM * reqRate;
-           computeCost = gbCost + reqCost;
-           lines.push({ label: 'Serverless Compute', formula: Math.round(gbSec) + ' GB-s × $' + rate + '/GB-s', value: gbCost });
-           lines.push({ label: 'Serverless Requests', formula: invM + 'M × $' + reqRate + '/M', value: reqCost });
+          const mem = this.getVal(config, 'sageMaker', 'memoryMB', 2048);
+          const dur = this.getVal(config, 'sageMaker', 'durationMs', 500);
+          const invM = this.getVal(config, 'sageMaker', 'invocationsM', 1);
+          const gbSec = invM * 1000000 * (dur / 1000) * (mem / 1024);
+          const rate = pf.serverlessGBsec || 0.000020;
+          const reqRate = pf.serverlessReqM || 0.20;
+          const gbCost = gbSec * rate;
+          const reqCost = invM * reqRate;
+          computeCost = gbCost + reqCost;
+          lines.push({ label: 'Serverless Compute', formula: Math.round(gbSec) + ' GB-s × $' + rate + '/GB-s', value: gbCost });
+          lines.push({ label: 'Serverless Requests', formula: invM + 'M × $' + reqRate + '/M', value: reqCost });
         }
         const trainHr = this.getVal(config, 'sageMaker', 'trainingHours', 10);
         const trainRate = pf.trainingHourly || 1.50;
@@ -910,84 +910,84 @@ export class CostService {
       }
 
       case 'appSync': {
-        const reqM = this.getVal(config, 'appSync', 'requestsM', 10); 
-        const costReq = reqM * (pf.reqM || 4.0); 
-        lines.push({ label: 'GraphQL Requests', formula: reqM + 'M × $' + (pf.reqM || 4.0).toFixed(2) + '/M', value: costReq }); 
-        const dt = this.getVal(config, 'appSync', 'dtGB', 100); 
-        const costDt = dt * (pf.dtGB || 0.09); 
-        lines.push({ label: 'Data Transfer', formula: dt + ' GB × $' + (pf.dtGB || 0.09).toFixed(2) + '/GB', value: costDt }); 
+        const reqM = this.getVal(config, 'appSync', 'requestsM', 10);
+        const costReq = reqM * (pf.reqM || 4.0);
+        lines.push({ label: 'GraphQL Requests', formula: reqM + 'M × $' + (pf.reqM || 4.0).toFixed(2) + '/M', value: costReq });
+        const dt = this.getVal(config, 'appSync', 'dtGB', 100);
+        const costDt = dt * (pf.dtGB || 0.09);
+        lines.push({ label: 'Data Transfer', formula: dt + ' GB × $' + (pf.dtGB || 0.09).toFixed(2) + '/GB', value: costDt });
         total = costReq + costDt;
         break;
       }
 
       case 'iotCore': {
-        const msg = this.getVal(config, 'iotCore', 'messagesM', 50); 
-        const costMsg = msg * (pf.msgM || 1.0); 
-        lines.push({ label: 'Messages', formula: msg + 'M × $' + (pf.msgM || 1.0).toFixed(2) + '/M', value: costMsg }); 
-        const rules = this.getVal(config, 'iotCore', 'rulesM', 50); 
-        const costRules = rules * (pf.ruleM || 0.15); 
-        lines.push({ label: 'Rules Executed', formula: rules + 'M × $' + (pf.ruleM || 0.15).toFixed(2) + '/M', value: costRules }); 
+        const msg = this.getVal(config, 'iotCore', 'messagesM', 50);
+        const costMsg = msg * (pf.msgM || 1.0);
+        lines.push({ label: 'Messages', formula: msg + 'M × $' + (pf.msgM || 1.0).toFixed(2) + '/M', value: costMsg });
+        const rules = this.getVal(config, 'iotCore', 'rulesM', 50);
+        const costRules = rules * (pf.ruleM || 0.15);
+        lines.push({ label: 'Rules Executed', formula: rules + 'M × $' + (pf.ruleM || 0.15).toFixed(2) + '/M', value: costRules });
         total = costMsg + costRules;
         break;
       }
 
       case 'rekognition': {
-        const img = this.getVal(config, 'rekognition', 'imagesM', 1); 
-        const cost = img * (pf.imageM || 1000); 
-        lines.push({ label: 'Image Processing', formula: img + 'M × $' + (pf.imageM || 1000).toFixed(2) + '/M', value: cost }); 
+        const img = this.getVal(config, 'rekognition', 'imagesM', 1);
+        const cost = img * (pf.imageM || 1000);
+        lines.push({ label: 'Image Processing', formula: img + 'M × $' + (pf.imageM || 1000).toFixed(2) + '/M', value: cost });
         total = cost;
         break;
       }
 
       case 'textract': {
-        const pages = this.getVal(config, 'textract', 'pagesM', 0.1); 
-        const cost = pages * (pf.pageM || 1500); 
-        lines.push({ label: 'Page Extraction', formula: pages + 'M × $' + (pf.pageM || 1500).toFixed(2) + '/M', value: cost }); 
+        const pages = this.getVal(config, 'textract', 'pagesM', 0.1);
+        const cost = pages * (pf.pageM || 1500);
+        lines.push({ label: 'Page Extraction', formula: pages + 'M × $' + (pf.pageM || 1500).toFixed(2) + '/M', value: cost });
         total = cost;
         break;
       }
 
       case 'mediaConvert': {
-        const min = this.getVal(config, 'mediaConvert', 'minutesHD', 1000); 
-        const cost = min * (pf.minHD || 0.017); 
-        lines.push({ label: 'HD Conversion', formula: min + ' min × $' + (pf.minHD || 0.017).toFixed(3) + '/min', value: cost }); 
+        const min = this.getVal(config, 'mediaConvert', 'minutesHD', 1000);
+        const cost = min * (pf.minHD || 0.017);
+        lines.push({ label: 'HD Conversion', formula: min + ' min × $' + (pf.minHD || 0.017).toFixed(3) + '/min', value: cost });
         total = cost;
         break;
       }
 
       case 'cloudTrail': {
-        const ev = this.getVal(config, 'cloudTrail', 'eventsM', 10); 
-        const cost = ev * (pf.eventM || 1.0); 
-        lines.push({ label: 'Data Events', formula: ev + 'M × $' + (pf.eventM || 1.0).toFixed(2) + '/M', value: cost }); 
+        const ev = this.getVal(config, 'cloudTrail', 'eventsM', 10);
+        const cost = ev * (pf.eventM || 1.0);
+        lines.push({ label: 'Data Events', formula: ev + 'M × $' + (pf.eventM || 1.0).toFixed(2) + '/M', value: cost });
         total = cost;
         break;
       }
 
       case 'backup': {
-        const wGB = this.getVal(config, 'backup', 'warmGB', 100); 
-        const costW = wGB * (pf.warmGB || 0.05); 
-        lines.push({ label: 'Warm Storage', formula: wGB + ' GB × $' + (pf.warmGB || 0.05).toFixed(2) + '/GB', value: costW }); 
-        const cGB = this.getVal(config, 'backup', 'coldGB', 0); 
-        const costC = cGB * (pf.coldGB || 0.01); 
-        lines.push({ label: 'Cold Storage', formula: cGB + ' GB × $' + (pf.coldGB || 0.01).toFixed(2) + '/GB', value: costC }); 
+        const wGB = this.getVal(config, 'backup', 'warmGB', 100);
+        const costW = wGB * (pf.warmGB || 0.05);
+        lines.push({ label: 'Warm Storage', formula: wGB + ' GB × $' + (pf.warmGB || 0.05).toFixed(2) + '/GB', value: costW });
+        const cGB = this.getVal(config, 'backup', 'coldGB', 0);
+        const costC = cGB * (pf.coldGB || 0.01);
+        lines.push({ label: 'Cold Storage', formula: cGB + ' GB × $' + (pf.coldGB || 0.01).toFixed(2) + '/GB', value: costC });
         total = costW + costC;
         break;
       }
 
       case 'appRunner': {
-        const inst = this.getVal(config, 'appRunner', 'instances', 2); 
-        const vcpu = this.getVal(config, 'appRunner', 'vcpu', 1); 
-        const mem = this.getVal(config, 'appRunner', 'memGB', 2); 
-        const cpuRate = pf.cpuHour || 0.064; 
-        const memRate = pf.memHour || 0.007; 
-        const cost = inst * 730 * ((vcpu * cpuRate) + (mem * memRate)); 
-        lines.push({ label: 'AppRunner Instances', formula: inst + ' Inst × 730 hrs', value: cost }); 
+        const inst = this.getVal(config, 'appRunner', 'instances', 2);
+        const vcpu = this.getVal(config, 'appRunner', 'vcpu', 1);
+        const mem = this.getVal(config, 'appRunner', 'memGB', 2);
+        const cpuRate = pf.cpuHour || 0.064;
+        const memRate = pf.memHour || 0.007;
+        const cost = inst * 730 * ((vcpu * cpuRate) + (mem * memRate));
+        lines.push({ label: 'AppRunner Instances', formula: inst + ' Inst × 730 hrs', value: cost });
         total = cost;
         break;
       }
 
       case 'elasticBeanstalk': {
-        lines.push({ label: 'Elastic Beanstalk (Free)', formula: 'Compute billed separately under EC2', value: 0 }); 
+        lines.push({ label: 'Elastic Beanstalk (Free)', formula: 'Compute billed separately under EC2', value: 0 });
         total = 0;
         break;
       }
@@ -1008,28 +1008,28 @@ export class CostService {
       }
 
       case 'certificateManager': {
-        lines.push({ label: 'ACM Public Certs are free', formula: '0.00', value: 0 }); 
+        lines.push({ label: 'ACM Public Certs are free', formula: '0.00', value: 0 });
         total = 0;
         break;
       }
 
       case 'systemsManager': {
-        const inst = this.getVal(config, 'systemsManager', 'advancedInst', 0); 
-        const costInst = inst * 730 * (pf.instHour || 0.00695); 
+        const inst = this.getVal(config, 'systemsManager', 'advancedInst', 0);
+        const costInst = inst * 730 * (pf.instHour || 0.00695);
         if (costInst > 0) {
-          lines.push({ label: 'Advanced Instances', formula: inst + ' Inst × 730 hrs', value: costInst }); 
+          lines.push({ label: 'Advanced Instances', formula: inst + ' Inst × 730 hrs', value: costInst });
         }
-        const calls = this.getVal(config, 'systemsManager', 'paramCallsM', 10); 
-        const costCalls = calls * (pf.callM || 0.05); 
-        lines.push({ label: 'Parameter Calls', formula: calls + 'M × $' + (pf.callM || 0.05).toFixed(2) + '/M', value: costCalls }); 
+        const calls = this.getVal(config, 'systemsManager', 'paramCallsM', 10);
+        const costCalls = calls * (pf.callM || 0.05);
+        lines.push({ label: 'Parameter Calls', formula: calls + 'M × $' + (pf.callM || 0.05).toFixed(2) + '/M', value: costCalls });
         total = costInst + costCalls;
         break;
       }
 
       case 'ecr': {
-        const gb = this.getVal(config, 'ecr', 'storageGB', 50); 
-        const cost = gb * (pf.storageGB || 0.10); 
-        lines.push({ label: 'ECR Storage', formula: gb + ' GB × $' + (pf.storageGB || 0.10).toFixed(2) + '/GB', value: cost }); 
+        const gb = this.getVal(config, 'ecr', 'storageGB', 50);
+        const cost = gb * (pf.storageGB || 0.10);
+        lines.push({ label: 'ECR Storage', formula: gb + ' GB × $' + (pf.storageGB || 0.10).toFixed(2) + '/GB', value: cost });
         total = cost;
         break;
       }
