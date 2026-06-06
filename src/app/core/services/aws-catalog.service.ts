@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AwsServiceDefinition, AwsServiceType, ServiceConfig } from '../models/architecture.model';
 import awsServicesConfig from '../config/aws-services.json';
+import * as serviceCostModelData from '../data/service-cost-model.json';
 
 const baseDefaults: ServiceConfig = {
   throughput: 100,
@@ -118,6 +119,29 @@ const iconUrls: Record<AwsServiceType, string> = {
 @Injectable({ providedIn: 'root' })
 export class AwsCatalogService {
   readonly services: AwsServiceDefinition[];
+  private readonly costModel = (serviceCostModelData as any).serviceCostModel || {};
+
+  private getDefaultsFromModel(serviceType: string): Record<string, any> {
+    const serviceModel = this.costModel[serviceType];
+    const defaults: Record<string, any> = {};
+    if (!serviceModel) return defaults;
+
+    if (Array.isArray(serviceModel.primaryParams)) {
+      for (const param of serviceModel.primaryParams) {
+        if (param.key && param.default !== undefined) {
+          defaults[param.key] = param.default;
+        }
+      }
+    }
+    if (Array.isArray(serviceModel.costParams)) {
+      for (const param of serviceModel.costParams) {
+        if (param.key && param.default !== undefined) {
+          defaults[param.key] = param.default;
+        }
+      }
+    }
+    return defaults;
+  }
 
   constructor() {
     const rawData: any = awsServicesConfig;
@@ -176,6 +200,7 @@ export class AwsCatalogService {
     const rawData: any = awsServicesConfig;
     const servicesData = rawData.services || (rawData.default && rawData.default.services) || [];
     const config = servicesData.find((s: any) => s.type === type);
+    const modelDefaults = this.getDefaultsFromModel(type);
 
     return {
       type,
@@ -190,7 +215,7 @@ export class AwsCatalogService {
         ...inputs.map((port) => ({ id: `in-${port}`, label: port.toUpperCase(), direction: 'input' as const, type: port as never })),
         ...outputs.map((port) => ({ id: `out-${port}`, label: port.toUpperCase(), direction: 'output' as const, type: port as never }))
       ],
-      defaults: { ...baseDefaults, ...defaults },
+      defaults: { ...baseDefaults, ...defaults, ...modelDefaults },
       behavior: {
         scalable: ['lambda', 'ecs', 'autoScalingGroup', 'sqs', 'sns', 'dynamoDb', 'cloudfront', 'batch', 'eks', 'aurora', 'appRunner', 'appSync', 'kinesisFirehose', 'glue', 'emr', 'kinesis', 'msk', 'openSearch', 'redshift', 'sageMaker', 'ecr', 'privateLink'].includes(type),
         stateful: ['rds', 'elastiCache', 's3', 'dynamoDb', 'aurora', 'efs', 'openSearch', 'redshift', 'fsx', 'backup', 'ecr'].includes(type),

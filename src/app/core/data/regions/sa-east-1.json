@@ -1,0 +1,486 @@
+{
+  "regionCode": "sa-east-1",
+  "regionName": "South America (São Paulo)",
+  "services": {
+    "client": {},
+    "route53": {
+      "zoneMonthly": 1.38,
+      "standardM": 1.38
+    },
+    "cloudfront": {
+      "dtOut": {
+        "us-eu": 1.38,
+        "asia": 1.38,
+        "sa": 1.38
+      },
+      "requestsM": {
+        "us-eu": 1.38,
+        "asia": 1.38,
+        "sa": 1.38
+      },
+      "wafBase": 1.38,
+      "wafRequestM": 1.38
+    },
+    "apiGateway": {
+      "requestsM": {
+        "rest": 1.38,
+        "http": 1.38,
+        "websocket": 1.38
+      },
+      "cacheRates": {
+        "0": 1.38,
+        "0.5": 1.38,
+        "1.6": 1.38,
+        "6.1": 1.38
+      }
+    },
+    "alb": {
+      "hourly": 1.38,
+      "lcuHour": 1.38
+    },
+    "vpc": {
+      "endpointHourly": 1.38,
+      "endpointGB": 1.38
+    },
+    "ec2": {
+      "familyRatesLarge": {
+        "t3": 1.38,
+        "m5": 1.38,
+        "m6g": 1.38,
+        "c5": 1.38,
+        "c6g": 1.38,
+        "r5": 1.38,
+        "r6g": 1.38
+      },
+      "sizeMultipliers": {
+        "micro": 1.38,
+        "small": 1.38,
+        "medium": 1.38,
+        "large": 1.38,
+        "xlarge": 1.38,
+        "2xlarge": 1.38,
+        "4xlarge": 1.38
+      },
+      "purchaseDiscounts": {
+        "on-demand": 1.38,
+        "reserved-1yr": 1.38,
+        "reserved-3yr": 1.38,
+        "spot": 1.38
+      },
+      "ebsRates": {
+        "gp2": 1.38,
+        "gp3": 1.38,
+        "io2": 1.38
+      },
+      "dataTransferGB": 1.38
+    },
+    "ecs": {
+      "cpuHour": 1.38,
+      "memHour": 1.38,
+      "armCpuHour": 1.38,
+      "armMemHour": 1.38,
+      "windowsCpuPremium": 1.38,
+      "windowsMemPremium": 1.38,
+      "spotDiscount": 1.38,
+      "ephemeralGBHour": 1.38,
+      "publicIpHour": 1.38,
+      "instances": {
+        "t3.medium": 1.38,
+        "m5.large": 1.38,
+        "m5.xlarge": 1.38,
+        "m6g.large": 1.38
+      },
+      "ebsGBMonth": 1.38,
+      "reservedDiscount": 1.38,
+      "dataTransferGB": 1.38,
+      "crossAzGB": 1.38,
+      "albHourly": 1.38,
+      "logsGB": 1.38
+    },
+    "autoScalingGroup": {
+      "familyRatesLarge": {
+        "t3": 1.38,
+        "m5": 1.38,
+        "m6g": 1.38,
+        "c5": 1.38,
+        "c6g": 1.38,
+        "r5": 1.38,
+        "r6g": 1.38
+      },
+      "sizeMultipliers": {
+        "micro": 1.38,
+        "small": 1.38,
+        "medium": 1.38,
+        "large": 1.38,
+        "xlarge": 1.38,
+        "2xlarge": 1.38,
+        "4xlarge": 1.38
+      },
+      "purchaseDiscounts": {
+        "on-demand": 1.38,
+        "reserved-1yr": 1.38,
+        "reserved-3yr": 1.38,
+        "spot": 1.38
+      },
+      "ebsRates": {
+        "gp2": 1.38,
+        "gp3": 1.38,
+        "io2": 1.38
+      },
+      "dataTransferGB": 1.38
+    },
+    "lambda": {
+      "requestM": 1.38,
+      "gbSec_x86": 1.38,
+      "gbSec_arm": 1.38,
+      "ephemeralGB_Sec": 1.38,
+      "provConcurrency_x86": 1.38,
+      "provConcurrency_arm": 1.38
+    },
+    "sqs": {
+      "standard": 1.38,
+      "fifo": 1.38
+    },
+    "sns": {
+      "publish": 1.38,
+      "http": 1.38,
+      "email": 1.38
+    },
+    "s3": {
+      "storage": {
+        "standard": 1.38,
+        "intelligent": 1.38,
+        "sia": 1.38,
+        "glacier": 1.38
+      },
+      "puts": {
+        "standard": 1.38,
+        "intelligent": 1.38,
+        "sia": 1.38,
+        "glacier": 1.38
+      },
+      "gets": {
+        "standard": 1.38,
+        "intelligent": 1.38,
+        "sia": 1.38,
+        "glacier": 1.38
+      },
+      "dataTransferGB": 1.38
+    },
+    "rds": {
+      "engines": {
+        "mysql": 1.38,
+        "postgresql": 1.38,
+        "sqlserver-ex": 1.38,
+        "oracle-se2": 1.38
+      },
+      "instances": {
+        "db.t3.medium": 1.38,
+        "db.m5.large": 1.38,
+        "db.r5.large": 1.38,
+        "db.r6g.large": 1.38
+      },
+      "multiAzMultiplier": 1.38,
+      "storage": {
+        "gp2": 1.38,
+        "gp3": 1.38
+      },
+      "backupGB": 1.38
+    },
+    "elastiCache": {
+      "instances": {
+        "cache.t3.micro": 1.38,
+        "cache.t3.medium": 1.38,
+        "cache.m5.large": 1.38,
+        "cache.r6g.large": 1.38
+      },
+      "tieringPremium": 1.38
+    },
+    "dynamoDb": {
+      "std": {
+        "readM": 1.38,
+        "writeM": 1.38,
+        "wcuHr": 1.38,
+        "rcuHr": 1.38,
+        "storageGB": 1.38
+      },
+      "ia": {
+        "readM": 1.38,
+        "writeM": 1.38,
+        "wcuHr": 1.38,
+        "rcuHr": 1.38,
+        "storageGB": 1.38
+      },
+      "globalMultiplier": 1.38
+    },
+    "iam": {},
+    "cloudWatch": {
+      "metricRate": 1.38,
+      "logsGB": 1.38,
+      "dashboard": 1.38
+    },
+    "stepFunctions": {
+      "standardM": 1.38,
+      "expressReqM": 1.38,
+      "expressGBsecM": 1.38
+    },
+    "natGateway": {
+      "hourly": 1.38,
+      "dataGB": 1.38
+    },
+    "securityGroup": {},
+    "batch": {
+      "cpuHour": 1.38,
+      "memHour": 1.38
+    },
+    "eks": {
+      "clusterHourlyStandard": 1.38,
+      "clusterHourlyExtended": 1.38,
+      "cpuHour": 1.38,
+      "memHour": 1.38,
+      "spotDiscount": 1.38,
+      "ephemeralGBHour": 1.38,
+      "instances": {
+        "t3.medium": 1.38,
+        "m5.large": 1.38,
+        "m5.xlarge": 1.38,
+        "m6g.large": 1.38
+      },
+      "reservedDiscount": 1.38,
+      "albHourly": 1.38,
+      "crossAzGB": 1.38,
+      "natHourly": 1.38,
+      "natDataGB": 1.38,
+      "dataTransferGB": 1.38,
+      "logsGB": 1.38,
+      "containerInsightsPerNode": 1.38
+    },
+    "aurora": {
+      "serverlessAcuHour": 1.38,
+      "instances": {
+        "db.t3.medium": 1.38,
+        "db.r5.large": 1.38,
+        "db.r6g.large": 1.38
+      },
+      "storageGB": 1.38,
+      "ioRequestPerM": 1.38
+    },
+    "eventBridge": {
+      "eventM": 1.38
+    },
+    "kinesis": {
+      "shardHour": 1.38,
+      "putM": 1.38,
+      "retentionGB": 1.38
+    },
+    "msk": {
+      "instances": {
+        "kafka.t3.small": 1.38,
+        "kafka.m5.large": 1.38
+      },
+      "storageGB": 1.38
+    },
+    "cognito": {
+      "freeTier": 1.38,
+      "ratePerUser": 1.38
+    },
+    "waf": {
+      "aclMonth": 1.38,
+      "ruleMonth": 1.38,
+      "reqM": 1.38
+    },
+    "efs": {
+      "storage": {
+        "standard": 1.38,
+        "ia": 1.38
+      },
+      "throughputMBps": 1.38
+    },
+    "athena": {
+      "perTB": 1.38
+    },
+    "secretsManager": {
+      "secretMonth": 1.38,
+      "callM": 1.38
+    },
+    "transitGateway": {
+      "attachmentHourly": 1.38,
+      "dataGB": 1.38
+    },
+    "directConnect": {
+      "portRates": {
+        "1g": 1.38,
+        "10g": 1.38,
+        "100g": 1.38
+      },
+      "dataTransferGB": 1.38
+    },
+    "globalAccelerator": {
+      "hourly": 1.38,
+      "dataGB": 1.38
+    },
+    "xray": {
+      "recordM": 1.38,
+      "scanM": 1.38
+    },
+    "openSearch": {
+      "instances": {
+        "t3.medium": 1.38,
+        "m6g.large": 1.38,
+        "r6g.large": 1.38
+      },
+      "storageGB": 1.38
+    },
+    "redshift": {
+      "instances": {
+        "ra3.xlplus": 1.38,
+        "ra3.4xlarge": 1.38
+      },
+      "rpuHour": 1.38,
+      "storageTB": 1.38
+    },
+    "glue": {
+      "dpuHour": 1.38
+    },
+    "emr": {
+      "instances": {
+        "m5.large": 1.38,
+        "m5.xlarge": 1.38,
+        "r5.xlarge": 1.38
+      }
+    },
+    "kinesisFirehose": {
+      "ingestGB": 1.38,
+      "convertGB": 1.38
+    },
+    "mq": {
+      "instances": {
+        "mq.t3.micro": 1.38,
+        "mq.m5.large": 1.38
+      }
+    },
+    "kms": {
+      "keyMonth": 1.38,
+      "reqM": 1.38
+    },
+    "shield": {
+      "advancedMonth": 1.38
+    },
+    "organizations": {},
+    "codePipeline": {
+      "pipelineMonth": 1.38
+    },
+    "codeBuild": {
+      "rates": {
+        "general1.small": 1.38,
+        "general1.large": 1.38
+      }
+    },
+    "codeDeploy": {
+      "updateRate": 1.38
+    },
+    "bedrock": {
+      "inM": {
+        "claude-haiku": 1.38,
+        "claude-sonnet": 1.38,
+        "titan": 1.38
+      },
+      "outM": {
+        "claude-haiku": 1.38,
+        "claude-sonnet": 1.38,
+        "titan": 1.38
+      }
+    },
+    "sageMaker": {
+      "instances": {
+        "ml.t3.medium": 1.38,
+        "ml.m5.large": 1.38,
+        "ml.p3.2xlarge": 1.38
+      },
+      "serverlessGBsec": 1.38,
+      "serverlessReqM": 1.38,
+      "trainingHourly": 1.38
+    },
+    "appSync": {
+      "reqM": 1.38,
+      "dtGB": 1.38
+    },
+    "iotCore": {
+      "msgM": 1.38,
+      "ruleM": 1.38
+    },
+    "rekognition": {
+      "imageM": 1.38
+    },
+    "textract": {
+      "pageM": 1.38
+    },
+    "mediaConvert": {
+      "minHD": 1.38
+    },
+    "cloudTrail": {
+      "eventM": 1.38
+    },
+    "backup": {
+      "warmGB": 1.38,
+      "coldGB": 1.38
+    },
+    "appRunner": {
+      "cpuHour": 1.38,
+      "memHour": 1.38
+    },
+    "elasticBeanstalk": {
+      "familyRatesLarge": {
+        "t3": 1.38,
+        "m5": 1.38,
+        "m6g": 1.38,
+        "c5": 1.38,
+        "c6g": 1.38,
+        "r5": 1.38,
+        "r6g": 1.38
+      },
+      "sizeMultipliers": {
+        "micro": 1.38,
+        "small": 1.38,
+        "medium": 1.38,
+        "large": 1.38,
+        "xlarge": 1.38,
+        "2xlarge": 1.38,
+        "4xlarge": 1.38
+      },
+      "purchaseDiscounts": {
+        "on-demand": 1.38,
+        "reserved-1yr": 1.38,
+        "reserved-3yr": 1.38,
+        "spot": 1.38
+      },
+      "ebsRates": {
+        "gp2": 1.38,
+        "gp3": 1.38,
+        "io2": 1.38
+      },
+      "dataTransferGB": 1.38
+    },
+    "fsx": {
+      "windowsSingle": 1.38,
+      "windowsMulti": 1.38,
+      "lustreSingle": 1.38,
+      "lustreMulti": 1.38,
+      "ontapSingle": 1.38,
+      "ontapMulti": 1.38,
+      "throughputRate": 1.38
+    },
+    "certificateManager": {},
+    "systemsManager": {
+      "instHour": 1.38,
+      "callM": 1.38
+    },
+    "ecr": {
+      "storageGB": 1.38
+    },
+    "privateLink": {
+      "endpointHourly": 1.38,
+      "dataGB": 1.38
+    }
+  }
+}

@@ -1,0 +1,486 @@
+{
+  "regionCode": "ap-southeast-3",
+  "regionName": "Asia Pacific (Jakarta)",
+  "services": {
+    "client": {},
+    "route53": {
+      "zoneMonthly": 1.2,
+      "standardM": 1.2
+    },
+    "cloudfront": {
+      "dtOut": {
+        "us-eu": 1.2,
+        "asia": 1.2,
+        "sa": 1.2
+      },
+      "requestsM": {
+        "us-eu": 1.2,
+        "asia": 1.2,
+        "sa": 1.2
+      },
+      "wafBase": 1.2,
+      "wafRequestM": 1.2
+    },
+    "apiGateway": {
+      "requestsM": {
+        "rest": 1.2,
+        "http": 1.2,
+        "websocket": 1.2
+      },
+      "cacheRates": {
+        "0": 1.2,
+        "0.5": 1.2,
+        "1.6": 1.2,
+        "6.1": 1.2
+      }
+    },
+    "alb": {
+      "hourly": 1.2,
+      "lcuHour": 1.2
+    },
+    "vpc": {
+      "endpointHourly": 1.2,
+      "endpointGB": 1.2
+    },
+    "ec2": {
+      "familyRatesLarge": {
+        "t3": 1.2,
+        "m5": 1.2,
+        "m6g": 1.2,
+        "c5": 1.2,
+        "c6g": 1.2,
+        "r5": 1.2,
+        "r6g": 1.2
+      },
+      "sizeMultipliers": {
+        "micro": 1.2,
+        "small": 1.2,
+        "medium": 1.2,
+        "large": 1.2,
+        "xlarge": 1.2,
+        "2xlarge": 1.2,
+        "4xlarge": 1.2
+      },
+      "purchaseDiscounts": {
+        "on-demand": 1.2,
+        "reserved-1yr": 1.2,
+        "reserved-3yr": 1.2,
+        "spot": 1.2
+      },
+      "ebsRates": {
+        "gp2": 1.2,
+        "gp3": 1.2,
+        "io2": 1.2
+      },
+      "dataTransferGB": 1.2
+    },
+    "ecs": {
+      "cpuHour": 1.2,
+      "memHour": 1.2,
+      "armCpuHour": 1.2,
+      "armMemHour": 1.2,
+      "windowsCpuPremium": 1.2,
+      "windowsMemPremium": 1.2,
+      "spotDiscount": 1.2,
+      "ephemeralGBHour": 1.2,
+      "publicIpHour": 1.2,
+      "instances": {
+        "t3.medium": 1.2,
+        "m5.large": 1.2,
+        "m5.xlarge": 1.2,
+        "m6g.large": 1.2
+      },
+      "ebsGBMonth": 1.2,
+      "reservedDiscount": 1.2,
+      "dataTransferGB": 1.2,
+      "crossAzGB": 1.2,
+      "albHourly": 1.2,
+      "logsGB": 1.2
+    },
+    "autoScalingGroup": {
+      "familyRatesLarge": {
+        "t3": 1.2,
+        "m5": 1.2,
+        "m6g": 1.2,
+        "c5": 1.2,
+        "c6g": 1.2,
+        "r5": 1.2,
+        "r6g": 1.2
+      },
+      "sizeMultipliers": {
+        "micro": 1.2,
+        "small": 1.2,
+        "medium": 1.2,
+        "large": 1.2,
+        "xlarge": 1.2,
+        "2xlarge": 1.2,
+        "4xlarge": 1.2
+      },
+      "purchaseDiscounts": {
+        "on-demand": 1.2,
+        "reserved-1yr": 1.2,
+        "reserved-3yr": 1.2,
+        "spot": 1.2
+      },
+      "ebsRates": {
+        "gp2": 1.2,
+        "gp3": 1.2,
+        "io2": 1.2
+      },
+      "dataTransferGB": 1.2
+    },
+    "lambda": {
+      "requestM": 1.2,
+      "gbSec_x86": 1.2,
+      "gbSec_arm": 1.2,
+      "ephemeralGB_Sec": 1.2,
+      "provConcurrency_x86": 1.2,
+      "provConcurrency_arm": 1.2
+    },
+    "sqs": {
+      "standard": 1.2,
+      "fifo": 1.2
+    },
+    "sns": {
+      "publish": 1.2,
+      "http": 1.2,
+      "email": 1.2
+    },
+    "s3": {
+      "storage": {
+        "standard": 1.2,
+        "intelligent": 1.2,
+        "sia": 1.2,
+        "glacier": 1.2
+      },
+      "puts": {
+        "standard": 1.2,
+        "intelligent": 1.2,
+        "sia": 1.2,
+        "glacier": 1.2
+      },
+      "gets": {
+        "standard": 1.2,
+        "intelligent": 1.2,
+        "sia": 1.2,
+        "glacier": 1.2
+      },
+      "dataTransferGB": 1.2
+    },
+    "rds": {
+      "engines": {
+        "mysql": 1.2,
+        "postgresql": 1.2,
+        "sqlserver-ex": 1.2,
+        "oracle-se2": 1.2
+      },
+      "instances": {
+        "db.t3.medium": 1.2,
+        "db.m5.large": 1.2,
+        "db.r5.large": 1.2,
+        "db.r6g.large": 1.2
+      },
+      "multiAzMultiplier": 1.2,
+      "storage": {
+        "gp2": 1.2,
+        "gp3": 1.2
+      },
+      "backupGB": 1.2
+    },
+    "elastiCache": {
+      "instances": {
+        "cache.t3.micro": 1.2,
+        "cache.t3.medium": 1.2,
+        "cache.m5.large": 1.2,
+        "cache.r6g.large": 1.2
+      },
+      "tieringPremium": 1.2
+    },
+    "dynamoDb": {
+      "std": {
+        "readM": 1.2,
+        "writeM": 1.2,
+        "wcuHr": 1.2,
+        "rcuHr": 1.2,
+        "storageGB": 1.2
+      },
+      "ia": {
+        "readM": 1.2,
+        "writeM": 1.2,
+        "wcuHr": 1.2,
+        "rcuHr": 1.2,
+        "storageGB": 1.2
+      },
+      "globalMultiplier": 1.2
+    },
+    "iam": {},
+    "cloudWatch": {
+      "metricRate": 1.2,
+      "logsGB": 1.2,
+      "dashboard": 1.2
+    },
+    "stepFunctions": {
+      "standardM": 1.2,
+      "expressReqM": 1.2,
+      "expressGBsecM": 1.2
+    },
+    "natGateway": {
+      "hourly": 1.2,
+      "dataGB": 1.2
+    },
+    "securityGroup": {},
+    "batch": {
+      "cpuHour": 1.2,
+      "memHour": 1.2
+    },
+    "eks": {
+      "clusterHourlyStandard": 1.2,
+      "clusterHourlyExtended": 1.2,
+      "cpuHour": 1.2,
+      "memHour": 1.2,
+      "spotDiscount": 1.2,
+      "ephemeralGBHour": 1.2,
+      "instances": {
+        "t3.medium": 1.2,
+        "m5.large": 1.2,
+        "m5.xlarge": 1.2,
+        "m6g.large": 1.2
+      },
+      "reservedDiscount": 1.2,
+      "albHourly": 1.2,
+      "crossAzGB": 1.2,
+      "natHourly": 1.2,
+      "natDataGB": 1.2,
+      "dataTransferGB": 1.2,
+      "logsGB": 1.2,
+      "containerInsightsPerNode": 1.2
+    },
+    "aurora": {
+      "serverlessAcuHour": 1.2,
+      "instances": {
+        "db.t3.medium": 1.2,
+        "db.r5.large": 1.2,
+        "db.r6g.large": 1.2
+      },
+      "storageGB": 1.2,
+      "ioRequestPerM": 1.2
+    },
+    "eventBridge": {
+      "eventM": 1.2
+    },
+    "kinesis": {
+      "shardHour": 1.2,
+      "putM": 1.2,
+      "retentionGB": 1.2
+    },
+    "msk": {
+      "instances": {
+        "kafka.t3.small": 1.2,
+        "kafka.m5.large": 1.2
+      },
+      "storageGB": 1.2
+    },
+    "cognito": {
+      "freeTier": 1.2,
+      "ratePerUser": 1.2
+    },
+    "waf": {
+      "aclMonth": 1.2,
+      "ruleMonth": 1.2,
+      "reqM": 1.2
+    },
+    "efs": {
+      "storage": {
+        "standard": 1.2,
+        "ia": 1.2
+      },
+      "throughputMBps": 1.2
+    },
+    "athena": {
+      "perTB": 1.2
+    },
+    "secretsManager": {
+      "secretMonth": 1.2,
+      "callM": 1.2
+    },
+    "transitGateway": {
+      "attachmentHourly": 1.2,
+      "dataGB": 1.2
+    },
+    "directConnect": {
+      "portRates": {
+        "1g": 1.2,
+        "10g": 1.2,
+        "100g": 1.2
+      },
+      "dataTransferGB": 1.2
+    },
+    "globalAccelerator": {
+      "hourly": 1.2,
+      "dataGB": 1.2
+    },
+    "xray": {
+      "recordM": 1.2,
+      "scanM": 1.2
+    },
+    "openSearch": {
+      "instances": {
+        "t3.medium": 1.2,
+        "m6g.large": 1.2,
+        "r6g.large": 1.2
+      },
+      "storageGB": 1.2
+    },
+    "redshift": {
+      "instances": {
+        "ra3.xlplus": 1.2,
+        "ra3.4xlarge": 1.2
+      },
+      "rpuHour": 1.2,
+      "storageTB": 1.2
+    },
+    "glue": {
+      "dpuHour": 1.2
+    },
+    "emr": {
+      "instances": {
+        "m5.large": 1.2,
+        "m5.xlarge": 1.2,
+        "r5.xlarge": 1.2
+      }
+    },
+    "kinesisFirehose": {
+      "ingestGB": 1.2,
+      "convertGB": 1.2
+    },
+    "mq": {
+      "instances": {
+        "mq.t3.micro": 1.2,
+        "mq.m5.large": 1.2
+      }
+    },
+    "kms": {
+      "keyMonth": 1.2,
+      "reqM": 1.2
+    },
+    "shield": {
+      "advancedMonth": 1.2
+    },
+    "organizations": {},
+    "codePipeline": {
+      "pipelineMonth": 1.2
+    },
+    "codeBuild": {
+      "rates": {
+        "general1.small": 1.2,
+        "general1.large": 1.2
+      }
+    },
+    "codeDeploy": {
+      "updateRate": 1.2
+    },
+    "bedrock": {
+      "inM": {
+        "claude-haiku": 1.2,
+        "claude-sonnet": 1.2,
+        "titan": 1.2
+      },
+      "outM": {
+        "claude-haiku": 1.2,
+        "claude-sonnet": 1.2,
+        "titan": 1.2
+      }
+    },
+    "sageMaker": {
+      "instances": {
+        "ml.t3.medium": 1.2,
+        "ml.m5.large": 1.2,
+        "ml.p3.2xlarge": 1.2
+      },
+      "serverlessGBsec": 1.2,
+      "serverlessReqM": 1.2,
+      "trainingHourly": 1.2
+    },
+    "appSync": {
+      "reqM": 1.2,
+      "dtGB": 1.2
+    },
+    "iotCore": {
+      "msgM": 1.2,
+      "ruleM": 1.2
+    },
+    "rekognition": {
+      "imageM": 1.2
+    },
+    "textract": {
+      "pageM": 1.2
+    },
+    "mediaConvert": {
+      "minHD": 1.2
+    },
+    "cloudTrail": {
+      "eventM": 1.2
+    },
+    "backup": {
+      "warmGB": 1.2,
+      "coldGB": 1.2
+    },
+    "appRunner": {
+      "cpuHour": 1.2,
+      "memHour": 1.2
+    },
+    "elasticBeanstalk": {
+      "familyRatesLarge": {
+        "t3": 1.2,
+        "m5": 1.2,
+        "m6g": 1.2,
+        "c5": 1.2,
+        "c6g": 1.2,
+        "r5": 1.2,
+        "r6g": 1.2
+      },
+      "sizeMultipliers": {
+        "micro": 1.2,
+        "small": 1.2,
+        "medium": 1.2,
+        "large": 1.2,
+        "xlarge": 1.2,
+        "2xlarge": 1.2,
+        "4xlarge": 1.2
+      },
+      "purchaseDiscounts": {
+        "on-demand": 1.2,
+        "reserved-1yr": 1.2,
+        "reserved-3yr": 1.2,
+        "spot": 1.2
+      },
+      "ebsRates": {
+        "gp2": 1.2,
+        "gp3": 1.2,
+        "io2": 1.2
+      },
+      "dataTransferGB": 1.2
+    },
+    "fsx": {
+      "windowsSingle": 1.2,
+      "windowsMulti": 1.2,
+      "lustreSingle": 1.2,
+      "lustreMulti": 1.2,
+      "ontapSingle": 1.2,
+      "ontapMulti": 1.2,
+      "throughputRate": 1.2
+    },
+    "certificateManager": {},
+    "systemsManager": {
+      "instHour": 1.2,
+      "callM": 1.2
+    },
+    "ecr": {
+      "storageGB": 1.2
+    },
+    "privateLink": {
+      "endpointHourly": 1.2,
+      "dataGB": 1.2
+    }
+  }
+}

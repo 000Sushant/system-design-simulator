@@ -785,7 +785,7 @@
             <span class="region-select-display">{{ globalRegion }}</span>
             <select class="region-select" [ngModel]="globalRegion" (ngModelChange)="setRegion($event)">
               <option *ngFor="let reg of costService.regions" [value]="reg.code">
-                {{ reg.code }} - {{ reg.name }} ({{ reg.multiplier }}x)
+                {{ reg.code }} - {{ reg.name }}
               </option>
             </select>
           </div>

@@ -160,14 +160,13 @@
       }
     },
     "route53": {
-      "regionOverride": true,
       "primaryParams": [
         {
           "key": "throughput",
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 1000,
+          "default": 80,
           "min": 1,
           "max": 10000,
           "affectsCost": true,
@@ -199,7 +198,7 @@
           "key": "hostedZones",
           "label": "Hosted Zones",
           "type": "number",
-          "default": 1,
+          "default": 0,
           "min": 0,
           "max": 1000,
           "costDriver": "First 25 zones at $0.50/mo, additional at $0.10/mo"

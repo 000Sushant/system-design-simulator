@@ -100,12 +100,6 @@
       "mandatoryOutput": true,
       "allowFanIn": true,
       "allowFanOut": true,
-      "defaults": {
-        "throughput": 1000,
-        "latency": 15,
-        "failureThreshold": 90,
-        "hostedZones": 1
-      },
       "rules": [
         {
           "target": "cloudfront",

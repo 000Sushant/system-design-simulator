@@ -306,14 +306,12 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       icon: 'fas fa-money-bill-wave',
       summary: 'Understand AWS regional multipliers, cost breakdowns, and currency conversions.',
       content: [
-        'The cost simulator maps real AWS billing pricing tables.',
+        'The cost simulator maps real AWS billing pricing tables with dynamic geographic adjustments.',
         '<ul>' +
-        '<li><strong>Regional Multipliers:</strong> Cloud costs differ heavily based on geography. Sr. Architect applies custom regional modifiers:</li>' +
-        '<li><code>us-east-1</code> (N. Virginia): 1.0x (Standard Baseline)</li>' +
-        '<li><code>eu-west-1</code> (Ireland): 1.1x</li>' +
-        '<li><code>ap-south-1</code> (Mumbai): 1.15x</li>' +
-        '<li><code>us-west-2</code> (Oregon): 1.05x</li>' +
-        '<li><strong>Currency Switching:</strong> Tap currency conversions live (USD, EUR, INR, GBP, JPY) to see local pricing equivalents instantly in the Dynamic Island footer.</li>' +
+        '<li><strong>Fine-Grained Regional Multipliers:</strong> Cloud costs differ heavily based on geography and service type. Instead of a single multiplier, Sr. Architect loads a dedicated JSON configuration file for each region (e.g. <code>us-west-1.json</code>).</li>' +
+        '<li><strong>Per-Service, Per-Parameter Flexibility:</strong> Each region JSON specifies multipliers for all 64+ AWS services and their individual cost-impacting parameters (like requests, CPU cores, GB storage, and data transfer). This allows you to customize and track cost structures with absolute precision.</li>' +
+        '<li><strong>Default Adjustments:</strong> By default, service parameters inherit standard regional multipliers (e.g., <code>us-east-1</code> at 1.0x, <code>us-west-1</code> at 1.10x, <code>sa-east-1</code> at 1.38x).</li>' +
+        '<li><strong>Currency Switching:</strong> Tap currency conversions live (USD, EUR, INR, GBP, JPY) to see local pricing equivalents instantly in the telemetry footer.</li>' +
         '</ul>'
       ]
     }
