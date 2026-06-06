@@ -1,0 +1,10 @@
+# Cloudflare KV credentials for reading pre-generated pricing files
+# Get these from: https://dash.cloudflare.com → Workers & Pages → KV
+#
+# CF_ACCOUNT_ID     — Your Cloudflare account ID (from dash.cloudflare.com)
+# CF_KV_NAMESPACE_ID — The KV namespace ID created by: wrangler kv namespace create PRICING_KV
+# CF_API_TOKEN       — An API token with "Workers KV Storage:Read" permission
+
+CF_ACCOUNT_ID=REPLACE_WITH_YOUR_CF_ACCOUNT_ID
+CF_KV_NAMESPACE_ID=REPLACE_WITH_YOUR_KV_NAMESPACE_ID
+CF_API_TOKEN=REPLACE_WITH_YOUR_CF_API_TOKEN_KV_READ

@@ -1,0 +1,28 @@
+name = "aws-pricing-generator"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+# ──────────────────────────────────────────────
+# KV Namespace
+# Run: wrangler kv namespace create PRICING_KV
+# Then paste the returned `id` below.
+# ──────────────────────────────────────────────
+[[kv_namespaces]]
+binding = "PRICING_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# ──────────────────────────────────────────────
+# Cron: every 5 minutes
+# - Used for sequential "one region per invocation" processing
+# - Weekly reset is detected internally via KV timestamp
+# ──────────────────────────────────────────────
+[triggers]
+crons = ["*/5 * * * *"]
+
+# ──────────────────────────────────────────────
+# Secrets (set via CLI, never in this file):
+#   wrangler secret put AWS_ACCESS_KEY_ID
+#   wrangler secret put AWS_SECRET_ACCESS_KEY
+# ──────────────────────────────────────────────
