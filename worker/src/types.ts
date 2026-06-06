@@ -1,5 +1,5 @@
 export interface Env {
-  PRICING_KV: KVNamespace;
+  AWS_PRICING_KV: KVNamespace;
   AWS_ACCESS_KEY_ID: string;
   AWS_SECRET_ACCESS_KEY: string;
 }

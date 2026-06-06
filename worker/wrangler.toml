@@ -5,11 +5,11 @@ workers_dev = true
 
 # ──────────────────────────────────────────────
 # KV Namespace
-# Run: wrangler kv namespace create PRICING_KV
+# Run: wrangler kv namespace create AWS_PRICING_KV
 # Then paste the returned `id` below.
 # ──────────────────────────────────────────────
 [[kv_namespaces]]
-binding = "PRICING_KV"
+binding = "AWS_PRICING_KV"
 id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 

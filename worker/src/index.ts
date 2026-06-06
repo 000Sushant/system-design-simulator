@@ -10,7 +10,7 @@ const KV_PRICING_PREFIX = 'pricing:';
 // ─── KV helpers ──────────────────────────────────────────────────────────────
 
 async function getProgress(env: Env): Promise<WorkerProgress> {
-  const raw = await env.PRICING_KV.get(KV_PROGRESS_KEY);
+  const raw = await env.AWS_PRICING_KV.get(KV_PROGRESS_KEY);
   if (!raw) {
     return { status: 'idle', currentIndex: 0, startedAt: 0 };
   }
@@ -18,7 +18,7 @@ async function getProgress(env: Env): Promise<WorkerProgress> {
 }
 
 async function saveProgress(env: Env, progress: WorkerProgress): Promise<void> {
-  await env.PRICING_KV.put(KV_PROGRESS_KEY, JSON.stringify(progress));
+  await env.AWS_PRICING_KV.put(KV_PROGRESS_KEY, JSON.stringify(progress));
 }
 
 // ─── Core: process one region ─────────────────────────────────────────────────
@@ -71,7 +71,7 @@ async function processOneRegion(env: Env): Promise<void> {
     };
 
     // Save to KV
-    await env.PRICING_KV.put(
+    await env.AWS_PRICING_KV.put(
       `${KV_PRICING_PREFIX}${region.code}`,
       JSON.stringify(pricingFile),
       { expirationTtl: 8 * 24 * 60 * 60 } // 8 days TTL (auto-expire stale data)
@@ -166,7 +166,7 @@ export default {
     const pricingMatch = path.match(/^\/pricing\/([a-z0-9-]+)$/);
     if (pricingMatch && request.method === 'GET') {
       const regionCode = pricingMatch[1];
-      const raw = await env.PRICING_KV.get(`${KV_PRICING_PREFIX}${regionCode}`);
+      const raw = await env.AWS_PRICING_KV.get(`${KV_PRICING_PREFIX}${regionCode}`);
       if (!raw) {
         return json({ unsupportedRegion: true, regionCode }, 404);
       }
