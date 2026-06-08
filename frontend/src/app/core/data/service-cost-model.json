@@ -9,9 +9,10 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 2000,
+          "default": 100,
           "min": 1,
           "max": 20000,
+          "affectsCost": true,
           "costDriver": "Maximum requests per second before degradation."
         },
         {
@@ -68,15 +69,6 @@
           ]
         },
         {
-          "key": "requestsM",
-          "label": "Requests / Month (Millions)",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 100000,
-          "group": "compute"
-        },
-        {
           "key": "cacheGB",
           "label": "Cache Capacity (GB)",
           "type": "enum",
@@ -99,6 +91,26 @@
             {
               "value": "6.1",
               "label": "6.1 GB"
+            },
+            {
+              "value": "13.5",
+              "label": "13.5 GB"
+            },
+            {
+              "value": "28.4",
+              "label": "28.4 GB"
+            },
+            {
+              "value": "58.2",
+              "label": "58.2 GB"
+            },
+            {
+              "value": "118.0",
+              "label": "118.0 GB"
+            },
+            {
+              "value": "237.0",
+              "label": "237.0 GB"
             }
           ]
         }
@@ -153,7 +165,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 80,
+          "default": 100,
           "min": 1,
           "max": 10000,
           "affectsCost": true,
@@ -225,7 +237,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 5000,
+          "default": 100,
           "min": 1,
           "max": 50000,
           "costDriver": "Maximum requests per second before degradation."
@@ -357,7 +369,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 1000,
+          "default": 100,
           "min": 1,
           "max": 50000,
           "costDriver": "Maximum requests per second before degradation."
@@ -520,7 +532,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 500,
+          "default": 100,
           "min": 1,
           "max": 10000,
           "costDriver": "Maximum requests per second before degradation."
@@ -768,7 +780,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 5000,
+          "default": 100,
           "min": 1,
           "max": 20000,
           "costDriver": "Maximum requests per second before degradation."
@@ -901,14 +913,14 @@
         }
       }
     },
-    "alb": {
+    "elb": {
       "primaryParams": [
         {
           "key": "throughput",
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 1000,
+          "default": 100,
           "min": 1,
           "max": 100000,
           "costDriver": "RPS impacts LCU calculation."
@@ -926,21 +938,37 @@
       ],
       "costParams": [
         {
+          "key": "lbType",
+          "label": "Load Balancer Type",
+          "type": "enum",
+          "default": "alb",
+          "group": "compute",
+          "options": [
+            {
+              "value": "alb",
+              "label": "Application Load Balancer (ALB)"
+            },
+            {
+              "value": "nlb",
+              "label": "Network Load Balancer (NLB)"
+            },
+            {
+              "value": "clb",
+              "label": "Classic Load Balancer (CLB)"
+            },
+            {
+              "value": "gwlb",
+              "label": "Gateway Load Balancer (GWLB)"
+            }
+          ]
+        },
+        {
           "key": "count",
-          "label": "Load Balancer Count",
+          "label": "Number of Load Balancers",
           "type": "number",
           "default": 1,
           "min": 1,
           "max": 50,
-          "group": "networking"
-        },
-        {
-          "key": "dataGB",
-          "label": "Data Processed (GB)",
-          "type": "number",
-          "default": 100,
-          "min": 0,
-          "max": 100000,
           "group": "networking"
         },
         {
@@ -1331,7 +1359,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 1000,
+          "default": 100,
           "min": 1,
           "max": 50000,
           "costDriver": "Database concurrency."
@@ -1481,7 +1509,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 50000,
+          "default": 100,
           "min": 1,
           "max": 1000000,
           "costDriver": "Cache hits per sec."
@@ -1587,7 +1615,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 1000,
+          "default": 100,
           "min": 1,
           "max": 50000,
           "costDriver": "Task capacity."
@@ -1976,7 +2004,7 @@
           "label": "Throughput (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 1000,
+          "default": 100,
           "min": 1,
           "max": 100000,
           "costDriver": "Message processing."
@@ -2032,7 +2060,7 @@
           "label": "Throughput (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 1000,
+          "default": 100,
           "min": 1,
           "max": 100000,
           "costDriver": "Publish rate."
@@ -2225,6 +2253,16 @@
           "min": 1,
           "max": 1000,
           "costDriver": "Source of simulation traffic."
+        },
+        {
+          "key": "packageSize",
+          "label": "Average Package Size (KB)",
+          "type": "number",
+          "unit": "KB",
+          "default": 50,
+          "min": 1,
+          "max": 10240,
+          "costDriver": "Size of each request package sent from the client."
         },
         {
           "key": "requestRegion",
@@ -2544,7 +2582,7 @@
           "label": "Requests/sec",
           "type": "number",
           "unit": "RPS",
-          "default": 500,
+          "default": 100,
           "min": 1,
           "max": 100000,
           "costDriver": "Cluster workloads load."
@@ -2744,7 +2782,7 @@
           "key": "loadBalancers",
           "label": "Load Balancer Count",
           "type": "number",
-          "unit": "ALB/NLB",
+          "unit": "ELB/NLB",
           "default": 1,
           "min": 0,
           "max": 50,
@@ -2825,7 +2863,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 2000,
+          "default": 100,
           "min": 1,
           "max": 100000
         }
@@ -4646,7 +4684,7 @@
         "formula": "Free",
         "components": [],
         "freeTier": {
-          "description": "Elastic Beanstalk is free. You pay only for the EC2 nodes, ALB, and databases it spins up."
+          "description": "Elastic Beanstalk is free. You pay only for the EC2 nodes, ELB, and databases it spins up."
         }
       }
     },
@@ -4841,7 +4879,7 @@
           "label": "Capacity (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 500,
+          "default": 100,
           "min": 1,
           "max": 10000,
           "costDriver": "Private endpoint connection throughput limit."

@@ -3,13 +3,13 @@ const file = 'src/app/core/data/service-cost-model.json';
 let data = JSON.parse(fs.readFileSync(file, 'utf8'));
 
 Object.assign(data.serviceCostModel, {
-  alb: {
+  elb: {
     primaryParams: [
       { key: 'throughput', label: 'Capacity (RPS)', type: 'number', unit: 'rps', default: 1000, min: 1, max: 100000, costDriver: 'RPS impacts LCU calculation.' },
       { key: 'latency', label: 'Base Latency (ms)', type: 'number', unit: 'ms', default: 15, min: 1, max: 1000, costDriver: 'Processing delay.' }
     ],
     costParams: [
-      { key: 'instanceCount', label: 'ALB Instances', type: 'number', unit: 'count', default: 1, min: 1, max: 50, costDriver: '$0.0225 per hour per ALB.' },
+      { key: 'instanceCount', label: 'ELB Instances', type: 'number', unit: 'count', default: 1, min: 1, max: 50, costDriver: '$0.0225 per hour per ELB.' },
       { key: 'lcuCount', label: 'LCUs', type: 'number', unit: 'count', default: 1, min: 0, max: 1000, costDriver: '$0.008 per LCU per hour.' }
     ],
     costEvaluation: {

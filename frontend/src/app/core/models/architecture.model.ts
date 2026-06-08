@@ -3,7 +3,7 @@ export type AwsServiceType =
   | 'route53'
   | 'cloudfront'
   | 'apiGateway'
-  | 'alb'
+  | 'elb'
   | 'vpc'
   | 'ec2'
   | 'ecs'

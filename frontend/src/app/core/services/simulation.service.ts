@@ -134,25 +134,60 @@ export class SimulationService {
       const isOffline = node.status === 'offline';
       let baseRate = (node.type === 'client' && !isOffline) ? (node.config.requestRate || 0) : (incoming.get(node.id) ?? node.metrics.queueSize * 0.35);
       if (node.type === 'client' && !isOffline && baseRate === 0) baseRate = 100;
+
+      const isApiGatewayCache = node.type === 'apiGateway' && node.config['type'] === 'rest' && node.config['cacheGB'] && node.config['cacheGB'] !== '0';
+      if (isApiGatewayCache) {
+        const cacheGB = parseFloat(node.config['cacheGB']) || 0;
+        const clientNode = this.nodes.find(n => n.type === 'client');
+        const packageSize = clientNode ? (clientNode.config['packageSize'] || 50) : 50;
+        const workingSetGB = Math.max(0.1, baseRate * packageSize * 0.0002);
+        const ratio = cacheGB / workingSetGB;
+        node.config.cacheHitRate = Math.min(95, Math.round(95 * (1 - Math.exp(-ratio))));
+      } else if (node.type === 'apiGateway') {
+        node.config.cacheHitRate = 0;
+      }
+
       const replication = node.config.replication || 1;
       const cacheHitRate = node.config.cacheHitRate || 0;
       const scaleBonus = replication > 1 ? 1 + (replication - 1) * 0.55 : 1;
-      const cacheBonus = ['cloudfront', 'elastiCache'].includes(node.type) ? 1 + cacheHitRate / 150 : 1;
-      const routingBonus = node.type === 'alb'
+      const cacheBonus = ['cloudfront', 'elastiCache', 'apiGateway'].includes(node.type) ? 1 + cacheHitRate / 150 : 1;
+      const routingBonus = node.type === 'elb'
         ? ({ 'round-robin': 1, 'least-connection': 1.12, 'consistent-hash': 1.06 }[node.config.routingAlgorithm || 'round-robin'] ?? 1)
         : 1;
       const batchBonus = ['sqs', 'cloudWatch'].includes(node.type) ? 1 + Math.min(node.config.batchSize || 1, 100) / 220 : 1;
-      const capacity = isOffline ? 0 : Math.max(1, node.type === 'client'
+
+      let lbCapacityMult = 1.0;
+      let lbBaseLatency = 12;
+      if (node.type === 'elb') {
+        const lbType = node.config['lbType'] || 'alb';
+        if (lbType === 'nlb') {
+          lbCapacityMult = 5.0;
+          lbBaseLatency = 2;
+        } else if (lbType === 'clb') {
+          lbCapacityMult = 0.6;
+          lbBaseLatency = 20;
+        } else if (lbType === 'gwlb') {
+          lbCapacityMult = 2.0;
+          lbBaseLatency = 15;
+        } else {
+          lbCapacityMult = 1.0;
+          lbBaseLatency = 12;
+        }
+      }
+
+      const baseCapacity = node.type === 'client'
         ? (node.config.requestRate || 1000)
-        : (node.config.throughput || 100) * scaleBonus * cacheBonus * routingBonus * batchBonus);
+        : (node.config.throughput || 100) * scaleBonus * cacheBonus * routingBonus * batchBonus;
+      const capacity = isOffline ? 0 : Math.max(1, node.type === 'elb' ? baseCapacity * lbCapacityMult : baseCapacity);
+
       const totalDemand = Math.max(0, baseRate + node.metrics.queueSize);
       const processed = isOffline ? 0 : Math.min(totalDemand, capacity);
       const queued = isOffline ? node.metrics.queueSize : Math.max(0, totalDemand - processed);
       const failureThreshold = node.config.failureThreshold || 100;
       const overloadRatio = isOffline ? 2 : totalDemand / Math.max(1, capacity);
-      const cacheLatencyReduction = ['cloudfront', 'elastiCache'].includes(node.type) ? cacheHitRate * 0.28 : 0;
+      const cacheLatencyReduction = ['cloudfront', 'elastiCache', 'apiGateway'].includes(node.type) ? cacheHitRate * 0.28 : 0;
       const timeoutMs = node.config.timeoutMs || 0;
-      const latency = node.config.latency || 100;
+      const latency = node.type === 'elb' ? lbBaseLatency : (node.config.latency || 100);
       const timeoutPressure = timeoutMs > 0 && timeoutMs < latency * 3 ? 6 : 0;
       const failures = isOffline ? Math.round(totalDemand) : (overloadRatio > failureThreshold / 100 ? Math.round((overloadRatio - 1) * processed * 0.08) : 0);
       const dropped = isOffline ? 0 : (overloadRatio > 1.35 ? Math.round(queued * 0.16) : 0);
@@ -181,7 +216,14 @@ export class SimulationService {
       const outputs = outgoingByNode.get(node.id) ?? [];
       if (outputs.length > 0 && processed > 0 && node.status !== 'offline') {
         const fanoutMultiplier = ['sns', 'stepFunctions', 'apiGateway', 'eventBridge', 'kinesis', 'msk', 'mq', 'appSync', 'transitGateway'].includes(node.type) ? 1 : outputs.length;
-        const perConnection = processed / Math.max(1, fanoutMultiplier);
+        
+        let processedForOutput = processed;
+        if (node.type === 'apiGateway' && node.config['type'] === 'rest' && node.config['cacheGB'] && node.config['cacheGB'] !== '0') {
+          const hitRate = node.config.cacheHitRate || 0;
+          processedForOutput = processed * (1 - hitRate / 100);
+        }
+
+        const perConnection = processedForOutput / Math.max(1, fanoutMultiplier);
         for (const connection of outputs) {
           const target = this.nodes.find((candidate) => candidate.id === connection.targetNodeId);
           if (!target) {

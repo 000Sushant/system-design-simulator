@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = 'src/app/core/services/cost.service.ts';
 let code = fs.readFileSync(path, 'utf8');
 
-const newCases = `      case 'alb': {
+const newCases = `      case 'elb': {
         const pf = model?.pricingFactors || {};
         const instances = config.instanceCount || 1;
         const lcus = config.lcuCount || 1;

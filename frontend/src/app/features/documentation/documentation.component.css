@@ -1149,13 +1149,21 @@
   transform: translateY(-1.5px);
 }
 
-.back-to-docs-btn {
+.service-deep-dive-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.back-to-services-btn {
   align-self: flex-start;
-  min-height: 36px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(124, 58, 237, 0.15);
-  background: rgba(124, 58, 237, 0.05);
+  min-height: 38px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: rgba(124, 58, 237, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #7c3aed;
   font-size: 13px;
   font-weight: 700;
@@ -1163,13 +1171,26 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.04);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 
+    0 4px 12px rgba(124, 58, 237, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
-.back-to-docs-btn:hover {
-  background: rgba(124, 58, 237, 0.1);
-  border-color: rgba(124, 58, 237, 0.3);
+.back-to-services-btn:hover {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.4);
+  transform: translateX(-4px);
+  box-shadow: 
+    0 6px 16px rgba(124, 58, 237, 0.1),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+}
+
+.back-to-services-btn i {
+  transition: transform 0.3s ease;
+}
+
+.back-to-services-btn:hover i {
   transform: translateX(-2px);
 }
 
@@ -1453,7 +1474,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 240px;
+  max-height: 520px;
   overflow-y: auto;
   padding-right: 4px;
 }

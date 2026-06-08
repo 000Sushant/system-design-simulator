@@ -23,20 +23,52 @@
     },
     "apiGateway": {
       "requestsM": {
-        "rest": 3.5,
-        "http": 1.0,
-        "websocket": 1.0
+        "http": {
+          "tier1": 1.0,
+          "tier2": 0.9
+        },
+        "rest": {
+          "tier1": 3.5,
+          "tier2": 2.8,
+          "tier3": 2.38,
+          "tier4": 1.51
+        },
+        "websocket": {
+          "tier1": 1.0,
+          "tier2": 0.8
+        }
       },
       "cacheRates": {
         "0": 0.0,
-        "0.5": 14.0,
-        "1.6": 38.0,
-        "6.1": 130.0
+        "0.5": 14.4,
+        "1.6": 28.4,
+        "6.1": 56.0,
+        "13.5": 113.4,
+        "28.4": 226.0,
+        "58.2": 408.0,
+        "118.0": 765.0,
+        "237.0": 1278.0
       }
     },
-    "alb": {
-      "hourly": 0.0225,
-      "lcuHour": 0.008
+    "elb": {
+      "types": {
+        "alb": {
+          "hourly": 0.0225,
+          "lcuHour": 0.008
+        },
+        "nlb": {
+          "hourly": 0.0225,
+          "lcuHour": 0.006
+        },
+        "clb": {
+          "hourly": 0.025,
+          "dataGB": 0.008
+        },
+        "gwlb": {
+          "hourly": 0.0125,
+          "lcuHour": 0.004
+        }
+      }
     },
     "vpc": {
       "endpointHourly": 0.01,
@@ -93,7 +125,7 @@
       "reservedDiscount": 0.4,
       "dataTransferGB": 0.09,
       "crossAzGB": 0.01,
-      "albHourly": 0.0225,
+      "elbHourly": 0.0225,
       "logsGB": 0.5
     },
     "autoScalingGroup": {
@@ -246,7 +278,7 @@
         "m6g.large": 0.077
       },
       "reservedDiscount": 0.4,
-      "albHourly": 0.0225,
+      "elbHourly": 0.0225,
       "crossAzGB": 0.01,
       "natHourly": 0.045,
       "natDataGB": 0.045,

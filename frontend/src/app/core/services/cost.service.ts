@@ -79,6 +79,7 @@ export class CostService {
   };
 
   private readonly costModel = (serviceCostModelData as any).serviceCostModel || {};
+  private activeNodes: ArchitectureNode[] = [];
 
   async loadRegionPricing(regionCode: string): Promise<void> {
     this.currentRegionCode = regionCode;
@@ -116,7 +117,8 @@ export class CostService {
   }
 
   calculateTotalMonthlyCost(nodes: ArchitectureNode[], currency: Currency = 'USD', region: string = 'us-east-1'): number {
-    const totalUsd = nodes.reduce((sum, node) => sum + this.calculateNodeCostUsd(node, region), 0);
+    this.activeNodes = nodes;
+    const totalUsd = nodes.reduce((sum, node) => sum + this.calculateNodeCostUsd(node, region, nodes), 0);
     return totalUsd * this.conversionRates[currency];
   }
 
@@ -154,20 +156,81 @@ export class CostService {
     node: ArchitectureNode,
     pf: any,
     config: any,
-    lines: CostBreakdownLine[]
+    lines: CostBreakdownLine[],
+    allNodes?: ArchitectureNode[]
   ): number {
     let total = 0;
 
     switch (node.type) {
       case 'apiGateway': {
         const type = this.getVal(config, 'apiGateway', 'type', 'rest');
-        const reqsM = this.getVal(config, 'apiGateway', 'requestsM', 10);
-        const reqRate = pf.requestsM?.[type] || 3.50;
-        const reqCost = reqsM * reqRate;
-        lines.push({ label: type.toUpperCase() + ' API Requests', formula: reqsM + 'M × $' + reqRate.toFixed(2) + '/M', value: reqCost });
+        const throughput = this.getVal(config, 'apiGateway', 'throughput', 2000);
+        const reqsM = throughput * 2.628;
+        
+        let reqCost = 0;
+        let formula = '';
+        const pricingGroup = pf.requestsM?.[type] || {};
+
+        if (typeof pricingGroup === 'number') {
+          // Fallback if the pricing structure is flat/old
+          reqCost = reqsM * pricingGroup;
+          formula = `${reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${pricingGroup.toFixed(2)}/M`;
+        } else {
+          const t1 = pricingGroup.tier1 !== undefined ? pricingGroup.tier1 : (type === 'rest' ? 3.50 : 1.00);
+          const t2 = pricingGroup.tier2 !== undefined ? pricingGroup.tier2 : (type === 'rest' ? 2.80 : (type === 'http' ? 0.90 : 0.80));
+
+          if (type === 'http') {
+            if (reqsM <= 300) {
+              reqCost = reqsM * t1;
+              formula = `${reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t1.toFixed(2)}/M`;
+            } else {
+              reqCost = (300 * t1) + ((reqsM - 300) * t2);
+              formula = `(300M × $${t1.toFixed(2)}/M) + (${(reqsM - 300).toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t2.toFixed(2)}/M)`;
+            }
+          } else if (type === 'websocket') {
+            if (reqsM <= 1000) {
+              reqCost = reqsM * t1;
+              formula = `${reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t1.toFixed(2)}/M`;
+            } else {
+              reqCost = (1000 * t1) + ((reqsM - 1000) * t2);
+              formula = `(1,000M × $${t1.toFixed(2)}/M) + (${(reqsM - 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t2.toFixed(2)}/M)`;
+            }
+          } else { // 'rest'
+            const t3 = pricingGroup.tier3 !== undefined ? pricingGroup.tier3 : 2.38;
+            const t4 = pricingGroup.tier4 !== undefined ? pricingGroup.tier4 : 1.51;
+            let remaining = reqsM;
+            
+            const tier1Vol = Math.min(remaining, 333);
+            reqCost += tier1Vol * t1;
+            remaining -= tier1Vol;
+
+            let formulaParts = [`${tier1Vol.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t1.toFixed(2)}/M`];
+
+            if (remaining > 0) {
+              const tier2Vol = Math.min(remaining, 667);
+              reqCost += tier2Vol * t2;
+              remaining -= tier2Vol;
+              formulaParts.push(`${tier2Vol.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t2.toFixed(2)}/M`);
+            }
+            if (remaining > 0) {
+              const tier3Vol = Math.min(remaining, 19000);
+              reqCost += tier3Vol * t3;
+              remaining -= tier3Vol;
+              formulaParts.push(`${tier3Vol.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t3.toFixed(2)}/M`);
+            }
+            if (remaining > 0) {
+              reqCost += remaining * t4;
+              formulaParts.push(`${remaining.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${t4.toFixed(2)}/M`);
+            }
+            formula = formulaParts.join(' + ');
+          }
+        }
+
+        lines.push({ label: type.toUpperCase() + ' API Requests', formula: formula, value: reqCost });
+        
         let cacheCost = 0;
         if (type === 'rest' && config.cacheGB && config.cacheGB !== '0') {
-          cacheCost = pf.cacheRates?.[config.cacheGB] || 14.0;
+          cacheCost = pf.cacheRates?.[config.cacheGB] || 14.40;
           lines.push({ label: 'Dedicated Cache', formula: config.cacheGB + ' GB Tier', value: cacheCost });
         }
         total = reqCost + cacheCost;
@@ -309,16 +372,61 @@ export class CostService {
         break;
       }
 
-      case 'alb': {
-        const count = this.getVal(config, 'alb', 'count', 1);
-        const hrCost = count * 730 * (pf.hourly || 0.0225);
-        lines.push({ label: 'ALB Hourly Base', formula: count + ' ALBs × 730 hrs × $' + (pf.hourly || 0.0225).toFixed(4) + '/hr', value: hrCost });
-        const dataGB = this.getVal(config, 'alb', 'dataGB', 100);
-        const rulesM = this.getVal(config, 'alb', 'rules', 0);
-        const lcus = (dataGB / 100) + (rulesM * 0.1);
-        const lcuCost = lcus * 730 * (pf.lcuHour || 0.008);
-        if (lcuCost > 0) lines.push({ label: 'LCU Cost (Approx)', formula: '~' + lcus.toFixed(1) + ' LCUs × 730 hrs × $' + (pf.lcuHour || 0.008).toFixed(4) + '/hr', value: lcuCost });
-        total = hrCost + lcuCost;
+      case 'elb': {
+        const lbType = this.getVal(config, 'elb', 'lbType', 'alb');
+        const count = this.getVal(config, 'elb', 'count', 1);
+        const throughput = this.getVal(config, 'elb', 'throughput', 100);
+        const rules = this.getVal(config, 'elb', 'rules', 0);
+
+        // Find client node's package size (default to 50 KB if not found)
+        const clientNode = allNodes?.find(n => n.type === 'client');
+        const packageSize = clientNode ? (clientNode.config?.['packageSize'] || 50) : 50;
+
+        // Calculate data processed dynamically: RPS * 2.628 Million requests * packageSize KB = GB processed/month
+        const reqsM = throughput * 2.628;
+        const dataGB = reqsM * packageSize;
+        const dataStr = dataGB >= 1000
+          ? `${(dataGB / 1000).toFixed(2)} TB`
+          : `${dataGB.toFixed(1)} GB`;
+
+        const typesPricing = pf.types || {
+          alb: { hourly: 0.0225, lcuHour: 0.008 },
+          nlb: { hourly: 0.0225, lcuHour: 0.006 },
+          clb: { hourly: 0.0250, dataGB: 0.008 },
+          gwlb: { hourly: 0.0125, lcuHour: 0.004 }
+        };
+        const selectedPricing = typesPricing[lbType] || typesPricing.alb || { hourly: 0.0225, lcuHour: 0.008 };
+
+        const hourlyRate = selectedPricing.hourly !== undefined ? selectedPricing.hourly : 0.0225;
+        const hrCost = count * 730 * hourlyRate;
+        lines.push({
+          label: `${lbType.toUpperCase()} Hourly Base`,
+          formula: `${count} ${lbType.toUpperCase()}s × 730 hrs × $${hourlyRate.toFixed(4)}/hr`,
+          value: hrCost
+        });
+
+        if (lbType === 'clb') {
+          const dataRate = selectedPricing.dataGB !== undefined ? selectedPricing.dataGB : 0.008;
+          const dataCost = dataGB * dataRate;
+          lines.push({
+            label: 'CLB Data Processing',
+            formula: `${dataStr} processed × $${dataRate.toFixed(4)}/GB`,
+            value: dataCost
+          });
+          total = hrCost + dataCost;
+        } else {
+          const lcuRate = selectedPricing.lcuHour !== undefined ? selectedPricing.lcuHour : 0.008;
+          const lcus = (dataGB / 100) + (rules * 0.1);
+          const lcuCost = lcus * 730 * lcuRate;
+          if (lcuCost > 0) {
+            lines.push({
+              label: `${lbType.toUpperCase()} LCU Cost`,
+              formula: `~${lcus.toFixed(1)} LCUs × 730 hrs × $${lcuRate.toFixed(4)}/hr`,
+              value: lcuCost
+            });
+          }
+          total = hrCost + lcuCost;
+        }
         break;
       }
 
@@ -505,17 +613,17 @@ export class CostService {
         const crossAzCost = crossAzGB * (pf.crossAzGB || 0.01);
         lines.push({ label: 'Cross-AZ Traffic', formula: `${crossAzGB} GB × $${(pf.crossAzGB || 0.01).toFixed(2)}/GB`, value: crossAzCost });
 
-        let albCost = 0;
+        let elbCost = 0;
         if (config.loadBalancer !== false) {
-          albCost = hrs * (pf.albHourly || 0.0225);
-          lines.push({ label: 'ALB Hourly Base', formula: `${hrs} hrs × $${(pf.albHourly || 0.0225).toFixed(4)}/hr`, value: albCost });
+          elbCost = hrs * (pf.elbHourly || 0.0225);
+          lines.push({ label: 'ELB Hourly Base', formula: `${hrs} hrs × $${(pf.elbHourly || 0.0225).toFixed(4)}/hr`, value: elbCost });
         }
 
         const logsGB = this.getVal(config, node.type, 'cloudWatchLogs', 10);
         const logsCost = logsGB * (pf.logsGB || 0.50);
         lines.push({ label: 'CloudWatch Logs', formula: `${logsGB} GB × $${(pf.logsGB || 0.50).toFixed(2)}/GB`, value: logsCost });
 
-        total = computeCost + dtCost + crossAzCost + albCost + logsCost;
+        total = computeCost + dtCost + crossAzCost + elbCost + logsCost;
         break;
       }
 
@@ -1057,7 +1165,7 @@ export class CostService {
     return total;
   }
 
-  getCostBreakdown(node: ArchitectureNode, region: string = 'us-east-1'): CostBreakdown {
+  getCostBreakdown(node: ArchitectureNode, region: string = 'us-east-1', allNodes?: ArchitectureNode[]): CostBreakdown {
     const model = this.costModel[node.type];
     const config: any = node.config;
     const lines: CostBreakdownLine[] = [];
@@ -1070,8 +1178,10 @@ export class CostService {
     const basePf = fallbackPrices.services[node.type] || {};
     const regionalPf = this.getPricingFactorsForRegion(node.type, region);
 
-    const baseTotal = this.evaluateServiceCost(node, basePf, config, []);
-    const regionalTotal = this.evaluateServiceCost(node, regionalPf, config, lines);
+    const nodesList = allNodes || this.activeNodes;
+
+    const baseTotal = this.evaluateServiceCost(node, basePf, config, [], nodesList);
+    const regionalTotal = this.evaluateServiceCost(node, regionalPf, config, lines, nodesList);
 
     const regOpt = this.regions.find(r => r.code === region) || this.regions[0];
     const diff = regionalTotal - baseTotal;
@@ -1088,7 +1198,7 @@ export class CostService {
     return { lines, total: Math.max(0, regionalTotal), freeTierNote };
   }
 
-  calculateNodeCostUsd(node: ArchitectureNode, region: string = 'us-east-1'): number {
-    return this.getCostBreakdown(node, region).total;
+  calculateNodeCostUsd(node: ArchitectureNode, region: string = 'us-east-1', allNodes?: ArchitectureNode[]): number {
+    return this.getCostBreakdown(node, region, allNodes).total;
   }
 }

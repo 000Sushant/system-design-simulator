@@ -50,7 +50,7 @@
           "description": "Users call API Gateway."
         },
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "http"
           ],
@@ -58,7 +58,7 @@
             "http"
           ],
           "type": "http",
-          "description": "Users call ALB."
+          "description": "Users call ELB."
         },
         {
           "target": "waf",
@@ -125,7 +125,7 @@
           "description": "Route 53 can resolve to API Gateway."
         },
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "dns"
           ],
@@ -133,7 +133,7 @@
             "http"
           ],
           "type": "dns",
-          "description": "Route 53 can resolve to ALB."
+          "description": "Route 53 can resolve to ELB."
         }
       ],
       "description": "Needed to resolve user-friendly domains (e.g. app.com) into AWS resource endpoints like CloudFront or Application Load Balancers."
@@ -179,7 +179,7 @@
           "description": "CloudFront can front API Gateway."
         },
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "cdn"
           ],
@@ -187,7 +187,7 @@
             "http"
           ],
           "type": "http",
-          "description": "CloudFront can use ALB as an origin."
+          "description": "CloudFront can use ELB as an origin."
         },
         {
           "target": "waf",
@@ -285,7 +285,7 @@
           "description": "API Gateway can start Step Function workflows."
         },
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "http"
           ],
@@ -357,8 +357,8 @@
       "description": "Needed as a secure, unified entry point to route HTTP API requests to backend services like Lambda, handling auth and traffic rates."
     },
     {
-      "type": "alb",
-      "name": "ELB / ALB",
+      "type": "elb",
+      "name": "ELB",
       "category": "Networking & Content Delivery",
       "inputs": [
         "http",
@@ -415,7 +415,7 @@
             "event"
           ],
           "type": "http",
-          "description": "ALB can trigger Lambda targets."
+          "description": "ELB can trigger Lambda targets."
         },
         {
           "target": "eks",
@@ -426,7 +426,7 @@
             "compute"
           ],
           "type": "compute",
-          "description": "ALB distributes traffic to EKS pods."
+          "description": "ELB distributes traffic to EKS pods."
         },
         {
           "target": "appRunner",
@@ -437,7 +437,7 @@
             "http"
           ],
           "type": "http",
-          "description": "ALB routes traffic to App Runner."
+          "description": "ELB routes traffic to App Runner."
         }
       ],
       "description": "Needed to distribute HTTP traffic across multiple compute targets, ensuring high availability and handling load scaling."
@@ -2006,7 +2006,7 @@
       "allowFanOut": true,
       "rules": [
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "network"
           ],
@@ -2014,7 +2014,7 @@
             "network"
           ],
           "type": "network",
-          "description": "VPC provides network for ALB."
+          "description": "VPC provides network for ELB."
         },
         {
           "target": "ec2",
@@ -2555,7 +2555,7 @@
           "description": "Security Group protects ElastiCache."
         },
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "network"
           ],
@@ -2563,7 +2563,7 @@
             "network"
           ],
           "type": "network",
-          "description": "Security Group protects ALB."
+          "description": "Security Group protects ELB."
         },
         {
           "target": "lambda",
@@ -3331,7 +3331,7 @@
           "description": "WAF filters API Gateway requests."
         },
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "http"
           ],
@@ -3339,7 +3339,7 @@
             "http"
           ],
           "type": "http",
-          "description": "WAF filters Application Load Balancer traffic."
+          "description": "WAF filters Elastic Load Balancer traffic."
         }
       ],
       "description": "Needed to block malicious web traffic, SQL injections, and DDoS attacks on APIs and CDNs before they reach your backend."
@@ -3499,7 +3499,7 @@
       "allowFanOut": true,
       "rules": [
         {
-          "target": "alb",
+          "target": "elb",
           "sourcePorts": [
             "http"
           ],
@@ -3507,7 +3507,7 @@
             "http"
           ],
           "type": "http",
-          "description": "Global Accelerator routes to ALB."
+          "description": "Global Accelerator routes to ELB."
         },
         {
           "target": "cloudfront",

@@ -179,11 +179,10 @@
           </f-connection>
 
           <article *ngFor="let node of nodes; trackBy: trackById" fNode fDragHandle [fNodeId]="node.id"
-            [fNodePosition]="{ x: node.x, y: node.y }"
-            class="node-card" [class.vpc-card]="node.type === 'vpc'" [class.selected]="node.selected"
-            [class.offline]="node.status === 'offline'" [style.borderColor]="statusColor(node.status)"
-            [style.backgroundColor]="serviceColor(node.type) + '14'" (mousemove)="onMouseMove($event)"
-            (click)="selectNode(node.id)">
+            [fNodePosition]="{ x: node.x, y: node.y }" class="node-card" [class.vpc-card]="node.type === 'vpc'"
+            [class.selected]="node.selected" [class.offline]="node.status === 'offline'"
+            [style.borderColor]="statusColor(node.status)" [style.backgroundColor]="serviceColor(node.type) + '14'"
+            (mousemove)="onMouseMove($event)" (click)="selectNode(node.id)">
             <button type="button" class="node-delete" title="Delete service and links"
               (click)="deleteNode($event, node.id)">
               Delete
@@ -367,11 +366,13 @@
           <ng-container *ngIf="!hasJsonModel">
             <div class="field-list select-list" *ngIf="selectedSelectFields.length">
               <label *ngFor="let field of selectedSelectFields" (mousemove)="onMouseMove($event)">
-                <span [title]="field.description" class="field-label-with-info" [class.cost-field]="field.affectsCost && roleMode === 'architect'">
+                <span [title]="field.description" class="field-label-with-info"
+                  [class.cost-field]="field.affectsCost && roleMode === 'architect'">
                   {{ field.label }}
                   <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
                     title="Affects monthly cost"></i>
-                  <i *ngIf="(field.affectsCost && roleMode === 'architect') || field.description" class="fas fa-info-circle info-icon"
+                  <i *ngIf="(field.affectsCost && roleMode === 'architect') || field.description"
+                    class="fas fa-info-circle info-icon"
                     [title]="field.description || (roleMode === 'architect' ? 'Affects monthly cost' : '')"></i>
                 </span>
                 <select [ngModel]="node.config[field.key]" (ngModelChange)="updateSelectConfig(field.key, $event)">
@@ -383,12 +384,14 @@
             </div>
             <div class="field-list">
               <label *ngFor="let field of selectedConfigFields" (mousemove)="onMouseMove($event)">
-                <span [title]="field.description" class="field-label-with-info" [class.cost-field]="field.affectsCost && roleMode === 'architect'">
+                <span [title]="field.description" class="field-label-with-info"
+                  [class.cost-field]="field.affectsCost && roleMode === 'architect'">
                   {{ field.label }}
                   <small *ngIf="field.suffix">{{ field.suffix }}</small>
                   <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
                     title="Affects monthly cost"></i>
-                  <i *ngIf="(field.affectsCost && roleMode === 'architect') || field.description" class="fas fa-info-circle info-icon"
+                  <i *ngIf="(field.affectsCost && roleMode === 'architect') || field.description"
+                    class="fas fa-info-circle info-icon"
                     [title]="field.description || (roleMode === 'architect' ? 'Affects monthly cost' : '')"></i>
                 </span>
                 <div class="number-control">
@@ -682,30 +685,33 @@
                 </div>
               </div>
 
-              <div class="about-me-section" (mousemove)="onMouseMove($event)">
-                <div class="creator-signature">
-                  <span>Made with <i class="fas fa-heart pulse-heart"></i> by</span>
-                  <strong class="creator-name">Sushant Kumar</strong>
+              <div class="feedback-section" (mousemove)="onMouseMove($event)">
+                <div class="feedback-title">
+                  <span><i class="fas fa-comments pulse-feedback"></i> Share Your Feedback</span>
                 </div>
-                <p class="contribution-text">
-                  This project is in beta phase and open for contributions,
-                  reach out to me via:
-                </p>
-                <div class="social-links-inline">
-                  <a href="mailto:[000susahntkumar@gmail.com]" target="_blank" rel="noopener noreferrer"
-                    title="Email"><i class="fa fa-envelope"></i>Email</a>
-                  <a href="https://linkedin.com/in/sushant--kumar" target="_blank" rel="noopener noreferrer"
-                    title="LinkedIn"><i class="fab fa-linkedin"></i> LinkedIn</a>
-                  <a href="https://000sushant.github.io/sushant-portfolio/" target="_blank" rel="noopener noreferrer"
-                    title="Portfolio"><i class="fas fa-globe"></i> Portfolio</a>
+                <div class="feedback-options">
+                  <div class="feedback-option">
+                    <p class="feedback-text">
+                      <strong>Are you satisfied with this product?</strong><br>
+                      Please fill this quick form so that we can showcase your feedback on the webpage soon.
+                    </p>
+                    <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
+                      class="feedback-btn-pill" (mousemove)="onMouseMove($event)">
+                      <i class="fas fa-star"></i> <span>Submit Testimonial</span>
+                    </a>
+                  </div>
+                  <div class="feedback-divider"></div>
+                  <div class="feedback-option">
+                    <p class="feedback-text">
+                      <strong>Looking for support, bug reporting or improvement suggestion?</strong><br>
+                      Please click below to submit bugs or suggest optimizations.
+                    </p>
+                    <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
+                      class="feedback-btn-pill secondary" (mousemove)="onMouseMove($event)">
+                      <i class="fas fa-bug"></i> <span>Bugs & Improvements</span>
+                    </a>
+                  </div>
                 </div>
-                <div class="card-footer-meta">
-                  <small class="license-tag-minimal">MIT Licensed · Open Source</small>
-                </div>
-                <button type="button" class="about-link-btn" (click)="openDocs()">
-                  <i class="fas fa-book-open"></i> Reference Documentation
-                </button>
-
               </div>
             </div>
           </ng-template>
@@ -884,8 +890,8 @@
 
       <!-- Actions -->
       <div class="unsupported-actions">
-        <button type="button" id="dismiss-unsupported-region-btn"
-          class="unsupported-dismiss-btn" (click)="dismissUnsupportedRegion()">
+        <button type="button" id="dismiss-unsupported-region-btn" class="unsupported-dismiss-btn"
+          (click)="dismissUnsupportedRegion()">
           <i class="fas fa-check"></i> Got it
         </button>
       </div>

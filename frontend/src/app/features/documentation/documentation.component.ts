@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AwsCatalogService } from '../../core/services/aws-catalog.service';
 import { AwsServiceDefinition, AwsServiceType } from '../../core/models/architecture.model';
 import awsServicesConfig from '../../core/config/aws-services.json';
+import serviceDocsData from '../../core/data/service-documentation.json';
 
 interface DocArticle {
   id: string;
@@ -219,7 +220,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         'Elastic Container Service (ECS) Fargate nodes run container tasks without provisioning servers.',
         '<ul>' +
         '<li><strong>Task Configuration:</strong> Configure the task CPU and memory parameters directly. Cost scales linearly with Fargate allocation rates.</li>' +
-        '<li><strong>Desired Tasks:</strong> Replicates the active containers. ALB connects to ECS tasks to balance incoming HTTP requests.</li>' +
+        '<li><strong>Desired Tasks:</strong> Replicates the active containers. ELB connects to ECS tasks to balance incoming HTTP requests.</li>' +
         '</ul>'
       ]
     },
@@ -280,6 +281,10 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         '<ul>' +
         '<li><strong>Timeout Limits:</strong> Configure integration timeouts (default 29s). If backend Lambda or EC2 nodes take longer, the API Gateway returns <code>HTTP 504 Gateway Timeouts</code>.</li>' +
         '<li><strong>Retries:</strong> Auto-triggers failed user queries to retry upstream, helping resolve transient backend server failures.</li>' +
+        '<li><strong>Tiered Request Cost Segregation:</strong> Billing is evaluated dynamically based on capacity RPS, converting to Millions of Requests/Month (using a standard 2.628 multiplier) and applying cumulative tiered rates by API type:<br>' +
+        '- <strong>HTTP API:</strong> First 300 million at $1.00/M, 300M+ at $0.90/M.<br>' +
+        '- <strong>REST API:</strong> First 333 million at $3.50/M, next 667 million at $2.80/M, next 19 billion at $2.38/M, over 20 billion at $1.51/M.<br>' +
+        '- <strong>WebSocket API:</strong> First 1 billion messages at $1.00/M, over 1 billion at $0.80/M.</li>' +
         '</ul>'
       ]
     },
@@ -395,7 +400,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="-8" font-size="9" text-anchor="middle" font-weight="800" fill="#047857">IP ADDRESS</text>
             <rect x="-32" y="4" width="64" height="18" rx="3" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" />
             <text x="0" y="16" font-size="10" font-family="monospace" text-anchor="middle" font-weight="700" fill="#065f46">192.0.2.145</text>
-            <text x="0" y="32" font-size="10" text-anchor="middle" font-weight="700" fill="#64748b">ALB / CDN</text>
+            <text x="0" y="32" font-size="10" text-anchor="middle" font-weight="700" fill="#64748b">ELB / CDN</text>
           </g>
         </svg>
       `
@@ -446,80 +451,174 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       practicalExample: 'Receiving requests on `/checkout` and verifying the user\'s Cognito authentication token before routing the request downstream to the Checkout microservice.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
-          <!-- Unified Entry -->
-          <g transform="translate(60, 90)">
-            <circle cx="0" cy="0" r="22" fill="none" stroke="#ec4899" stroke-width="2" />
-            <path d="M -10 -10 L 10 10 M 10 -10 L -10 10" stroke="#f472b6" stroke-width="2" />
-            <text x="0" y="36" font-size="10" text-anchor="middle" font-weight="700" fill="#64748b">/api/v1</text>
+          <!-- FLOW PATHS WITH ANIMATION -->
+          <!-- 1. Client to Authorizer -->
+          <path d="M 65 90 L 95 90" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 3" class="ill-flow-right" />
+          
+          <!-- 2. Authorizer to Router -->
+          <path d="M 135 90 L 165 90" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="4 3" class="ill-flow-right" />
+
+          <!-- 3. Router to Lambda Target -->
+          <path d="M 215 90 Q 255 45 285 45" fill="none" stroke="#ff9900" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+
+          <!-- 4. Router to ECS Target -->
+          <path d="M 215 90 Q 255 135 285 135" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+
+          <!-- ANIMATED FLOW PACKETS -->
+          <circle r="4" fill="#6366f1">
+            <animateMotion dur="2s" repeatCount="indefinite" path="M 65 90 L 95 90" />
+          </circle>
+
+          <circle r="4" fill="#10b981">
+            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 135 90 L 165 90" />
+          </circle>
+
+          <circle r="4" fill="#ff9900">
+            <animateMotion dur="2.2s" repeatCount="indefinite" path="M 215 90 Q 255 45 285 45" />
+          </circle>
+
+          <circle r="4" fill="#3b82f6">
+            <animateMotion dur="2.8s" repeatCount="indefinite" path="M 215 90 Q 255 135 285 135" />
+          </circle>
+
+          <!-- NODES -->
+          <!-- 1. Client Node -->
+          <g transform="translate(45, 90)">
+            <rect x="-18" y="-18" width="36" height="26" rx="3" fill="#ffffff" stroke="#64748b" stroke-width="2" />
+            <rect x="-14" y="-14" width="28" height="18" fill="#f1f5f9" rx="1" />
+            <path d="M -6 8 L 6 8 L 8 13 L -8 13 Z" fill="#64748b" />
+            <text x="0" y="25" font-size="9.5" text-anchor="middle" font-weight="700" fill="#475569">Client</text>
           </g>
 
-          <!-- Gatekeeper Wall / Routes Routing -->
-          <path d="M 90 90 L 200 45" fill="none" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="4 2" class="ill-flow-right" />
-          <path d="M 90 90 L 200 135" fill="none" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="4 2" class="ill-flow-right" />
-
-          <!-- Dynamic packets -->
-          <circle r="4" fill="#ec4899">
-            <animateMotion dur="1.8s" repeatCount="indefinite" path="M 90 90 L 200 45" />
-          </circle>
-          <circle r="4" fill="#ec4899">
-            <animateMotion dur="2.4s" repeatCount="indefinite" path="M 90 90 L 200 135" />
-          </circle>
-
-          <!-- Sub Routes -->
-          <g transform="translate(240, 45)">
-            <rect x="-35" y="-16" width="70" height="32" rx="4" fill="none" stroke="#10b981" stroke-width="2" />
-            <text x="0" y="4" font-size="9" text-anchor="middle" font-weight="700" fill="#047857">/users (Lambda)</text>
+          <!-- 2. Authorizer / Security Check -->
+          <g transform="translate(115, 90)">
+            <circle cx="0" cy="0" r="16" fill="#ecfdf5" stroke="#10b981" stroke-width="2" />
+            <path d="M -5 -6 L 0 -8 L 5 -6 L 5 -1 Q 5 3 0 6 Q -5 3 -5 -1 Z" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M -2 0 L -0.5 1.5 L 2 -1" fill="none" stroke="#10b981" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+            <text x="0" y="26" font-size="8.5" text-anchor="middle" font-weight="700" fill="#047857">Auth Check</text>
           </g>
 
-          <g transform="translate(240, 135)">
-            <rect x="-35" y="-16" width="70" height="32" rx="4" fill="none" stroke="#3b82f6" stroke-width="2" />
-            <text x="0" y="4" font-size="9" text-anchor="middle" font-weight="700" fill="#1d4ed8">/orders (ECS)</text>
+          <!-- 3. API Gateway Routing Hub -->
+          <g transform="translate(190, 90)">
+            <rect x="-18" y="-18" width="36" height="36" rx="6" fill="#fdf2f8" stroke="#db2777" stroke-width="2" />
+            <path d="M -9 -9 H 9 M -9 0 H 9 M -9 9 H 9" stroke="#db2777" stroke-width="2" stroke-linecap="round" />
+            <path d="M 3 -9 L 7 -9 L 7 -5 M 3 9 L 7 9 L 7 5" fill="none" stroke="#db2777" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="-5" cy="0" r="3" fill="#db2777" />
+            <text x="0" y="28" font-size="9" text-anchor="middle" font-weight="800" fill="#db2777">Gateway</text>
+          </g>
+
+          <!-- 4. Target Lambda Function -->
+          <g transform="translate(325, 45)">
+            <rect x="-32" y="-18" width="64" height="36" rx="5" fill="#fffbeb" stroke="#ff9900" stroke-width="2" />
+            <g transform="translate(-16, -1)">
+              <path d="M -4 -6 L 2 6 M 2 6 L 5 8 M 2 6 L -3 6" fill="none" stroke="#ff9900" stroke-width="2" stroke-linecap="round" />
+              <path d="M -4 -6 C -3 -3 0 0 2 6" fill="none" stroke="#ff9900" stroke-width="2" stroke-linecap="round" />
+            </g>
+            <text x="10" y="-3" font-size="9.5" text-anchor="middle" font-weight="700" fill="#0f172a">GET</text>
+            <text x="10" y="8" font-size="8" text-anchor="middle" font-weight="600" fill="#ff9900">/users</text>
+            <text x="0" y="27" font-size="8.5" text-anchor="middle" font-weight="700" fill="#7c2d12">Lambda</text>
+          </g>
+
+          <!-- 5. Target ECS Container -->
+          <g transform="translate(325, 135)">
+            <rect x="-32" y="-18" width="64" height="36" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="2" />
+            <g transform="translate(-16, 0) scale(0.8)">
+              <path d="M 0 -8 L 8 -4 L 8 4 L 0 8 L -8 4 L -8 -4 Z" fill="none" stroke="#3b82f6" stroke-width="1.8" />
+              <path d="M 0 -8 L 0 8 M 0 0 L 8 -4 M 0 0 L -8 -4 M -8 4 L 0 0 L 8 4" fill="none" stroke="#3b82f6" stroke-width="1.2" />
+            </g>
+            <text x="10" y="-3" font-size="9.5" text-anchor="middle" font-weight="700" fill="#0f172a">POST</text>
+            <text x="10" y="8" font-size="8" text-anchor="middle" font-weight="600" fill="#2563eb">/orders</text>
+            <text x="0" y="27" font-size="8.5" text-anchor="middle" font-weight="700" fill="#1e3a8a">ECS Fargate</text>
           </g>
         </svg>
       `
     },
-    alb: {
-      practicalExample: 'Distributing incoming checkout traffic across a pool of 5 EC2 instances. If instance #3 crashes, the ALB automatically detects the health check failure and reroutes new payments to the remaining 4 instances.',
+    elb: {
+      practicalExample: 'Distributing incoming checkout traffic across a pool of 5 EC2 instances. If instance #3 crashes, the ELB automatically detects the health check failure and reroutes new payments to the remaining 4 instances.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
-          <!-- Load Balancer Node -->
-          <g transform="translate(60, 90)">
-            <circle cx="0" cy="0" r="26" fill="none" stroke="#3b82f6" stroke-width="2.5" />
-            <!-- Spinning balance scale bar inside -->
-            <line x1="-16" y1="-6" x2="16" y2="6" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" />
-            <circle cx="-16" cy="-6" r="3.5" fill="#2563eb" />
-            <circle cx="16" cy="6" r="3.5" fill="#2563eb" />
-            <text x="0" y="40" font-size="10" text-anchor="middle" font-weight="700" fill="#64748b">LOAD BALANCER</text>
-          </g>
+          <!-- FLOW PATHS -->
+          <!-- 1. Client to Load Balancer -->
+          <path d="M 25 90 L 95 90" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 3" class="ill-flow-right" />
+          
+          <!-- 2. Balancer to Healthy Target 1 (Active) -->
+          <path d="M 170 90 Q 210 45 250 45" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="5 3" class="ill-flow-right" />
 
-          <!-- Routing lines -->
-          <path d="M 95 90 Q 180 30 260 40" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 2" />
-          <path d="M 95 90 Q 180 90 260 90" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 2" />
-          <path d="M 95 90 Q 180 150 260 140" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 2" />
+          <!-- 3. Balancer to Healthy Target 2 (Active) -->
+          <path d="M 170 90 L 250 90" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="5 3" class="ill-flow-right" />
 
-          <!-- Dynamic packets distributing -->
-          <circle r="4" fill="#3b82f6">
-            <animateMotion dur="2.1s" repeatCount="indefinite" path="M 95 90 Q 180 30 260 40" />
-          </circle>
-          <circle r="4" fill="#3b82f6">
-            <animateMotion dur="1.7s" repeatCount="indefinite" path="M 95 90 Q 180 90 260 90" />
-          </circle>
-          <circle r="4" fill="#3b82f6">
-            <animateMotion dur="2.5s" repeatCount="indefinite" path="M 95 90 Q 180 150 260 140" />
+          <!-- 4. Balancer to Unhealthy Target 3 (Blocked/Faded) -->
+          <path d="M 170 90 Q 210 135 250 135" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3" />
+
+          <!-- ANIMATED FLOW PACKETS -->
+          <circle r="4" fill="#94a3b8">
+            <animateMotion dur="1.8s" repeatCount="indefinite" path="M 25 90 L 95 90" />
           </circle>
 
-          <!-- Targets -->
-          <g transform="translate(300, 40)">
-            <rect x="-30" y="-14" width="60" height="28" rx="4" fill="none" stroke="#10b981" stroke-width="2" />
-            <text x="0" y="4" font-size="9" text-anchor="middle" font-weight="700" fill="#047857">EC2 VM 1</text>
+          <circle r="4" fill="#3b82f6">
+            <animateMotion dur="2s" repeatCount="indefinite" path="M 170 90 Q 210 45 250 45" />
+          </circle>
+
+          <circle r="4" fill="#3b82f6">
+            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 170 90 L 250 90" />
+          </circle>
+
+          <!-- Warning/Block indicator on path 3 -->
+          <g transform="translate(205, 116) scale(0.8)">
+            <circle cx="0" cy="0" r="7" fill="#fdf2f2" stroke="#ef4444" stroke-width="1.5" />
+            <path d="M -3 -3 L 3 3 M 3 -3 L -3 3" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" />
           </g>
-          <g transform="translate(300, 90)">
-            <rect x="-30" y="-14" width="60" height="28" rx="4" fill="none" stroke="#10b981" stroke-width="2" />
-            <text x="0" y="4" font-size="9" text-anchor="middle" font-weight="700" fill="#047857">EC2 VM 2</text>
+
+          <!-- NODES -->
+          <!-- 1. Client Node / Ingress Label -->
+          <g transform="translate(30, 90)">
+            <circle cx="-16" cy="0" r="12" fill="none" stroke="#4f46e5" stroke-width="1.8" />
+            <rect x="-21" y="-4" width="10" height="7" rx="1" fill="#eff6ff" stroke="#4f46e5" stroke-width="1" />
+            <line x1="-23" y1="4.5" x2="-9" y2="4.5" stroke="#4f46e5" stroke-width="1.2" />
+            <text x="-16" y="22" font-size="8.5" text-anchor="middle" font-weight="700" fill="#475569">Ingress</text>
           </g>
-          <g transform="translate(300, 140)">
-            <rect x="-30" y="-14" width="60" height="28" rx="4" fill="none" stroke="#10b981" stroke-width="2" />
-            <text x="0" y="4" font-size="9" text-anchor="middle" font-weight="700" fill="#047857">EC2 VM 3</text>
+
+          <!-- 2. Application Load Balancer Hub -->
+          <g transform="translate(135, 90)">
+            <circle cx="0" cy="0" r="24" fill="none" stroke="#2563eb" stroke-width="2" />
+            <line x1="-12" y1="-5" x2="12" y2="5" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+            <circle cx="-12" cy="-5" r="4.5" fill="#3b82f6" />
+            <circle cx="12" cy="5" r="4.5" fill="#3b82f6" />
+            <text x="0" y="36" font-size="9" text-anchor="middle" font-weight="800" fill="#2563eb">ELB Balancer</text>
+          </g>
+
+          <!-- 3. Target Group Instances -->
+          <!-- Target 1: Healthy -->
+          <g transform="translate(295, 45)">
+            <rect x="-35" y="-18" width="70" height="36" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="-26" y="-2" font-size="9" font-weight="800" fill="#065f46" text-anchor="start">EC2 #1</text>
+            <text x="-26" y="8" font-size="7.5" font-weight="700" fill="#047857" text-anchor="start">HEALTHY</text>
+            <g transform="translate(20, 0)">
+              <circle cx="0" cy="0" r="6" fill="#10b981" />
+              <path d="M -3 0 L -1 2 L 3 -2" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+          </g>
+
+          <!-- Target 2: Healthy -->
+          <g transform="translate(295, 90)">
+            <rect x="-35" y="-18" width="70" height="36" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="-26" y="-2" font-size="9" font-weight="800" fill="#065f46" text-anchor="start">EC2 #2</text>
+            <text x="-26" y="8" font-size="7.5" font-weight="700" fill="#047857" text-anchor="start">HEALTHY</text>
+            <g transform="translate(20, 0)">
+              <circle cx="0" cy="0" r="6" fill="#10b981" />
+              <path d="M -3 0 L -1 2 L 3 -2" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+          </g>
+
+          <!-- Target 3: Unhealthy -->
+          <g transform="translate(295, 140)">
+            <rect x="-35" y="-18" width="70" height="36" rx="6" fill="#fdf2f2" stroke="#ef4444" stroke-width="1.5" />
+            <text x="-26" y="-2" font-size="9" font-weight="800" fill="#991b1b" text-anchor="start">EC2 #3</text>
+            <text x="-26" y="8" font-size="7.5" font-weight="700" fill="#ef4444" text-anchor="start">FAILED</text>
+            <g transform="translate(20, 0)">
+              <circle cx="0" cy="0" r="6" fill="#ef4444" />
+              <path d="M 0 -3.5 L 0 0.5 M 0 2 H 0" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" />
+            </g>
           </g>
         </svg>
       `
@@ -1002,6 +1101,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       if (serviceParam && this.awsCatalog.services.some(service => service.type === serviceParam)) {
         this.selectedServiceType = serviceParam as AwsServiceType;
         this.updateConnectivityMap(serviceParam);
+        this.activeCategoryId = '';
       } else {
         this.selectedServiceType = null;
       }
@@ -1011,27 +1111,10 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   getServiceDoc(type: string): ServiceDoc {
     const defaultInfo = this.awsCatalog.getByType(type as AwsServiceType);
     const custom = this.serviceDocs[type];
-    const generated = this.buildGeneratedServiceDoc(defaultInfo);
-    const rawSvg = custom?.illustrationSvg || generated.illustrationSvg;
+    const docData = (serviceDocsData as any)[type] || {};
 
-    return {
-      whyNeeded: custom?.whyNeeded || generated.whyNeeded,
-      beginnerExplanation: custom?.beginnerExplanation || generated.beginnerExplanation,
-      whenToUse: custom?.whenToUse || generated.whenToUse,
-      whenNotToUse: custom?.whenNotToUse || generated.whenNotToUse,
-      practicalExample: custom?.practicalExample || generated.practicalExample,
-      keyCapabilities: custom?.keyCapabilities || generated.keyCapabilities,
-      useCases: custom?.useCases || generated.useCases,
-      illustrationSvg: this.sanitizer.bypassSecurityTrustHtml(rawSvg)
-    };
-  }
-
-  private buildGeneratedServiceDoc(service: AwsServiceDefinition): Omit<ServiceDoc, 'illustrationSvg'> & { illustrationSvg: string } {
-    const rawService = this.getRawService(service.type);
+    const rawService = this.getRawService(type as AwsServiceType);
     const rules = rawService?.rules || [];
-    const guidance = this.categoryGuidance(service.category);
-    const ports = service.ports.map(port => this.humanizePort(port.type));
-    const uniquePorts = [...new Set(ports)];
     const connectedTargets = rules.slice(0, 4).map((rule: any) => {
       try {
         return this.awsCatalog.getByType(rule.target as AwsServiceType).name;
@@ -1040,172 +1123,18 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       }
     });
 
-    const whyNeeded = `${service.description} In a system design, it is usually placed where ${guidance.role}. It helps keep responsibilities clear, so one component can focus on ${guidance.focus} instead of every backend service solving that problem on its own.`;
-
-    const beginnerExplanation = `Beginner mental model: think of ${service.name} as ${guidance.analogy}. It receives or supports ${uniquePorts.length ? uniquePorts.join(', ') : 'service'} traffic and then either protects, stores, routes, runs, observes, or coordinates the next part of the architecture.`;
-
-    const whenToUse = `Use ${service.name} when your design needs ${guidance.when}. It is a good fit when the requirement is recurring enough that you want a managed AWS building block instead of custom code inside every service.`;
-
-    const whenNotToUse = `Avoid adding ${service.name} just because it exists in the catalog. If the workload is very small, temporary, or already handled by a simpler component, keep the architecture simpler until this responsibility becomes clear.`;
-
-    const practicalExample = this.fallbackPracticalExample(service, connectedTargets);
-
-    const keyCapabilities = [
-      service.behavior.scalable ? 'Scales capacity as demand changes.' : 'Provides a defined architectural responsibility.',
-      service.behavior.stateful ? 'Stores or manages persistent state.' : 'Can participate in stateless request or event flow.',
-      service.behavior.fanOut ? 'Can route work to multiple downstream services.' : 'Integrates with selected downstream services.',
-      rules.length ? `Supports ${rules.length} simulator connection rule${rules.length === 1 ? '' : 's'}.` : 'Acts as an endpoint or supporting service in the simulator.'
-    ];
-
-    const useCases = [
-      guidance.useCaseA,
-      guidance.useCaseB,
-      connectedTargets.length
-        ? `Connect ${service.name} with ${connectedTargets.join(', ')} in this simulator to model common production flows.`
-        : `Use ${service.name} to complete the ${service.category} responsibility in a larger architecture.`
-    ];
+    const rawSvg = custom?.illustrationSvg || this.buildServiceIllustration(defaultInfo, connectedTargets);
 
     return {
-      whyNeeded,
-      beginnerExplanation,
-      whenToUse,
-      whenNotToUse,
-      practicalExample,
-      keyCapabilities,
-      useCases,
-      illustrationSvg: this.buildServiceIllustration(service, connectedTargets)
+      whyNeeded: docData.overview || defaultInfo.description,
+      beginnerExplanation: docData.conceptualModel || '',
+      whenToUse: docData.recommendedUsing || '',
+      whenNotToUse: docData.recommendedAvoiding || '',
+      practicalExample: docData.practicalScenario || '',
+      keyCapabilities: docData.keyCharacteristics || [],
+      useCases: docData.commonIntegrationPatterns || [],
+      illustrationSvg: this.sanitizer.bypassSecurityTrustHtml(rawSvg)
     };
-  }
-
-  private categoryGuidance(category: string): {
-    role: string;
-    focus: string;
-    analogy: string;
-    when: string;
-    useCaseA: string;
-    useCaseB: string;
-  } {
-    const guidance: Record<string, any> = {
-      'Users': {
-        role: 'traffic enters the system from real people, devices, or external clients',
-        focus: 'representing demand and user-facing latency',
-        analogy: 'the crowd outside the system that creates requests',
-        when: 'a realistic source of traffic for testing throughput, latency, and failure behavior',
-        useCaseA: 'Model browsers, mobile apps, or devices sending traffic into the architecture.',
-        useCaseB: 'Adjust request rate to understand how the rest of the design behaves under load.'
-      },
-      'Networking & Content Delivery': {
-        role: 'requests need to enter, leave, or move safely between network boundaries',
-        focus: 'routing, reachability, latency, and traffic control',
-        analogy: 'roads, signs, and entry gates for cloud traffic',
-        when: 'clear routing, public entry points, private connectivity, or lower-latency delivery',
-        useCaseA: 'Route users to the right application endpoint or network segment.',
-        useCaseB: 'Improve availability and latency by controlling where traffic travels.'
-      },
-      'Compute': {
-        role: 'application code or background jobs need somewhere to execute',
-        focus: 'running business logic and scaling execution capacity',
-        analogy: 'the workers that perform application tasks',
-        when: 'backend code, jobs, APIs, or long-running processes must execute reliably',
-        useCaseA: 'Run application services, workers, batch jobs, or backend logic.',
-        useCaseB: 'Scale execution capacity as traffic or job volume changes.'
-      },
-      'Containers': {
-        role: 'packaged application services need consistent deployment and scaling',
-        focus: 'container orchestration, image delivery, and repeatable runtime environments',
-        analogy: 'a managed fleet for shipping and running app containers',
-        when: 'applications are packaged as containers and need repeatable deployments',
-        useCaseA: 'Deploy microservices packaged with Docker images.',
-        useCaseB: 'Scale container tasks or clusters without redesigning the application.'
-      },
-      'Storage': {
-        role: 'files, shared data, backups, or artifacts need durable storage',
-        focus: 'durability, retention, retrieval, and shared file access',
-        analogy: 'a managed storage room for files and system artifacts',
-        when: 'the system needs to keep objects, backups, files, images, or generated outputs',
-        useCaseA: 'Store user uploads, static assets, backups, or generated files.',
-        useCaseB: 'Separate large file storage from compute and database tiers.'
-      },
-      'Database': {
-        role: 'application data needs structured storage and predictable access patterns',
-        focus: 'queries, persistence, consistency, indexing, and read/write performance',
-        analogy: 'the system of record or fast lookup table for the application',
-        when: 'data must be saved, queried, indexed, cached, or analyzed repeatedly',
-        useCaseA: 'Store application records, transactions, search data, or cached values.',
-        useCaseB: 'Scale reads, writes, and storage independently from application servers.'
-      },
-      'Application Integration': {
-        role: 'services need to communicate without becoming tightly coupled',
-        focus: 'events, queues, workflows, APIs, retries, and fan-out',
-        analogy: 'the message lanes and coordinators between services',
-        when: 'multiple services need asynchronous communication, orchestration, or API mediation',
-        useCaseA: 'Decouple producers from consumers so traffic spikes do not cascade.',
-        useCaseB: 'Coordinate multi-step workflows and route events to the right target.'
-      },
-      'Analytics': {
-        role: 'streaming, logs, or large datasets need processing and insight',
-        focus: 'collection, transformation, querying, and analytics pipelines',
-        analogy: 'a data processing lane that turns raw activity into insight',
-        when: 'the workload involves streams, search, ETL, reports, or large-scale data analysis',
-        useCaseA: 'Process event streams, logs, clickstream data, or data lake records.',
-        useCaseB: 'Query or transform data without overloading transactional systems.'
-      },
-      'Security, Identity, & Compliance': {
-        role: 'access, secrets, encryption, and protection boundaries must be explicit',
-        focus: 'identity, authorization, encryption, policy, and threat protection',
-        analogy: 'the locks, keys, guards, and policy desk for the architecture',
-        when: 'users, services, data, or traffic need controlled and auditable access',
-        useCaseA: 'Protect APIs, manage credentials, encrypt data, or authorize service actions.',
-        useCaseB: 'Reduce security logic duplicated across application code.'
-      },
-      'Management & Governance': {
-        role: 'the system needs visibility, auditability, operations, or account controls',
-        focus: 'monitoring, audit trails, configuration, governance, and operations',
-        analogy: 'the control room that observes and manages the environment',
-        when: 'operations teams need logs, metrics, traceability, automation, or governance',
-        useCaseA: 'Monitor health, capture audit events, or manage operational tasks.',
-        useCaseB: 'Create feedback loops for alarms, scaling, and incident response.'
-      },
-      'Developer Tools': {
-        role: 'source code needs a repeatable path from build to release',
-        focus: 'build automation, deployment, packaging, and release control',
-        analogy: 'the assembly line that moves code toward production',
-        when: 'teams need consistent CI/CD instead of manual release steps',
-        useCaseA: 'Build, test, and deploy application changes reliably.',
-        useCaseB: 'Reduce release risk with repeatable deployment automation.'
-      },
-      'Machine Learning': {
-        role: 'applications need AI, model inference, training, or media understanding',
-        focus: 'model access, training, inference, classification, and extraction',
-        analogy: 'a managed intelligence layer for model-powered features',
-        when: 'the feature needs generative AI, predictions, image analysis, or document extraction',
-        useCaseA: 'Add model-backed experiences without operating the full ML platform yourself.',
-        useCaseB: 'Process images, text, documents, or predictions as part of a workflow.'
-      },
-      'Media Services': {
-        role: 'audio or video assets need processing before delivery',
-        focus: 'transcoding, packaging, quality settings, and media workflows',
-        analogy: 'a media workshop that prepares raw video for users',
-        when: 'uploaded video or audio must be converted into delivery-ready formats',
-        useCaseA: 'Transcode video files into streaming or device-friendly formats.',
-        useCaseB: 'Standardize media processing without running custom encoding servers.'
-      },
-      'Internet of Things': {
-        role: 'devices need to connect, publish events, and interact with cloud services',
-        focus: 'device messaging, rules, security, and event routing',
-        analogy: 'a managed gateway between physical devices and cloud applications',
-        when: 'hardware devices or sensors need secure cloud communication',
-        useCaseA: 'Connect devices and route telemetry to databases, streams, or functions.',
-        useCaseB: 'Build device workflows without exposing backend services directly.'
-      }
-    };
-
-    return guidance[category] || guidance['Application Integration'];
-  }
-
-  private fallbackPracticalExample(service: AwsServiceDefinition, connectedTargets: string[]): string {
-    const targetPhrase = connectedTargets.length ? ` and then connecting it to ${connectedTargets[0]}` : '';
-    return `A practical use of ${service.name} is adding it to a ${service.category.toLowerCase()} design${targetPhrase}, so the architecture has a clear managed component for ${this.categoryGuidance(service.category).focus}.`;
   }
 
   private buildServiceIllustration(service: AwsServiceDefinition, connectedTargets: string[]): string {
@@ -1294,7 +1223,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   updateConnectivityMap(type: string): void {
     const rawData: any = awsServicesConfig;
     const services = rawData.services || (rawData.default && rawData.default.services) || [];
-    
+
     // Find this service rules
     const thisService = services.find((s: any) => s.type === type);
     this.rules = thisService?.rules?.map((r: any) => {
@@ -1330,7 +1259,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     const count = nodesList.length;
     if (count === 0) return [];
     if (count === 1) return [{ name: nodesList[0].name, iconUrl: nodesList[0].iconUrl, y: 150 }];
-    
+
     const step = (endY - startY) / (count - 1);
     return nodesList.map((node, i) => ({
       name: node.name,
@@ -1441,6 +1370,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     this.selectedServiceType = type as AwsServiceType;
     this.updateConnectivityMap(type);
     window.history.pushState(null, '', `/docs?service=${type}`);
+    this.activeCategoryId = '';
 
     const shell = this.el.nativeElement.querySelector('.docs-shell');
     shell?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1476,27 +1406,44 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   }
 
   selectCategory(id: string): void {
+    const wasServiceOpen = this.selectedServiceType !== null;
+    if (wasServiceOpen) {
+      this.selectedServiceType = null;
+      window.history.pushState(null, '', '/docs');
+    }
     this.activeCategoryId = id;
     this.isManualScrolling = true;
 
-    const shell = this.el.nativeElement.querySelector('.docs-shell');
-    if (id === 'overview') {
-      shell.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => this.isManualScrolling = false, 800);
-    } else {
-      const targetSection = this.el.nativeElement.querySelector(`#section-${id}`);
-      if (targetSection && shell) {
-        const shellRect = shell.getBoundingClientRect();
-        const targetRect = targetSection.getBoundingClientRect();
-        const scrollTop = shell.scrollTop;
-        const targetTop = targetRect.top + scrollTop - shellRect.top - 88;
-
-        shell.scrollTo({ top: targetTop, behavior: 'smooth' });
+    const performScroll = () => {
+      const shell = this.el.nativeElement.querySelector('.docs-shell');
+      if (id === 'overview') {
+        shell.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => this.isManualScrolling = false, 800);
       } else {
-        this.isManualScrolling = false;
+        const targetSection = this.el.nativeElement.querySelector(`#section-${id}`);
+        if (targetSection && shell) {
+          const shellRect = shell.getBoundingClientRect();
+          const targetRect = targetSection.getBoundingClientRect();
+          const scrollTop = shell.scrollTop;
+          const targetTop = targetRect.top + scrollTop - shellRect.top - 88;
+
+          shell.scrollTo({ top: targetTop, behavior: 'smooth' });
+          setTimeout(() => this.isManualScrolling = false, 800);
+        } else {
+          this.isManualScrolling = false;
+        }
       }
+    };
+
+    if (wasServiceOpen) {
+      setTimeout(performScroll, 50);
+    } else {
+      performScroll();
     }
+  }
+
+  backToServices(): void {
+    this.selectCategory('services');
   }
 
   goBack(): void {

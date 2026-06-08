@@ -13,8 +13,42 @@ const BASELINE_SERVICES: Record<string, any> = {
   client: {},
   route53: { zoneMonthly: 0.50, standardM: 0.40 },
   cloudfront: { dtOut: { 'us-eu': 0.085, 'ap': 0.14, 'sa': 0.18, 'au': 0.114, 'me-af': 0.11 }, requestsM: { 'us-eu': 1.0, 'ap': 1.20, 'sa': 1.60, 'au': 1.20, 'me-af': 1.20 }, wafBase: 5.0, wafRequestM: 0.60 },
-  apiGateway: { requestsM: { rest: 3.50, http: 1.00, websocket: 1.00 }, cacheRates: { '0.5': 14.40, '1.6': 28.40, '6.1': 56.00, '13.5': 113.40, '28.4': 226.00, '58.2': 408.00, '118.0': 765.00, '237.0': 1278.00 } },
-  alb: { hourly: 0.0225, lcuHour: 0.008 },
+  apiGateway: {
+    requestsM: {
+      http: {
+        tier1: 1.00,
+        tier2: 0.90
+      },
+      rest: {
+        tier1: 3.50,
+        tier2: 2.80,
+        tier3: 2.38,
+        tier4: 1.51
+      },
+      websocket: {
+        tier1: 1.00,
+        tier2: 0.80
+      }
+    },
+    cacheRates: {
+      '0.5': 14.40,
+      '1.6': 28.40,
+      '6.1': 56.00,
+      '13.5': 113.40,
+      '28.4': 226.00,
+      '58.2': 408.00,
+      '118.0': 765.00,
+      '237.0': 1278.00
+    }
+  },
+  elb: {
+    types: {
+      alb: { hourly: 0.0225, lcuHour: 0.008 },
+      nlb: { hourly: 0.0225, lcuHour: 0.006 },
+      clb: { hourly: 0.0250, dataGB: 0.008 },
+      gwlb: { hourly: 0.0125, lcuHour: 0.004 }
+    }
+  },
   vpc: { endpointHourly: 0.01, endpointGB: 0.01 },
   ec2: {
     familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008 },
@@ -23,7 +57,7 @@ const BASELINE_SERVICES: Record<string, any> = {
     ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
     dataTransferGB: 0.09
   },
-  ecs: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, albHourly: 0.0225, logsGB: 0.50 },
+  ecs: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50 },
   autoScalingGroup: {},
   lambda: { requestM: 0.20, gbSec_x86: 0.0000166667, gbSec_arm: 0.0000133334, ephemeralGB_Sec: 0.0000000309, provConcurrency_x86: 0.015, provConcurrency_arm: 0.012 },
   sqs: { standard: 0.40, fifo: 0.50 },
@@ -37,8 +71,8 @@ const BASELINE_SERVICES: Record<string, any> = {
   stepFunctions: { standardM: 25.00, expressReq: 1.00, expressGBsec: 16.67 },
   natGateway: { hourly: 0.045, dataGB: 0.045 },
   securityGroup: {},
-  batch: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, albHourly: 0.0225, logsGB: 0.50 },
-  eks: { clusterHourlyStandard: 0.10, cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, albHourly: 0.0225, natHourly: 0.045, natDataGB: 0.045, logsGB: 0.50, instances: { 't3.medium': 0.0416, 't3.large': 0.0832, 'm5.large': 0.096, 'm5.xlarge': 0.192 }, ebsGBMonth: 0.10 },
+  batch: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50 },
+  eks: { clusterHourlyStandard: 0.10, cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, natHourly: 0.045, natDataGB: 0.045, logsGB: 0.50, instances: { 't3.medium': 0.0416, 't3.large': 0.0832, 'm5.large': 0.096, 'm5.xlarge': 0.192 }, ebsGBMonth: 0.10 },
   aurora: { serverlessAcuHour: 0.12, instances: { 'db.t3.medium': 0.082, 'db.r5.large': 0.290, 'db.r6g.large': 0.260 }, storageGB: 0.10, ioRequestPerM: 0.20 },
   eventBridge: { eventM: 1.00 },
   kinesis: { shardHour: 0.015, putM: 0.014, retentionGB: 0.023 },
@@ -118,11 +152,26 @@ export async function buildPricingFile(
   // API returns per-query price; we store per-million
   if (r53QueriesRaw !== null) svc.route53.standardM = round(r53QueriesRaw * 1_000_000, 2)!;
 
-  // ── ALB ─────────────────────────────────────────────────────────────────
-  const albHr = await fetcher.albHourly(loc);
-  const albLcu = await fetcher.albLcu(loc);
-  if (albHr !== null) { svc.alb.hourly = round(albHr, 4)!; svc.ecs.albHourly = svc.alb.hourly; svc.eks.albHourly = svc.alb.hourly; }
-  if (albLcu !== null) svc.alb.lcuHour = round(albLcu, 4)!;
+  // ── ELB ─────────────────────────────────────────────────────────────────
+  const elbHr = await fetcher.elbHourly(loc);
+  const elbLcu = await fetcher.elbLcu(loc);
+  if (elbHr !== null) {
+    const ratio = elbHr / 0.0225;
+    svc.elb.types.alb.hourly = round(0.0225 * ratio, 4)!;
+    svc.elb.types.nlb.hourly = round(0.0225 * ratio, 4)!;
+    svc.elb.types.clb.hourly = round(0.0250 * ratio, 4)!;
+    svc.elb.types.gwlb.hourly = round(0.0125 * ratio, 4)!;
+
+    svc.ecs.elbHourly = svc.elb.types.alb.hourly;
+    svc.eks.elbHourly = svc.elb.types.alb.hourly;
+  }
+  if (elbLcu !== null) {
+    const ratio = elbLcu / 0.008;
+    svc.elb.types.alb.lcuHour = round(0.008 * ratio, 4)!;
+    svc.elb.types.nlb.lcuHour = round(0.006 * ratio, 4)!;
+    svc.elb.types.clb.dataGB = round(0.008 * ratio, 4)!;
+    svc.elb.types.gwlb.lcuHour = round(0.004 * ratio, 4)!;
+  }
 
   // ── NAT Gateway ─────────────────────────────────────────────────────────
   const natHr = await fetcher.natGatewayHourly(loc);
@@ -296,6 +345,26 @@ export async function buildPricingFile(
   const efsIa = await fetcher.efsStorage(loc, 'Standard - Infrequent Access');
   if (efsStd !== null) svc.efs.storage.standard = round(efsStd, 4)!;
   if (efsIa !== null) svc.efs.storage.infrequentAccess = round(efsIa, 4)!;
+
+  // ── API Gateway (tiered pricing scale) ───────────────────────────────────
+  const apiGwPrice = await fetcher.apiGatewayRest(loc);
+  if (apiGwPrice !== null) {
+    const ratio = apiGwPrice / 3.50;
+    svc.apiGateway.requestsM.rest.tier1 = round(3.50 * ratio, 4)!;
+    svc.apiGateway.requestsM.rest.tier2 = round(2.80 * ratio, 4)!;
+    svc.apiGateway.requestsM.rest.tier3 = round(2.38 * ratio, 4)!;
+    svc.apiGateway.requestsM.rest.tier4 = round(1.51 * ratio, 4)!;
+
+    svc.apiGateway.requestsM.http.tier1 = round(1.00 * ratio, 4)!;
+    svc.apiGateway.requestsM.http.tier2 = round(0.90 * ratio, 4)!;
+
+    svc.apiGateway.requestsM.websocket.tier1 = round(1.00 * ratio, 4)!;
+    svc.apiGateway.requestsM.websocket.tier2 = round(0.80 * ratio, 4)!;
+
+    for (const size of Object.keys(svc.apiGateway.cacheRates)) {
+      svc.apiGateway.cacheRates[size] = round(BASELINE_SERVICES.apiGateway.cacheRates[size] * ratio, 2)!;
+    }
+  }
 
   console.log(`[Builder] Completed pricing build for ${region.code}. Total API calls made: (see fetcher count).`);
   return svc;

@@ -50,6 +50,11 @@
 
       <!-- Service Deep Dive View -->
       <div *ngIf="selectedServiceType as serviceType" class="service-deep-dive">
+        <div class="service-deep-dive-header">
+          <button class="back-to-services-btn" (click)="backToServices()">
+            <i class="fas fa-arrow-left"></i> <span>Back to Service Library</span>
+          </button>
+        </div>
         <div class="service-switcher glass-panel">
           <div>
             <span class="switcher-kicker">Service documentation</span>
@@ -77,40 +82,44 @@
             </div>
 
             <div class="doc-section">
-              <h4>What it does and why it matters</h4>
+              <h4>Overview</h4>
               <p class="service-desc-text">{{ getServiceDoc(serviceType).whyNeeded }}</p>
             </div>
 
             <div class="doc-section">
-              <h4>Beginner-friendly mental model</h4>
+              <h4>Conceptual Model</h4>
               <p class="service-desc-text">{{ getServiceDoc(serviceType).beginnerExplanation }}</p>
+            </div>
+
+            <div class="doc-section">
+              <h4>Architectural Working</h4>
+              <div class="illustration-card" [innerHTML]="getServiceDoc(serviceType).illustrationSvg"></div>
+            </div>
+
+            <div class="capabilities-panel">
+              <h4>Design Notes</h4>
+              <ul class="service-doc-list compact">
+                <li *ngFor="let capability of getServiceDoc(serviceType).keyCapabilities">{{ capability }}</li>
+              </ul>
             </div>
 
             <div class="doc-section service-notes-stack">
               <div>
-                <h4>When to use it</h4>
+                <h4>Recommended Using</h4>
                 <p class="service-desc-text">{{ getServiceDoc(serviceType).whenToUse }}</p>
               </div>
               <div>
-                <h4>When to keep it simpler</h4>
+                <h4>Recommended Avoiding</h4>
                 <p class="service-desc-text">{{ getServiceDoc(serviceType).whenNotToUse }}</p>
               </div>
             </div>
 
             <div class="doc-section">
-              <h4>Practical & Simple Example</h4>
+              <h4>Practical Scenario Example</h4>
               <div class="example-box">
                 <i class="fas fa-project-diagram example-icon"></i>
                 <p>{{ getServiceDoc(serviceType).practicalExample }}</p>
               </div>
-            </div>
-
-
-            <div class="doc-section">
-              <h4>Common use cases</h4>
-              <ul class="service-doc-list">
-                <li *ngFor="let useCase of getServiceDoc(serviceType).useCases">{{ useCase }}</li>
-              </ul>
             </div>
           </div>
 
@@ -192,8 +201,10 @@
             </div>
 
             <div class="doc-section">
-              <h4>Interactive Architecture Diagram</h4>
-              <div class="illustration-card" [innerHTML]="getServiceDoc(serviceType).illustrationSvg"></div>
+              <h4>Common Integration Patterns</h4>
+              <ul class="service-doc-list">
+                <li *ngFor="let useCase of getServiceDoc(serviceType).useCases">{{ useCase }}</li>
+              </ul>
             </div>
 
             <!-- List of Allowed Integrations -->
@@ -213,13 +224,6 @@
                   <span>No defined outbound connection rules exist for this node in the sandbox.</span>
                 </div>
               </div>
-            </div>
-
-            <div class="capabilities-panel">
-              <h4>Design Notes</h4>
-              <ul class="service-doc-list compact">
-                <li *ngFor="let capability of getServiceDoc(serviceType).keyCapabilities">{{ capability }}</li>
-              </ul>
             </div>
 
           </div>

@@ -87,4 +87,13 @@ I build tools that help developers and architects understand complex systems wit
 - Restructured and added more information in about section
 - Minor bug fix
 
+### version 1.2 - 
+
+- developer and architect focused playground
+- intoduced 60+ services
+- added in depth doc on each service and application usage
+- create multiple canvas in single playground
+- realtime and accurate cost estimation (using aws sdk)
+- minor bug fixes
+
 Built with ❤️ for the Cloud Community. Licensed under the [GNU General Public License v3.0](LICENSE).

@@ -98,7 +98,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   readonly serviceConfigFields: Partial<Record<AwsServiceType, ConfigField[]>> = {
-    client: [{ key: 'requestRate', label: 'Request rate', min: 0, max: 1000, step: 10, suffix: 'rps', description: 'Traffic volume entering your architecture.' }],
+    client: [
+      { key: 'requestRate', label: 'Request rate', min: 0, max: 1000, step: 10, suffix: 'rps', description: 'Traffic volume entering your architecture.' },
+      { key: 'packageSize', label: 'Average Package Size', min: 1, max: 10240, step: 10, suffix: 'KB', description: 'Size of request packages sent from client.' }
+    ],
     route53: [],
     cloudfront: [
       { key: 'cacheHitRate', label: 'Cache hit rate', min: 0, max: 100, step: 1, suffix: '%', description: '% served from edge. Higher = less origin load.' },
@@ -111,7 +114,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       { key: 'timeoutMs', label: 'Integration timeout', min: 100, max: 30000, step: 100, suffix: 'ms', description: 'Max wait for backend response.' },
       { key: 'retryPolicy', label: 'Retries', min: 0, max: 5, step: 1, description: 'Auto-retry attempts on backend failure.' }
     ],
-    alb: [
+    elb: [
       { key: 'connectionLimit', label: 'Connection limit', min: 10, max: 20000, step: 100, description: 'Max concurrent TCP connections.' },
       { key: 'dataTransferOut', label: 'Data processed', min: 0, max: 10000, step: 10, suffix: 'GB/mo', description: '$0.008/GB processed (LCU billing).', affectsCost: true },
       { key: 'timeoutMs', label: 'Idle timeout', min: 1, max: 4000, step: 10, suffix: 's', description: 'Idle time before connection close.' }
@@ -669,22 +672,37 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return !!(serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
   }
 
+  isFieldVisible(field: any): boolean {
+    if (!field.visibleIf || !this.selectedNode) return true;
+    try {
+      const config = this.selectedNode.config || {};
+      const fn = new Function('config', `return !!(${field.visibleIf});`);
+      return fn(config);
+    } catch (e) {
+      console.warn('Error evaluating visibleIf for field', field.key, e);
+      return true;
+    }
+  }
+
   get selectedPrimaryParams(): any[] {
     if (!this.selectedNode) return [];
     const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
-    return model?.primaryParams || [];
+    const params = model?.primaryParams || [];
+    return params.filter((field: any) => this.isFieldVisible(field));
   }
 
   get selectedAdvancedParams(): any[] {
     if (!this.selectedNode) return [];
     const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
-    return model?.advancedTune || [];
+    const params = model?.advancedTune || [];
+    return params.filter((field: any) => this.isFieldVisible(field));
   }
 
   get selectedCostParams(): any[] {
     if (!this.selectedNode) return [];
     const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
-    return model?.costParams || [];
+    const params = model?.costParams || [];
+    return params.filter((field: any) => this.isFieldVisible(field));
   }
 
   get selectedCostEvaluation(): any {
@@ -695,7 +713,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get costBreakdown(): CostBreakdown | null {
     if (!this.selectedNode) return null;
-    return this.costService.getCostBreakdown(this.selectedNode, this.globalRegion);
+    return this.costService.getCostBreakdown(this.selectedNode, this.globalRegion, this.nodes);
   }
 
   get selectedConnection(): ArchitectureConnection | undefined {
@@ -717,7 +735,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     let services = this.catalog;
 
     const devServices = new Set([
-      'client', 'route53', 'cloudfront', 'apiGateway', 'alb', 'lambda',
+      'client', 'route53', 'cloudfront', 'apiGateway', 'elb', 'lambda',
       'ec2', 'ecs', 'eks', 'appRunner', 's3', 'efs', 'rds', 'aurora',
       'dynamoDb', 'elastiCache', 'sqs', 'sns', 'eventBridge', 'stepFunctions',
       'cloudWatch', 'xray', 'cognito', 'appSync', 'bedrock'
@@ -778,7 +796,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getNodeCostFormatted(node: ArchitectureNode): string {
-    const cost = this.costService.calculateNodeCostUsd(node, this.globalRegion) * (this.globalCurrency === 'USD' ? 1 : this.costService['conversionRates'][this.globalCurrency]);
+    const cost = this.costService.calculateNodeCostUsd(node, this.globalRegion, this.nodes) * (this.globalCurrency === 'USD' ? 1 : this.costService['conversionRates'][this.globalCurrency]);
     const symbol = this.costService.getCurrencySymbol(this.globalCurrency);
     return `${symbol}${cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }

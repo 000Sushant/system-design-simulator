@@ -313,10 +313,10 @@ export class PricingFetcher {
   }
 
   // ────────────────────────────────────────────────────────────────────────
-  // ALB
+  // ELB
   // ────────────────────────────────────────────────────────────────────────
 
-  albHourly(regionName: string): Promise<number | null> {
+  elbHourly(regionName: string): Promise<number | null> {
     return this.query('AWSELB', [
       { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer-Application' },
@@ -326,7 +326,7 @@ export class PricingFetcher {
     ]);
   }
 
-  albLcu(regionName: string): Promise<number | null> {
+  elbLcu(regionName: string): Promise<number | null> {
     return this.query('AWSELB', [
       { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer-Application' },
