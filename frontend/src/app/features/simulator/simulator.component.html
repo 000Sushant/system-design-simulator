@@ -396,7 +396,9 @@
                 </span>
                 <div class="number-control">
                   <input type="number" [min]="field.min" [max]="field.max" [step]="field.step"
-                    [ngModel]="node.config[field.key]" (ngModelChange)="updateConfig(field.key, $event)" />
+                    [ngModel]="node.config[field.key]" (ngModelChange)="updateConfig(field.key, $event)"
+                    [class.input-error]="isFieldInvalid(field)" />
+                  <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
                 </div>
               </label>
             </div>
@@ -405,19 +407,23 @@
           <ng-container *ngIf="hasJsonModel">
             <div class="field-list">
               <label *ngFor="let field of selectedPrimaryParams" (mousemove)="onMouseMove($event)">
-                <span [title]="field.costDriver || field.notes || ''" class="field-label-with-info"
+                <span class="field-label-with-info"
                   [class.cost-field]="field.affectsCost && roleMode === 'architect'">
                   {{ field.label }}
                   <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
-                    title="Affects monthly cost"></i>
-                  <i *ngIf="field.costDriver" class="fas fa-info-circle info-icon" [title]="field.costDriver || ''"></i>
+                    [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
+                  <i *ngIf="field.notes || field.description" class="fas fa-info-circle info-icon"
+                    [title]="field.notes || field.description || ''"></i>
                 </span>
                 <div class="number-control" *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
                   <input type="number" [min]="field.min" [max]="field.max" [step]="1" [ngModel]="
                       node.config[field.key] !== undefined
                         ? node.config[field.key]
                         : field.default
-                    " (ngModelChange)="updateConfig(field.key, $event)" />
+                    " (ngModelChange)="updateConfig(field.key, $event)"
+                    [class.input-error]="isFieldInvalid(field)"
+                    [disabled]="field.readonly" />
+                  <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
                 </div>
                 <select *ngIf="field.type === 'enum'" [ngModel]="node.config[field.key] || field.default"
                   (ngModelChange)="updateSelectConfig(field.key, $event)">
@@ -461,21 +467,30 @@
             </div>
             <div class="field-list"
               *ngIf="roleMode === 'architect' && advancedConfigExpanded && selectedCostParams.length > 0">
-              <label *ngFor="let field of selectedCostParams" (mousemove)="onMouseMove($event)">
-                <span [title]="field.costDriver || field.notes || ''" class="field-label-with-info cost-field">
+              <label *ngFor="let field of selectedCostParams" (mousemove)="onMouseMove($event)"
+                [class.readonly-row]="field.readonly">
+                <!-- Corner lock icon for readonly fields -->
+                <i *ngIf="field.readonly" class="fas fa-lock readonly-corner-lock"></i>
+                <span class="field-label-with-info cost-field">
                   {{ field.label }}
-                  <i class="fas fa-coins info-icon cost-icon" title="Affects monthly cost"></i>
-                  <i *ngIf="field.costDriver || field.notes || field.description" class="fas fa-info-circle info-icon"
-                    [title]="
-                      field.costDriver || field.notes || field.description || ''
-                    "></i>
+                  <i class="fas fa-coins info-icon cost-icon"
+                    [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
+                  <i *ngIf="field.notes || field.description || field.syncSource"
+                    class="fas fa-info-circle info-icon"
+                    [title]="field.notes || field.description || (field.readonly ? 'Synced from: ' + (field.syncSource || 'Client node') : '')"></i>
+                  <i *ngIf="field.readonly && !field.notes && !field.description"
+                    class="fas fa-info-circle info-icon"
+                    [title]="'Synced from: ' + (field.syncSource || 'Client node') + '. Change the value on the Client (Users) node.'"></i>
                 </span>
-                <div class="number-control" *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
+                <div class="number-control" [class.readonly-input-wrap]="field.readonly" *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
                   <input type="number" [min]="field.min" [max]="field.max" [step]="1" [ngModel]="
                       node.config[field.key] !== undefined
                         ? node.config[field.key]
                         : field.default
-                    " (ngModelChange)="updateConfig(field.key, $event)" />
+                    " (ngModelChange)="updateConfig(field.key, $event)"
+                    [class.input-error]="isFieldInvalid(field)"
+                    [disabled]="field.readonly" />
+                  <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
                 </div>
                 <select *ngIf="field.type === 'enum'" [ngModel]="node.config[field.key] || field.default"
                   (ngModelChange)="updateSelectConfig(field.key, $event)">

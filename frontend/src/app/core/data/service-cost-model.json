@@ -13,7 +13,8 @@
           "min": 1,
           "max": 20000,
           "affectsCost": true,
-          "costDriver": "Maximum requests per second before degradation."
+          "costDriver": "Maximum requests per second before degradation.",
+          "notes": "Maximum requests per second this API can handle before request throttling kicks in. Set this to match your expected peak traffic."
         },
         {
           "key": "latency",
@@ -23,7 +24,8 @@
           "default": 30,
           "min": 1,
           "max": 1000,
-          "costDriver": "Processing delay per request."
+          "costDriver": "Processing delay per request.",
+          "notes": "Processing delay added by this API layer before forwarding to backend. Affects simulation accuracy for latency-sensitive architectures."
         },
         {
           "key": "timeoutMs",
@@ -33,7 +35,8 @@
           "default": 10000,
           "min": 100,
           "max": 29000,
-          "costDriver": "Maximum wait time for backend response before failing."
+          "costDriver": "Maximum wait time for backend response before failing.",
+          "notes": "How long the API waits for a backend response before returning a 504 Gateway Timeout. Match this to your downstream service SLA."
         },
         {
           "key": "retryPolicy",
@@ -43,7 +46,8 @@
           "default": 0,
           "min": 0,
           "max": 5,
-          "costDriver": "Automatic retry attempts on backend failure."
+          "costDriver": "Automatic retry attempts on backend failure.",
+          "notes": "Number of automatic retry attempts when a backend integration fails. Useful for transient failures but can amplify load on backends."
         }
       ],
       "costParams": [
@@ -66,7 +70,8 @@
               "value": "websocket",
               "label": "WebSocket API"
             }
-          ]
+          ],
+          "notes": "Selects the API Gateway product tier. HTTP APIs are cheaper and faster; REST APIs offer advanced features like caching, request validation, and usage plans."
         },
         {
           "key": "cacheGB",
@@ -112,7 +117,8 @@
               "value": "237.0",
               "label": "237.0 GB"
             }
-          ]
+          ],
+          "notes": "Dedicated in-memory cache for REST API responses. Reduces backend calls for repeated identical requests, improving latency and cutting downstream costs."
         }
       ],
       "costEvaluation": {
@@ -169,7 +175,8 @@
           "min": 1,
           "max": 10000,
           "affectsCost": true,
-          "costDriver": "Maximum requests per second before degradation. DNS queries are billed based on this volume."
+          "costDriver": "Maximum requests per second before degradation. DNS queries are billed based on this volume.",
+          "notes": "Estimated DNS queries per second your zone receives. Determines the DNS query cost tier."
         },
         {
           "key": "latency",
@@ -179,7 +186,8 @@
           "default": 15,
           "min": 1,
           "max": 1000,
-          "costDriver": "DNS resolution time added before reaching origin."
+          "costDriver": "DNS resolution time added before reaching origin.",
+          "notes": "Simulated DNS resolution latency for routing simulation purposes."
         },
         {
           "key": "failureThreshold",
@@ -200,7 +208,8 @@
           "default": 0,
           "min": 0,
           "max": 1000,
-          "costDriver": "First 25 zones at $0.50/mo, additional at $0.10/mo"
+          "costDriver": "First 25 zones at $0.50/mo, additional at $0.10/mo",
+          "notes": "The number of DNS hosted zones you manage. Each zone covers a domain or subdomain (e.g. example.com). AWS charges per zone per month."
         }
       ],
       "costEvaluation": {
@@ -283,7 +292,8 @@
               "value": "sa",
               "label": "South America"
             }
-          ]
+          ],
+          "notes": "Edge location pricing class. US/EU is cheapest; Asia and South America have higher per-GB rates due to more expensive peering."
         },
         {
           "key": "dataTransferOut",
@@ -292,7 +302,8 @@
           "default": 1000,
           "min": 0,
           "max": 1000000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Estimated gigabytes of content delivered to end users monthly. Main cost driver for CloudFront-heavy architectures (video, large assets)."
         },
         {
           "key": "requestsM",
@@ -301,14 +312,16 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Millions of HTTP/HTTPS requests served monthly. CloudFront charges per million requests in addition to data transfer."
         },
         {
           "key": "wafEnabled",
           "label": "Enable WAF",
           "type": "boolean",
           "default": false,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Enables AWS WAF on this distribution to block malicious traffic. Adds a WAF Web ACL base charge plus per-request inspection fee."
         }
       ],
       "costEvaluation": {
@@ -372,7 +385,8 @@
           "default": 100,
           "min": 1,
           "max": 50000,
-          "costDriver": "Maximum requests per second before degradation."
+          "costDriver": "Maximum requests per second before degradation.",
+          "notes": "Maximum concurrent executions this function supports. Helps simulate downstream capacity in the traffic flow model."
         },
         {
           "key": "latency",
@@ -382,7 +396,8 @@
           "default": 50,
           "min": 1,
           "max": 5000,
-          "costDriver": "Average execution time per invocation."
+          "costDriver": "Average execution time per invocation.",
+          "notes": "Average function execution time. Used to simulate real end-to-end latency in the architecture."
         },
         {
           "key": "memory",
@@ -421,7 +436,8 @@
               "value": "arm64",
               "label": "arm64 (Graviton)"
             }
-          ]
+          ],
+          "notes": "CPU instruction set for the function runtime. ARM/Graviton2 is typically 20% cheaper than x86 and often faster for compute-bound workloads."
         },
         {
           "key": "memoryMB",
@@ -431,7 +447,8 @@
           "min": 128,
           "max": 10240,
           "step": 128,
-          "group": "compute"
+          "group": "compute",
+          "notes": "RAM allocated to each function invocation. Lambda bills by GB-seconds (memory × duration). Higher memory often reduces duration, so the cost trade-off is non-linear."
         },
         {
           "key": "invocationsM",
@@ -440,7 +457,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Millions of function calls per month. First 1M invocations are free every month under the Always Free tier."
         },
         {
           "key": "durationMs",
@@ -449,7 +467,8 @@
           "default": 200,
           "min": 1,
           "max": 900000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Average execution time per invocation in milliseconds. Combined with memory, this determines GB-second billing."
         },
         {
           "key": "ephemeralMB",
@@ -458,7 +477,8 @@
           "default": 512,
           "min": 512,
           "max": 10240,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Temporary /tmp storage available during execution. First 512 MB is always free; additional storage is billed per GB-second."
         },
         {
           "key": "provConcurrency",
@@ -467,7 +487,8 @@
           "default": 0,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Pre-warmed execution environments to eliminate cold starts. Essential for latency-sensitive user-facing functions. Billed per concurrency-hour even when idle."
         }
       ],
       "costEvaluation": {
@@ -604,7 +625,8 @@
               "value": "r6g",
               "label": "Memory Optimized ARM (r6g)"
             }
-          ]
+          ],
+          "notes": "Defines the hardware profile: t3=burstable/cheap, m5=general purpose, c5=compute-optimized, r5=memory-optimized. Choose based on workload characteristics."
         },
         {
           "key": "instanceSize",
@@ -641,7 +663,8 @@
               "value": "4xlarge",
               "label": "4xlarge"
             }
-          ]
+          ],
+          "notes": "Scales vCPU and RAM within the chosen family. Larger sizes cost proportionally more. Match to your actual CPU/memory requirements."
         },
         {
           "key": "count",
@@ -650,7 +673,8 @@
           "default": 2,
           "min": 1,
           "max": 1000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of EC2 instances running in parallel. Each instance is billed independently at the hourly rate."
         },
         {
           "key": "purchaseOption",
@@ -675,7 +699,8 @@
               "value": "spot",
               "label": "Spot Instance"
             }
-          ]
+          ],
+          "notes": "Pricing model: On-Demand has no commitment, Reserved gives 40-60% discount with 1-3 year commitment, Spot can save 70%+ but instances can be interrupted."
         },
         {
           "key": "storageType",
@@ -696,7 +721,8 @@
               "value": "io2",
               "label": "Provisioned IOPS SSD (io2)"
             }
-          ]
+          ],
+          "notes": "EBS volume type attached to each instance. gp3 is the best default (cheaper than gp2 with better baseline performance). io2 for IOPS-intensive databases."
         },
         {
           "key": "storageSize",
@@ -705,7 +731,8 @@
           "default": 30,
           "min": 8,
           "max": 16000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Root EBS volume size in GB per instance. Billed monthly at the per-GB rate for the selected volume type."
         },
         {
           "key": "dataTransferOut",
@@ -714,7 +741,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data sent from EC2 to the internet monthly. First 100 GB/mo free. Use CloudFront or VPC endpoints to reduce these charges."
         }
       ],
       "costEvaluation": {
@@ -820,7 +848,8 @@
               "value": "glacier",
               "label": "Glacier Flexible"
             }
-          ]
+          ],
+          "notes": "Determines retrieval speed, availability SLA, and cost tier. Standard is instant-access; SIA and Glacier trade retrieval time for lower storage costs."
         },
         {
           "key": "storageGB",
@@ -829,7 +858,8 @@
           "default": 100,
           "min": 0,
           "max": 1000000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Total data stored in S3 each month. This is the dominant cost driver for storage-heavy use cases."
         },
         {
           "key": "putsM",
@@ -838,7 +868,8 @@
           "default": 1,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Millions of write/upload operations (PUT, COPY, POST) per month. Write operations cost more than reads, especially in Glacier tiers."
         },
         {
           "key": "getsM",
@@ -847,7 +878,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Millions of read/download operations (GET, SELECT) per month. GET costs are lower than PUT but can add up at scale."
         },
         {
           "key": "dataTransferOut",
@@ -856,7 +888,8 @@
           "default": 100,
           "min": 0,
           "max": 1000000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data downloaded from S3 to the internet monthly. Use CloudFront in front of S3 to shift costs to cheaper CDN transfer rates."
         }
       ],
       "costEvaluation": {
@@ -923,7 +956,8 @@
           "default": 100,
           "min": 1,
           "max": 100000,
-          "costDriver": "RPS impacts LCU calculation."
+          "costDriver": "RPS impacts LCU calculation.",
+          "notes": "Maximum requests per second this load balancer routes. Used as the baseline for LCU dimension calculations."
         },
         {
           "key": "latency",
@@ -933,7 +967,8 @@
           "default": 15,
           "min": 1,
           "max": 1000,
-          "costDriver": "Processing delay."
+          "costDriver": "Processing delay.",
+          "notes": "Processing overhead added by the load balancer. Helps simulate realistic end-to-end request latency."
         }
       ],
       "costParams": [
@@ -942,6 +977,7 @@
           "label": "Load Balancer Type",
           "type": "enum",
           "default": "alb",
+          "costDriver": "AWS offers ALB for HTTP/HTTPS, NLB for high-performance TCP/UDP, CLB for legacy setups, and GWLB for virtual appliances.",
           "group": "compute",
           "options": [
             {
@@ -960,7 +996,8 @@
               "value": "gwlb",
               "label": "Gateway Load Balancer (GWLB)"
             }
-          ]
+          ],
+          "notes": "The AWS load balancer product to use. ALB is recommended for HTTP/HTTPS microservices; NLB for ultra-low latency TCP; CLB for legacy apps; GWLB for inline security appliances."
         },
         {
           "key": "count",
@@ -969,16 +1006,56 @@
           "default": 1,
           "min": 1,
           "max": 50,
-          "group": "networking"
+          "costDriver": "Number of load balancer instances provisioned to distribute incoming traffic. Billed hourly per load balancer.",
+          "group": "networking",
+          "notes": "Number of load balancer instances. Each LB is billed independently at the hourly rate, then shares the LCU pool."
+        },
+        {
+          "key": "newConnectionsPercent",
+          "label": "New Connections / sec (% of RPS)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 1000,
+          "costDriver": "Percentage of RPS that results in a brand-new TCP/TLS handshake per second. For example, at 100 RPS with 10%, the LB handles 10 new connections/sec. AWS bills 1 LCU per 25 new connections/sec.",
+          "group": "networking",
+          "visibleIf": "config.lbType !== 'clb'",
+          "notes": "What percentage of your incoming RPS results in a brand-new TCP/TLS handshake. Stateless HTTP/2 reuses connections heavily (low %). Keep-alive disabled means higher new connection rates."
+        },
+        {
+          "key": "activeConnections",
+          "label": "Active Connections (count)",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "costDriver": "Total number of concurrent TCP connections that remain open at any moment. AWS bills 1 LCU per 3,000 active concurrent connections for ALB, or 1 NLCU per 1 active flow for NLB.",
+          "group": "networking",
+          "visibleIf": "config.lbType !== 'clb'",
+          "notes": "Peak number of concurrent TCP connections open at any moment across all clients. Represents the size of your connection table, not request rate."
+        },
+        {
+          "key": "packageSizeKB",
+          "label": "Average Package Size (KB)",
+          "type": "number",
+          "default": 50,
+          "readonly": true,
+          "costDriver": "Dynamic request package size in KB, synced from the Client service parameters. Dictates the amount of processed data volume in LCU billing.",
+          "group": "networking",
+          "notes": "Auto-synced from the Client (Users) node. Represents the average size of each request/response payload. Change this value on the Client node.",
+          "syncSource": "Client (Users) node"
         },
         {
           "key": "rules",
-          "label": "Rule Evaluations (M)",
+          "label": "Rule Evaluations (M/mo)",
           "type": "number",
           "default": 0,
           "min": 0,
           "max": 10000,
-          "group": "networking"
+          "costDriver": "Rule evaluations per million/month. Charges apply for rule evaluations beyond the first 10 rules per listener.",
+          "group": "networking",
+          "visibleIf": "config.lbType === 'alb'",
+          "notes": "Number of routing rule evaluations per request (ALB only). AWS includes the first 10 rules free per listener. Applies to path-based and host-based routing rules."
         }
       ],
       "costEvaluation": {
@@ -1013,7 +1090,8 @@
           "default": 100,
           "min": 1,
           "max": 100000,
-          "costDriver": "Network throughput."
+          "costDriver": "Network throughput.",
+          "notes": "Simulated bandwidth capacity of this VPC segment in the traffic flow model."
         }
       ],
       "costParams": [
@@ -1024,7 +1102,8 @@
           "default": 0,
           "min": 0,
           "max": 100,
-          "group": "networking"
+          "group": "networking",
+          "notes": "VPC Interface Endpoints that allow private connectivity to AWS services without traversing the internet. Each endpoint has an hourly charge plus data processing fee."
         },
         {
           "key": "endpointGB",
@@ -1033,7 +1112,8 @@
           "default": 0,
           "min": 0,
           "max": 10000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data processed through VPC Interface Endpoints monthly. Billed per GB in addition to the hourly endpoint charge."
         }
       ],
       "costEvaluation": {
@@ -1087,7 +1167,8 @@
           "default": 1,
           "min": 1,
           "max": 10,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Number of NAT Gateway instances. For high availability, deploy one per Availability Zone. Each NAT is billed hourly independently."
         },
         {
           "key": "dataGB",
@@ -1096,7 +1177,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data processed through the NAT Gateway monthly. This is often the dominant NAT cost — use VPC endpoints for S3/DynamoDB to bypass NAT entirely."
         }
       ],
       "costEvaluation": {
@@ -1131,7 +1213,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of custom CloudWatch metrics. AWS provides basic instance metrics free. Custom metrics (application-level) are charged per metric per month."
         },
         {
           "key": "logsGB",
@@ -1140,7 +1223,8 @@
           "default": 50,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Log data ingested into CloudWatch Logs monthly. This is often the largest CloudWatch cost driver — use log sampling or S3 export to reduce it."
         },
         {
           "key": "dashboards",
@@ -1223,7 +1307,8 @@
               "value": "provisioned",
               "label": "Provisioned"
             }
-          ]
+          ],
+          "notes": "On-Demand scales automatically (pay per request); Provisioned gives a steady capacity allocation at lower per-unit cost but requires capacity planning."
         },
         {
           "key": "storageClass",
@@ -1240,7 +1325,8 @@
               "value": "infrequent-access",
               "label": "Standard-IA"
             }
-          ]
+          ],
+          "notes": "Standard is always-accessible; Infrequent Access (IA) is cheaper for tables read less than once per day."
         },
         {
           "key": "readsM",
@@ -1250,7 +1336,8 @@
           "min": 0,
           "max": 100000,
           "group": "compute",
-          "visibleIf": "config.capacityMode === 'on-demand' || !config.capacityMode"
+          "visibleIf": "config.capacityMode === 'on-demand' || !config.capacityMode",
+          "notes": "Millions of read requests per month (on-demand mode). One read request unit = up to 4KB strongly consistent read or 8KB eventually consistent."
         },
         {
           "key": "writesM",
@@ -1260,7 +1347,8 @@
           "min": 0,
           "max": 100000,
           "group": "compute",
-          "visibleIf": "config.capacityMode === 'on-demand' || !config.capacityMode"
+          "visibleIf": "config.capacityMode === 'on-demand' || !config.capacityMode",
+          "notes": "Millions of write requests per month (on-demand mode). Write request units are 5× more expensive than read units."
         },
         {
           "key": "wcu",
@@ -1270,7 +1358,8 @@
           "min": 1,
           "max": 100000,
           "group": "compute",
-          "visibleIf": "config.capacityMode === 'provisioned'"
+          "visibleIf": "config.capacityMode === 'provisioned'",
+          "notes": "Provisioned Write Capacity Units (steady-state). 1 WCU = one write/sec for items up to 1KB. The highest DynamoDB cost driver."
         },
         {
           "key": "rcu",
@@ -1280,7 +1369,8 @@
           "min": 1,
           "max": 100000,
           "group": "compute",
-          "visibleIf": "config.capacityMode === 'provisioned'"
+          "visibleIf": "config.capacityMode === 'provisioned'",
+          "notes": "Provisioned Read Capacity Units (steady-state). 1 RCU = one strongly consistent read/sec for items up to 4KB. Over-provision for predictable latency."
         },
         {
           "key": "storageGB",
@@ -1289,14 +1379,16 @@
           "default": 50,
           "min": 0,
           "max": 100000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Total data stored across all DynamoDB tables. First 25 GB/mo free globally."
         },
         {
           "key": "globalTables",
           "label": "Global Tables Enabled",
           "type": "boolean",
           "default": false,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Multi-region active-active replication. Enables low-latency reads and writes worldwide, but multiplies WCU consumption by the number of replica regions."
         }
       ],
       "costEvaluation": {
@@ -1399,7 +1491,8 @@
               "value": "oracle-se2",
               "label": "Oracle SE2"
             }
-          ]
+          ],
+          "notes": "The database engine. PostgreSQL and MySQL are open-source and cheapest. Oracle and SQL Server require commercial licenses which add significant cost multipliers."
         },
         {
           "key": "instanceClass",
@@ -1424,14 +1517,16 @@
               "value": "db.r6g.large",
               "label": "db.r6g.large (ARM)"
             }
-          ]
+          ],
+          "notes": "The RDS instance type. Larger instances provide more vCPU, RAM, and network bandwidth. db.t3 is burstable; db.m5/r5 are steady-state workload instances."
         },
         {
           "key": "multiAz",
           "label": "Multi-AZ Deployment",
           "type": "boolean",
           "default": true,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Synchronous standby replica in a different Availability Zone for automatic failover. Doubles the instance cost but eliminates single-AZ as a SPOF."
         },
         {
           "key": "count",
@@ -1440,7 +1535,8 @@
           "default": 2,
           "min": 1,
           "max": 15,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of RDS instances (primary + read replicas). Each instance is billed at the full hourly rate."
         },
         {
           "key": "storageType",
@@ -1457,7 +1553,8 @@
               "value": "gp3",
               "label": "General Purpose (gp3)"
             }
-          ]
+          ],
+          "notes": "EBS storage type for the RDS database files. gp3 offers predictable IOPS at lower cost. io2 for high-throughput OLTP workloads."
         },
         {
           "key": "storageSize",
@@ -1466,7 +1563,8 @@
           "default": 100,
           "min": 20,
           "max": 65000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Allocated storage in GB. RDS storage is pre-provisioned and billed even if unused. You can always increase but not easily decrease."
         },
         {
           "key": "backupStorage",
@@ -1475,7 +1573,8 @@
           "default": 100,
           "min": 0,
           "max": 65000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Snapshot backup retention in GB. AWS provides free backup storage equal to your total database size. Additional backup storage beyond that is billed."
         }
       ],
       "costEvaluation": {
@@ -1566,7 +1665,8 @@
               "value": "cache.r6g.large",
               "label": "cache.r6g.large (ARM)"
             }
-          ]
+          ],
+          "notes": "Cache node size (CPU + RAM). Match to your working dataset: too small causes evictions and cache misses; too large wastes money."
         },
         {
           "key": "count",
@@ -1575,14 +1675,16 @@
           "default": 2,
           "min": 1,
           "max": 500,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of cache nodes in the cluster. More nodes give higher throughput and availability (cluster mode), each billed at the per-node hourly rate."
         },
         {
           "key": "dataTiering",
           "label": "Data Tiering",
           "type": "boolean",
           "default": false,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Extends usable cache capacity to SSD, allowing datasets larger than available RAM. Adds a cost premium but cheaper than equivalently-sized all-RAM nodes."
         }
       ],
       "costEvaluation": {
@@ -1646,7 +1748,8 @@
               "value": "ec2",
               "label": "Amazon EC2"
             }
-          ]
+          ],
+          "notes": "Execution model: Fargate removes server management (pay per task); EC2 mode uses your own instances (more control, potentially cheaper at scale)."
         },
         {
           "key": "tasks",
@@ -1656,7 +1759,8 @@
           "default": 2,
           "min": 1,
           "max": 1000,
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType",
+          "notes": "Number of running task replicas. ECS scales tasks up/down automatically. Each task is billed by the vCPU and memory it reserves."
         },
         {
           "key": "vCPU",
@@ -1685,7 +1789,8 @@
               "label": "4 vCPU"
             }
           ],
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType",
+          "notes": "vCPU units reserved per task. Fargate bills per vCPU-hour. More vCPU means faster processing but higher cost."
         },
         {
           "key": "memoryGB",
@@ -1695,7 +1800,8 @@
           "default": 1,
           "min": 0.5,
           "max": 30,
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType",
+          "notes": "RAM reserved per task in GB. Fargate bills per GB-hour. Ensure your containers have enough headroom to avoid OOM kills."
         },
         {
           "key": "utilization",
@@ -1704,7 +1810,8 @@
           "unit": "%",
           "default": 100,
           "min": 1,
-          "max": 100
+          "max": 100,
+          "notes": "Average CPU utilization of running tasks. Used for simulation accuracy — doesn't affect billing directly but signals over/under-provisioning."
         },
         {
           "key": "runtimeHours",
@@ -1713,7 +1820,8 @@
           "unit": "hrs",
           "default": 730,
           "min": 1,
-          "max": 730
+          "max": 730,
+          "notes": "Total hours per month tasks run. 730h = always-on; reduce for batch or off-hours workloads."
         },
         {
           "key": "os",
@@ -1771,7 +1879,8 @@
           "min": 0,
           "max": 100,
           "group": "fargate",
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType",
+          "notes": "Percentage of tasks running on Fargate Spot (interruptible, up to 70% cheaper). Only suitable for fault-tolerant, stateless tasks."
         },
         {
           "key": "publicIp",
@@ -2007,7 +2116,8 @@
           "default": 100,
           "min": 1,
           "max": 100000,
-          "costDriver": "Message processing."
+          "costDriver": "Message processing.",
+          "notes": "Message throughput capacity for simulation. Reflects how many messages/sec this queue can handle before producers back off."
         }
       ],
       "costParams": [
@@ -2063,7 +2173,8 @@
           "default": 100,
           "min": 1,
           "max": 100000,
-          "costDriver": "Publish rate."
+          "costDriver": "Publish rate.",
+          "notes": "Message publish throughput capacity for simulation."
         }
       ],
       "costParams": [
@@ -2074,7 +2185,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Millions of messages published to SNS topics monthly. First 1M publishes are free."
         },
         {
           "key": "httpM",
@@ -2135,7 +2247,8 @@
           "default": 100,
           "min": 1,
           "max": 10000,
-          "costDriver": "Workflow executions."
+          "costDriver": "Workflow executions.",
+          "notes": "Workflow executions per second for simulation."
         }
       ],
       "costParams": [
@@ -2388,10 +2501,20 @@
       ],
       "costParams": [],
       "costEvaluation": {
-        "formula": "N/A",
-        "components": [],
+        "formula": "egressGB × $dataTransferGB/GB",
+        "components": [
+          {
+            "id": "egress",
+            "name": "Data Transfer Out (Egress)",
+            "formula": "requestRate × 2,628,000 req/mo × packageSize KB ÷ 1,048,576 = GB × rate",
+            "variables": [
+              "requestRate",
+              "packageSize"
+            ]
+          }
+        ],
         "freeTier": {
-          "description": "Users node represents external users. No AWS cost associated."
+          "description": "First 100 GB/mo of data transfer out to Internet is free."
         }
       }
     },

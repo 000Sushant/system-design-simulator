@@ -336,6 +336,66 @@ export class PricingFetcher {
     ]);
   }
 
+  nlbHourly(regionName: string): Promise<number | null> {
+    return this.query('AWSELB', [
+      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer-Network' },
+      { Type: 'TERM_MATCH', Field: 'operation',        Value: 'LoadBalancing:Network' },
+      { Type: 'TERM_MATCH', Field: 'locationType',     Value: 'AWS Region' },
+      { Type: 'TERM_MATCH', Field: 'groupDescription', Value: 'LoadBalancer hourly usage by Network Load Balancer' },
+    ]);
+  }
+
+  nlbLcu(regionName: string): Promise<number | null> {
+    return this.query('AWSELB', [
+      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer-Network' },
+      { Type: 'TERM_MATCH', Field: 'operation',        Value: 'LoadBalancing:Network' },
+      { Type: 'TERM_MATCH', Field: 'locationType',     Value: 'AWS Region' },
+      { Type: 'TERM_MATCH', Field: 'groupDescription', Value: 'Used Network Load Balancer capacity units-hr' },
+    ]);
+  }
+
+  clbHourly(regionName: string): Promise<number | null> {
+    return this.query('AWSELB', [
+      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer' },
+      { Type: 'TERM_MATCH', Field: 'operation',        Value: 'LoadBalancing' },
+      { Type: 'TERM_MATCH', Field: 'locationType',     Value: 'AWS Region' },
+      { Type: 'TERM_MATCH', Field: 'groupDescription', Value: 'LoadBalancer hourly usage' },
+    ]);
+  }
+
+  clbDataGB(regionName: string): Promise<number | null> {
+    return this.query('AWSELB', [
+      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer' },
+      { Type: 'TERM_MATCH', Field: 'operation',        Value: 'LoadBalancing' },
+      { Type: 'TERM_MATCH', Field: 'locationType',     Value: 'AWS Region' },
+      { Type: 'TERM_MATCH', Field: 'groupDescription', Value: 'Data processed by Classic Load Balancer' },
+    ]);
+  }
+
+  gwlbHourly(regionName: string): Promise<number | null> {
+    return this.query('AWSELB', [
+      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer-Gateway' },
+      { Type: 'TERM_MATCH', Field: 'operation',        Value: 'LoadBalancing:Gateway' },
+      { Type: 'TERM_MATCH', Field: 'locationType',     Value: 'AWS Region' },
+      { Type: 'TERM_MATCH', Field: 'groupDescription', Value: 'LoadBalancer hourly usage by Gateway Load Balancer' },
+    ]);
+  }
+
+  gwlbLcu(regionName: string): Promise<number | null> {
+    return this.query('AWSELB', [
+      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer-Gateway' },
+      { Type: 'TERM_MATCH', Field: 'operation',        Value: 'LoadBalancing:Gateway' },
+      { Type: 'TERM_MATCH', Field: 'locationType',     Value: 'AWS Region' },
+      { Type: 'TERM_MATCH', Field: 'groupDescription', Value: 'Used Gateway Load Balancer capacity units-hr' },
+    ]);
+  }
+
   // ────────────────────────────────────────────────────────────────────────
   // NAT Gateway
   // ────────────────────────────────────────────────────────────────────────
@@ -550,5 +610,36 @@ export class PricingFetcher {
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'API Calls' },
     ]);
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Data Transfer Out (Internet Egress)
+  // ────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Fetches the standard internet egress price per GB for a given region.
+   * Uses AWSDataTransfer service with fromLocation = region name, toLocation = External.
+   * Falls back to a region-group estimate if the API returns null.
+   */
+  async dataTransferOut(regionName: string): Promise<number | null> {
+    const price = await this.query('AWSDataTransfer', [
+      { Type: 'TERM_MATCH', Field: 'fromLocation', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'toLocation',   Value: 'External' },
+      { Type: 'TERM_MATCH', Field: 'transferType', Value: 'AWS Outbound' },
+    ], (p: any) => {
+      // Prefer the primary standard tier (not free tier at 0.00)
+      const dim = Object.values(p.terms?.OnDemand ?? {}) as any[];
+      if (!dim.length) return false;
+      const dims = Object.values(dim[0]?.priceDimensions ?? {}) as any[];
+      return dims.some((d: any) => parseFloat(d.pricePerUnit?.USD) > 0);
+    });
+
+    if (price !== null) return price;
+
+    // Fallback: regional group estimates (standard AWS pricing tiers)
+    if (regionName.startsWith('South America')) return 0.15;
+    if (regionName.startsWith('Asia Pacific') || regionName.startsWith('Middle East') || regionName.startsWith('Africa')) return 0.11;
+    // US, Canada, EU
+    return 0.09;
   }
 }

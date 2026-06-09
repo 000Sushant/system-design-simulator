@@ -10,7 +10,7 @@ import { Region } from './regions';
  * NOTE: Keep this in sync with frontend/src/app/core/data/regions/us-east-1.json
  */
 const BASELINE_SERVICES: Record<string, any> = {
-  client: {},
+  client: { dataTransferGB: 0.09 },
   route53: { zoneMonthly: 0.50, standardM: 0.40 },
   cloudfront: { dtOut: { 'us-eu': 0.085, 'ap': 0.14, 'sa': 0.18, 'au': 0.114, 'me-af': 0.11 }, requestsM: { 'us-eu': 1.0, 'ap': 1.20, 'sa': 1.60, 'au': 1.20, 'me-af': 1.20 }, wafBase: 5.0, wafRequestM: 0.60 },
   apiGateway: {
@@ -153,24 +153,30 @@ export async function buildPricingFile(
   if (r53QueriesRaw !== null) svc.route53.standardM = round(r53QueriesRaw * 1_000_000, 2)!;
 
   // ── ELB ─────────────────────────────────────────────────────────────────
-  const elbHr = await fetcher.elbHourly(loc);
-  const elbLcu = await fetcher.elbLcu(loc);
-  if (elbHr !== null) {
-    const ratio = elbHr / 0.0225;
-    svc.elb.types.alb.hourly = round(0.0225 * ratio, 4)!;
-    svc.elb.types.nlb.hourly = round(0.0225 * ratio, 4)!;
-    svc.elb.types.clb.hourly = round(0.0250 * ratio, 4)!;
-    svc.elb.types.gwlb.hourly = round(0.0125 * ratio, 4)!;
+  const albHr = await fetcher.elbHourly(loc);
+  const albLcu = await fetcher.elbLcu(loc);
+  if (albHr !== null) svc.elb.types.alb.hourly = round(albHr, 4)!;
+  if (albLcu !== null) svc.elb.types.alb.lcuHour = round(albLcu, 4)!;
 
-    svc.ecs.elbHourly = svc.elb.types.alb.hourly;
-    svc.eks.elbHourly = svc.elb.types.alb.hourly;
-  }
-  if (elbLcu !== null) {
-    const ratio = elbLcu / 0.008;
-    svc.elb.types.alb.lcuHour = round(0.008 * ratio, 4)!;
-    svc.elb.types.nlb.lcuHour = round(0.006 * ratio, 4)!;
-    svc.elb.types.clb.dataGB = round(0.008 * ratio, 4)!;
-    svc.elb.types.gwlb.lcuHour = round(0.004 * ratio, 4)!;
+  const nlbHr = await fetcher.nlbHourly(loc);
+  const nlbLcu = await fetcher.nlbLcu(loc);
+  if (nlbHr !== null) svc.elb.types.nlb.hourly = round(nlbHr, 4)!;
+  if (nlbLcu !== null) svc.elb.types.nlb.lcuHour = round(nlbLcu, 4)!;
+
+  const clbHr = await fetcher.clbHourly(loc);
+  const clbData = await fetcher.clbDataGB(loc);
+  if (clbHr !== null) svc.elb.types.clb.hourly = round(clbHr, 4)!;
+  if (clbData !== null) svc.elb.types.clb.dataGB = round(clbData, 4)!;
+
+  const gwlbHr = await fetcher.gwlbHourly(loc);
+  const gwlbLcu = await fetcher.gwlbLcu(loc);
+  if (gwlbHr !== null) svc.elb.types.gwlb.hourly = round(gwlbHr, 4)!;
+  if (gwlbLcu !== null) svc.elb.types.gwlb.lcuHour = round(gwlbLcu, 4)!;
+
+  // Propagate ALB hourly to ecs/eks configurations as well
+  if (albHr !== null) {
+    svc.ecs.elbHourly = round(albHr, 4)!;
+    svc.eks.elbHourly = round(albHr, 4)!;
   }
 
   // ── NAT Gateway ─────────────────────────────────────────────────────────
@@ -178,6 +184,19 @@ export async function buildPricingFile(
   const natData = await fetcher.natGatewayData(loc);
   if (natHr !== null) { svc.natGateway.hourly = round(natHr, 4)!; svc.eks.natHourly = svc.natGateway.hourly; }
   if (natData !== null) { svc.natGateway.dataGB = round(natData, 4)!; svc.eks.natDataGB = svc.natGateway.dataGB; }
+
+  // ── Data Transfer Out (Internet Egress) ──────────────────────────────────
+  // Fetch region-specific egress rate and propagate to all services that use it
+  const egressRate = await fetcher.dataTransferOut(loc);
+  if (egressRate !== null) {
+    const r = round(egressRate, 4)!;
+    svc.client.dataTransferGB = r;
+    svc.ec2.dataTransferGB    = r;
+    svc.s3.dataTransferGB     = r;
+    svc.ecs.dataTransferGB    = r;
+    svc.eks.dataTransferGB    = r;
+    svc.batch.dataTransferGB  = r;
+  }
 
   // ── EC2 instances ────────────────────────────────────────────────────────
   const families = ['t3', 'm5', 'm6g', 'c5', 'c6g', 'r5', 'r6g'] as const;

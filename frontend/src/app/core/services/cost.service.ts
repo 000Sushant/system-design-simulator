@@ -78,7 +78,7 @@ export class CostService {
     JPY: '¥'
   };
 
-  private readonly costModel = (serviceCostModelData as any).serviceCostModel || {};
+  private readonly costModel = (serviceCostModelData as any).serviceCostModel || (serviceCostModelData as any).default?.serviceCostModel || {};
   private activeNodes: ArchitectureNode[] = [];
 
   async loadRegionPricing(regionCode: string): Promise<void> {
@@ -375,16 +375,21 @@ export class CostService {
       case 'elb': {
         const lbType = this.getVal(config, 'elb', 'lbType', 'alb');
         const count = this.getVal(config, 'elb', 'count', 1);
-        const throughput = this.getVal(config, 'elb', 'throughput', 100);
-        const rules = this.getVal(config, 'elb', 'rules', 0);
+        // RPS from the ELB throughput param — used for LCU calculation
+        const rps = this.getVal(config, 'elb', 'throughput', 100);
+        // Rule Evaluations (millions/month) — ALB-only
+        const rulesM = lbType === 'alb' ? this.getVal(config, 'elb', 'rules', 0) : 0;
+        // Customizable connection parameters
+        const newConnPct = Number(this.getVal(config, 'elb', 'newConnectionsPercent', 10)) || 10;
+        const activeConnsAbs = Number(this.getVal(config, 'elb', 'activeConnections', 1000)) || 1000;
 
-        // Find client node's package size (default to 50 KB if not found)
+        // Pull package size from connected client node (KB per request)
         const clientNode = allNodes?.find(n => n.type === 'client');
-        const packageSize = clientNode ? (clientNode.config?.['packageSize'] || 50) : 50;
+        const packageSizeKB = clientNode ? (clientNode.config?.['packageSize'] || 50) : 50;
+        const clientRps = clientNode ? (clientNode.config?.['requestRate'] || rps) : rps;
 
-        // Calculate data processed dynamically: RPS * 2.628 Million requests * packageSize KB = GB processed/month
-        const reqsM = throughput * 2.628;
-        const dataGB = reqsM * packageSize;
+        // Monthly data volume: rps × 2,628,000 requests/mo × KB ÷ 1,048,576 = GB
+        const dataGB = (clientRps * 2_628_000 * packageSizeKB) / 1_048_576;
         const dataStr = dataGB >= 1000
           ? `${(dataGB / 1000).toFixed(2)} TB`
           : `${dataGB.toFixed(1)} GB`;
@@ -401,30 +406,45 @@ export class CostService {
         const hrCost = count * 730 * hourlyRate;
         lines.push({
           label: `${lbType.toUpperCase()} Hourly Base`,
-          formula: `${count} ${lbType.toUpperCase()}s × 730 hrs × $${hourlyRate.toFixed(4)}/hr`,
+          formula: `${count} LB × 730 hrs × $${hourlyRate.toFixed(4)}/hr`,
           value: hrCost
         });
 
         if (lbType === 'clb') {
+          // CLB charges per GB processed (no LCU model)
           const dataRate = selectedPricing.dataGB !== undefined ? selectedPricing.dataGB : 0.008;
           const dataCost = dataGB * dataRate;
           lines.push({
             label: 'CLB Data Processing',
-            formula: `${dataStr} processed × $${dataRate.toFixed(4)}/GB`,
+            formula: `${dataStr} × $${dataRate.toFixed(4)}/GB`,
             value: dataCost
           });
           total = hrCost + dataCost;
         } else {
+          // New connections per second = RPS × newConnPct%
+          const newConnPerSec = rps * (newConnPct / 100);
+
+          // Real AWS LCU formula: LCU = max(newConnDim, activeConnDim, dataProcessedDim, ruleEvalDim)
+          // Dimensions (per LCU definition):
+          //   New connections  : 25 new connections per second per LCU
+          //   Active connections: 3,000 active connections per LCU
+          //   Data processed   : 1 GB per hour per LCU → dataGB / 730 hrs
+          //   Rule evaluations : 1,000 rule evaluations per second per LCU (ALB only, first 10 rules free)
+          const newConnDim    = newConnPerSec / 25;
+          const activeConnDim = activeConnsAbs / 3000;                        // absolute concurrent connections ÷ 3,000
+          const dataDim       = dataGB / 730;                                 // GB/month ÷ 730 hrs = GB/hr
+          const ruleDim       = lbType === 'alb' ? (rulesM * 1_000_000 / 3600) / 1000 : 0; // rule-evals/sec ÷ 1000
+
+          const lcus = Math.max(newConnDim, activeConnDim, dataDim, ruleDim);
           const lcuRate = selectedPricing.lcuHour !== undefined ? selectedPricing.lcuHour : 0.008;
-          const lcus = (dataGB / 100) + (rules * 0.1);
-          const lcuCost = lcus * 730 * lcuRate;
-          if (lcuCost > 0) {
-            lines.push({
-              label: `${lbType.toUpperCase()} LCU Cost`,
-              formula: `~${lcus.toFixed(1)} LCUs × 730 hrs × $${lcuRate.toFixed(4)}/hr`,
-              value: lcuCost
-            });
-          }
+          const lcuCost = count * lcus * 730 * lcuRate;
+
+          lines.push({
+            label: `${lbType.toUpperCase()} LCU Cost`,
+            formula: `max(newConn: ${newConnDim.toFixed(2)}, activeConn: ${activeConnDim.toFixed(2)}, data: ${dataDim.toFixed(2)}, rules: ${ruleDim.toFixed(2)}) = ${lcus.toFixed(2)} LCUs × 730 hrs × $${lcuRate.toFixed(4)}/LCU-hr`,
+            value: lcuCost,
+            note: `Highest dimension billed (${newConnPerSec.toFixed(1)} new conn/s, ${activeConnsAbs.toLocaleString()} active conns, ${dataStr}/mo processed)`
+          });
           total = hrCost + lcuCost;
         }
         break;
@@ -1153,9 +1173,15 @@ export class CostService {
         break;
       }
 
+      case 'client': {
+        // The client node represents end users — it is NOT a billable AWS resource.
+        // No lines pushed → Cost Evaluation panel is hidden entirely for this node.
+        total = 0;
+        break;
+      }
+
       case 'iam':
       case 'securityGroup':
-      case 'client':
       case 'autoScalingGroup': {
         total = 0;
         break;

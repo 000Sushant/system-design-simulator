@@ -154,30 +154,33 @@ select {
   display: flex;
   align-items: center;
   gap: 6px;
-  cursor: help;
 }
 
 .info-icon {
   font-size: 11px;
   color: #94a3b8;
-  opacity: 0.6;
-  transition: all 0.2s ease;
+  opacity: 0.55;
+  transition: all 0.18s ease;
+  cursor: help;
 }
 
-.field-label-with-info:hover .info-icon {
+.info-icon:hover {
   opacity: 1;
   color: #3b82f6;
+  transform: scale(1.15);
 }
 
 /* Cost-impacting field indicator */
 .cost-icon {
   color: #10b981 !important;
-  opacity: 0.85;
+  opacity: 0.75;
+  cursor: help;
 }
 
-.field-label-with-info:hover .cost-icon {
-  opacity: 1;
+.cost-icon:hover {
+  opacity: 1 !important;
   color: #059669 !important;
+  transform: scale(1.15);
 }
 
 .cost-field {
@@ -4884,3 +4887,68 @@ small {
     background-position: 200% center;
   }
 }
+
+.input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.field-error-text {
+  display: block;
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 3px;
+  text-align: right;
+}
+
+/* ── Readonly / auto-synced field ─────────────────────────────────────────── */
+.readonly-row {
+  background: linear-gradient(
+    135deg,
+    rgba(148, 163, 184, 0.06) 0%,
+    rgba(148, 163, 184, 0.03) 100%
+  );
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: default;
+  position: relative;
+  gap: 4px;
+}
+
+.readonly-corner-lock {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  color: #f59e0b;
+  font-size: 10px;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.readonly-icon {
+  color: #f59e0b !important;
+  opacity: 0.75 !important;
+  font-size: 10px !important;
+  cursor: help;
+  transition: all 0.18s ease;
+}
+
+.readonly-icon:hover {
+  opacity: 1 !important;
+  transform: scale(1.15);
+}
+
+.readonly-input-wrap {
+  position: relative;
+}
+
+.readonly-input-wrap input:disabled {
+  background: rgba(148, 163, 184, 0.13) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+  opacity: 1;
+  font-style: italic;
+}

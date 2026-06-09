@@ -119,7 +119,7 @@ const iconUrls: Record<AwsServiceType, string> = {
 @Injectable({ providedIn: 'root' })
 export class AwsCatalogService {
   readonly services: AwsServiceDefinition[];
-  private readonly costModel = (serviceCostModelData as any).serviceCostModel || {};
+  private readonly costModel = (serviceCostModelData as any).serviceCostModel || (serviceCostModelData as any).default?.serviceCostModel || {};
 
   private getDefaultsFromModel(serviceType: string): Record<string, any> {
     const serviceModel = this.costModel[serviceType];

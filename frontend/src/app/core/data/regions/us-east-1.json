@@ -2,7 +2,9 @@
   "regionCode": "us-east-1",
   "regionName": "US East (N. Virginia)",
   "services": {
-    "client": {},
+    "client": {
+      "dataTransferGB": 0.09
+    },
     "route53": {
       "zoneMonthly": 0.5,
       "standardM": 0.4

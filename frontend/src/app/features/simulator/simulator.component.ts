@@ -554,6 +554,15 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.simulation.stop();
   }
   private calculateNodeHealth(node: ArchitectureNode): { tone: 'success' | 'warning' | 'error' | 'neutral', message: string } {
+    // Parameter-level validation before connectivity checks
+    if (node.type === 'elb') {
+      const count = node.config?.['count'];
+      const numCount = count !== undefined && count !== null && count !== '' ? Number(count) : 1;
+      if (isNaN(numCount) || numCount < 1) {
+        return { tone: 'error', message: 'Parameter error: at least 1 load balancer is required. Set "Number of Load Balancers" to 1 or more.' };
+      }
+    }
+
     const inputs = this.connections.filter(c => c.targetNodeId === node.id).length;
     const outputs = this.connections.filter(c => c.sourceNodeId === node.id).length;
     const total = inputs + outputs;
@@ -686,6 +695,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get selectedPrimaryParams(): any[] {
     if (!this.selectedNode) return [];
+    if (this.selectedNode.type === 'elb') {
+      const clientNode = this.nodes.find(n => n.type === 'client');
+      const packageSizeKB = clientNode ? (clientNode.config?.['packageSize'] || 50) : 50;
+      this.selectedNode.config['packageSizeKB'] = packageSizeKB;
+    }
     const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
     const params = model?.primaryParams || [];
     return params.filter((field: any) => this.isFieldVisible(field));
@@ -700,6 +714,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get selectedCostParams(): any[] {
     if (!this.selectedNode) return [];
+    if (this.selectedNode.type === 'elb') {
+      const clientNode = this.nodes.find(n => n.type === 'client');
+      const packageSizeKB = clientNode ? (clientNode.config?.['packageSize'] || 50) : 50;
+      this.selectedNode.config['packageSizeKB'] = packageSizeKB;
+    }
     const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
     const params = model?.costParams || [];
     return params.filter((field: any) => this.isFieldVisible(field));
@@ -1332,6 +1351,21 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.selectedNodeIds.includes(node.id) ? { ...node, config: { ...node.config, [key]: value } } : node
     );
     this.onConfigChange();
+  }
+
+  isFieldInvalid(field: any): boolean {
+    if (!this.selectedNode) {
+      return false;
+    }
+    if (field.type === 'enum' || field.type === 'boolean') {
+      return false;
+    }
+    const val = this.selectedNode.config[field.key];
+    if (field.min !== undefined) {
+      const num = (val !== undefined && val !== null && val !== '') ? Number(val) : (field.default !== undefined ? Number(field.default) : 0);
+      return isNaN(num) || num < field.min;
+    }
+    return false;
   }
 
   updateNodeName(value: string): void {
