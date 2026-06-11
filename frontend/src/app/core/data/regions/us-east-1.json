@@ -12,13 +12,17 @@
     "cloudfront": {
       "dtOut": {
         "us-eu": 0.085,
-        "asia": 0.114,
-        "sa": 0.114
+        "ap": 0.12,
+        "sa": 0.16,
+        "au": 0.114,
+        "me-af": 0.11
       },
       "requestsM": {
         "us-eu": 1.0,
-        "asia": 1.2,
-        "sa": 2.2
+        "ap": 1.2,
+        "sa": 1.6,
+        "au": 1.2,
+        "me-af": 1.2
       },
       "wafBase": 5.0,
       "wafRequestM": 0.6
@@ -87,13 +91,19 @@
         "r6g": 0.1008
       },
       "sizeMultipliers": {
+        "nano": 0.0625,
         "micro": 0.125,
         "small": 0.25,
         "medium": 0.5,
         "large": 1.0,
         "xlarge": 2.0,
         "2xlarge": 4.0,
-        "4xlarge": 8.0
+        "4xlarge": 8.0,
+        "8xlarge": 16.0,
+        "12xlarge": 24.0,
+        "16xlarge": 32.0,
+        "24xlarge": 48.0,
+        "metal": 96.0
       },
       "purchaseDiscounts": {
         "on-demand": 0.0,
@@ -141,13 +151,19 @@
         "r6g": 0.1008
       },
       "sizeMultipliers": {
+        "nano": 0.0625,
         "micro": 0.125,
         "small": 0.25,
         "medium": 0.5,
         "large": 1.0,
         "xlarge": 2.0,
         "2xlarge": 4.0,
-        "4xlarge": 8.0
+        "4xlarge": 8.0,
+        "8xlarge": 16.0,
+        "12xlarge": 24.0,
+        "16xlarge": 32.0,
+        "24xlarge": 48.0,
+        "metal": 96.0
       },
       "purchaseDiscounts": {
         "on-demand": 0.0,
@@ -204,6 +220,7 @@
       "engines": {
         "mysql": 1.0,
         "postgresql": 1.05,
+        "mariadb": 1.0,
         "sqlserver-ex": 1.2,
         "oracle-se2": 1.8
       },
@@ -216,7 +233,8 @@
       "multiAzMultiplier": 2.0,
       "storage": {
         "gp2": 0.115,
-        "gp3": 0.115
+        "gp3": 0.115,
+        "io1": 0.125
       },
       "backupGB": 0.095
     },
@@ -254,8 +272,8 @@
     },
     "stepFunctions": {
       "standardM": 25.0,
-      "expressReqM": 1.0,
-      "expressGBsecM": 16.67
+      "expressReq": 1.0,
+      "expressGBsec": 16.67
     },
     "natGateway": {
       "hourly": 0.045,
@@ -264,21 +282,32 @@
     "securityGroup": {},
     "batch": {
       "cpuHour": 0.04048,
-      "memHour": 0.004445
+      "memHour": 0.004445,
+      "armCpuHour": 0.03238,
+      "armMemHour": 0.00356,
+      "spotDiscount": 0.7,
+      "dataTransferGB": 0.09,
+      "crossAzGB": 0.01,
+      "elbHourly": 0.0225,
+      "logsGB": 0.5
     },
     "eks": {
       "clusterHourlyStandard": 0.1,
       "clusterHourlyExtended": 0.6,
       "cpuHour": 0.04048,
       "memHour": 0.004445,
+      "armCpuHour": 0.03238,
+      "armMemHour": 0.00356,
       "spotDiscount": 0.7,
       "ephemeralGBHour": 0.000111,
       "instances": {
         "t3.medium": 0.0416,
+        "t3.large": 0.0832,
         "m5.large": 0.096,
         "m5.xlarge": 0.192,
         "m6g.large": 0.077
       },
+      "ebsGBMonth": 0.08,
       "reservedDiscount": 0.4,
       "elbHourly": 0.0225,
       "crossAzGB": 0.01,
@@ -304,7 +333,7 @@
     "kinesis": {
       "shardHour": 0.015,
       "putM": 0.014,
-      "retentionGB": 0.02
+      "retentionGB": 0.023
     },
     "msk": {
       "instances": {
@@ -406,7 +435,9 @@
     "codeBuild": {
       "rates": {
         "general1.small": 0.005,
-        "general1.large": 0.02
+        "general1.medium": 0.01,
+        "general1.large": 0.02,
+        "gpu1.large": 0.95
       }
     },
     "codeDeploy": {
@@ -416,18 +447,23 @@
       "inM": {
         "claude-haiku": 0.25,
         "claude-sonnet": 3.0,
-        "titan": 0.0003
+        "claude-opus": 15.0,
+        "llama-70b": 0.99,
+        "titan": 0.15
       },
       "outM": {
         "claude-haiku": 1.25,
         "claude-sonnet": 15.0,
-        "titan": 0.0004
+        "claude-opus": 75.0,
+        "llama-70b": 1.2,
+        "titan": 0.20
       }
     },
     "sageMaker": {
       "instances": {
         "ml.t3.medium": 0.056,
         "ml.m5.large": 0.134,
+        "ml.m5.xlarge": 0.269,
         "ml.p3.2xlarge": 4.284
       },
       "serverlessGBsec": 0.00002,
@@ -473,13 +509,19 @@
         "r6g": 0.1008
       },
       "sizeMultipliers": {
+        "nano": 0.0625,
         "micro": 0.125,
         "small": 0.25,
         "medium": 0.5,
         "large": 1.0,
         "xlarge": 2.0,
         "2xlarge": 4.0,
-        "4xlarge": 8.0
+        "4xlarge": 8.0,
+        "8xlarge": 16.0,
+        "12xlarge": 24.0,
+        "16xlarge": 32.0,
+        "24xlarge": 48.0,
+        "metal": 96.0
       },
       "purchaseDiscounts": {
         "on-demand": 0.0,
@@ -503,6 +545,7 @@
       "ontapMulti": 0.26,
       "throughputRate": 1.18
     },
+    "certificateManager": {},
     "systemsManager": {
       "instHour": 0.00695,
       "callM": 0.05

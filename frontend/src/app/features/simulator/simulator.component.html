@@ -210,14 +210,18 @@
             </div>
             <div class="metric-row">
               <span>{{
-                node.metrics.throughput || node.config.throughput
+                (mode === 'idle'
+                  ? (node.metrics.throughput || node.config.throughput)
+                  : (node.status === 'offline' ? node.metrics.received : node.metrics.throughput)
+                ) | number: "1.0-0"
                 }}
                 rps</span>
-              <span>{{ node.metrics.avgLatency || node.config.latency }}ms</span>
+              <span>{{ (mode === 'idle' ? (node.metrics.avgLatency || node.config.latency) : node.metrics.avgLatency) | number: "1.0-0" }}ms</span>
             </div>
             <div class="load-bar">
-              <span [style.width.%]="node.metrics.cpuPressure || node.config.cpu"
-                [style.background]="statusColor(node.status)"></span>
+              <span [style.width.%]="mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure"
+                [style.background]="statusColor(node.status)"
+                [title]="(mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure) + '%'"></span>
             </div>
           </article>
 
@@ -278,7 +282,8 @@
         <div class="validation-container">
           <!-- DETAIL VIEW (When node selected) -->
           <div *ngIf="selectedNode" class="validation-card detail" [class.success]="inspectorHealth.tone === 'success'"
-            [class.error]="inspectorHealth.tone === 'error'" [class.neutral]="inspectorHealth.tone === 'neutral'">
+            [class.error]="inspectorHealth.tone === 'error'" [class.neutral]="inspectorHealth.tone === 'neutral'"
+            [class.warning]="inspectorHealth.tone === 'warning'">
             <div class="validation-icon"><i class="fas fa-heartbeat"></i></div>
             <div class="validation-body">
               <strong>Service Health</strong>
@@ -291,11 +296,18 @@
             <div *ngFor="let node of erroredNodes" class="error-pill" (click)="selectNode(node.id)">
               <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
               <span class="pill-name">{{ node.name }}</span>
-              <span class="pill-msg">Integration required</span>
+              <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
             </div>
 
-            <!-- Overall Success Pill if no errors -->
-            <div *ngIf="erroredNodes.length === 0 && nodes.length > 0" class="status-pill success">
+            <div *ngFor="let node of warnedNodes" class="error-pill warning" (click)="selectNode(node.id)">
+              <span class="pill-icon"><i class="fas fa-exclamation-triangle"></i></span>
+              <span class="pill-name">{{ node.name }}</span>
+              <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+            </div>
+
+            <!-- Overall Success Pill if no errors or warnings -->
+            <div *ngIf="erroredNodes.length === 0 && warnedNodes.length === 0 && nodes.length > 0"
+              class="status-pill success">
               <i class="fas fa-check-circle"></i> Architecture Healthy
             </div>
           </div>
@@ -337,16 +349,16 @@
           </div>
           <div class="summary-grid">
             <div>
-              <strong>{{ node.metrics.received | number }}</strong><small>received</small>
+              <strong>{{ node.metrics.received | number: "1.2-2" }}</strong><small>received</small>
             </div>
             <div>
-              <strong>{{ node.metrics.queueSize | number }}</strong><small>queue</small>
+              <strong>{{ node.metrics.queueSize | number: "1.2-2" }}</strong><small>queue</small>
             </div>
             <div>
-              <strong>{{ node.metrics.errorRate }}%</strong><small>errors</small>
+              <strong>{{ node.metrics.errorRate | number: "1.2-2" }}%</strong><small>errors</small>
             </div>
-            <div>
-              <strong>{{ node.metrics.cpuPressure }}%</strong><small>cpu</small>
+            <div *ngIf="hasCpuMetric(node)">
+              <strong>{{ node.metrics.cpuPressure | number: "1.2-2" }}%</strong><small>cpu</small>
             </div>
           </div>
           <div class="node-cost-highlight" *ngIf="roleMode === 'architect'">
@@ -406,23 +418,27 @@
 
           <ng-container *ngIf="hasJsonModel">
             <div class="field-list">
-              <label *ngFor="let field of selectedPrimaryParams" (mousemove)="onMouseMove($event)">
+              <label *ngFor="let field of selectedPrimaryParams" (mousemove)="onMouseMove($event)"
+                [class.readonly-row]="isFieldLocked(node, field)">
+                <i *ngIf="isFieldLocked(node, field)" class="fas fa-lock readonly-corner-lock"
+                  [title]="fieldLockTooltip(node, field)"></i>
                 <span class="field-label-with-info"
                   [class.cost-field]="field.affectsCost && roleMode === 'architect'">
                   {{ field.label }}
                   <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
                     [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
-                  <i *ngIf="field.notes || field.description" class="fas fa-info-circle info-icon"
-                    [title]="field.notes || field.description || ''"></i>
+                  <i *ngIf="field.notes || field.description || isFieldLocked(node, field)" class="fas fa-info-circle info-icon"
+                    [title]="isFieldLocked(node, field) ? fieldLockTooltip(node, field) : (field.notes || field.description || '')"></i>
                 </span>
-                <div class="number-control" *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
+                <div class="number-control" [class.readonly-input-wrap]="isFieldLocked(node, field)"
+                  *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
                   <input type="number" [min]="field.min" [max]="field.max" [step]="1" [ngModel]="
                       node.config[field.key] !== undefined
                         ? node.config[field.key]
                         : field.default
                     " (ngModelChange)="updateConfig(field.key, $event)"
                     [class.input-error]="isFieldInvalid(field)"
-                    [disabled]="field.readonly" />
+                    [disabled]="isFieldLocked(node, field)" />
                   <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
                 </div>
                 <select *ngIf="field.type === 'enum'" [ngModel]="node.config[field.key] || field.default"
@@ -459,7 +475,7 @@
                 align-items: center;
               " (click)="advancedConfigExpanded = !advancedConfigExpanded"
               *ngIf="roleMode === 'architect' && selectedCostParams.length > 0">
-              <strong><i class="fas fa-coins" style="margin-right: 6px; color: #f59e0b"></i>
+              <strong class="cost-section-title"><i class="fas fa-coins" style="margin-right: 6px; color: #f59e0b"></i>
                 Cost Configuration</strong>
               <i class="fas" [class.fa-chevron-down]="advancedConfigExpanded"
                 [class.fa-chevron-right]="!advancedConfigExpanded"
@@ -524,8 +540,8 @@
                 align-items: center;
               " (click)="costEvaluationExpanded = !costEvaluationExpanded"
               *ngIf="roleMode === 'architect' && costBreakdown && costBreakdown.lines.length > 0">
-              <strong><i class="fas fa-calculator" style="margin-right: 6px; color: #6366f1"></i>
-                Cost Evaluation</strong>
+              <strong class="cost-section-title"><i class="fas fa-calculator" style="margin-right: 6px; color: #6366f1"></i>
+                Cost Evaluation<small *ngIf="isVariableCostActive(node)" class="cost-title-hint">({{ mode === 'running' ? 'live' : 'avg' }})</small></strong>
               <span class="cost-eval-total">${{ costBreakdown.total | number: "1.2-2" }}/mo</span>
               <i class="fas" [class.fa-chevron-down]="costEvaluationExpanded"
                 [class.fa-chevron-right]="!costEvaluationExpanded"
@@ -539,6 +555,9 @@
                   <span class="cost-line-value">${{ line.value | number: "1.2-2" }}</span>
                 </div>
                 <div class="cost-line-formula">{{ line.formula }}</div>
+                <div class="cost-line-free" *ngIf="line.freeSaving">
+                  <i class="fas fa-leaf" style="font-size: 9px"></i>{{ line.freeSaving }}
+                </div>
                 <div class="cost-line-note" *ngIf="line.note">
                   {{ line.note }}
                 </div>

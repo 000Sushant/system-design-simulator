@@ -50,7 +50,8 @@
     "commonIntegrationPatterns": [
       "Cache static assets stored in Amazon S3 buckets.",
       "Front-face API Gateway or Application Load Balancers for dynamic caching.",
-      "Integrate AWS WAF for application-layer request filtering."
+      "Integrate AWS WAF for application-layer request filtering.",
+      "Run Lambda@Edge / CloudFront Functions for request and response manipulation at the edge."
     ]
   },
   "apiGateway": {
@@ -70,7 +71,9 @@
       "Route external requests to application services.",
       "Secure APIs using authentication and authorization mechanisms.",
       "Integrate with Lambda, ECS, EKS, and backend microservices.",
-      "Control traffic flow between clients and applications."
+      "Control traffic flow between clients and applications.",
+      "Direct service integrations to Kinesis, EventBridge, DynamoDB, and S3 for serverless write paths.",
+      "Authenticate requests with Cognito User Pools or protect endpoints with AWS WAF and Shield."
     ]
   },
   "elb": {
@@ -124,7 +127,9 @@
     "commonIntegrationPatterns": [
       "Attach Elastic Block Store (EBS) volumes for persistent storage.",
       "Run inside Auto Scaling Groups behind Elastic Load Balancers.",
-      "Access credentials securely using IAM Instance Profiles."
+      "Access credentials securely using IAM Instance Profiles.",
+      "Pulls container images from ECR and is managed by Systems Manager (Run Command, Patch Manager).",
+      "Receives global anycast traffic from Global Accelerator and Auto Scaling Group registration with ELB."
     ]
   },
   "ecs": {
@@ -142,7 +147,9 @@
     "commonIntegrationPatterns": [
       "Fetch container images from Elastic Container Registry (ECR).",
       "Distribute incoming REST requests using Application Load Balancers.",
-      "Log application outputs directly to CloudWatch Logs."
+      "Log application outputs directly to CloudWatch Logs.",
+      "Triggered by EventBridge rules (RunTask) and consumes from SQS queues.",
+      "Pulls container images from Amazon ECR; targeted by Step Functions for synchronous task execution."
     ]
   },
   "autoScalingGroup": {
@@ -160,7 +167,8 @@
     "commonIntegrationPatterns": [
       "Monitor fleet metrics via CloudWatch alarms to trigger scaling.",
       "Distribute incoming requests using Application Load Balancers.",
-      "Launch configured instances using Launch Templates."
+      "Launch configured instances using Launch Templates.",
+      "Instances register with ELB target groups to receive traffic as the group scales."
     ]
   },
   "lambda": {
@@ -178,7 +186,9 @@
     "commonIntegrationPatterns": [
       "Handle HTTP requests routed through API Gateway.",
       "Process message queues by polling Amazon SQS.",
-      "Consume file upload events triggered by Amazon S3 buckets."
+      "Consume file upload events triggered by Amazon S3 buckets.",
+      "Triggered by S3 events, DynamoDB Streams, Kinesis, SQS, SNS, EventBridge, MSK, MQ, and Cognito.",
+      "Acts as a Kinesis Data Firehose transformation function and a Secrets Manager rotation handler."
     ]
   },
   "sqs": {
@@ -232,7 +242,9 @@
     "commonIntegrationPatterns": [
       "Serve cached media files to global users via CloudFront CDN.",
       "Trigger image-resizing pipelines via AWS Lambda S3 events.",
-      "Store backups from RDS database snapshots."
+      "Store backups from RDS database snapshots.",
+      "Fan out object-event notifications directly to SNS, SQS, or EventBridge.",
+      "Hold deployment artifacts pulled by CodeDeploy and CodePipeline."
     ]
   },
   "rds": {
@@ -250,7 +262,8 @@
     "commonIntegrationPatterns": [
       "Store transaction data from backend EC2 or ECS microservices.",
       "Direct read queries to Read Replicas to optimize application performance.",
-      "Retrieve connection credentials securely using AWS Secrets Manager."
+      "Retrieve connection credentials securely using AWS Secrets Manager.",
+      "Exports snapshots and logs to S3; publishes database logs and enhanced metrics to CloudWatch."
     ]
   },
   "elastiCache": {
@@ -268,7 +281,8 @@
     "commonIntegrationPatterns": [
       "Cache database query results from RDS or DynamoDB.",
       "Store session tokens for web applications running on ECS/EC2.",
-      "Provide high-speed counters and analytics indicators."
+      "Provide high-speed counters and analytics indicators.",
+      "Publishes cluster metrics and slow logs to CloudWatch."
     ]
   },
   "dynamoDb": {
@@ -286,7 +300,9 @@
     "commonIntegrationPatterns": [
       "Store operational records written by AWS Lambda functions.",
       "Emit data streams via DynamoDB Streams to trigger Lambda tasks.",
-      "Cache database items using Amazon DynamoDB Accelerator (DAX)."
+      "Cache database items using Amazon DynamoDB Accelerator (DAX).",
+      "Stream change events to Kinesis or EventBridge (via Pipes) for analytics fanout.",
+      "Export point-in-time data to S3 for downstream querying with Athena or Redshift."
     ]
   },
   "iam": {
@@ -322,7 +338,9 @@
     "commonIntegrationPatterns": [
       "Collect logs from ECS containers and AWS Lambda executions.",
       "Trigger EC2 Auto Scaling policies using CloudWatch Alarms.",
-      "Schedule periodic events using CloudWatch Events / EventBridge Rules."
+      "Schedule periodic events using CloudWatch Events / EventBridge Rules.",
+      "Alarm actions can target SNS, SQS, EventBridge, or invoke Lambda.",
+      "Log groups can subscribe Kinesis, Kinesis Data Firehose, Lambda, or be exported to S3."
     ]
   },
   "stepFunctions": {
@@ -340,7 +358,9 @@
     "commonIntegrationPatterns": [
       "Coordinate sequential AWS Lambda invocations.",
       "Handle long-running human approval tasks inside pipelines.",
-      "Trigger database writes and messaging notifications based on logic state."
+      "Trigger database writes and messaging notifications based on logic state.",
+      "Orchestrate ECS RunTask, Batch SubmitJob, Glue, EMR, Athena, SageMaker, MediaConvert, and CodeBuild service integrations.",
+      "Put events to EventBridge or perform S3 object operations as workflow steps."
     ]
   },
   "eventBridge": {
@@ -358,7 +378,9 @@
     "commonIntegrationPatterns": [
       "Trigger AWS Lambda functions when resources change state.",
       "Forward events to SQS queues or SNS topics for distribution.",
-      "Run scheduled cron jobs to trigger automated maintenance scripts."
+      "Run scheduled cron jobs to trigger automated maintenance scripts.",
+      "Routes events to SNS, SQS, Lambda, Step Functions, ECS Run Task, Batch, Kinesis, Kinesis Data Firehose, and CodePipeline.",
+      "Triggers automation via Systems Manager, CodeBuild, SageMaker, and Glue."
     ]
   },
   "cognito": {
@@ -376,7 +398,9 @@
     "commonIntegrationPatterns": [
       "Secure REST APIs by configuring Cognito Authorizers on API Gateway.",
       "Retrieve temporary IAM credentials to upload files directly to S3.",
-      "Authenticate user profiles in frontend Angular/React apps."
+      "Authenticate user profiles in frontend Angular/React apps.",
+      "Provides authentication for API Gateway (Cognito Authorizer) and AppSync GraphQL APIs.",
+      "User pool lifecycle events trigger Lambda functions."
     ]
   },
   "waf": {
@@ -394,7 +418,8 @@
     "commonIntegrationPatterns": [
       "Attach to CloudFront CDN distributions to filter traffic at the edge.",
       "Secure Application Load Balancers (ALBs) fronting web servers.",
-      "Protect REST APIs hosted on Amazon API Gateway."
+      "Protect REST APIs hosted on Amazon API Gateway.",
+      "Web ACLs can be attached to API Gateway, AppSync, CloudFront, and ELB."
     ]
   },
   "natGateway": {
@@ -466,7 +491,9 @@
     "commonIntegrationPatterns": [
       "Deploy container applications retrieved from ECR.",
       "Expose services using AWS Load Balancer Controller targets.",
-      "Authenticate pod access using IAM Roles for Service Accounts (IRSA)."
+      "Authenticate pod access using IAM Roles for Service Accounts (IRSA).",
+      "Pod workloads can reach S3, DynamoDB, RDS, ElastiCache, SQS, SNS, Kinesis, OpenSearch, Redshift, and EventBridge via SDK.",
+      "Pulls container images from Amazon ECR; runs Kafka clients connected to MSK."
     ]
   },
   "aurora": {
@@ -484,7 +511,8 @@
     "commonIntegrationPatterns": [
       "Serve high-throughput relational data to ECS or Lambda microservices.",
       "Offload analytical queries to Aurora Read Replicas.",
-      "Secure connection strings using AWS Secrets Manager."
+      "Secure connection strings using AWS Secrets Manager.",
+      "Exports snapshots to S3 and publishes Performance Insights metrics and logs to CloudWatch."
     ]
   },
   "kinesis": {
@@ -502,7 +530,9 @@
     "commonIntegrationPatterns": [
       "Ingest clickstream events from web application clients.",
       "Trigger AWS Lambda functions to process stream segments.",
-      "Forward parsed data streams to Kinesis Firehose for S3 delivery."
+      "Forward parsed data streams to Kinesis Firehose for S3 delivery.",
+      "Delivered (via Firehose) into S3, OpenSearch, and Redshift for downstream analytics.",
+      "Replicated from DynamoDB Streams and CloudWatch Logs subscription filters."
     ]
   },
   "msk": {
@@ -520,7 +550,8 @@
     "commonIntegrationPatterns": [
       "Stream transactional events between decoupled ECS microservices.",
       "Process streaming data pipelines using Apache Flink on EMR.",
-      "Trigger AWS Lambda functions in response to topic messages."
+      "Trigger AWS Lambda functions in response to topic messages.",
+      "Kafka clients on EC2, ECS, and EKS produce/consume; Lambda event source mappings poll topics."
     ]
   },
   "efs": {
@@ -556,7 +587,8 @@
     "commonIntegrationPatterns": [
       "Query application log files stored in Amazon S3 buckets.",
       "Analyze audit logs gathered by AWS CloudTrail.",
-      "Analyze historical billing data from Cost and Usage Reports."
+      "Analyze historical billing data from Cost and Usage Reports.",
+      "Reads tables backed by the Glue Data Catalog (catalog dependency)."
     ]
   },
   "secretsManager": {
@@ -574,7 +606,8 @@
     "commonIntegrationPatterns": [
       "Retrieve RDS credentials dynamically for ECS and Lambda engines.",
       "Store API keys for external services (Stripe, Twilio).",
-      "Encrypt stored credentials using AWS Key Management Service (KMS)."
+      "Encrypt stored credentials using AWS Key Management Service (KMS).",
+      "Invokes a Lambda rotation function on the configured schedule."
     ]
   },
   "transitGateway": {
@@ -628,7 +661,8 @@
     "commonIntegrationPatterns": [
       "Route global user traffic to Application Load Balancers.",
       "Direct client connections to EC2 virtual servers.",
-      "Manage failover targets across multiple AWS Regions."
+      "Manage failover targets across multiple AWS Regions.",
+      "Routes anycast traffic to ELB, CloudFront, and EC2 endpoints worldwide."
     ]
   },
   "xray": {
@@ -664,7 +698,8 @@
     "commonIntegrationPatterns": [
       "Index application records streamed from DynamoDB tables.",
       "Aggregate log streams from CloudWatch Logs.",
-      "Serve search query results to backend EC2 and ECS microservices."
+      "Serve search query results to backend EC2 and ECS microservices.",
+      "Publishes audit, slow, and error logs to CloudWatch; snapshots to S3."
     ]
   },
   "redshift": {
@@ -682,7 +717,8 @@
     "commonIntegrationPatterns": [
       "Load historical datasets stored in Amazon S3 buckets.",
       "Stream log analytics directly via Kinesis Firehose.",
-      "Connect to Business Intelligence tools like Amazon QuickSight."
+      "Connect to Business Intelligence tools like Amazon QuickSight.",
+      "UNLOADs query results and snapshots to S3; publishes audit and query logs to CloudWatch."
     ]
   },
   "glue": {
@@ -700,7 +736,9 @@
     "commonIntegrationPatterns": [
       "Cleanse and transform raw datasets stored in S3.",
       "Catalog database schemas for Amazon Athena queries.",
-      "Load processed transaction records into Amazon Redshift."
+      "Load processed transaction records into Amazon Redshift.",
+      "Reads/writes Aurora, RDS, DynamoDB, and Redshift via JDBC and EMR/Spark connectors.",
+      "Backs the Athena Data Catalog and emits job metrics/logs to CloudWatch."
     ]
   },
   "emr": {
@@ -718,7 +756,9 @@
     "commonIntegrationPatterns": [
       "Process massive datasets directly from Amazon S3.",
       "Stream real-time big data pipelines from Amazon MSK (Kafka).",
-      "Store analyzed output data back into S3 or Redshift."
+      "Store analyzed output data back into S3 or Redshift.",
+      "Spark/Hive jobs read and write DynamoDB, RDS, Redshift, OpenSearch, and S3.",
+      "Publishes cluster metrics and step logs to CloudWatch."
     ]
   },
   "kinesisFirehose": {
@@ -736,7 +776,9 @@
     "commonIntegrationPatterns": [
       "Buffer and save Kinesis Data Streams to S3 buckets.",
       "Transform streaming JSON structures using AWS Lambda.",
-      "Deliver operational logs to Amazon OpenSearch clusters."
+      "Deliver operational logs to Amazon OpenSearch clusters.",
+      "Invokes Lambda for record transformation before delivery to S3, Redshift, or OpenSearch.",
+      "Emits delivery metrics and error logs to CloudWatch."
     ]
   },
   "mq": {
@@ -754,7 +796,8 @@
     "commonIntegrationPatterns": [
       "Bridge communication between migrated EC2 backend servers.",
       "Connect private subnets securely using messaging protocols.",
-      "Authenticate client access using Active Directory integrations."
+      "Authenticate client access using Active Directory integrations.",
+      "EC2 and ECS-hosted consumers subscribe to broker queues and topics."
     ]
   },
   "kms": {
@@ -790,7 +833,8 @@
     "commonIntegrationPatterns": [
       "Protect public edge networks fronted by CloudFront CDN.",
       "Secure Domain Name System resolution layers on Route 53.",
-      "Defend entry load balancers (ALBs and NLBs)."
+      "Defend entry load balancers (ALBs and NLBs).",
+      "Shield Advanced protects CloudFront, Route 53, ELB, API Gateway, and Global Accelerator endpoints from DDoS."
     ]
   },
   "organizations": {
@@ -826,7 +870,9 @@
     "commonIntegrationPatterns": [
       "Pull source code updates from GitHub repositories.",
       "Trigger compile and unit test phases on AWS CodeBuild.",
-      "Deploy compiled container packages to ECS Fargate services."
+      "Deploy compiled container packages to ECS Fargate services.",
+      "Stage transitions trigger Lambda custom actions and publish notifications to SNS.",
+      "Uses S3 as the artifact store and writes execution events to CloudWatch."
     ]
   },
   "codeBuild": {
@@ -844,7 +890,8 @@
     "commonIntegrationPatterns": [
       "Execute build scripts triggered by AWS CodePipeline.",
       "Upload compiled container packages to Elastic Container Registry (ECR).",
-      "Log compilation outputs directly to CloudWatch Logs."
+      "Log compilation outputs directly to CloudWatch Logs.",
+      "Pushes container images to ECR and streams build logs to CloudWatch."
     ]
   },
   "codeDeploy": {
@@ -862,7 +909,8 @@
     "commonIntegrationPatterns": [
       "Roll out container tasks orchestrated by AWS CodePipeline.",
       "Shift traffic weighting on AWS Lambda aliases.",
-      "Validate instance deployment status using EC2 Auto Scaling groups."
+      "Validate instance deployment status using EC2 Auto Scaling groups.",
+      "Performs blue/green Lambda deployments and pulls deployment bundles from S3."
     ]
   },
   "bedrock": {
@@ -880,7 +928,8 @@
     "commonIntegrationPatterns": [
       "Invoke model prompts inside AWS Lambda backend functions.",
       "Connect agent systems using LangChain or Bedrock Agents.",
-      "Access context documents stored inside S3 object storage."
+      "Access context documents stored inside S3 object storage.",
+      "Persists async batch inference outputs to S3 and publishes invocation metrics to CloudWatch."
     ]
   },
   "sageMaker": {
@@ -898,7 +947,9 @@
     "commonIntegrationPatterns": [
       "Trigger custom model training pipelines from S3 dataset files.",
       "Call real-time inference prediction endpoints from ECS services.",
-      "Publish pipeline completion logs and metrics to CloudWatch."
+      "Publish pipeline completion logs and metrics to CloudWatch.",
+      "Pulls custom training/inference container images from ECR.",
+      "Publishes training and inference metrics/logs to CloudWatch; queries DynamoDB for feature data."
     ]
   },
   "appSync": {
@@ -916,7 +967,9 @@
     "commonIntegrationPatterns": [
       "Fetch and update items stored in DynamoDB tables.",
       "Execute business logic by invoking AWS Lambda resolvers.",
-      "Secure GraphQL client query operations using Cognito User Pools."
+      "Secure GraphQL client query operations using Cognito User Pools.",
+      "Resolvers connect to DynamoDB, Lambda, Aurora/RDS (Data API), and OpenSearch.",
+      "Subscriptions can be driven by EventBridge events; protected by Cognito and WAF."
     ]
   },
   "iotCore": {
@@ -934,7 +987,8 @@
     "commonIntegrationPatterns": [
       "Route device data logs to SQS queues and Kinesis streams.",
       "Trigger AWS Lambda functions in response to device events.",
-      "Update database records stored in Amazon DynamoDB."
+      "Update database records stored in Amazon DynamoDB.",
+      "Rule actions can route messages to Kinesis, Kinesis Firehose, S3, SNS, SQS, EventBridge, and OpenSearch."
     ]
   },
   "rekognition": {
@@ -988,7 +1042,8 @@
     "commonIntegrationPatterns": [
       "Read raw video uploads stored in S3 source buckets.",
       "Save transcoded streaming files back into S3 delivery buckets.",
-      "Notify pipeline completions using SNS notifications or EventBridge."
+      "Notify pipeline completions using SNS notifications or EventBridge.",
+      "Publishes job status events to EventBridge for downstream automation."
     ]
   },
   "cloudTrail": {
@@ -1006,7 +1061,8 @@
     "commonIntegrationPatterns": [
       "Deliver audit log trails to secure Amazon S3 buckets.",
       "Stream trail events to CloudWatch Logs for real-time analysis.",
-      "Analyze historical trail logs using Amazon Athena queries."
+      "Analyze historical trail logs using Amazon Athena queries.",
+      "Delivers trail events to CloudWatch Logs and surfaces API events on EventBridge."
     ]
   },
   "backup": {
@@ -1024,7 +1080,8 @@
     "commonIntegrationPatterns": [
       "Backup database storage volumes on Amazon RDS and Aurora.",
       "Take snapshots of EBS server drives and S3 Buckets.",
-      "Log backup task events and status updates to CloudWatch."
+      "Log backup task events and status updates to CloudWatch.",
+      "Recovery points are stored in S3-backed backup vaults."
     ]
   },
   "appRunner": {
@@ -1042,7 +1099,8 @@
     "commonIntegrationPatterns": [
       "Deploy container images published to Elastic Container Registry (ECR).",
       "Secure backend connection strings using Secrets Manager.",
-      "Route domains using Route 53 DNS records."
+      "Route domains using Route 53 DNS records.",
+      "Containers reach S3, DynamoDB, SQS, SNS, EventBridge, and Secrets Manager."
     ]
   },
   "elasticBeanstalk": {
@@ -1060,7 +1118,8 @@
     "commonIntegrationPatterns": [
       "Host web interfaces fronted by Application Load Balancers.",
       "Connect database backends on Amazon RDS.",
-      "Store uploaded static files inside Amazon S3."
+      "Store uploaded static files inside Amazon S3.",
+      "EB applications call S3, DynamoDB, SQS, SNS, CloudWatch, and Secrets Manager via SDK."
     ]
   },
   "fsx": {
@@ -1078,7 +1137,8 @@
     "commonIntegrationPatterns": [
       "Provide shared network storage for Windows EC2 instances.",
       "Integrate FSx for Lustre with Amazon S3 data lakes for HPC jobs.",
-      "Mount high-performance volumes on container tasks in ECS/EKS."
+      "Mount high-performance volumes on container tasks in ECS/EKS.",
+      "FSx for Lustre tiers data with S3; all file systems can be backed up by AWS Backup."
     ]
   },
   "certificateManager": {
@@ -1114,7 +1174,9 @@
     "commonIntegrationPatterns": [
       "Retrieve application settings from Parameter Store.",
       "Manage configurations on EC2 virtual servers.",
-      "Log admin session histories securely to CloudWatch Logs."
+      "Log admin session histories securely to CloudWatch Logs.",
+      "Run Command and Patch Manager target EC2, ECS, and EKS hosts via the SSM Agent.",
+      "Publishes automation execution metrics and logs to CloudWatch."
     ]
   },
   "ecr": {
@@ -1132,7 +1194,8 @@
     "commonIntegrationPatterns": [
       "Retrieve images to launch container tasks in ECS.",
       "Pull deployment pod blueprints in EKS clusters.",
-      "Upload Docker images compiled by AWS CodeBuild."
+      "Upload Docker images compiled by AWS CodeBuild.",
+      "Distributes container images to EC2, ECS, EKS, Lambda, and App Runner."
     ]
   },
   "privateLink": {

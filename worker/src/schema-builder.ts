@@ -12,7 +12,7 @@ import { Region } from './regions';
 const BASELINE_SERVICES: Record<string, any> = {
   client: { dataTransferGB: 0.09 },
   route53: { zoneMonthly: 0.50, standardM: 0.40 },
-  cloudfront: { dtOut: { 'us-eu': 0.085, 'ap': 0.14, 'sa': 0.18, 'au': 0.114, 'me-af': 0.11 }, requestsM: { 'us-eu': 1.0, 'ap': 1.20, 'sa': 1.60, 'au': 1.20, 'me-af': 1.20 }, wafBase: 5.0, wafRequestM: 0.60 },
+  cloudfront: { dtOut: { 'us-eu': 0.085, 'ap': 0.12, 'sa': 0.16, 'au': 0.114, 'me-af': 0.11 }, requestsM: { 'us-eu': 1.0, 'ap': 1.20, 'sa': 1.60, 'au': 1.20, 'me-af': 1.20 }, wafBase: 5.0, wafRequestM: 0.60 },
   apiGateway: {
     requestsM: {
       http: {
@@ -31,6 +31,7 @@ const BASELINE_SERVICES: Record<string, any> = {
       }
     },
     cacheRates: {
+      '0': 0.0,
       '0.5': 14.40,
       '1.6': 28.40,
       '6.1': 56.00,
@@ -57,33 +58,39 @@ const BASELINE_SERVICES: Record<string, any> = {
     ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
     dataTransferGB: 0.09
   },
-  ecs: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50 },
-  autoScalingGroup: {},
+  ecs: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50, windowsCpuPremium: 0.046, windowsMemPremium: 0.004, publicIpHour: 0.005, instances: { 't3.medium': 0.0416, 'm5.large': 0.096, 'm6g.large': 0.077 }, ebsGBMonth: 0.08, reservedDiscount: 0.40 },
+  autoScalingGroup: {
+    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008 },
+    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, metal: 96.0 },
+    purchaseDiscounts: { 'on-demand': 0, spot: 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
+    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
+    dataTransferGB: 0.09,
+  },
   lambda: { requestM: 0.20, gbSec_x86: 0.0000166667, gbSec_arm: 0.0000133334, ephemeralGB_Sec: 0.0000000309, provConcurrency_x86: 0.015, provConcurrency_arm: 0.012 },
   sqs: { standard: 0.40, fifo: 0.50 },
-  sns: { publish: 0.50, http: 0.60, email: 2.00 },
-  s3: { storage: { standard: 0.023, intelligent: 0.023, sia: 0.0125, glacier: 0.004 }, puts: { standard: 5.0, intelligent: 5.0, sia: 10.0, glacier: 30.0 }, gets: { standard: 0.40, intelligent: 0.40, sia: 1.00, glacier: 10.0 }, dataTransferGB: 0.09 },
-  rds: { engines: { mysql: 1.0, postgresql: 1.0, mariadb: 1.0, oracle: 1.0, sqlserver: 1.0 }, instances: { 'db.t3.medium': 0.068, 'db.m5.large': 0.171, 'db.r5.large': 0.240, 'db.r6g.large': 0.209 }, multiAzMultiplier: 2.0, storage: { gp2: 0.115, gp3: 0.115, io1: 0.125 }, backupGB: 0.095 },
+  sns: { publish: 0.50, http: 0.60, email: 20.00 },
+  s3: { storage: { standard: 0.023, intelligent: 0.023, sia: 0.0125, glacier: 0.0036 }, puts: { standard: 5.0, intelligent: 5.0, sia: 10.0, glacier: 30.0 }, gets: { standard: 0.40, intelligent: 0.40, sia: 1.00, glacier: 10.0 }, dataTransferGB: 0.09 },
+  rds: { engines: { mysql: 1.0, postgresql: 1.05, mariadb: 1.0, 'sqlserver-ex': 1.2, 'oracle-se2': 1.8 }, instances: { 'db.t3.medium': 0.068, 'db.m5.large': 0.171, 'db.r5.large': 0.240, 'db.r6g.large': 0.216 }, multiAzMultiplier: 2.0, storage: { gp2: 0.115, gp3: 0.115, io1: 0.125 }, backupGB: 0.095 },
   elastiCache: { instances: { 'cache.t3.micro': 0.017, 'cache.t3.medium': 0.068, 'cache.m5.large': 0.156, 'cache.r6g.large': 0.166 }, tieringPremium: 1.15 },
-  dynamoDb: { std: { readM: 0.25, writeM: 1.25, storageGB: 0.25, wcuHr: 0.000649, rcuHr: 0.000130 }, ia: { readM: 0.3125, writeM: 1.5625, storageGB: 0.10, wcuHr: 0.0008125, rcuHr: 0.0001625 }, globalMultiplier: 1.5 },
+  dynamoDb: { std: { readM: 0.25, writeM: 1.25, storageGB: 0.25, wcuHr: 0.00065, rcuHr: 0.000130 }, ia: { readM: 0.3125, writeM: 1.5625, storageGB: 0.10, wcuHr: 0.0008125, rcuHr: 0.0001625 }, globalMultiplier: 1.5 },
   iam: {},
   cloudWatch: { metricRate: 0.30, logsGB: 0.50, dashboard: 3.00 },
   stepFunctions: { standardM: 25.00, expressReq: 1.00, expressGBsec: 16.67 },
   natGateway: { hourly: 0.045, dataGB: 0.045 },
   securityGroup: {},
   batch: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50 },
-  eks: { clusterHourlyStandard: 0.10, cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, natHourly: 0.045, natDataGB: 0.045, logsGB: 0.50, instances: { 't3.medium': 0.0416, 't3.large': 0.0832, 'm5.large': 0.096, 'm5.xlarge': 0.192 }, ebsGBMonth: 0.10 },
+  eks: { clusterHourlyStandard: 0.10, clusterHourlyExtended: 0.60, cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, natHourly: 0.045, natDataGB: 0.045, logsGB: 0.50, instances: { 't3.medium': 0.0416, 't3.large': 0.0832, 'm5.large': 0.096, 'm5.xlarge': 0.192, 'm6g.large': 0.077 }, ebsGBMonth: 0.10, reservedDiscount: 0.40, containerInsightsPerNode: 2.5 },
   aurora: { serverlessAcuHour: 0.12, instances: { 'db.t3.medium': 0.082, 'db.r5.large': 0.290, 'db.r6g.large': 0.260 }, storageGB: 0.10, ioRequestPerM: 0.20 },
   eventBridge: { eventM: 1.00 },
   kinesis: { shardHour: 0.015, putM: 0.014, retentionGB: 0.023 },
   msk: { instances: { 'kafka.t3.small': 0.024, 'kafka.m5.large': 0.24 }, storageGB: 0.10 },
   cognito: { freeTier: 50000, ratePerUser: 0.0055 },
   waf: { aclMonth: 5.0, ruleMonth: 1.0, reqM: 0.60 },
-  efs: { storage: { standard: 0.30, 'infrequentAccess': 0.025 }, throughputMBps: 6.0 },
+  efs: { storage: { standard: 0.30, ia: 0.016 }, throughputMBps: 6.0 },
   athena: { perTB: 5.00 },
   secretsManager: { secretMonth: 0.40, callM: 0.05 },
   transitGateway: { attachmentHourly: 0.05, dataGB: 0.02 },
-  directConnect: { portRates: { '1g': 0.30, '10g': 1.63, '100g': 8.14 }, dataTransferGB: 0.02 },
+  directConnect: { portRates: { '1g': 0.30, '10g': 2.25, '100g': 22.5 }, dataTransferGB: 0.02 },
   globalAccelerator: { hourly: 0.025, dataGB: 0.015 },
   xray: { recordM: 5.00, scanM: 0.50 },
   openSearch: { instances: { 't3.medium': 0.073, 'm6g.large': 0.154, 'r6g.large': 0.167 }, storageGB: 0.122 },
@@ -98,7 +105,7 @@ const BASELINE_SERVICES: Record<string, any> = {
   codePipeline: { pipelineMonth: 1.00 },
   codeBuild: { rates: { 'general1.small': 0.005, 'general1.medium': 0.010, 'general1.large': 0.020, 'gpu1.large': 0.950 } },
   codeDeploy: { updateRate: 0.02 },
-  bedrock: { inM: { 'claude-haiku': 0.25, 'claude-sonnet': 3.00, 'claude-opus': 15.00, 'llama-70b': 0.99, 'titan-lite': 0.15 }, outM: { 'claude-haiku': 1.25, 'claude-sonnet': 15.00, 'claude-opus': 75.00, 'llama-70b': 1.20, 'titan-lite': 0.20 } },
+  bedrock: { inM: { 'claude-haiku': 0.25, 'claude-sonnet': 3.00, 'claude-opus': 15.00, 'llama-70b': 0.99, 'titan': 0.15 }, outM: { 'claude-haiku': 1.25, 'claude-sonnet': 15.00, 'claude-opus': 75.00, 'llama-70b': 1.20, 'titan': 0.20 } },
   sageMaker: { instances: { 'ml.t3.medium': 0.0464, 'ml.m5.large': 0.134, 'ml.m5.xlarge': 0.269, 'ml.p3.2xlarge': 4.234 }, trainingHourly: 1.50, serverlessGBsec: 0.000020, serverlessReqM: 0.20 },
   appSync: { reqM: 4.00, dtGB: 0.09 },
   iotCore: { msgM: 1.00, ruleM: 0.15 },
@@ -108,8 +115,14 @@ const BASELINE_SERVICES: Record<string, any> = {
   cloudTrail: { eventM: 1.00 },
   backup: { warmGB: 0.05, coldGB: 0.01 },
   appRunner: { cpuHour: 0.064, memHour: 0.007 },
-  elasticBeanstalk: {},
-  fsx: { windowsSingle: 0.13, windowsMulti: 0.26, lustrePersistent: 0.14, opensfsingle: 0.10, throughputRate: 1.18 },
+  elasticBeanstalk: {
+    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008 },
+    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, metal: 96.0 },
+    purchaseDiscounts: { 'on-demand': 0, spot: 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
+    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
+    dataTransferGB: 0.09,
+  },
+  fsx: { windowsSingle: 0.13, windowsMulti: 0.23, lustreSingle: 0.14, lustreMulti: 0.14, ontapSingle: 0.13, ontapMulti: 0.26, throughputRate: 1.18 },
   certificateManager: {},
   systemsManager: { instHour: 0.00695, callM: 0.05 },
   ecr: { storageGB: 0.10 },
@@ -190,12 +203,14 @@ export async function buildPricingFile(
   const egressRate = await fetcher.dataTransferOut(loc);
   if (egressRate !== null) {
     const r = round(egressRate, 4)!;
-    svc.client.dataTransferGB = r;
-    svc.ec2.dataTransferGB    = r;
-    svc.s3.dataTransferGB     = r;
-    svc.ecs.dataTransferGB    = r;
-    svc.eks.dataTransferGB    = r;
-    svc.batch.dataTransferGB  = r;
+    svc.client.dataTransferGB            = r;
+    svc.ec2.dataTransferGB               = r;
+    svc.s3.dataTransferGB                = r;
+    svc.ecs.dataTransferGB               = r;
+    svc.eks.dataTransferGB               = r;
+    svc.batch.dataTransferGB             = r;
+    svc.autoScalingGroup.dataTransferGB  = r;
+    svc.elasticBeanstalk.dataTransferGB  = r;
   }
 
   // ── EC2 instances ────────────────────────────────────────────────────────
@@ -208,11 +223,22 @@ export async function buildPricingFile(
     const price = await fetcher.ec2Instance(loc, instanceMap[fam]);
     if (price !== null) {
       svc.ec2.familyRatesLarge[fam] = round(price, 6)!;
-      // EKS ec2 instances list uses the same base rate
-      if (fam === 't3') svc.eks.instances['t3.large'] = round(price, 6)!;
+      // Propagate to autoScalingGroup and elasticBeanstalk (same EC2 pricing)
+      svc.autoScalingGroup.familyRatesLarge[fam] = round(price, 6)!;
+      svc.elasticBeanstalk.familyRatesLarge[fam] = round(price, 6)!;
+      // EKS / ECS ec2 instances list uses the same base rate
+      if (fam === 't3') {
+        svc.eks.instances['t3.large'] = round(price, 6)!;
+        svc.ecs.instances['t3.medium'] = round(price * 0.5, 6)!; // medium = large * 0.5
+      }
       if (fam === 'm5') {
         svc.eks.instances['m5.large'] = round(price, 6)!;
         svc.eks.instances['m5.xlarge'] = round(price * 2, 6)!;
+        svc.ecs.instances['m5.large'] = round(price, 6)!;
+      }
+      if (fam === 'm6g') {
+        svc.eks.instances['m6g.large'] = round(price, 6)!;
+        svc.ecs.instances['m6g.large'] = round(price, 6)!;
       }
     }
   }
@@ -226,6 +252,10 @@ export async function buildPricingFile(
   else if (ebsGp2 !== null) svc.ec2.ebsRates.gp3 = round(ebsGp2 * 0.8, 4)!; // fallback: gp3 ≈ 80% of gp2
   if (ebsIo2 !== null) svc.ec2.ebsRates.io2 = round(ebsIo2, 4)!;
 
+  // Propagate EBS rates to autoScalingGroup and elasticBeanstalk
+  svc.autoScalingGroup.ebsRates = { ...svc.ec2.ebsRates };
+  svc.elasticBeanstalk.ebsRates = { ...svc.ec2.ebsRates };
+  svc.ecs.ebsGBMonth = svc.ec2.ebsRates.gp3;
   // Propagate EKS EBS rate
   svc.eks.ebsGBMonth = svc.ec2.ebsRates.gp3;
 
@@ -363,7 +393,7 @@ export async function buildPricingFile(
   const efsStd = await fetcher.efsStorage(loc, 'Standard');
   const efsIa = await fetcher.efsStorage(loc, 'Standard - Infrequent Access');
   if (efsStd !== null) svc.efs.storage.standard = round(efsStd, 4)!;
-  if (efsIa !== null) svc.efs.storage.infrequentAccess = round(efsIa, 4)!;
+  if (efsIa !== null) svc.efs.storage.ia = round(efsIa, 4)!;
 
   // ── API Gateway (tiered pricing scale) ───────────────────────────────────
   const apiGwPrice = await fetcher.apiGatewayRest(loc);

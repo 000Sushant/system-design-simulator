@@ -188,16 +188,6 @@
           "max": 1000,
           "costDriver": "DNS resolution time added before reaching origin.",
           "notes": "Simulated DNS resolution latency for routing simulation purposes."
-        },
-        {
-          "key": "failureThreshold",
-          "label": "Failure Threshold (%)",
-          "type": "number",
-          "unit": "percent",
-          "default": 90,
-          "min": 50,
-          "max": 100,
-          "costDriver": "Utilization percentage where traffic starts dropping."
         }
       ],
       "costParams": [
@@ -282,18 +272,26 @@
           "options": [
             {
               "value": "us-eu",
-              "label": "US, Europe, Canada"
+              "label": "US, Europe & Canada"
             },
             {
-              "value": "asia",
+              "value": "ap",
               "label": "Asia Pacific"
+            },
+            {
+              "value": "au",
+              "label": "Australia"
             },
             {
               "value": "sa",
               "label": "South America"
+            },
+            {
+              "value": "me-af",
+              "label": "Middle East & Africa"
             }
           ],
-          "notes": "Edge location pricing class. US/EU is cheapest; Asia and South America have higher per-GB rates due to more expensive peering."
+          "notes": "Edge location pricing class. US/EU is cheapest; Asia Pacific, Australia, South America, and Middle East/Africa have higher per-GB rates."
         },
         {
           "key": "dataTransferOut",
@@ -385,29 +383,20 @@
           "default": 100,
           "min": 1,
           "max": 50000,
-          "costDriver": "Maximum requests per second before degradation.",
-          "notes": "Maximum concurrent executions this function supports. Helps simulate downstream capacity in the traffic flow model."
+          "affectsCost": true,
+          "costDriver": "RPS × 2,628,000 sec/mo = monthly invocations billed. Directly drives request and GB-second costs.",
+          "notes": "Maximum requests per second this function handles. Combined with concurrency and duration to determine actual throughput cap. Also used to compute monthly invocation count for billing."
         },
         {
           "key": "latency",
-          "label": "Base Latency (ms)",
+          "label": "Avg Execution Time (ms)",
           "type": "number",
           "unit": "ms",
-          "default": 50,
+          "default": 200,
           "min": 1,
-          "max": 5000,
-          "costDriver": "Average execution time per invocation.",
-          "notes": "Average function execution time. Used to simulate real end-to-end latency in the architecture."
-        },
-        {
-          "key": "memory",
-          "label": "Memory Allocation (MB)",
-          "type": "number",
-          "unit": "MB",
-          "default": 512,
-          "min": 128,
-          "max": 10240,
-          "costDriver": "CPU scales linearly with memory. Directly affects GB-second billing."
+          "max": 900000,
+          "costDriver": "Directly multiplied with memory to determine GB-second billing.",
+          "notes": "Average function execution time in milliseconds. Drives both end-to-end latency simulation and GB-second cost calculation."
         },
         {
           "key": "concurrency",
@@ -416,8 +405,9 @@
           "unit": "count",
           "default": 100,
           "min": 1,
-          "max": 5000,
-          "costDriver": "Max simultaneous executions. Hard cap on parallel processing."
+          "max": 3000,
+          "costDriver": "Hard cap on simultaneous executions — throttles requests beyond this limit.",
+          "notes": "Maximum simultaneous in-flight executions. Acts as a hard ceiling: effective max RPS = concurrency ÷ (executionTime/1000). Throttled requests return 429 TooManyRequests."
         }
       ],
       "costParams": [
@@ -437,7 +427,7 @@
               "label": "arm64 (Graviton)"
             }
           ],
-          "notes": "CPU instruction set for the function runtime. ARM/Graviton2 is typically 20% cheaper than x86 and often faster for compute-bound workloads."
+          "notes": "CPU instruction set. ARM/Graviton2 is ~20% cheaper and often faster for compute-bound workloads."
         },
         {
           "key": "memoryMB",
@@ -448,27 +438,17 @@
           "max": 10240,
           "step": 128,
           "group": "compute",
-          "notes": "RAM allocated to each function invocation. Lambda bills by GB-seconds (memory × duration). Higher memory often reduces duration, so the cost trade-off is non-linear."
-        },
-        {
-          "key": "invocationsM",
-          "label": "Invocations / Month (Millions)",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 100000,
-          "group": "compute",
-          "notes": "Millions of function calls per month. First 1M invocations are free every month under the Always Free tier."
+          "notes": "RAM per invocation. Lambda bills GB-seconds = (memoryMB/1024) × (durationMs/1000). Higher memory also allocates proportionally more CPU."
         },
         {
           "key": "durationMs",
-          "label": "Average Duration (ms)",
+          "label": "Avg Duration per Invocation (ms)",
           "type": "number",
           "default": 200,
           "min": 1,
           "max": 900000,
           "group": "compute",
-          "notes": "Average execution time per invocation in milliseconds. Combined with memory, this determines GB-second billing."
+          "notes": "Average function execution time billed per invocation. This is the core cost multiplier: Cost = invocations × (duration/1000) × (memory/1024) × rate/GB-sec. Lambda bills in 1ms increments."
         },
         {
           "key": "ephemeralMB",
@@ -478,7 +458,7 @@
           "min": 512,
           "max": 10240,
           "group": "compute",
-          "notes": "Temporary /tmp storage available during execution. First 512 MB is always free; additional storage is billed per GB-second."
+          "notes": "Temporary /tmp storage per invocation. First 512 MB is free; storage above 512 MB is billed per GB-second of execution."
         },
         {
           "key": "provConcurrency",
@@ -486,9 +466,9 @@
           "type": "number",
           "default": 0,
           "min": 0,
-          "max": 10000,
+          "max": 3000,
           "group": "compute",
-          "notes": "Pre-warmed execution environments to eliminate cold starts. Essential for latency-sensitive user-facing functions. Billed per concurrency-hour even when idle."
+          "notes": "Pre-warmed execution environments that eliminate cold starts. Billed 24/7 regardless of invocations. Essential for latency-sensitive functions."
         }
       ],
       "costEvaluation": {
@@ -497,23 +477,23 @@
           {
             "id": "requestCost",
             "name": "Request Cost",
-            "formula": "invocationCount × $0.20/M",
+            "formula": "(throughput × 2,628,000 / 1M) invocations × $0.20/M",
             "variables": [
-              "invocationCount"
+              "throughput"
             ],
-            "note": "First 1M requests/mo always free"
+            "note": "Monthly invocations derived from RPS × 2,628,000 sec/mo. First 1M requests/mo always free."
           },
           {
             "id": "computeCost",
             "name": "Compute Cost (GB-seconds)",
-            "formula": "invocations × (durationMs/1000) × (memoryMB/1024) × pricePerGBSec",
+            "formula": "max(0, gbSeconds − 400000) × pricePerGBSec",
             "variables": [
-              "invocationCount",
-              "avgDurationMs",
+              "throughput",
+              "durationMs",
               "memoryMB",
               "architecture"
             ],
-            "note": "x86=$0.0000166667/GB-sec, ARM=$0.0000133334/GB-sec. 400K GB-sec/mo free."
+            "note": "gbSeconds = (throughput × 2,628,000) × (durationMs/1000) × (memoryMB/1024). x86=$0.0000166667/GB-sec, ARM=$0.0000133334/GB-sec. First 400K GB-sec/mo free."
           },
           {
             "id": "provisionedCost",
@@ -956,7 +936,8 @@
           "default": 100,
           "min": 1,
           "max": 100000,
-          "costDriver": "RPS impacts LCU calculation.",
+          "affectsCost": true,
+          "costDriver": "RPS drives the New Connections LCU dimension (RPS × newConnectionsPercent ÷ 25). Higher RPS = more LCUs billed.",
           "notes": "Maximum requests per second this load balancer routes. Used as the baseline for LCU dimension calculations."
         },
         {
@@ -2365,7 +2346,47 @@
           "default": 100,
           "min": 1,
           "max": 1000,
-          "costDriver": "Source of simulation traffic."
+          "costDriver": "Source of simulation traffic. When Sync RPS is on, this value is pushed to every downstream service's Capacity (RPS).",
+          "notes": "Steady-state traffic from your users. Hidden when Variable Traffic is on (replaced by Min/Max RPS range).",
+          "visibleIf": "config.variableTraffic !== true"
+        },
+        {
+          "key": "syncRpsToServices",
+          "label": "Sync RPS to all connected services",
+          "type": "boolean",
+          "default": false,
+          "costDriver": "When enabled, every downstream service's Capacity (RPS) is forced to match the user traffic value. Disable to restore each service's original capacity.",
+          "notes": "Propagates the user traffic value to the throughput of every service reachable from this client. Original capacities are restored on uncheck."
+        },
+        {
+          "key": "variableTraffic",
+          "label": "Variable Traffic",
+          "type": "boolean",
+          "default": false,
+          "costDriver": "When enabled, traffic randomly varies between Min/Max RPS each second during simulation. Cost shows the live per-sample monthly cost.",
+          "notes": "Simulates real-world bursty traffic. During simulation a new RPS is sampled every second from the chosen range. Pre-run cost uses the midpoint of the range as an estimate."
+        },
+        {
+          "key": "variableMinRps",
+          "label": "Min RPS (Variable)",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 100000,
+          "visibleIf": "config.variableTraffic === true",
+          "costDriver": "Lower bound of randomly sampled traffic when Variable Traffic is on."
+        },
+        {
+          "key": "variableMaxRps",
+          "label": "Max RPS (Variable)",
+          "type": "number",
+          "unit": "rps",
+          "default": 200,
+          "min": 1,
+          "max": 100000,
+          "visibleIf": "config.variableTraffic === true",
+          "costDriver": "Upper bound of randomly sampled traffic when Variable Traffic is on."
         },
         {
           "key": "packageSize",

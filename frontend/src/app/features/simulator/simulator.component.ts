@@ -553,7 +553,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clearMinimapHideTimer();
     this.simulation.stop();
   }
-  private calculateNodeHealth(node: ArchitectureNode): { tone: 'success' | 'warning' | 'error' | 'neutral', message: string } {
+  private calculateNodeHealth(node: ArchitectureNode): { tone: 'success' | 'warning' | 'error' | 'neutral', message: string, short?: string } {
     // Parameter-level validation before connectivity checks
     if (node.type === 'elb') {
       const count = node.config?.['count'];
@@ -565,23 +565,36 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const inputs = this.connections.filter(c => c.targetNodeId === node.id).length;
     const outputs = this.connections.filter(c => c.sourceNodeId === node.id).length;
-    const total = inputs + outputs;
-
-    if (total === 0) {
-      return { tone: 'neutral', message: 'Connect the input or output nodes to get the health status.' };
-    }
 
     const definition = this.awsCatalog.getByType(node.type);
     const { mandatoryInput, mandatoryOutput, allowFanIn, allowFanOut } = definition.behavior;
 
     // MANDATORY INPUT CHECK
     if (mandatoryInput && inputs === 0) {
-      return { tone: 'error', message: `Integration error: ${node.name} must have at least one input connection.` };
+      return {
+        tone: 'error',
+        short: 'Integration required',
+        message: `Integration error: ${node.name} must have at least one input connection.`
+      };
     }
 
     // MANDATORY OUTPUT CHECK
     if (mandatoryOutput && outputs === 0) {
-      return { tone: 'error', message: `Integration error: ${node.name} must have an output connection to continue the flow.` };
+      return {
+        tone: 'error',
+        short: 'Integration required',
+        message: `Integration error: ${node.name} must have an output connection to continue the flow.`
+      };
+    }
+
+    // Fully isolated node where neither side is mandatory (e.g. IAM/KMS placed
+    // standalone): surface a soft warning instead of letting it pass silently.
+    if (inputs === 0 && outputs === 0) {
+      return {
+        tone: 'warning',
+        short: 'Not connected',
+        message: `${node.name} is on the canvas but not connected to any other service.`
+      };
     }
 
     // FAN-IN CHECK
@@ -594,14 +607,24 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       return { tone: 'error', message: `Architecture error: ${node.name} does not support multiple outgoing connections (Fan-out prohibited).` };
     }
 
-    // Dynamic checks
-    if (this.mode === 'running') {
+    // Dynamic checks — applies whenever simulation has run (running or paused).
+    if (this.mode === 'running' || this.mode === 'paused') {
       if (node.status === 'offline' || node.status === 'failing') {
-        return { tone: 'error', message: `Operational Failure: ${node.name} is ${node.status}. Traffic is being dropped.` };
+        return { tone: 'error', short: 'Over capacity', message: `Operational Failure: ${node.name} is ${node.status}. Traffic is being dropped.` };
       }
       if (node.status === 'overloaded' || node.status === 'busy') {
-        return { tone: 'warning', message: `Performance Warning: ${node.name} is ${node.status}. Latency is increasing.` };
+        return { tone: 'warning', short: 'High load', message: `Performance Warning: ${node.name} is ${node.status}. Latency is increasing.` };
       }
+    }
+
+    // After a stopped run, statuses persist: surface capacity failures from the
+    // last execution as tuning advice instead of hard errors.
+    if (this.mode === 'idle' && (node.status === 'offline' || node.status === 'failing')) {
+      return {
+        tone: 'warning',
+        short: 'Tune capacity',
+        message: `Last run: ${node.name} went ${node.status} under load. Tweak ${node.name}'s capacity (RPS) or lower the Users traffic, then run again.`
+      };
     }
 
     return { tone: 'success', message: `${node.name} is correctly integrated and ready for traffic.` };
@@ -648,6 +671,50 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get erroredNodes(): ArchitectureNode[] {
     return this.nodes.filter(n => this.calculateNodeHealth(n).tone === 'error');
+  }
+
+  get warnedNodes(): ArchitectureNode[] {
+    return this.nodes.filter(n => this.calculateNodeHealth(n).tone === 'warning');
+  }
+
+  nodeHealthShort(node: ArchitectureNode): string {
+    return this.calculateNodeHealth(node).short || 'Integration required';
+  }
+
+  /**
+   * CPU is only a meaningful metric for services where the user controls or
+   * pays for compute capacity. Fully managed/serverless services (DNS, queues,
+   * object storage, CDN, etc.) hide the CPU stat in the inspector.
+   */
+  private static readonly cpuRelevantTypes = new Set<string>([
+    'ec2', 'ecs', 'eks', 'lambda', 'autoScalingGroup', 'batch', 'appRunner',
+    'elasticBeanstalk', 'rds', 'aurora', 'elastiCache', 'openSearch',
+    'redshift', 'emr', 'msk', 'mq', 'sageMaker', 'codeBuild'
+  ]);
+
+  hasCpuMetric(node: ArchitectureNode): boolean {
+    return SimulatorComponent.cpuRelevantTypes.has(node.type);
+  }
+
+  /**
+   * A field is locked if the JSON marks it readonly, OR it is the throughput
+   * (Capacity RPS) field on a node currently synced to a client's RPS Sync.
+   * The sync handshake stamps `_designThroughput` on every downstream node, so
+   * we use that as the run-time signal.
+   */
+  isFieldLocked(node: ArchitectureNode, field: any): boolean {
+    if (field?.readonly) return true;
+    if (field?.key === 'throughput' && node.config?.['_designThroughput'] !== undefined) {
+      return true;
+    }
+    return false;
+  }
+
+  fieldLockTooltip(node: ArchitectureNode, field: any): string {
+    if (field?.key === 'throughput' && node.config?.['_designThroughput'] !== undefined) {
+      return 'Capacity (RPS) is synced from the Users node. Disable "Sync RPS to all connected services" on the Users node to edit.';
+    }
+    return 'Synced from: ' + (field?.syncSource || 'Client (Users) node') + '. Change the value on the source node.';
   }
 
   get selectedNode(): ArchitectureNode | undefined {
@@ -812,6 +879,20 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.selectedNodeIds.length > 0 ||
       this.selectedConnectionIds.length > 0 ||
       this.annotations.some(a => a.selected);
+  }
+
+  isVariableCostActive(node: ArchitectureNode): boolean {
+    if (node.type === 'client') {
+      return !!node.config['variableTraffic'];
+    }
+    // Downstream synced services: walk all clients, check if this node is downstream and the client has variable+sync on
+    for (const client of this.nodes) {
+      if (client.type !== 'client') continue;
+      if (!client.config['variableTraffic'] || !client.config['syncRpsToServices']) continue;
+      const downstream = this.getDownstreamNodeIds(client.id);
+      if (downstream.has(node.id)) return true;
+    }
+    return false;
   }
 
   getNodeCostFormatted(node: ArchitectureNode): string {
@@ -1337,9 +1418,32 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.selectedNode) {
       return;
     }
+    const numValue = Number(value);
+    const selectedType = this.selectedNode.type;
+    const selectedId = this.selectedNode.id;
+
     this.nodes = this.nodes.map((node) =>
-      this.selectedNodeIds.includes(node.id) ? { ...node, config: { ...node.config, [key]: Number(value) } } : node
+      this.selectedNodeIds.includes(node.id) ? { ...node, config: { ...node.config, [key]: numValue } } : node
     );
+
+    // Client special handling: propagate RPS to downstream services if sync is on
+    if (selectedType === 'client' && (key === 'requestRate' || key === 'variableMinRps' || key === 'variableMaxRps')) {
+      const clientNode = this.nodes.find(n => n.id === selectedId);
+      if (clientNode?.config['syncRpsToServices']) {
+        // If variable traffic is on and the range changed, propagate the new midpoint
+        let propagateRps = clientNode.config['requestRate'];
+        if (clientNode.config['variableTraffic'] && (key === 'variableMinRps' || key === 'variableMaxRps')) {
+          const min = clientNode.config['variableMinRps'] || 1;
+          const max = clientNode.config['variableMaxRps'] || min;
+          propagateRps = (min + max) / 2;
+          this.nodes = this.nodes.map(n =>
+            n.id === selectedId ? { ...n, config: { ...n.config, requestRate: propagateRps } } : n
+          );
+        }
+        this.propagateRpsToDownstream(selectedId, propagateRps);
+      }
+    }
+
     this.onConfigChange();
   }
 
@@ -1347,10 +1451,141 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.selectedNode) {
       return;
     }
+    const selectedType = this.selectedNode.type;
+    const selectedId = this.selectedNode.id;
+
+    // Handle client booleans BEFORE applying so we can react to the transition
+    if (selectedType === 'client' && key === 'syncRpsToServices') {
+      const clientNode = this.nodes.find(n => n.id === selectedId);
+      if (clientNode) {
+        if (value === true) {
+          this.snapshotDownstreamThroughput(selectedId);
+          const rps = clientNode.config['variableTraffic']
+            ? this.clientMidpoint(clientNode)
+            : (clientNode.config['requestRate'] || 100);
+          this.nodes = this.nodes.map(n =>
+            n.id === selectedId ? { ...n, config: { ...n.config, [key]: true } } : n
+          );
+          this.propagateRpsToDownstream(selectedId, rps);
+          this.onConfigChange();
+          return;
+        } else {
+          this.restoreDownstreamThroughput(selectedId);
+          this.nodes = this.nodes.map(n =>
+            n.id === selectedId ? { ...n, config: { ...n.config, [key]: false } } : n
+          );
+          this.onConfigChange();
+          return;
+        }
+      }
+    }
+
+    if (selectedType === 'client' && key === 'variableTraffic') {
+      const clientNode = this.nodes.find(n => n.id === selectedId);
+      if (clientNode) {
+        if (value === true) {
+          // Backfill range defaults on first enable so existing/preset nodes
+          // (which were created before these params existed) get sensible values
+          const min = Number(clientNode.config['variableMinRps']) || 50;
+          const max = Number(clientNode.config['variableMaxRps']) || 200;
+          const mid = Math.round((min + max) / 2);
+          this.nodes = this.nodes.map(n =>
+            n.id === selectedId
+              ? {
+                  ...n,
+                  config: {
+                    ...n.config,
+                    variableTraffic: true,
+                    variableMinRps: min,
+                    variableMaxRps: max,
+                    requestRate: mid
+                  }
+                }
+              : n
+          );
+          if (clientNode.config['syncRpsToServices']) {
+            this.propagateRpsToDownstream(selectedId, mid);
+          }
+          this.onConfigChange();
+          return;
+        } else {
+          this.nodes = this.nodes.map(n =>
+            n.id === selectedId ? { ...n, config: { ...n.config, variableTraffic: false } } : n
+          );
+          this.onConfigChange();
+          return;
+        }
+      }
+    }
+
     this.nodes = this.nodes.map((node) =>
       this.selectedNodeIds.includes(node.id) ? { ...node, config: { ...node.config, [key]: value } } : node
     );
     this.onConfigChange();
+  }
+
+  private clientMidpoint(clientNode: ArchitectureNode): number {
+    const min = Number(clientNode.config['variableMinRps']) || 50;
+    const max = Number(clientNode.config['variableMaxRps']) || 200;
+    return Math.round((min + max) / 2);
+  }
+
+  private getDownstreamNodeIds(sourceId: string): Set<string> {
+    const visited = new Set<string>();
+    const queue: string[] = [sourceId];
+    while (queue.length) {
+      const id = queue.shift()!;
+      for (const c of this.connections) {
+        if (c.sourceNodeId === id && !visited.has(c.targetNodeId)) {
+          visited.add(c.targetNodeId);
+          queue.push(c.targetNodeId);
+        }
+      }
+    }
+    return visited;
+  }
+
+  private snapshotDownstreamThroughput(clientId: string): void {
+    const downstream = this.getDownstreamNodeIds(clientId);
+    const snapshot: Record<string, number> = {};
+    for (const node of this.nodes) {
+      if (downstream.has(node.id) && typeof node.config['throughput'] === 'number') {
+        snapshot[node.id] = node.config['throughput'];
+      }
+    }
+    // Also stamp _designThroughput on each downstream node — the simulator
+    // uses this as the stable capacity reference so utilization can swing even
+    // when the cost-side throughput tracks the live sampled RPS.
+    this.nodes = this.nodes.map(n => {
+      if (n.id === clientId) return { ...n, config: { ...n.config, _syncSnapshot: snapshot } };
+      if (snapshot[n.id] !== undefined) {
+        return { ...n, config: { ...n.config, _designThroughput: snapshot[n.id] } };
+      }
+      return n;
+    });
+  }
+
+  private restoreDownstreamThroughput(clientId: string): void {
+    const client = this.nodes.find(n => n.id === clientId);
+    const snapshot: Record<string, number> = client?.config['_syncSnapshot'] || {};
+    this.nodes = this.nodes.map(n => {
+      if (snapshot[n.id] !== undefined) {
+        const { _designThroughput, ...rest } = n.config;
+        return { ...n, config: { ...rest, throughput: snapshot[n.id] } };
+      }
+      return n;
+    });
+    this.nodes = this.nodes.map(n =>
+      n.id === clientId ? { ...n, config: { ...n.config, _syncSnapshot: {} } } : n
+    );
+  }
+
+  private propagateRpsToDownstream(clientId: string, rps: number): void {
+    const downstream = this.getDownstreamNodeIds(clientId);
+    const rounded = Math.max(1, Math.round(rps * 100) / 100);
+    this.nodes = this.nodes.map(n =>
+      downstream.has(n.id) ? { ...n, config: { ...n.config, throughput: rounded } } : n
+    );
   }
 
   isFieldInvalid(field: any): boolean {
@@ -1476,7 +1711,17 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalCurrency = project.currency || 'USD';
     this.globalRegion = project.region || 'us-east-1';
     this.loadRegionCost(this.globalRegion);
-    this.nodes = project.nodes;
+    // Normalize client nodes: ensure requestRate is at least the JSON min (100 default)
+    // so legacy saved nodes don't surface a stale value of 1 from earlier toggle bugs.
+    this.nodes = project.nodes.map(n => {
+      if (n.type === 'client') {
+        const rate = Number(n.config['requestRate']);
+        if (!rate || rate < 2) {
+          return { ...n, config: { ...n.config, requestRate: 100 } };
+        }
+      }
+      return n;
+    });
     this.connections = project.connections;
     this.annotations = project.annotations || [];
     this.packets = [];

@@ -11,6 +11,7 @@ export interface CostBreakdownLine {
   formula: string;
   value: number;
   note?: string;
+  freeSaving?: string;
 }
 
 export interface CostBreakdown {
@@ -291,31 +292,59 @@ export class CostService {
       case 'lambda': {
         const isArm = config.architecture === 'arm64';
         const memoryMB = this.getVal(config, 'lambda', 'memoryMB', 512);
-        const invocationsM = this.getVal(config, 'lambda', 'invocationsM', 10);
-        const durationMs = this.getVal(config, 'lambda', 'durationMs', 200);
+        // Monthly invocations derived from throughput (RPS) — 30.44 days × 24h × 3600s = 2,630,016 ≈ 2,628,000 sec/mo
+        const throughputRps = this.getVal(config, 'lambda', 'throughput', 100);
+        const invocationsM = (throughputRps * 2_628_000) / 1_000_000;
+        // durationMs is the cost param; fall back to latency (simulation param) if not set
+        const durationMs = this.getVal(config, 'lambda', 'durationMs', null)
+          ?? this.getVal(config, 'lambda', 'latency', 200);
 
-        const reqCost = invocationsM * (pf.requestM || 0.20);
-        lines.push({ label: 'Requests', formula: `${invocationsM}M × $${(pf.requestM || 0.20).toFixed(2)}/M`, value: reqCost });
+        // Request cost — first 1M/month free
+        const FREE_REQS_M = 1.0;
+        const billableReqM = Math.max(0, invocationsM - FREE_REQS_M);
+        const reqCost = billableReqM * (pf.requestM || 0.20);
+        const savedReqM = Math.min(invocationsM, FREE_REQS_M);
+        lines.push({
+          label: 'Requests',
+          formula: billableReqM > 0
+            ? `${throughputRps} RPS → ${invocationsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M/mo — ${billableReqM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${(pf.requestM || 0.20).toFixed(2)}/M`
+            : `${throughputRps} RPS → ${invocationsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M/mo invocations`,
+          value: reqCost,
+          freeSaving: `${savedReqM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M req free (Always Free tier)`
+        });
 
-        const gbSec = invocationsM * 1000000 * (durationMs / 1000) * (memoryMB / 1024);
+        // Compute cost — first 400K GB-sec/month free
+        const totalGbSec = invocationsM * 1_000_000 * (durationMs / 1000) * (memoryMB / 1024);
+        const FREE_GB_SEC = 400_000;
+        const billableGbSec = Math.max(0, totalGbSec - FREE_GB_SEC);
+        const savedGbSec = Math.min(totalGbSec, FREE_GB_SEC);
         const compRate = isArm ? (pf.gbSec_arm || 0.0000133334) : (pf.gbSec_x86 || 0.0000166667);
-        const compCost = gbSec * compRate;
-        lines.push({ label: `Compute (${isArm ? 'ARM' : 'x86'})`, formula: `${gbSec.toLocaleString(undefined, { maximumFractionDigits: 0 })} GB-sec × $${compRate.toFixed(6)}/GB-sec`, value: compCost });
+        const compCost = billableGbSec * compRate;
+        lines.push({
+          label: `Compute (${isArm ? 'ARM' : 'x86'})`,
+          formula: billableGbSec > 0
+            ? `${billableGbSec.toLocaleString(undefined, { maximumFractionDigits: 0 })} GB-sec × $${compRate.toFixed(7)}/GB-sec`
+            : `${totalGbSec.toLocaleString(undefined, { maximumFractionDigits: 0 })} GB-sec`,
+          value: compCost,
+          freeSaving: `${savedGbSec.toLocaleString(undefined, { maximumFractionDigits: 0 })} GB-sec free (Always Free tier)`
+        });
 
+        // Ephemeral storage — only billed above 512 MB
         let ephCost = 0;
         const ephMB = this.getVal(config, 'lambda', 'ephemeralMB', 512);
         if (ephMB > 512) {
           const ephGB = (ephMB - 512) / 1024;
-          ephCost = invocationsM * 1000000 * (durationMs / 1000) * ephGB * (pf.ephemeralGB_Sec || 0.0000000309);
+          ephCost = invocationsM * 1_000_000 * (durationMs / 1000) * ephGB * (pf.ephemeralGB_Sec || 0.0000000309);
           lines.push({ label: 'Ephemeral Storage', formula: `${ephGB.toFixed(2)} extra GB × $${(pf.ephemeralGB_Sec || 0.0000000309).toFixed(10)}/GB-sec`, value: ephCost });
         }
 
+        // Provisioned concurrency — billed per GB-hour, 24/7
         let provCost = 0;
         const provConcurrency = this.getVal(config, 'lambda', 'provConcurrency', 0);
         if (provConcurrency > 0) {
           const provRate = isArm ? (pf.provConcurrency_arm || 0.012) : (pf.provConcurrency_x86 || 0.015);
           provCost = provConcurrency * (memoryMB / 1024) * 730 * provRate;
-          lines.push({ label: 'Provisioned Concurrency', formula: `${provConcurrency} Concurrency × ${(memoryMB / 1024).toFixed(2)} GB × 730 hrs × $${provRate.toFixed(3)}`, value: provCost });
+          lines.push({ label: 'Provisioned Concurrency', formula: `${provConcurrency} × ${(memoryMB / 1024).toFixed(2)} GB × 730 hrs × $${provRate.toFixed(3)}/GB-hr`, value: provCost });
         }
 
         total = reqCost + compCost + ephCost + provCost;
