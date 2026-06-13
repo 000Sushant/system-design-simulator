@@ -191,10 +191,15 @@
 }
 
 .brand-mark span {
-  font-family: 'Audiowide', sans-serif;
-  font-weight: 400;
-  font-size: 13px;
-  letter-spacing: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+}
+
+.brand-dot {
+  color: #ff9900 !important;
+  -webkit-text-stroke: 0 !important;
 }
 
 .brand-mark small {

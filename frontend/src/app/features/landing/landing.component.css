@@ -297,17 +297,17 @@
 }
 
 .brand-mark span {
-  font-family: 'Audiowide', sans-serif;
-  font-weight: 400;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
   color: #111827;
-  font-size: 13px;
-  letter-spacing: 0;
+  font-size: 15px;
+  letter-spacing: -0.03em;
 }
 
 .brand-name-header {
-  font-family: 'Audiowide', sans-serif;
-  font-weight: 400;
-  letter-spacing: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .brand-dot {
