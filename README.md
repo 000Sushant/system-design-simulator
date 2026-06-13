@@ -165,14 +165,15 @@ Obsessed with building high-performance, developer-centric tooling. Feel free to
 ## 📦 Release History
 
 ### Version 1.2 (Current)
-- Exposes complete catalog of **60+ AWS services** with custom properties.
-- Implemented **Developer vs. Architect** modes.
-- Added in-depth service-level interactive documentation.
-- Real-time and accurate cost modeling using live-fetched AWS pricing rates.
-- Multi-canvas configuration support.
-- Realistic variable traffic modeling (min-max traffic bounds).
-- **Canvas Keyboard Hotkeys**: Added intuitive keyboard shortcuts to accelerate design iteration (e.g., `Ctrl+Z` / `Ctrl+Y` or `Ctrl+Shift+Z` for Undo/Redo, `Ctrl+S` to save, and `Delete` / `Backspace` to remove selected canvas elements).
-- **Realistic Bottleneck Modeling**: Shifted simulation bottleneck checks from raw Request-per-Second (RPS) limits to multi-factor resource modeling (evaluating queue capacities, CPU pressure, and compute limits) with temporary load-shedding/throttling and sustained-pressure server collapses.
+- **Expanded AWS Service Catalog**: Model architectures with **60+ hand-crafted AWS services**, each with custom properties, input/output port definitions, and visual flow mappings.
+- **Dual-Mode Workspace**: Seamlessly transition between **Developer Mode** (a simplified sandbox designed for learning cloud concepts) and **Architect Mode** (a professional designer with detailed hardware classes and pricing options).
+- **Interactive Documentation**: Comprehensive, in-app guide articles for all 64 services detailing Conceptual Models, Architectural Working (with custom animations), Recommended Practices, and common Failure Modes.
+- **Live AWS Cost Estimation**: Accurate monthly cost updates driven by real AWS pricing rates fetched weekly from the live AWS Pricing API and updated on the fly.
+- **Multi-Canvas Configuration Support**: Create, manage, and design multiple independent cloud architectures side-by-side using tabs.
+- **Variable Traffic Modeling**: Model realistic user traffic behavior by configuring minimum/maximum traffic bounds with live, randomized fluctuations.
+- **Traffic Distribution Manager**: Route and manage traffic flows between multiple downstream nodes with custom routing weights or percentages.
+- **Canvas Keyboard Hotkeys**: Accelerate your design iterations with keyboard shortcuts (e.g., `Ctrl+Z` / `Ctrl+Y` or `Ctrl+Shift+Z` for Undo/Redo, `Ctrl+S` to save, and `Delete` / `Backspace` to remove selected canvas elements).
+- **Realistic Bottleneck Modeling**: Advanced multi-factor resource-bound modeling (evaluating queue depths, CPU pressure, and concurrent execution limits) featuring load-shedding/throttling and server collapses.
 
 ### Version 1.1
 - Integrated regional pricing calculations.
