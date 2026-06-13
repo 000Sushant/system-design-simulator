@@ -176,7 +176,7 @@ export class LandingComponent {
     {
       label: "GitHub",
       icon: "fab fa-github",
-      href: "https://github.com/000sushant",
+      href: "https://github.com/000Sushant",
     },
   ];
 

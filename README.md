@@ -110,7 +110,7 @@ Sr. Architect is split into a frontend Angular simulator application, a Cloudfla
 
 #### 1. Clone the repository
 ```bash
-git clone https://github.com/000sushant/system-design-simulator.git
+git clone https://github.com/000Sushant/system-design-simulator.git
 cd system-design-simulator
 ```
 
@@ -158,7 +158,7 @@ Obsessed with building high-performance, developer-centric tooling. Feel free to
 - ✉️ [Email](mailto:000suahntkumar@gmail.com)
 - 💼 [LinkedIn](https://linkedin.com/in/sushant--kumar)
 - 🌐 [Portfolio](https://000sushant.github.io/sushant-portfolio/)
-- 🐙 [GitHub](https://github.com/000sushant)
+- 🐙 [GitHub](https://github.com/000Sushant)
 
 ---
 
