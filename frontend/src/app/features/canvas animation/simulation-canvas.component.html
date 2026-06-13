@@ -1,0 +1,325 @@
+<div class="sim-wrapper" (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
+
+  <!-- Mac Browser Chrome wrapper with tilt -->
+  <div class="browser-chrome" [style.transform]="tiltStyle" [style.transition]="tiltTransition">
+    <div class="titlebar">
+      <!-- Single compact macOS Navigation Row -->
+      <div class="chrome-nav-row">
+        <div class="traffic-lights">
+          <span class="tl red"></span>
+          <span class="tl yellow"></span>
+          <span class="tl green"></span>
+        </div>
+        <div class="nav-arrows">
+          <span class="nav-refresh">&#x21bb;</span>
+        </div>
+        <div class="url-bar">
+          <svg class="url-lock-svg" viewBox="0 0 16 16" width="11" height="11" fill="#4b5563">
+            <path d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1zm-2 3.5a2 2 0 1 1 4 0V7H6V4.5z" />
+          </svg>
+          <span class="url-text">system-design-simulator://sandbox.live-view</span>
+        </div>
+        <div class="chrome-actions-spacer"></div>
+      </div>
+    </div>
+
+    <!-- Active 2D/SVG Cyber Sandbox Area -->
+    <div class="canvas-wrapper">
+      
+      <!-- Tech HUD Scanlines & Grid Ambient -->
+      <div class="cyber-overlay-grid" aria-hidden="true"></div>
+      <div class="cyber-scanline" aria-hidden="true"></div>
+      
+      <!-- SVG Drawing Layer -->
+      <svg class="sim-svg" viewBox="0 0 1000 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Glowing effects filters -->
+          <filter id="glow-heavy" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          
+          <filter id="glow-soft" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <!-- Glowing Floor Grid -->
+          <pattern id="hudGrid" width="80" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 80 20 L 40 40 L 0 20 Z" fill="none" stroke="rgba(56, 189, 248, 0.025)" stroke-width="1.2" />
+            <circle cx="40" cy="20" r="1" fill="rgba(56, 189, 248, 0.1)" />
+          </pattern>
+
+          <!-- Gradients for Conduits & Packets -->
+          <linearGradient id="client-to-gateway" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8" />
+            <stop offset="100%" stop-color="#34d399" stop-opacity="0.8" />
+          </linearGradient>
+          <linearGradient id="gateway-to-server" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#34d399" stop-opacity="0.8" />
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.8" />
+          </linearGradient>
+          <linearGradient id="server-to-database" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.8" />
+            <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.8" />
+          </linearGradient>
+        </defs>
+
+        <!-- Cyber Isometric Background Grid -->
+        <rect width="1000" height="600" fill="url(#hudGrid)" />
+        
+        <!-- HIGH-TECH DUAL FIBER-OPTIC CONDUITS -->
+        
+        <!-- Users (250,325) <-> Gateway (500,200) -->
+        <path d="M 250 325 L 500 200" stroke="rgba(56, 189, 248, 0.15)" stroke-width="5" fill="none" />
+        <path d="M 250 325 L 500 200" stroke="url(#client-to-gateway)" stroke-width="1.5" fill="none" stroke-dasharray="10 15" class="conduit-pulse-fast" filter="url(#glow-soft)" />
+        
+        <!-- Gateway (500,200) <-> Server (750,325) -->
+        <path d="M 500 200 L 750 325" stroke="rgba(52, 211, 153, 0.15)" stroke-width="5" fill="none" />
+        <path d="M 500 200 L 750 325" stroke="url(#gateway-to-server)" stroke-width="1.5" fill="none" stroke-dasharray="8 12" class="conduit-pulse-med" filter="url(#glow-soft)" />
+        
+        <!-- Server (750,325) <-> Database (500,450) -->
+        <path d="M 750 325 L 500 450" stroke="rgba(251, 191, 36, 0.15)" stroke-width="5" fill="none" />
+        <path d="M 750 325 L 500 450" stroke="url(#server-to-database)" stroke-width="1.5" fill="none" stroke-dasharray="6 8" class="conduit-pulse-slow" filter="url(#glow-soft)" />
+
+        <!-- Reverse Conduits / Response Loops -->
+        <path d="M 500 450 L 750 325" stroke="rgba(167, 139, 250, 0.08)" stroke-width="2" fill="none" stroke-dasharray="4 6" />
+        <path d="M 750 325 L 500 200" stroke="rgba(251, 191, 36, 0.08)" stroke-width="2" fill="none" stroke-dasharray="4 6" />
+        <path d="M 500 200 L 250 325" stroke="rgba(52, 211, 153, 0.08)" stroke-width="2" fill="none" stroke-dasharray="4 6" />
+
+        <!-- ANIMATED HIGH-GLOW DATA PACKETS -->
+        <!-- Users -> Gateway -->
+        <circle r="4.5" fill="#38bdf8" filter="url(#glow-heavy)">
+          <animateMotion dur="1.6s" repeatCount="indefinite" path="M 250,325 L 500,200" />
+        </circle>
+        <circle r="3" fill="#34d399" filter="url(#glow-soft)">
+          <animateMotion dur="1.6s" begin="0.8s" repeatCount="indefinite" path="M 250,325 L 500,200" />
+        </circle>
+
+        <!-- Gateway -> Server -->
+        <circle r="4.5" fill="#34d399" filter="url(#glow-heavy)">
+          <animateMotion dur="1.2s" begin="0.3s" repeatCount="indefinite" path="M 500,200 L 750,325" />
+        </circle>
+        <circle r="3" fill="#fbbf24" filter="url(#glow-soft)">
+          <animateMotion dur="1.2s" begin="0.9s" repeatCount="indefinite" path="M 500,200 L 750,325" />
+        </circle>
+
+        <!-- Server -> Database -->
+        <circle r="4.5" fill="#fbbf24" filter="url(#glow-heavy)">
+          <animateMotion dur="1s" begin="0.6s" repeatCount="indefinite" path="M 750,325 L 500,450" />
+        </circle>
+        
+        <!-- Database -> Server (Response Packets) -->
+        <circle r="3.5" fill="#a78bfa" filter="url(#glow-heavy)">
+          <animateMotion dur="0.9s" begin="0.2s" repeatCount="indefinite" path="M 500,450 L 750,325" />
+        </circle>
+
+        <!-- Server -> Gateway (Response Packets) -->
+        <circle r="3.5" fill="#fbbf24" filter="url(#glow-heavy)">
+          <animateMotion dur="1.1s" begin="0.5s" repeatCount="indefinite" path="M 750,325 L 500,200" />
+        </circle>
+
+        <!-- Gateway -> Users (Response Packets) -->
+        <circle r="4" fill="#38bdf8" filter="url(#glow-heavy)">
+          <animateMotion dur="1.4s" begin="0.1s" repeatCount="indefinite" path="M 500,200 L 250,325" />
+        </circle>
+        <circle r="3" fill="#38bdf8" filter="url(#glow-soft)">
+          <animateMotion dur="1.4s" begin="0.8s" repeatCount="indefinite" path="M 500,200 L 250,325" />
+        </circle>
+      </svg>
+
+      <!-- DOM INTERACTIVE NODES LAYER (Crisp Text + Rich Custom SVG Icons) -->
+      <div class="sim-nodes-layer">
+        
+        <article class="sim-node" 
+                 *ngFor="let node of nodes"
+                 [style.left]="node.position.left"
+                 [style.top]="node.position.top"
+                 [style.--brand]="node.color"
+                 [attr.id]="'node-' + node.id">
+          
+          <!-- Glassmorphic Icon Wrapper (No plain font-awesome icons!) -->
+          <div class="node-icon-box">
+            
+            <div [ngSwitch]="node.id" class="custom-vector-container">
+              
+              <!-- 1. USERS APP CUSTOM VECTOR -->
+              <svg *ngSwitchCase="'client'" viewBox="0 0 64 64" class="custom-svg-art">
+                <defs>
+                  <linearGradient id="clientGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#0284c7" />
+                  </linearGradient>
+                </defs>
+                <!-- Laptop Frame -->
+                <rect x="12" y="16" width="40" height="26" rx="3" fill="none" stroke="url(#clientGrad)" stroke-width="2.5" />
+                <line x1="16" y1="36" x2="48" y2="36" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.5" />
+                <!-- Laptop Keyboard Base -->
+                <path d="M 6 42 L 58 42 L 54 48 L 10 48 Z" fill="none" stroke="url(#clientGrad)" stroke-width="2.5" stroke-linejoin="round" />
+                <!-- Phone Base -->
+                <rect x="44" y="28" width="12" height="22" rx="2.5" fill="#0d1117" stroke="#38bdf8" stroke-width="2" />
+                <!-- Micro Screen UI inside laptop -->
+                <path d="M 18 24 L 28 24 M 18 28 L 34 28 M 18 32 L 24 32" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" />
+                <!-- Pulsing Wifi indicator -->
+                <path d="M 28 10 Q 32 6 36 10" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" class="pulse-signal" />
+                <circle cx="32" cy="13" r="1.5" fill="#38bdf8" />
+              </svg>
+              
+              <!-- 2. API GATEWAY CUSTOM VECTOR -->
+              <svg *ngSwitchCase="'gateway'" viewBox="0 0 64 64" class="custom-svg-art">
+                <defs>
+                  <linearGradient id="gatewayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34d399" />
+                    <stop offset="100%" stop-color="#059669" />
+                  </linearGradient>
+                </defs>
+                <!-- Central Sphere Core -->
+                <circle cx="32" cy="32" r="9" fill="none" stroke="url(#gatewayGrad)" stroke-width="3" />
+                <circle cx="32" cy="32" r="3" fill="#34d399" class="pulse-core" />
+                <!-- Inner Outer Spinning Orbits -->
+                <circle cx="32" cy="32" r="18" fill="none" stroke="rgba(52, 211, 153, 0.3)" stroke-width="1.5" stroke-dasharray="4 6" class="spin-ccw" />
+                <circle cx="32" cy="32" r="25" fill="none" stroke="url(#gatewayGrad)" stroke-width="1.5" stroke-dasharray="16 12" class="spin-cw" />
+                <!-- Routing Cross Gates -->
+                <line x1="32" y1="6" x2="32" y2="12" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+                <line x1="32" y1="52" x2="32" y2="58" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+                <line x1="6" y1="32" x2="12" y2="32" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+                <line x1="52" y1="32" x2="58" y2="32" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+              </svg>
+
+              <!-- 3. EC2 BACKEND CUSTOM VECTOR -->
+              <svg *ngSwitchCase="'server'" viewBox="0 0 64 64" class="custom-svg-art">
+                <defs>
+                  <linearGradient id="serverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fbbf24" />
+                    <stop offset="100%" stop-color="#d97706" />
+                  </linearGradient>
+                </defs>
+                <!-- 3D Stacked Server Racks / Blades -->
+                <!-- Rack 1 (Top) -->
+                <path d="M 8 16 L 32 8 L 56 16 L 32 24 Z" fill="none" stroke="url(#serverGrad)" stroke-width="2" />
+                <path d="M 8 16 L 8 20 L 32 28 L 56 20 L 56 16" fill="none" stroke="url(#serverGrad)" stroke-width="2" stroke-linejoin="round" />
+                <line x1="16" y1="21" x2="24" y2="24" stroke="#fbbf24" stroke-width="1.5" />
+                <circle cx="44" cy="19" r="1.5" fill="#34d399" class="led-blink-fast" />
+                <circle cx="48" cy="17" r="1.5" fill="#fbbf24" class="led-blink-slow" />
+                
+                <!-- Rack 2 (Middle) -->
+                <path d="M 8 28 L 8 32 L 32 40 L 56 32 L 56 28" fill="none" stroke="url(#serverGrad)" stroke-width="2" stroke-linejoin="round" />
+                <line x1="16" y1="33" x2="24" y2="36" stroke="#fbbf24" stroke-width="1.5" />
+                <circle cx="44" cy="31" r="1.5" fill="#34d399" class="led-blink-slow" />
+                <circle cx="48" cy="29" r="1.5" fill="#ef4444" class="led-blink-fast" />
+
+                <!-- Rack 3 (Bottom) -->
+                <path d="M 8 40 L 8 44 L 32 52 L 56 44 L 56 40" fill="none" stroke="url(#serverGrad)" stroke-width="2" stroke-linejoin="round" />
+                <line x1="16" y1="45" x2="24" y2="48" stroke="#fbbf24" stroke-width="1.5" />
+                <circle cx="44" cy="43" r="1.5" fill="#34d399" class="led-blink-fast" />
+                <circle cx="48" cy="41" r="1.5" fill="#fbbf24" class="led-blink-slow" />
+              </svg>
+
+              <!-- 4. RDS DATABASE CUSTOM VECTOR -->
+              <svg *ngSwitchCase="'database'" viewBox="0 0 64 64" class="custom-svg-art">
+                <defs>
+                  <linearGradient id="dbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#a78bfa" />
+                    <stop offset="100%" stop-color="#7c3aed" />
+                  </linearGradient>
+                </defs>
+                <!-- Cylindrical Multi-Tier Storage Drum -->
+                <!-- Top Cap -->
+                <ellipse cx="32" cy="18" rx="20" ry="7" fill="none" stroke="url(#dbGrad)" stroke-width="2.5" />
+                <ellipse cx="32" cy="18" rx="14" ry="4.5" fill="none" stroke="rgba(167, 139, 250, 0.4)" stroke-width="1" />
+                
+                <!-- Middle Layer -->
+                <path d="M 12 18 L 12 30 A 20 7 0 0 0 52 30 L 52 18" fill="none" stroke="url(#dbGrad)" stroke-width="2.5" />
+                <path d="M 12 30 L 12 42 A 20 7 0 0 0 52 42 L 52 30" fill="none" stroke="url(#dbGrad)" stroke-width="2.5" />
+                <ellipse cx="32" cy="30" rx="20" ry="7" fill="none" stroke="url(#dbGrad)" stroke-width="1.5" stroke-dasharray="5 5" />
+                
+                <!-- Database Platter bands -->
+                <path d="M 22 23 C 26 25 38 25 42 23" fill="none" stroke="#a78bfa" stroke-width="1.5" />
+                <path d="M 22 35 C 26 37 38 37 42 35" fill="none" stroke="#a78bfa" stroke-width="1.5" />
+                
+                <!-- Replication Satellite Ring -->
+                <ellipse cx="32" cy="48" rx="22" ry="8" fill="none" stroke="rgba(167, 139, 250, 0.4)" stroke-width="1.5" stroke-dasharray="6 12" class="spin-cw" />
+                <circle cx="16" cy="44" r="3" fill="#a78bfa" class="pulse-core" />
+              </svg>
+
+            </div>
+
+            <!-- Floating Label Code Badge -->
+            <span class="node-badge">{{ node.name }}</span>
+            <div class="glow-indicator"></div>
+          </div>
+
+          <!-- Clean Native Typography -->
+          <div class="node-label">
+            <h3>{{ node.label }}</h3>
+            <p>{{ node.sublabel }}</p>
+          </div>
+
+        </article>
+      </div>
+
+      <!-- 1. HIGH-TECH REALTIME TERMINAL LOG PANEL (Bottom Left) -->
+      <div class="console-overlay glass-panel">
+        <div class="console-header">
+          <span class="console-dot-indicator"></span>
+          <span class="console-title">SANDBOX_CONSOLE // LIVE_LOGS</span>
+          <span class="console-cursor">_</span>
+        </div>
+        <div class="console-log-wrapper">
+          <div class="log-entry" *ngFor="let log of logs">
+            <span class="log-time">{{ log.timestamp }}</span>
+            <span class="log-tag" [attr.data-service]="log.service">[{{ log.service }}]</span>
+            <span class="log-msg" [class]="log.status">{{ log.message }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. HUD GLASS TELEMETRY DASHBOARD (Top Right - Compact) -->
+      <div class="metrics-overlay glass-panel">
+        <div class="metrics-header">
+          <i class="fas fa-chart-line icon-sub"></i>
+          <span class="metrics-title">TELEMETRY // LIVE_FEED</span>
+        </div>
+
+        <div class="metrics-content">
+          <div class="metric-compact-row">
+            <span class="m-hud-key">latency</span>
+            <span class="m-hud-val good">{{ metrics.latency }}ms</span>
+          </div>
+          <!-- Dynamic SVG Sparkline Graph -->
+          <div class="sparkline-container">
+            <svg width="100%" height="16" viewBox="0 0 120 30" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3" />
+                  <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path [attr.d]="sparklinePath" fill="none" stroke="#38bdf8" stroke-width="1.8" filter="url(#glow-soft)" />
+              <path [attr.d]="sparklinePath + ' L 120,30 L 0,30 Z'" fill="url(#sparklineGrad)" />
+            </svg>
+          </div>
+          <div class="metric-summary-bar">
+            <span>RPS: <strong class="val">{{ metrics.rps }}</strong></span>
+            <span>ERR: <strong class="val warn">{{ metrics.errors }}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. LIVE HUD STATUS BADGE (Top Left) -->
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span class="status-badge-text">SIMULATION ACTIVE // 60 FPS</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>

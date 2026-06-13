@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <title>Mischievous cat mascot</title>
+
+  <!-- ground shadow -->
+  <ellipse cx="200" cy="372" rx="118" ry="9" fill="#17202a" opacity="0.08"/>
+
+  <!-- tail: question-mark flick, slow sway -->
+  <g id="tail">
+    <path d="M252,340 C300,332 326,300 324,264" fill="none" stroke="#17202a" stroke-width="17" stroke-linecap="round"/>
+    <path d="M324,264 C322,236 306,220 288,226 C277,230 276,243 284,247" fill="none" stroke="#17202a" stroke-width="12" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="rotate"
+      values="0 252 340; 3 252 340; 0 252 340; -2 252 340; 0 252 340"
+      dur="6s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- body: sitting bell silhouette -->
+  <g id="body">
+    <path d="M152,152 C120,200 104,255 108,305 C111,348 134,366 200,366 C266,366 289,348 292,305 C296,255 280,205 228,152 Q190,134 152,152 Z" fill="#17202a"/>
+    <ellipse cx="200" cy="262" rx="44" ry="66" fill="#27313f" opacity="0.45"/>
+  </g>
+
+  <!-- hind paws -->
+  <ellipse cx="120" cy="360" rx="19" ry="10" fill="#1b2530"/>
+  <ellipse cx="280" cy="360" rx="19" ry="10" fill="#1b2530"/>
+  <path d="M114,356 l0,7 M124,356 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M274,356 l0,7 M284,356 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- front legs -->
+  <g id="front-legs">
+    <rect x="166" y="268" width="24" height="96" rx="12" fill="#1b2530"/>
+    <rect x="210" y="268" width="24" height="96" rx="12" fill="#1b2530"/>
+    <ellipse cx="178" cy="362" rx="16" ry="9" fill="#222d3b"/>
+    <ellipse cx="222" cy="362" rx="16" ry="9" fill="#222d3b"/>
+    <path d="M173,358 l0,7 M183,358 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M217,358 l0,7 M227,358 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- collar -->
+  <g id="collar">
+    <path d="M148,158 Q190,178 232,158 L232,172 Q190,192 148,172 Z" fill="#ff9900" stroke="#e68a00" stroke-width="1.5"/>
+    <circle cx="190" cy="184" r="7" fill="#fff7e7" stroke="#e68a00" stroke-width="1.5"/>
+  </g>
+
+  <!-- head: subtle idle tilt -->
+  <g id="head">
+    <animateTransform attributeName="transform" type="rotate"
+      values="0 190 150; 1.5 190 150; 0 190 150; -1 190 150; 0 190 150"
+      dur="8s" repeatCount="indefinite"/>
+
+    <!-- cheek tufts -->
+    <path d="M138,112 L118,128 L142,136 Z" fill="#17202a"/>
+    <path d="M242,112 L262,128 L238,136 Z" fill="#17202a"/>
+
+    <!-- ears -->
+    <g id="ear-l">
+      <path d="M138,76 C132,44 140,22 152,12 C168,26 180,40 184,52 C168,60 150,70 138,76 Z" fill="#17202a"/>
+      <path d="M146,68 C143,46 148,30 155,22 C165,33 173,42 176,50 C164,57 152,63 146,68 Z" fill="#2c3342"/>
+    </g>
+    <g transform="rotate(10 230 60)">
+      <g id="ear-r">
+        <path d="M242,76 C248,44 240,22 228,12 C212,26 200,40 196,52 C212,60 230,70 242,76 Z" fill="#17202a"/>
+        <path d="M234,68 C237,46 232,30 225,22 C215,33 207,42 204,50 C216,57 228,63 234,68 Z" fill="#2c3342"/>
+        <animateTransform attributeName="transform" type="rotate"
+          values="0 230 60; 0 230 60; 7 230 60; 0 230 60; 0 230 60"
+          keyTimes="0; 0.68; 0.73; 0.78; 1" dur="5.5s" repeatCount="indefinite"/>
+      </g>
+    </g>
+
+    <!-- skull -->
+    <ellipse cx="190" cy="108" rx="58" ry="52" fill="#17202a"/>
+    <ellipse cx="172" cy="84" rx="30" ry="17" fill="#ffffff" opacity="0.05"/>
+
+    <!-- raised eyebrow -->
+    <path d="M148,78 q16,-9 30,-3" fill="none" stroke="#525e6e" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- eyes -->
+    <ellipse cx="164" cy="108" rx="16" ry="13" fill="#fff7e7"/>
+    <ellipse cx="216" cy="108" rx="16" ry="13" fill="#fff7e7"/>
+
+    <g id="pupils">
+      <ellipse cx="171" cy="110" rx="6" ry="8" fill="#0d0e14"/>
+      <ellipse cx="223" cy="110" rx="6" ry="8" fill="#0d0e14"/>
+      <circle cx="173" cy="106" r="2.2" fill="#fff7e7"/>
+      <circle cx="225" cy="106" r="2.2" fill="#fff7e7"/>
+      <circle cx="168" cy="114" r="1.2" fill="#fff7e7" opacity="0.7"/>
+      <circle cx="220" cy="114" r="1.2" fill="#fff7e7" opacity="0.7"/>
+      <animateTransform attributeName="transform" type="translate"
+        values="0 0; 0 0; -9 0; -9 0; 0 0; 0 0"
+        keyTimes="0; 0.38; 0.44; 0.6; 0.66; 1" dur="7s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- sly lids + blink -->
+    <g transform="rotate(-8 164 94)">
+      <rect x="146" y="82" width="38" height="18" rx="6" fill="#17202a">
+        <animateTransform attributeName="transform" type="translate"
+          values="0 0; 0 0; 0 19; 0 0; 0 0" keyTimes="0; 0.46; 0.52; 0.58; 1"
+          dur="4.8s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+    <g transform="rotate(8 216 94)">
+      <rect x="198" y="82" width="38" height="18" rx="6" fill="#17202a">
+        <animateTransform attributeName="transform" type="translate"
+          values="0 0; 0 0; 0 19; 0 0; 0 0" keyTimes="0; 0.46; 0.52; 0.58; 1"
+          dur="4.8s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- nose + smirk + fang -->
+    <path d="M185,126 L195,126 L190,132 Z" fill="#ff9900"/>
+    <path d="M168,138 Q186,150 210,140 Q222,135 226,126" fill="none" stroke="#fff7e7" stroke-width="3" stroke-linecap="round"/>
+    <path d="M200,142 L205,151 L209,141 Z" fill="#fff7e7"/>
+
+    <!-- whiskers, upturned -->
+    <g stroke="#4a5366" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7">
+      <path d="M138,124 q-24,-4 -38,2"/>
+      <path d="M140,134 q-22,2 -34,10"/>
+      <path d="M242,120 q24,-8 38,-4"/>
+      <path d="M240,130 q22,-2 34,6"/>
+    </g>
+  </g>
+</svg>

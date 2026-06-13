@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <title>Cat mascot stretching the view wider</title>
+
+  <!-- ground shadow -->
+  <ellipse cx="200" cy="374" rx="120" ry="9" fill="#17202a" opacity="0.08"/>
+
+  <!-- tail: relaxed curl, slow sway -->
+  <g id="tail">
+    <path d="M150,344 C104,338 78,308 80,272" fill="none" stroke="#17202a" stroke-width="17" stroke-linecap="round"/>
+    <path d="M80,272 C78,244 92,228 110,234 C121,238 122,251 114,255" fill="none" stroke="#17202a" stroke-width="12" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="rotate"
+      values="0 150 344; -3 150 344; 0 150 344; 2 150 344; 0 150 344"
+      dur="6s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- body: upright sitting bell, neck tucked under the chin -->
+  <g id="body">
+    <path d="M158,158 C126,210 112,266 116,308 C119,350 140,366 200,366 C260,366 281,350 284,308 C288,266 274,212 224,158 Q191,140 158,158 Z" fill="#17202a"/>
+    <ellipse cx="200" cy="278" rx="42" ry="60" fill="#27313f" opacity="0.45"/>
+    <!-- chest fluff -->
+    <path d="M186,196 q14,18 28,0" fill="none" stroke="#2c3342" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- hind paws -->
+  <ellipse cx="138" cy="360" rx="19" ry="10" fill="#1b2530"/>
+  <ellipse cx="262" cy="360" rx="19" ry="10" fill="#1b2530"/>
+  <path d="M132,356 l0,7 M142,356 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M256,356 l0,7 M266,356 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- LEFT arm: reaching out wide, measuring -->
+  <g id="arm-l">
+    <path d="M168,252 C140,250 108,248 86,250" fill="none" stroke="#17202a" stroke-width="22" stroke-linecap="round"/>
+    <ellipse cx="80" cy="250" rx="16" ry="11" fill="#222d3b"/>
+    <path d="M73,250 l0,8 M83,250 l0,8" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="translate"
+      values="0 0; -10 0; 0 0; 0 0" keyTimes="0; 0.4; 0.7; 1"
+      dur="3.6s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- RIGHT arm: reaching out wide, measuring -->
+  <g id="arm-r">
+    <path d="M232,252 C260,250 292,248 314,250" fill="none" stroke="#17202a" stroke-width="22" stroke-linecap="round"/>
+    <ellipse cx="320" cy="250" rx="16" ry="11" fill="#222d3b"/>
+    <path d="M317,250 l0,8 M327,250 l0,8" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="translate"
+      values="0 0; 10 0; 0 0; 0 0" keyTimes="0; 0.4; 0.7; 1"
+      dur="3.6s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- "go wider" hint arrows, gentle pulse -->
+  <g stroke="#ff9900" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.85">
+    <g id="arrow-l">
+      <path d="M58,232 l-12,18 l12,18"/>
+      <animate attributeName="opacity" values="0.2;0.9;0.2" dur="3.6s" repeatCount="indefinite"/>
+    </g>
+    <g id="arrow-r">
+      <path d="M342,232 l12,18 l-12,18"/>
+      <animate attributeName="opacity" values="0.2;0.9;0.2" dur="3.6s" begin="0.4s" repeatCount="indefinite"/>
+    </g>
+  </g>
+
+  <!-- collar: sits on the neck seam -->
+  <g id="collar">
+    <path d="M152,160 Q192,180 232,160 L232,174 Q192,194 152,174 Z" fill="#ff9900" stroke="#e68a00" stroke-width="1.5"/>
+    <circle cx="192" cy="186" r="7" fill="#fff7e7" stroke="#e68a00" stroke-width="1.5"/>
+  </g>
+
+  <!-- head: eager upward tilt -->
+  <g id="head">
+    <animateTransform attributeName="transform" type="rotate"
+      values="0 192 150; -1.5 192 150; 0 192 150; 1.5 192 150; 0 192 150"
+      dur="7s" repeatCount="indefinite"/>
+
+    <!-- cheek tufts -->
+    <path d="M140,114 L120,130 L144,138 Z" fill="#17202a"/>
+    <path d="M244,114 L264,130 L240,138 Z" fill="#17202a"/>
+
+    <!-- ears: both perked, eager twitch -->
+    <g id="ear-l">
+      <path d="M140,78 C134,46 142,24 154,14 C170,28 182,42 186,54 C170,62 152,72 140,78 Z" fill="#17202a"/>
+      <path d="M148,70 C145,48 150,32 157,24 C167,35 175,44 178,52 C166,59 154,65 148,70 Z" fill="#2c3342"/>
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 154 60; 0 154 60; -6 154 60; 0 154 60; 0 154 60"
+        keyTimes="0; 0.62; 0.68; 0.74; 1" dur="5s" repeatCount="indefinite"/>
+    </g>
+    <g id="ear-r">
+      <path d="M244,78 C250,46 242,24 230,14 C214,28 202,42 198,54 C214,62 232,72 244,78 Z" fill="#17202a"/>
+      <path d="M236,70 C239,48 234,32 227,24 C217,35 209,44 206,52 C218,59 230,65 236,70 Z" fill="#2c3342"/>
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 230 60; 0 230 60; 6 230 60; 0 230 60; 0 230 60"
+        keyTimes="0; 0.62; 0.68; 0.74; 1" dur="5s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- skull -->
+    <ellipse cx="192" cy="110" rx="58" ry="52" fill="#17202a"/>
+    <ellipse cx="174" cy="86" rx="30" ry="17" fill="#ffffff" opacity="0.05"/>
+
+    <!-- friendly brows -->
+    <path d="M150,82 q16,-7 30,-1" fill="none" stroke="#525e6e" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M204,81 q16,-6 30,1" fill="none" stroke="#525e6e" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- eyes: wide and bright -->
+    <ellipse cx="166" cy="110" rx="17" ry="15" fill="#fff7e7"/>
+    <ellipse cx="218" cy="110" rx="17" ry="15" fill="#fff7e7"/>
+
+    <g id="pupils">
+      <ellipse cx="168" cy="108" rx="7" ry="9" fill="#0d0e14"/>
+      <ellipse cx="220" cy="108" rx="7" ry="9" fill="#0d0e14"/>
+      <circle cx="171" cy="104" r="2.4" fill="#fff7e7"/>
+      <circle cx="223" cy="104" r="2.4" fill="#fff7e7"/>
+      <circle cx="165" cy="112" r="1.3" fill="#fff7e7" opacity="0.7"/>
+      <circle cx="217" cy="112" r="1.3" fill="#fff7e7" opacity="0.7"/>
+      <!-- glance toward the spreading paws, then back -->
+      <animateTransform attributeName="transform" type="translate"
+        values="0 0; -6 1; 0 0; 6 1; 0 0"
+        keyTimes="0; 0.25; 0.5; 0.75; 1" dur="3.6s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- blink lids -->
+    <rect x="149" y="95" width="34" height="16" rx="6" fill="#17202a">
+      <animateTransform attributeName="transform" type="translate"
+        values="0 -18; 0 -18; 0 0; 0 -18; 0 -18" keyTimes="0; 0.47; 0.51; 0.55; 1"
+        dur="5.2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="201" y="95" width="34" height="16" rx="6" fill="#17202a">
+      <animateTransform attributeName="transform" type="translate"
+        values="0 -18; 0 -18; 0 0; 0 -18; 0 -18" keyTimes="0; 0.47; 0.51; 0.55; 1"
+        dur="5.2s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- nose + open friendly smile + fang -->
+    <path d="M187,128 L197,128 L192,134 Z" fill="#ff9900"/>
+    <path d="M170,138 Q192,156 214,138" fill="none" stroke="#fff7e7" stroke-width="3" stroke-linecap="round"/>
+    <path d="M186,146 L191,154 L195,145 Z" fill="#fff7e7"/>
+
+    <!-- whiskers -->
+    <g stroke="#4a5366" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7">
+      <path d="M140,126 q-24,-3 -38,3"/>
+      <path d="M142,136 q-22,3 -34,11"/>
+      <path d="M244,126 q24,-3 38,3"/>
+      <path d="M242,136 q22,3 34,11"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+# Cloudflare Worker — Local Dev Vars
+# Copy this file to .dev.vars and fill in your values.
+# NEVER commit .dev.vars to git.
+
+AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY

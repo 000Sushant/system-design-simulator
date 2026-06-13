@@ -1,0 +1,8 @@
+{
+  "name": "validate-pricing-script",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-pricing": "^3.0.0"
+  }
+}

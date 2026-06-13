@@ -1,0 +1,6079 @@
+{
+  "services": [
+    {
+      "type": "client",
+      "name": "Users",
+      "category": "Users",
+      "inputs": [
+        "http"
+      ],
+      "outputs": [
+        "http"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "route53",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "dns"
+          ],
+          "type": "dns",
+          "description": "Users resolve DNS through Route 53."
+        },
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "cdn"
+          ],
+          "type": "http",
+          "description": "Users call CloudFront over HTTP."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users call API Gateway."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users call ELB."
+        },
+        {
+          "target": "waf",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users connect through WAF."
+        },
+        {
+          "target": "cognito",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Users authenticate with Cognito."
+        }
+      ],
+      "description": "Needed to represent external clients (browsers, mobile apps, IoT) generating request traffic and latency benchmarks for testing."
+    },
+    {
+      "type": "route53",
+      "name": "Route 53",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "dns",
+        "identity"
+      ],
+      "outputs": [
+        "dns"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "cdn",
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 can resolve to CloudFront."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 can resolve to API Gateway."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 can resolve to ELB."
+        }
+      ],
+      "description": "Needed to resolve user-friendly domains (e.g. app.com) into AWS resource endpoints like CloudFront or Application Load Balancers."
+    },
+    {
+      "type": "cloudfront",
+      "name": "CloudFront",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "http",
+        "cdn",
+        "identity"
+      ],
+      "outputs": [
+        "cdn"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "cdn",
+          "description": "CloudFront can use S3 as an origin."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "CloudFront can front API Gateway."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "CloudFront can use ELB as an origin."
+        },
+        {
+          "target": "waf",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "CloudFront queries WAF for threat detection."
+        },
+        {
+          "target": "appRunner",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "CloudFront routes to App Runner."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "event",
+          "description": "CloudFront can invoke Lambda@Edge (and CloudFront Functions) for request/response manipulation at the edge."
+        }
+      ],
+      "description": "Needed to cache static assets close to users, dramatically reducing latency, bandwidth costs, and load on origin servers."
+    },
+    {
+      "type": "apiGateway",
+      "name": "API Gateway",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "http",
+        "event",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "defaults": {
+        "retryPolicy": 0
+      },
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "http",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can invoke Lambda."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can integrate directly with SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can integrate directly with SNS."
+        },
+        {
+          "target": "stepFunctions",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "workflow",
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can start Step Function workflows."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "network"
+          ],
+          "type": "http",
+          "description": "API Gateway can route HTTP to Load Balancers."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "compute"
+          ],
+          "type": "http",
+          "description": "API Gateway can route traffic directly to EC2 instances."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "compute"
+          ],
+          "type": "http",
+          "description": "API Gateway can route to ECS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "API Gateway emits logs and metrics to CloudWatch."
+        },
+        {
+          "target": "eks",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "API Gateway routes to EKS clusters."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "API Gateway integrates with AppSync."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can stream requests directly into a Kinesis Data Stream (AWS service integration)."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can put events directly onto an EventBridge bus."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "storage",
+          "description": "API Gateway can proxy requests to S3 (object upload/download endpoints)."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "database",
+          "description": "API Gateway can invoke DynamoDB directly via the AWS service integration."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "API Gateway can write directly to a Kinesis Data Firehose delivery stream."
+        }
+      ],
+      "description": "Needed as a secure, unified entry point to route HTTP API requests to backend services like Lambda, handling auth and traffic rates."
+    },
+    {
+      "type": "elb",
+      "name": "ELB",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "http",
+        "network",
+        "identity",
+        "compute"
+      ],
+      "outputs": [
+        "http",
+        "compute",
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "type": "http",
+          "description": "Load Balancers route traffic to EC2 targets."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "compute",
+            "network"
+          ],
+          "type": "http",
+          "description": "Load Balancers route traffic to ECS services."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http",
+            "event"
+          ],
+          "type": "http",
+          "description": "ELB can trigger Lambda targets."
+        },
+        {
+          "target": "eks",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ELB distributes traffic to EKS pods."
+        },
+        {
+          "target": "appRunner",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "ELB routes traffic to App Runner."
+        }
+      ],
+      "description": "Needed to distribute HTTP traffic across multiple compute targets, ensuring high availability and handling load scaling."
+    },
+    {
+      "type": "lambda",
+      "name": "Lambda",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "event",
+        "queue",
+        "topic",
+        "storage",
+        "workflow",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "event",
+        "queue",
+        "topic",
+        "storage",
+        "database",
+        "http",
+        "observability",
+        "cache",
+        "compute",
+        "identity",
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "http",
+            "event"
+          ],
+          "targetPorts": [
+            "http",
+            "event"
+          ],
+          "type": "http",
+          "description": "Lambda can invoke another Lambda function synchronously or asynchronously."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "queue",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "queue",
+          "description": "Lambda can send messages to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "topic",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "topic",
+          "description": "Lambda can publish to SNS."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda can read/write DynamoDB."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda can connect to RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "cache"
+          ],
+          "targetPorts": [
+            "cache"
+          ],
+          "type": "cache",
+          "description": "Lambda can use ElastiCache for caching."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage",
+            "http"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "Lambda can read/write S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability",
+            "event"
+          ],
+          "targetPorts": [
+            "observability",
+            "event"
+          ],
+          "type": "observability",
+          "description": "Lambda emits logs and metrics to CloudWatch."
+        },
+        {
+          "target": "stepFunctions",
+          "sourcePorts": [
+            "event",
+            "workflow"
+          ],
+          "targetPorts": [
+            "workflow",
+            "event"
+          ],
+          "type": "workflow",
+          "description": "Lambda can start or continue Step Functions workflows."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Lambda can call other HTTP APIs via API Gateway."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda connects to Aurora via database connection."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda queries OpenSearch."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda queries Redshift via Data API."
+        },
+        {
+          "target": "efs",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Lambda mounts EFS for shared persistent storage."
+        },
+        {
+          "target": "fsx",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Lambda mounts FSx for high-performance storage."
+        },
+        {
+          "target": "backup",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Lambda triggers AWS Backup jobs."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Lambda publishes custom events to EventBridge."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Lambda writes records to Kinesis Data Streams."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Lambda streams data to Kinesis Firehose."
+        },
+        {
+          "target": "msk",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Lambda produces messages to MSK Kafka topics."
+        },
+        {
+          "target": "mq",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "queue",
+          "description": "Lambda publishes messages to Amazon MQ broker."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Lambda invokes AppSync GraphQL mutations or queries."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Lambda retrieves secrets from Secrets Manager."
+        },
+        {
+          "target": "kms",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Lambda uses KMS to encrypt/decrypt data."
+        },
+        {
+          "target": "xray",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Lambda sends distributed traces to X-Ray."
+        },
+        {
+          "target": "cloudTrail",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Lambda API calls are recorded in CloudTrail."
+        },
+        {
+          "target": "systemsManager",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Lambda reads configuration from SSM Parameter Store."
+        },
+        {
+          "target": "bedrock",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "Lambda invokes Bedrock foundation models for AI inference."
+        },
+        {
+          "target": "sageMaker",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "Lambda calls SageMaker endpoints for ML inference."
+        },
+        {
+          "target": "rekognition",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "Lambda calls Rekognition for image/video analysis."
+        },
+        {
+          "target": "textract",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "Lambda calls Textract to extract text from documents."
+        },
+        {
+          "target": "ecr",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "Lambda pulls container images from ECR for container-based functions."
+        },
+        {
+          "target": "privateLink",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network",
+            "http"
+          ],
+          "type": "network",
+          "description": "Lambda connects to VPC endpoints via PrivateLink."
+        },
+        {
+          "target": "athena",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Lambda triggers Athena queries for serverless analytics."
+        },
+        {
+          "target": "glue",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Lambda triggers Glue ETL jobs on demand."
+        }
+      ],
+      "description": "Needed to execute backend business logic serverlessly on an event-driven basis, paying only for the exact milliseconds consumed."
+    },
+    {
+      "type": "ec2",
+      "name": "EC2",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "compute",
+        "network",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "http",
+        "storage",
+        "database",
+        "cache",
+        "queue",
+        "topic",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EC2 can connect to RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "cache"
+          ],
+          "targetPorts": [
+            "cache"
+          ],
+          "type": "cache",
+          "description": "EC2 can use ElastiCache."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EC2 can read/write DynamoDB."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage",
+            "http"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "EC2 can read/write S3."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "queue",
+          "description": "EC2 can send to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "topic"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "topic",
+          "description": "EC2 can publish to SNS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EC2 emits logs to CloudWatch."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EC2 connects to Aurora."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EC2 queries OpenSearch."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EC2 queries Redshift."
+        },
+        {
+          "target": "efs",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "EC2 mounts EFS."
+        },
+        {
+          "target": "fsx",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "EC2 mounts FSx."
+        },
+        {
+          "target": "backup",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "EC2 triggers Backup."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EC2 publishes to EventBridge."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EC2 writes streams to Kinesis."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EC2 streams to Firehose."
+        },
+        {
+          "target": "msk",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EC2 writes to MSK."
+        },
+        {
+          "target": "mq",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EC2 publishes to MQ."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "EC2 invokes AppSync GraphQL API."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "EC2 fetches secrets."
+        },
+        {
+          "target": "kms",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "EC2 decrypts with KMS."
+        },
+        {
+          "target": "xray",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EC2 sends traces to X-Ray."
+        },
+        {
+          "target": "cloudTrail",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EC2 logs audit trails."
+        },
+        {
+          "target": "systemsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EC2 integrates with Systems Manager."
+        },
+        {
+          "target": "bedrock",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EC2 calls Bedrock LLMs."
+        },
+        {
+          "target": "sageMaker",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EC2 runs inference on SageMaker."
+        },
+        {
+          "target": "rekognition",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EC2 calls Rekognition API."
+        },
+        {
+          "target": "textract",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EC2 calls Textract API."
+        },
+        {
+          "target": "ecr",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EC2 instances pull docker images from ECR."
+        },
+        {
+          "target": "privateLink",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network",
+            "http"
+          ],
+          "type": "network",
+          "description": "EC2 instances connect to VPC endpoints via PrivateLink."
+        }
+      ],
+      "description": "Needed when you require full OS-level control, custom software configurations, or long-running stateful services that run continuously."
+    },
+    {
+      "type": "ecs",
+      "name": "ECS",
+      "category": "Containers",
+      "inputs": [
+        "http",
+        "compute",
+        "network",
+        "identity",
+        "event",
+        "queue"
+      ],
+      "outputs": [
+        "http",
+        "storage",
+        "database",
+        "cache",
+        "queue",
+        "topic",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS can connect to RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "cache"
+          ],
+          "targetPorts": [
+            "cache"
+          ],
+          "type": "cache",
+          "description": "ECS can use ElastiCache."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS can read/write DynamoDB."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage",
+            "http"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "ECS can read/write S3."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "queue",
+          "description": "ECS can send to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "topic"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "topic",
+          "description": "ECS can publish to SNS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "ECS emits logs to CloudWatch."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS connects to Aurora."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS queries OpenSearch."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS queries Redshift."
+        },
+        {
+          "target": "efs",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "ECS mounts EFS."
+        },
+        {
+          "target": "fsx",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "ECS mounts FSx."
+        },
+        {
+          "target": "backup",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "ECS triggers Backup."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "ECS publishes to EventBridge."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "ECS writes streams to Kinesis."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "ECS streams to Firehose."
+        },
+        {
+          "target": "msk",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "ECS writes to MSK."
+        },
+        {
+          "target": "mq",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "ECS publishes to MQ."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "ECS invokes AppSync GraphQL API."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "ECS fetches secrets."
+        },
+        {
+          "target": "kms",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "ECS decrypts with KMS."
+        },
+        {
+          "target": "xray",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "ECS sends traces to X-Ray."
+        },
+        {
+          "target": "cloudTrail",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "ECS logs audit trails."
+        },
+        {
+          "target": "systemsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "ECS integrates with Systems Manager."
+        },
+        {
+          "target": "bedrock",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ECS calls Bedrock LLMs."
+        },
+        {
+          "target": "sageMaker",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ECS runs inference on SageMaker."
+        },
+        {
+          "target": "rekognition",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ECS calls Rekognition API."
+        },
+        {
+          "target": "textract",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ECS calls Textract API."
+        },
+        {
+          "target": "ecr",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ECS pulls container images from ECR."
+        },
+        {
+          "target": "privateLink",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network",
+            "http"
+          ],
+          "type": "network",
+          "description": "ECS tasks connect to VPC endpoints via PrivateLink."
+        }
+      ],
+      "description": "Needed to deploy containerized microservices (Docker) at scale on Fargate serverless compute, bypassing virtual machine management."
+    },
+    {
+      "type": "sqs",
+      "name": "SQS",
+      "category": "Application Integration",
+      "inputs": [
+        "queue",
+        "event",
+        "identity",
+        "observability"
+      ],
+      "outputs": [
+        "queue",
+        "event",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "queue",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "queue",
+          "description": "SQS can trigger Lambda."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "queue",
+          "description": "ECS can poll SQS."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "queue",
+          "description": "EC2 can poll SQS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "SQS emits metrics to CloudWatch."
+        }
+      ],
+      "description": "Needed to buffer and queue requests asynchronously, decoupling services so spikes in traffic do not cause downstream outages."
+    },
+    {
+      "type": "sns",
+      "name": "SNS",
+      "category": "Application Integration",
+      "inputs": [
+        "topic",
+        "event",
+        "identity",
+        "http"
+      ],
+      "outputs": [
+        "topic",
+        "event",
+        "queue",
+        "http",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "topic",
+            "queue",
+            "event"
+          ],
+          "targetPorts": [
+            "queue",
+            "event"
+          ],
+          "type": "queue",
+          "description": "SNS can fan out to SQS."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "topic",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "event",
+          "description": "SNS can invoke Lambda subscribers."
+        },
+        {
+          "target": "http",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "SNS can call HTTP endpoints."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "topic",
+            "event",
+            "observability"
+          ],
+          "targetPorts": [
+            "observability",
+            "event"
+          ],
+          "type": "observability",
+          "description": "SNS can integrate with CloudWatch for metrics and events."
+        },
+        {
+          "target": "*",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "SNS emits telemetry to observability services."
+        },
+        {
+          "target": "batch",
+          "sourcePorts": [
+            "topic",
+            "event"
+          ],
+          "targetPorts": [
+            "job",
+            "queue"
+          ],
+          "type": "event",
+          "description": "SNS can trigger AWS Batch jobs via event notifications."
+        }
+      ],
+      "description": "Needed to broadcast notification events to multiple subscribers (fan-out pattern) asynchronously without hardcoding service linkages."
+    },
+    {
+      "type": "s3",
+      "name": "S3",
+      "category": "Storage",
+      "inputs": [
+        "storage",
+        "event",
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "storage",
+        "event",
+        "cdn",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "cdn"
+          ],
+          "type": "cdn",
+          "description": "S3 can be an origin for CloudFront."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event",
+            "storage"
+          ],
+          "type": "event",
+          "description": "S3 events can trigger Lambda."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "S3 emits usage and performance metrics to CloudWatch."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "S3 can publish object-event notifications (PUT/DELETE) directly to an SNS topic for fanout."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "S3 can deliver object-event notifications directly to an SQS queue for downstream processing."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "S3 can publish object-level events to EventBridge for rule-based routing."
+        }
+      ],
+      "description": "Needed as a highly durable, cheap, and scalable object store for static assets, media uploads, database backups, and data logs."
+    },
+    {
+      "type": "rds",
+      "name": "RDS",
+      "category": "Database",
+      "inputs": [
+        "database",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "database",
+        "observability",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "RDS can export snapshots and logs to S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "RDS publishes database logs and enhanced metrics to CloudWatch."
+        }
+      ],
+      "description": "Needed for structured SQL data storage supporting ACID transactions, automated backups, and read replicas for high-concurrency scaling."
+    },
+    {
+      "type": "dynamoDb",
+      "name": "DynamoDB",
+      "category": "Database",
+      "inputs": [
+        "database",
+        "event",
+        "identity",
+        "http"
+      ],
+      "outputs": [
+        "database",
+        "event",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "DynamoDB Streams triggers Lambda to process table change events."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "DynamoDB emits operational metrics to CloudWatch."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "DynamoDB Streams can be replicated into a Kinesis Data Stream for analytics fanout."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "DynamoDB change events can be routed to EventBridge via EventBridge Pipes."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "DynamoDB can export point-in-time data to S3 for analytics."
+        }
+      ],
+      "description": "Needed as a NoSQL database that delivers predictable single-digit millisecond latency at any scale, supporting high-throughput key-value APIs."
+    },
+    {
+      "type": "elastiCache",
+      "name": "ElastiCache",
+      "category": "Database",
+      "inputs": [
+        "cache",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "cache",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "ElastiCache publishes cluster metrics and slow logs to CloudWatch."
+        }
+      ],
+      "description": "Needed as an in-memory database cache to store frequent queries, reducing database load and speeding up reads to microseconds."
+    },
+    {
+      "type": "cloudWatch",
+      "name": "CloudWatch",
+      "category": "Management & Governance",
+      "inputs": [
+        "observability",
+        "event",
+        "identity",
+        "storage"
+      ],
+      "outputs": [
+        "observability",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "observability",
+            "event"
+          ],
+          "targetPorts": [
+            "topic",
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudWatch Alarms and Events can trigger SNS."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudWatch alarm actions can post directly to an SQS queue."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudWatch Events flow into EventBridge on the same underlying bus."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudWatch alarms and log-subscription filters can invoke Lambda."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudWatch Logs subscription filters can stream log events to Kinesis."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudWatch Logs can subscribe to a Kinesis Data Firehose delivery stream."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "CloudWatch Logs can be exported as objects to an S3 bucket."
+        }
+      ],
+      "description": "Needed to collect metrics, logs, and alarms from all AWS resources, enabling automated scaling actions and system monitoring."
+    },
+    {
+      "type": "stepFunctions",
+      "name": "Step Functions",
+      "category": "Application Integration",
+      "inputs": [
+        "event",
+        "workflow",
+        "identity"
+      ],
+      "outputs": [
+        "workflow",
+        "event",
+        "http"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "workflow",
+            "event"
+          ],
+          "targetPorts": [
+            "workflow",
+            "event"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can orchestrate Lambda."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can send to SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can publish to SNS."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can read/write DynamoDB."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Step Functions can call external APIs."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Step Functions can synchronously run an ECS task as part of a workflow."
+        },
+        {
+          "target": "batch",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can submit AWS Batch jobs."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Step Functions can put events to EventBridge."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "storage",
+          "description": "Step Functions can perform S3 object operations as workflow steps."
+        },
+        {
+          "target": "athena",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Step Functions can run Athena queries (startQueryExecution)."
+        },
+        {
+          "target": "glue",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can orchestrate Glue ETL jobs."
+        },
+        {
+          "target": "sageMaker",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "Step Functions can orchestrate SageMaker training/inference jobs."
+        },
+        {
+          "target": "emr",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "Step Functions can manage EMR clusters and add steps."
+        },
+        {
+          "target": "codeBuild",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "workflow"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can start CodeBuild projects as part of a workflow."
+        },
+        {
+          "target": "mediaConvert",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "workflow",
+          "description": "Step Functions can submit MediaConvert transcoding jobs."
+        }
+      ],
+      "description": "Needed to coordinate complex multi-service workflows and state machines with built-in retries, branching logic, and error handling."
+    },
+    {
+      "type": "vpc",
+      "name": "VPC",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for ELB."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for EC2."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for ECS."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for Lambda."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC provides network for ElastiCache."
+        },
+        {
+          "target": "natGateway",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC uses NAT Gateway for outbound traffic."
+        },
+        {
+          "target": "securityGroup",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC uses Security Groups for firewalling."
+        },
+        {
+          "target": "eks",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains EKS."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains AURORA."
+        },
+        {
+          "target": "msk",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains MSK."
+        },
+        {
+          "target": "efs",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains EFS."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains SECRETSMANAGER."
+        },
+        {
+          "target": "mq",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains MQ."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains REDSHIFT."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains OPENSEARCH."
+        },
+        {
+          "target": "fsx",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "VPC contains FSX."
+        }
+      ],
+      "description": "Amazon Virtual Private Cloud (VPC) lets you provision a logically isolated section of the AWS Cloud where you can launch AWS resources in a virtual network."
+    },
+    {
+      "type": "iam",
+      "name": "IAM",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "identity"
+      ],
+      "outputs": [
+        "identity"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "*",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "IAM grants service permissions."
+        }
+      ],
+      "description": "AWS Identity and Access Management (IAM) enables you to manage access to AWS services and resources securely."
+    },
+    {
+      "type": "autoScalingGroup",
+      "name": "Auto Scaling Group",
+      "category": "Compute",
+      "inputs": [
+        "compute",
+        "identity"
+      ],
+      "outputs": [
+        "compute",
+        "http"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": false,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ASG manages EC2 capacity."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AUTOSCALINGGROUP connects to Aurora."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AUTOSCALINGGROUP queries OpenSearch."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AUTOSCALINGGROUP queries Redshift."
+        },
+        {
+          "target": "efs",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "AUTOSCALINGGROUP mounts EFS."
+        },
+        {
+          "target": "fsx",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "AUTOSCALINGGROUP mounts FSx."
+        },
+        {
+          "target": "backup",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "AUTOSCALINGGROUP triggers Backup."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "AUTOSCALINGGROUP publishes to EventBridge."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "AUTOSCALINGGROUP writes streams to Kinesis."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "AUTOSCALINGGROUP streams to Firehose."
+        },
+        {
+          "target": "msk",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "AUTOSCALINGGROUP writes to MSK."
+        },
+        {
+          "target": "mq",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "AUTOSCALINGGROUP publishes to MQ."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "AUTOSCALINGGROUP invokes AppSync GraphQL API."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "AUTOSCALINGGROUP fetches secrets."
+        },
+        {
+          "target": "kms",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "AUTOSCALINGGROUP decrypts with KMS."
+        },
+        {
+          "target": "xray",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "AUTOSCALINGGROUP sends traces to X-Ray."
+        },
+        {
+          "target": "cloudTrail",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "AUTOSCALINGGROUP logs audit trails."
+        },
+        {
+          "target": "systemsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "AUTOSCALINGGROUP integrates with Systems Manager."
+        },
+        {
+          "target": "bedrock",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "AUTOSCALINGGROUP calls Bedrock LLMs."
+        },
+        {
+          "target": "sageMaker",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "AUTOSCALINGGROUP runs inference on SageMaker."
+        },
+        {
+          "target": "rekognition",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "AUTOSCALINGGROUP calls Rekognition API."
+        },
+        {
+          "target": "textract",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "AUTOSCALINGGROUP calls Textract API."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "http",
+          "description": "Auto Scaling Group instances register with an ELB target group to receive traffic."
+        }
+      ],
+      "description": "AWS Auto Scaling monitors your applications and automatically adjusts capacity to maintain steady, predictable performance at the lowest possible cost."
+    },
+    {
+      "type": "securityGroup",
+      "name": "Security Group",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network",
+        "identity"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects EC2."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects ECS."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects RDS."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects ElastiCache."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects ELB."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Security Group protects Lambda."
+        }
+      ],
+      "description": "Security Groups act as a virtual firewall for your EC2 instances to control incoming and outgoing traffic."
+    },
+    {
+      "type": "natGateway",
+      "name": "NAT Gateway",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": false,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "storage"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound S3 access."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "topic"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound SNS access."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "queue"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound SQS access."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "database"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound DynamoDB access."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "http",
+            "observability"
+          ],
+          "type": "network",
+          "description": "NAT Gateway allows outbound CloudWatch access."
+        }
+      ],
+      "description": "NAT Gateway is a Network Address Translation (NAT) service that enables instances in a private subnet to connect to services outside your VPC."
+    },
+    {
+      "type": "batch",
+      "name": "AWS Batch",
+      "category": "Compute",
+      "inputs": [
+        "job",
+        "network",
+        "storage",
+        "queue",
+        "event"
+      ],
+      "outputs": [
+        "job",
+        "compute",
+        "result"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "defaults": {
+        "cpu": 200,
+        "memory": 1024,
+        "latency": 300000,
+        "replication": 10,
+        "requestRate": 0.5
+      },
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "result",
+            "storage"
+          ],
+          "targetPorts": [
+            "storage",
+            "http"
+          ],
+          "type": "storage",
+          "description": "AWS Batch stores processed outputs in Amazon S3."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "job"
+          ],
+          "targetPorts": [
+            "queue",
+            "http"
+          ],
+          "type": "queue",
+          "description": "AWS Batch consumes jobs from Amazon SQS."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "result"
+          ],
+          "targetPorts": [
+            "topic",
+            "http"
+          ],
+          "type": "notification",
+          "description": "AWS Batch publishes job completion events to Amazon SNS."
+        },
+        {
+          "target": "stepFunctions",
+          "sourcePorts": [
+            "job",
+            "result"
+          ],
+          "targetPorts": [
+            "workflow",
+            "http"
+          ],
+          "type": "workflow",
+          "description": "AWS Batch integrates with AWS Step Functions for orchestration."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "result"
+          ],
+          "targetPorts": [
+            "database",
+            "http"
+          ],
+          "type": "data",
+          "description": "AWS Batch stores processed metadata in Amazon DynamoDB."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability",
+            "http"
+          ],
+          "type": "monitoring",
+          "description": "AWS Batch publishes logs and metrics to Amazon CloudWatch."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "result"
+          ],
+          "targetPorts": [
+            "http",
+            "event"
+          ],
+          "type": "event",
+          "description": "AWS Batch triggers AWS Lambda after job completion."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute",
+            "network"
+          ],
+          "type": "compute",
+          "description": "AWS Batch provisions EC2 compute environments for job execution."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "BATCH connects to Aurora."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "BATCH queries OpenSearch."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "BATCH queries Redshift."
+        },
+        {
+          "target": "efs",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "BATCH mounts EFS."
+        },
+        {
+          "target": "fsx",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "BATCH mounts FSx."
+        },
+        {
+          "target": "backup",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "BATCH triggers Backup."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "BATCH publishes to EventBridge."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "BATCH writes streams to Kinesis."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "BATCH streams to Firehose."
+        },
+        {
+          "target": "msk",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "BATCH writes to MSK."
+        },
+        {
+          "target": "mq",
+          "sourcePorts": [
+            "compute",
+            "network"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "BATCH publishes to MQ."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "BATCH invokes AppSync GraphQL API."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "BATCH fetches secrets."
+        },
+        {
+          "target": "kms",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "BATCH decrypts with KMS."
+        },
+        {
+          "target": "xray",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "BATCH sends traces to X-Ray."
+        },
+        {
+          "target": "cloudTrail",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "BATCH logs audit trails."
+        },
+        {
+          "target": "systemsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "BATCH integrates with Systems Manager."
+        },
+        {
+          "target": "bedrock",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "BATCH calls Bedrock LLMs."
+        },
+        {
+          "target": "sageMaker",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "BATCH runs inference on SageMaker."
+        },
+        {
+          "target": "rekognition",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "BATCH calls Rekognition API."
+        },
+        {
+          "target": "textract",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "BATCH calls Textract API."
+        }
+      ],
+      "description": "AWS Batch enables developers, scientists, and engineers to easily and efficiently run hundreds of thousands of batch computing jobs on AWS."
+    },
+    {
+      "type": "eks",
+      "name": "Amazon EKS",
+      "category": "Containers",
+      "inputs": [
+        "compute",
+        "network",
+        "identity",
+        "event",
+        "queue",
+        "topic",
+        "storage"
+      ],
+      "outputs": [
+        "compute",
+        "network",
+        "database",
+        "storage",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EKS pods query Aurora."
+        },
+        {
+          "target": "efs",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "EKS pods mount EFS volumes."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "EKS pods fetch secrets."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EKS streams logs to CloudWatch."
+        },
+        {
+          "target": "ecr",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EKS pulls container images from ECR."
+        },
+        {
+          "target": "privateLink",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network",
+            "http"
+          ],
+          "type": "network",
+          "description": "EKS pods connect to VPC endpoints via PrivateLink."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "elastiCache",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "cache"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "kms",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "systemsManager",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "cloudTrail",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "xray",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "http",
+          "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        }
+      ],
+      "description": "Amazon Elastic Kubernetes Service (EKS) is a managed service that makes it easy for you to run Kubernetes on AWS."
+    },
+    {
+      "type": "aurora",
+      "name": "Amazon Aurora",
+      "category": "Database",
+      "inputs": [
+        "database",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "database",
+        "observability",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Aurora can export snapshots and audit logs to S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Aurora publishes logs and Performance Insights metrics to CloudWatch."
+        }
+      ],
+      "description": "Amazon Aurora is a fully managed relational database engine that's compatible with MySQL and PostgreSQL."
+    },
+    {
+      "type": "eventBridge",
+      "name": "Amazon EventBridge",
+      "category": "Application Integration",
+      "inputs": [
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "event",
+        "compute",
+        "workflow",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge triggers Lambda via event rules."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "queue",
+          "description": "EventBridge routes to SQS."
+        },
+        {
+          "target": "stepFunctions",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "workflow"
+          ],
+          "type": "workflow",
+          "description": "EventBridge triggers Step Functions."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can route matching events to SNS topics."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can deliver event payloads to S3 (via Firehose or API destinations)."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can stream matched events to Kinesis Data Firehose for archival."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can put matching events onto a Kinesis Data Stream."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can launch ECS tasks (RunTask) as a rule target."
+        },
+        {
+          "target": "batch",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can submit Batch jobs in response to events."
+        },
+        {
+          "target": "codeBuild",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can trigger CodeBuild project builds (push or schedule events)."
+        },
+        {
+          "target": "codePipeline",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can start CodePipeline executions on source events."
+        },
+        {
+          "target": "sageMaker",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can trigger SageMaker pipelines or model deployment events."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EventBridge can write delivered events to a CloudWatch Logs log group."
+        },
+        {
+          "target": "glue",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can trigger Glue ETL jobs."
+        },
+        {
+          "target": "systemsManager",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "EventBridge can trigger Systems Manager automations or Run Command."
+        }
+      ],
+      "description": "Needed as a serverless event bus to route events from AWS services or custom apps to targeted downstream actions using rules."
+    },
+    {
+      "type": "kinesis",
+      "name": "Amazon Kinesis Streams",
+      "category": "Analytics",
+      "inputs": [
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "event",
+        "compute",
+        "storage",
+        "database"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Kinesis triggers Lambda functions via stream event source mapping."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Kinesis streams write to Firehose."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Kinesis can deliver records to S3 (typically via Firehose, modelled as a direct sink)."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Kinesis records (via Firehose) can be indexed into OpenSearch."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Kinesis records (via Firehose) can be loaded into Redshift."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Kinesis records can be persisted to DynamoDB via a Lambda processor or Firehose dynamic partitioning."
+        }
+      ],
+      "description": "Amazon Kinesis makes it easy to collect, process, and analyze real-time, streaming data so you can get timely insights."
+    },
+    {
+      "type": "msk",
+      "name": "Amazon MSK",
+      "category": "Analytics",
+      "inputs": [
+        "event",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "event",
+        "compute",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "MSK triggers Lambda consumer via event source mapping."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "MSK consumer runs in ECS."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "http",
+          "description": "EC2-hosted Kafka clients can connect to MSK brokers."
+        },
+        {
+          "target": "eks",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "http",
+          "description": "EKS-hosted Kafka clients can connect to MSK brokers."
+        }
+      ],
+      "description": "Amazon Managed Streaming for Apache Kafka (Amazon MSK) is a fully managed service that makes it easy for you to build and run applications that use Apache Kafka."
+    },
+    {
+      "type": "cognito",
+      "name": "Amazon Cognito",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "identity"
+      ],
+      "outputs": [
+        "identity",
+        "event",
+        "http"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Cognito user pool triggers invoke Lambda for pre/post auth, pre sign-up, and custom message flows."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Cognito User Pools provide authentication for AppSync GraphQL APIs."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Cognito User Pools can authenticate API Gateway requests via the Cognito Authorizer."
+        }
+      ],
+      "description": "Needed to handle user sign-up, sign-in, and access tokens for web and mobile apps securely without writing custom auth backends."
+    },
+    {
+      "type": "waf",
+      "name": "AWS WAF",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "http"
+      ],
+      "outputs": [
+        "http"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "WAF filters CloudFront traffic."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "WAF filters API Gateway requests."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "WAF filters Elastic Load Balancer traffic."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "AWS WAF web ACLs can be associated with AppSync GraphQL APIs."
+        }
+      ],
+      "description": "Needed to block malicious web traffic, SQL injections, and DDoS attacks on APIs and CDNs before they reach your backend."
+    },
+    {
+      "type": "efs",
+      "name": "Amazon EFS",
+      "category": "Storage",
+      "inputs": [
+        "storage",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [],
+      "description": "Amazon Elastic File System (EFS) provides a simple, serverless, set-and-forget, elastic file system for use with AWS Cloud services."
+    },
+    {
+      "type": "athena",
+      "name": "Amazon Athena",
+      "category": "Analytics",
+      "inputs": [
+        "database",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "database",
+        "result"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Athena queries S3 data lakes."
+        }
+      ],
+      "description": "Amazon Athena is an interactive query service that makes it easy to analyze data in Amazon S3 using standard SQL."
+    },
+    {
+      "type": "secretsManager",
+      "name": "AWS Secrets Manager",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "identity",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Secrets Manager invokes a Lambda rotation function on the configured schedule."
+        }
+      ],
+      "description": "AWS Secrets Manager helps you protect secrets needed to access your applications, services, and IT resources."
+    },
+    {
+      "type": "transitGateway",
+      "name": "AWS Transit Gateway",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "network"
+      ],
+      "outputs": [
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "vpc",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Transit Gateway connects VPCs."
+        }
+      ],
+      "description": "AWS Transit Gateway connects VPCs and on-premises networks through a central hub."
+    },
+    {
+      "type": "directConnect",
+      "name": "AWS Direct Connect",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "network"
+      ],
+      "outputs": [
+        "network"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "transitGateway",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Direct Connect routes to Transit Gateway."
+        },
+        {
+          "target": "vpc",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Direct Connect interfaces with VPC."
+        }
+      ],
+      "description": "AWS Direct Connect links your internal network to an AWS Direct Connect location over a standard Ethernet fiber-optic cable."
+    },
+    {
+      "type": "globalAccelerator",
+      "name": "AWS Global Accelerator",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "http",
+        "network"
+      ],
+      "outputs": [
+        "http",
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Global Accelerator routes to ELB."
+        },
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "cdn"
+          ],
+          "type": "http",
+          "description": "Global Accelerator points to CloudFront endpoint."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "Global Accelerator can route to EC2 instances as backend endpoints."
+        }
+      ],
+      "description": "AWS Global Accelerator is a networking service that improves the availability and performance of the applications that you offer to your global users."
+    },
+    {
+      "type": "xray",
+      "name": "AWS X-Ray",
+      "category": "Management & Governance",
+      "inputs": [
+        "observability",
+        "identity"
+      ],
+      "outputs": [
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [],
+      "description": "AWS X-Ray helps developers analyze and debug distributed applications, such as those built using a microservices architecture."
+    },
+    {
+      "type": "openSearch",
+      "name": "Amazon OpenSearch",
+      "category": "Analytics",
+      "inputs": [
+        "database",
+        "network",
+        "identity",
+        "event",
+        "storage"
+      ],
+      "outputs": [
+        "database",
+        "observability",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "OpenSearch publishes audit, slow, and error logs to CloudWatch."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "OpenSearch can take manual or scheduled snapshots into S3."
+        }
+      ],
+      "description": "Amazon OpenSearch Service makes it easy to perform interactive log analytics, real-time application monitoring, website search, and more."
+    },
+    {
+      "type": "redshift",
+      "name": "Amazon Redshift",
+      "category": "Database",
+      "inputs": [
+        "database",
+        "network",
+        "identity",
+        "event",
+        "storage"
+      ],
+      "outputs": [
+        "database",
+        "observability",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Redshift publishes audit, connection, and query logs to CloudWatch."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Redshift can UNLOAD query results and snapshots to S3."
+        }
+      ],
+      "description": "Amazon Redshift is a fast, fully managed, petabyte-scale data warehouse that makes it simple and cost-effective to analyze all your data using standard SQL."
+    },
+    {
+      "type": "glue",
+      "name": "AWS Glue",
+      "category": "Analytics",
+      "inputs": [
+        "database",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "database",
+        "storage",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Glue extracts data from/to S3."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Glue ETL writes to RDS."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Glue loads data warehouses."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Glue ETL jobs can read from and write to DynamoDB tables."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Glue ETL jobs can connect to Aurora as a JDBC source/sink."
+        },
+        {
+          "target": "athena",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Glue Data Catalog backs Athena tables (catalog dependency)."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Glue job logs and metrics are delivered to CloudWatch."
+        }
+      ],
+      "description": "AWS Glue is a serverless data integration service that makes it easy to discover, prepare, and combine data for analytics, machine learning, and application development."
+    },
+    {
+      "type": "emr",
+      "name": "Amazon EMR",
+      "category": "Analytics",
+      "inputs": [
+        "compute",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "compute",
+        "storage",
+        "database"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "EMR processes data from S3."
+        },
+        {
+          "target": "glue",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EMR uses Glue Data Catalog."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EMR (Spark/Hive) can read/write DynamoDB tables via the EMR DynamoDB connector."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EMR jobs can connect to RDS via JDBC."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EMR jobs can load/unload data to/from Redshift."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EMR jobs can index results into OpenSearch."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "EMR delivers cluster metrics and logs to CloudWatch."
+        }
+      ],
+      "description": "Amazon EMR is the industry-leading cloud big data platform for processing vast amounts of data using open source tools."
+    },
+    {
+      "type": "kinesisFirehose",
+      "name": "Amazon Data Firehose",
+      "category": "Analytics",
+      "inputs": [
+        "event",
+        "identity",
+        "storage"
+      ],
+      "outputs": [
+        "storage",
+        "database"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Firehose writes to S3."
+        },
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Firehose streams to Redshift."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Firehose indexes into OpenSearch."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "Kinesis Data Firehose can invoke Lambda for record transformation before delivery."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Firehose publishes delivery metrics and error logs to CloudWatch."
+        }
+      ],
+      "description": "Amazon Data Firehose is the easiest way to reliably load streaming data into data lakes, data stores, and analytics services."
+    },
+    {
+      "type": "mq",
+      "name": "Amazon MQ",
+      "category": "Application Integration",
+      "inputs": [
+        "event",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "event",
+        "compute"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "MQ triggers Lambda consumers via event source mapping."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "http",
+          "description": "EC2-hosted consumers can pull messages from Amazon MQ brokers."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "http",
+          "description": "Containerised consumers on ECS can subscribe to Amazon MQ."
+        }
+      ],
+      "description": "Amazon MQ is a managed message broker service for Apache ActiveMQ and RabbitMQ that makes it easy to set up and operate message brokers in the cloud."
+    },
+    {
+      "type": "kms",
+      "name": "AWS KMS",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "identity"
+      ],
+      "outputs": [
+        "identity"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [],
+      "description": "AWS Key Management Service (KMS) makes it easy for you to create and manage cryptographic keys and control their use."
+    },
+    {
+      "type": "shield",
+      "name": "AWS Shield",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network",
+        "identity"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudfront",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "cdn"
+          ],
+          "type": "network",
+          "description": "Shield Advanced protects CloudFront."
+        },
+        {
+          "target": "route53",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "dns"
+          ],
+          "type": "network",
+          "description": "Shield protects Route 53 DNS."
+        },
+        {
+          "target": "elb",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "AWS Shield Advanced provides DDoS protection for ELB endpoints."
+        },
+        {
+          "target": "apiGateway",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "AWS Shield Advanced can protect API Gateway regional and edge endpoints."
+        },
+        {
+          "target": "globalAccelerator",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "AWS Shield Advanced protects Global Accelerator anycast IPs."
+        }
+      ],
+      "description": "AWS Shield is a managed Distributed Denial of Service (DDoS) protection service that safeguards applications running on AWS."
+    },
+    {
+      "type": "organizations",
+      "name": "AWS Organizations",
+      "category": "Management & Governance",
+      "inputs": [
+        "identity"
+      ],
+      "outputs": [
+        "identity"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [],
+      "description": "AWS Organizations helps you centrally manage and govern your environment as you grow and scale your AWS resources."
+    },
+    {
+      "type": "codePipeline",
+      "name": "AWS CodePipeline",
+      "category": "Developer Tools",
+      "inputs": [
+        "workflow",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "workflow"
+      ],
+      "mandatoryInput": false,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "codeBuild",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "workflow"
+          ],
+          "type": "workflow",
+          "description": "CodePipeline triggers CodeBuild."
+        },
+        {
+          "target": "codeDeploy",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "workflow"
+          ],
+          "type": "workflow",
+          "description": "CodePipeline invokes CodeDeploy."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "workflow",
+          "description": "CodePipeline custom actions can invoke Lambda."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "CodePipeline uses S3 as its artifact store and can deploy artifacts to S3."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "notification",
+          "description": "CodePipeline can publish stage transition notifications to SNS."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "CodePipeline emits execution events and metrics to CloudWatch."
+        }
+      ],
+      "description": "AWS CodePipeline is a fully managed continuous delivery service that helps you automate your release pipelines for fast and reliable application and infrastructure updates."
+    },
+    {
+      "type": "codeBuild",
+      "name": "AWS CodeBuild",
+      "category": "Developer Tools",
+      "inputs": [
+        "workflow",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "workflow",
+        "result"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "result"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "CodeBuild uploads build artifacts to S3."
+        },
+        {
+          "target": "ecr",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "storage",
+          "description": "CodeBuild can push container images to ECR repositories."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "CodeBuild streams build logs to CloudWatch Logs."
+        }
+      ],
+      "description": "AWS CodeBuild is a fully managed build service that compiles source code, runs tests, and produces software packages that are ready to deploy."
+    },
+    {
+      "type": "codeDeploy",
+      "name": "AWS CodeDeploy",
+      "category": "Developer Tools",
+      "inputs": [
+        "workflow",
+        "identity"
+      ],
+      "outputs": [
+        "workflow"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "CodeDeploy deploys apps to EC2 instances."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "CodeDeploy deploys tasks to ECS."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "CodeDeploy supports blue/green deployments for Lambda functions."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "workflow"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "CodeDeploy fetches deployment bundles from S3."
+        }
+      ],
+      "description": "AWS CodeDeploy is a fully managed deployment service that automates software deployments to a variety of compute services."
+    },
+    {
+      "type": "bedrock",
+      "name": "Amazon Bedrock",
+      "category": "Machine Learning",
+      "inputs": [
+        "compute",
+        "identity"
+      ],
+      "outputs": [
+        "compute",
+        "observability",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Bedrock can persist async batch inference outputs to S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Bedrock publishes invocation metrics and model logs to CloudWatch."
+        }
+      ],
+      "description": "Amazon Bedrock is a fully managed service that offers a choice of high-performing foundation models (FMs) from leading AI companies."
+    },
+    {
+      "type": "sageMaker",
+      "name": "Amazon SageMaker",
+      "category": "Machine Learning",
+      "inputs": [
+        "compute",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "compute",
+        "database",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "SageMaker stores models/datasets in S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "SageMaker training and inference jobs emit metrics and logs to CloudWatch."
+        },
+        {
+          "target": "ecr",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "SageMaker pulls custom training/inference container images from ECR."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "SageMaker model code can query DynamoDB for feature data."
+        }
+      ],
+      "description": "Amazon SageMaker is a fully managed service that provides every developer and data scientist with the ability to build, train, and deploy machine learning models quickly."
+    },
+    {
+      "type": "appSync",
+      "name": "AWS AppSync",
+      "category": "Application Integration",
+      "inputs": [
+        "http",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "database",
+        "compute",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AppSync resolves fields in DynamoDB."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "AppSync invokes Lambda as a data source resolver."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AppSync resolvers can connect to Aurora/RDS via the Aurora Data API."
+        },
+        {
+          "target": "aurora",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AppSync resolvers can call Aurora Serverless via the Data API."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AppSync can use OpenSearch as a data source for search resolvers."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "AppSync subscriptions can be triggered by EventBridge events (via Lambda)."
+        }
+      ],
+      "description": "AWS AppSync is a fully managed service that makes it easy to develop GraphQL and Pub/Sub APIs."
+    },
+    {
+      "type": "iotCore",
+      "name": "AWS IoT Core",
+      "category": "Internet of Things",
+      "inputs": [
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "event",
+        "database",
+        "storage",
+        "topic",
+        "queue"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "IoT rules engine writes to DynamoDB."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "IoT rules engine routes messages to Lambda."
+        },
+        {
+          "target": "kinesis",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "IoT Core rules can route messages to Kinesis Data Streams."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "IoT Core rules can write messages directly to S3 objects."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "topic"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "notification",
+          "description": "IoT Core rules can publish to SNS topics."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "queue"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "queue",
+          "description": "IoT Core rules can enqueue messages to SQS."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "IoT Core rules can put events onto EventBridge buses."
+        },
+        {
+          "target": "kinesisFirehose",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "IoT Core rules can write to Kinesis Data Firehose for delivery to S3/Redshift/OpenSearch."
+        },
+        {
+          "target": "openSearch",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "database",
+          "description": "IoT Core rules can index payloads into OpenSearch."
+        }
+      ],
+      "description": "AWS IoT Core lets you connect IoT devices to the AWS Cloud without having to provision or manage servers."
+    },
+    {
+      "type": "rekognition",
+      "name": "Amazon Rekognition",
+      "category": "Machine Learning",
+      "inputs": [
+        "compute",
+        "identity"
+      ],
+      "outputs": [
+        "compute"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [],
+      "description": "Amazon Rekognition makes it easy to add image and video analysis to your applications using proven, highly scalable, deep learning technology."
+    },
+    {
+      "type": "textract",
+      "name": "Amazon Textract",
+      "category": "Machine Learning",
+      "inputs": [
+        "compute",
+        "identity"
+      ],
+      "outputs": [
+        "compute"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [],
+      "description": "Amazon Textract is a machine learning service that automatically extracts text, handwriting, and data from scanned documents."
+    },
+    {
+      "type": "mediaConvert",
+      "name": "AWS MediaConvert",
+      "category": "Media Services",
+      "inputs": [
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "storage",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "MediaConvert writes videos to S3."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "MediaConvert publishes job status events to EventBridge for downstream automation."
+        }
+      ],
+      "description": "AWS Elemental MediaConvert is a file-based video transcoding service with broadcast-grade features."
+    },
+    {
+      "type": "cloudTrail",
+      "name": "AWS CloudTrail",
+      "category": "Management & Governance",
+      "inputs": [
+        "observability",
+        "identity"
+      ],
+      "outputs": [
+        "observability",
+        "storage",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "CloudTrail stores audit trails in S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "CloudTrail can deliver trail events to a CloudWatch Logs log group."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "CloudTrail API events surface as EventBridge events for rule-based reaction."
+        }
+      ],
+      "description": "AWS CloudTrail monitors and records account activity across your AWS infrastructure."
+    },
+    {
+      "type": "backup",
+      "name": "AWS Backup",
+      "category": "Storage",
+      "inputs": [
+        "storage",
+        "identity"
+      ],
+      "outputs": [
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "AWS Backup recovery points are stored in S3-backed backup vaults."
+        }
+      ],
+      "description": "AWS Backup is a fully managed backup service that makes it easy to centrally configure backup policies and monitor backup activity."
+    },
+    {
+      "type": "appRunner",
+      "name": "AWS App Runner",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "http",
+        "database",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "App Runner connects to RDS database."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "App Runner sends logs to CloudWatch."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "http",
+          "description": "App Runner services can call this AWS service via SDK from their container."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "http",
+          "description": "App Runner services can call this AWS service via SDK from their container."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "http",
+          "description": "App Runner services can call this AWS service via SDK from their container."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "http",
+          "description": "App Runner services can call this AWS service via SDK from their container."
+        },
+        {
+          "target": "eventBridge",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "http",
+          "description": "App Runner services can call this AWS service via SDK from their container."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "http",
+          "description": "App Runner services can call this AWS service via SDK from their container."
+        }
+      ],
+      "description": "AWS AppRunner is a fully managed container application service that makes it easy for developers to quickly deploy containerized web applications and APIs."
+    },
+    {
+      "type": "elasticBeanstalk",
+      "name": "AWS Elastic Beanstalk",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "identity",
+        "event",
+        "storage"
+      ],
+      "outputs": [
+        "http",
+        "database"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Beanstalk connects to RDS DB."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "http",
+          "description": "Elastic Beanstalk applications can call this AWS service via SDK from their EC2 instances."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "http",
+          "description": "Elastic Beanstalk applications can call this AWS service via SDK from their EC2 instances."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "queue"
+          ],
+          "type": "http",
+          "description": "Elastic Beanstalk applications can call this AWS service via SDK from their EC2 instances."
+        },
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "topic"
+          ],
+          "type": "http",
+          "description": "Elastic Beanstalk applications can call this AWS service via SDK from their EC2 instances."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "http",
+          "description": "Elastic Beanstalk applications can call this AWS service via SDK from their EC2 instances."
+        },
+        {
+          "target": "secretsManager",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "http",
+          "description": "Elastic Beanstalk applications can call this AWS service via SDK from their EC2 instances."
+        }
+      ],
+      "description": "AWS Elastic Beanstalk is an easy-to-use service for deploying and scaling web applications and services."
+    },
+    {
+      "type": "fsx",
+      "name": "Amazon FSx",
+      "category": "Storage",
+      "inputs": [
+        "storage",
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "backup",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "FSx file systems can be backed up by AWS Backup."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "FSx for Lustre supports data repository association with S3 for tiering."
+        }
+      ],
+      "description": "Amazon FSx makes it easy and cost-effective to launch, run, and scale feature-rich, high-performance file systems in the cloud."
+    },
+    {
+      "type": "certificateManager",
+      "name": "AWS Certificate Manager",
+      "category": "Security, Identity, & Compliance",
+      "inputs": [
+        "identity"
+      ],
+      "outputs": [
+        "identity",
+        "network"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [],
+      "description": "AWS Certificate Manager (ACM) makes it easy to provision, manage, and deploy public and private Secure Sockets Layer/Transport Layer Security (SSL/TLS) certificates."
+    },
+    {
+      "type": "systemsManager",
+      "name": "AWS Systems Manager",
+      "category": "Management & Governance",
+      "inputs": [
+        "observability",
+        "identity",
+        "event"
+      ],
+      "outputs": [
+        "observability",
+        "identity",
+        "event"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Systems Manager Run Command and Patch Manager target EC2 instances via the SSM Agent."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "Systems Manager can exec into ECS containers and rotate task configurations."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Systems Manager publishes automation execution metrics and logs to CloudWatch."
+        }
+      ],
+      "description": "AWS Systems Manager is a secure end-to-end management solution for resources on AWS."
+    },
+    {
+      "type": "ecr",
+      "name": "Amazon ECR",
+      "category": "Containers",
+      "inputs": [
+        "compute",
+        "identity"
+      ],
+      "outputs": [
+        "compute"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "ECR stores container image layers in Amazon S3."
+        },
+        {
+          "target": "ec2",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EC2 hosts pull container images from ECR."
+        },
+        {
+          "target": "ecs",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ECS task definitions reference images stored in ECR."
+        },
+        {
+          "target": "eks",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "EKS pods pull container images from ECR."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "compute",
+          "description": "Lambda container images are pulled from ECR at function deploy."
+        },
+        {
+          "target": "appRunner",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "compute",
+          "description": "App Runner pulls container images from ECR."
+        }
+      ],
+      "description": "Amazon Elastic Container Registry (ECR) is a fully managed container registry that makes it easy for developers to share and deploy container images."
+    },
+    {
+      "type": "privateLink",
+      "name": "AWS PrivateLink",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "network",
+        "http"
+      ],
+      "outputs": [
+        "network",
+        "http"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "*",
+          "sourcePorts": [
+            "network",
+            "http"
+          ],
+          "targetPorts": [
+            "network",
+            "http",
+            "compute",
+            "database",
+            "storage",
+            "identity"
+          ],
+          "type": "network",
+          "description": "PrivateLink endpoints provide secure private access to AWS services."
+        }
+      ],
+      "description": "AWS PrivateLink provides secure, private connectivity between VPCs, AWS services, and your on-premises networks."
+    }
+  ]
+}
