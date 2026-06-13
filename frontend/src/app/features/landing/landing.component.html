@@ -12,11 +12,28 @@
       <small>BETA</small>
     </a>
     <div class="nav-actions">
-      <a href="/docs" (click)="openDocs($event)" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">Docs</a>
-      <a href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">GitHub</a>
-      <button type="button" class="mini-launch" (click)="scrollToModes()" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
+      <a
+        href="/docs"
+        (click)="openDocs($event)"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        >Docs</a
+      >
+      <a
+        href="https://github.com/000sushant"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        >GitHub</a
+      >
+      <button
+        type="button"
+        class="mini-launch"
+        (click)="scrollToModes()"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <span>Launch</span>
       </button>
     </div>
@@ -25,26 +42,37 @@
   <section class="hero-section">
     <div class="hero-copy">
       <div class="eyebrow glass-pill">
-        <i class="fas fa-circle"></i> Live AWS architecture playground
+        <i class="fas fa-circle"></i> Real-time AWS architecture simulation
       </div>
       <h1>
-        <span class="eyebrow-pre">A unified playground for</span><br />
-        system design,<br />traffic simulation<br />and cost estimation.
+        <span class="eyebrow-pre">A living canvas where</span><br />
+        Designs<br />take shape,<br />traffic comes<br />alive, and<br />costs
+        become clear.
       </h1>
       <p>
-        Sr. Architect transforms AWS system design into a live interactive
-        simulation playground where developers can visualize traffic flow,
-        scaling behavior, performance metrics, and infrastructure cost in real
-        time.
+        Sr. Architect lets you sketch real AWS architectures on a canvas, watch
+        live traffic flow through every node, and see an accurate monthly
+        estimate take shape, all before anything is deployed.
       </p>
       <div class="hero-actions">
-        <button type="button" class="cta-button primary" (click)="scrollToModes()"
-          (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <button
+          type="button"
+          class="cta-button primary"
+          (click)="scrollToModes()"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
           <span>Launch Simulator</span>
           <i class="fas fa-arrow-right"></i>
         </button>
-        <a class="cta-button ghost" href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
-          (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <a
+          class="cta-button ghost"
+          href="https://github.com/000sushant"
+          target="_blank"
+          rel="noopener noreferrer"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
           <span>GitHub</span>
           <i class="fab fa-github"></i>
         </a>
@@ -65,17 +93,22 @@
       <span class="mode-speck speck-c"></span>
     </div>
     <div class="section-heading centered">
-      <span class="section-kicker">Choose your experience</span>
-      <h2 id="mode-title">Choose your experience</h2>
+      <span class="section-kicker">Two modes. One engine.</span>
+      <h2 id="mode-title">Built for learners. Sharpened for architects.</h2>
       <p>
-        Whether you're learning system design or building production-scale cloud
-        architectures, Sr. Architect adapts to your workflow.
+        From your first load balancer to production-scale systems, Sr. Architect
+        meets you where you are.
       </p>
     </div>
 
     <div class="mode-grid">
-      <article class="mode-card glass-panel" *ngFor="let mode of modes" [class]="mode.id"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <article
+        class="mode-card glass-panel"
+        *ngFor="let mode of modes"
+        [class]="mode.id"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <div class="mode-card-top">
           <span class="mode-badge">{{ mode.badge }}</span>
           <span class="mode-icon"><i [class]="mode.icon"></i></span>
@@ -98,7 +131,11 @@
             <i class="fas fa-check"></i>{{ feature }}
           </li>
         </ul>
-        <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
+        <button
+          type="button"
+          class="mode-button"
+          (click)="launch.emit(mode.id)"
+        >
           <span>{{ mode.button }}</span>
           <i class="fas fa-arrow-right"></i>
         </button>
@@ -113,12 +150,16 @@
 
   <section class="feature-section" id="features">
     <div class="section-heading">
-      <span class="section-kicker">System Design, But Alive</span>
-      <h2>A premium simulator for cloud architecture decisions.</h2>
+      <span class="section-kicker">System design, but alive</span>
+      <h2>Every architecture decision, guided by living evidence.</h2>
     </div>
     <div class="feature-grid">
-      <article class="feature-card glass-panel" *ngFor="let feature of features" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
+      <article
+        class="feature-card glass-panel"
+        *ngFor="let feature of features"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <div class="feature-icon"><i [class]="feature.icon"></i></div>
         <div class="feature-title">
           <h3>{{ feature.title }}</h3>
@@ -136,9 +177,8 @@
       <span class="section-kicker">Creator</span>
       <h2>Made with <span class="beating-heart">❤️</span> by Sushant Kumar</h2>
       <p>
-        Backend-focused full stack developer passionate about cloud
-        architecture, scalable systems, simulations, and interactive engineering
-        tools.
+        Backend-focused full stack engineer obsessed with cloud architecture,
+        scalable systems, and building tools that make engineering feel alive.
       </p>
       <div class="creator-badges">
         <span>Open Source</span>
@@ -147,26 +187,78 @@
       </div>
     </div>
     <div class="social-links">
-      <a *ngFor="let link of socialLinks" [href]="link.href" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <a
+        *ngFor="let link of socialLinks"
+        [href]="link.href"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <i [class]="link.icon"></i>{{ link.label }}
       </a>
     </div>
   </section>
 
+  <section class="contributors-card glass-panel" aria-label="Top contributors">
+    <span class="section-kicker">Community</span>
+    <h2>Top Contributors</h2>
+    <div class="contributor-ghosts" aria-hidden="true">
+      <span class="ghost-avatar">?</span>
+      <span class="ghost-avatar">?</span>
+      <span class="ghost-avatar">?</span>
+      <span class="ghost-avatar">?</span>
+      <span class="ghost-avatar">?</span>
+    </div>
+    <span class="contributors-soon-pill"
+      ><i class="fas fa-circle"></i> Coming Soon</span
+    >
+    <p class="contributors-note">
+      Contributor spotlights will appear here. Open a PR and claim a spot.
+    </p>
+  </section>
+
   <section class="final-cta glass-panel">
-    <span class="section-kicker">Start Now</span>
-    <h2>Start building architectures that behave like real systems.</h2>
+    <span class="section-kicker">Start now</span>
+    <h2>Watch your next architecture come alive before it ships.</h2>
     <div class="hero-actions center">
-      <button type="button" class="cta-button primary" (click)="launch.emit('architect')"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <button
+        type="button"
+        class="cta-button primary"
+        (click)="launch.emit('architect')"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <span>Launch Sr. Architect</span>
       </button>
-      <a class="cta-button secondary" href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)"><span>Explore
-          GitHub</span></a>
-      <a class="cta-button ghost" href="https://github.com/000sushant" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
+      <a
+        class="cta-button secondary"
+        href="https://github.com/000sushant"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        ><span>Explore GitHub</span></a
+      >
+      <a
+        class="cta-button ghost"
+        href="https://github.com/000sushant"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        ><span>Contribute</span></a
+      >
     </div>
   </section>
+
+  <!-- Mobile back-to-top -->
+  <button
+    *ngIf="showBackToTop"
+    class="back-to-top"
+    aria-label="Back to top"
+    (click)="scrollToTop()"
+  >
+    <i class="fas fa-chevron-up"></i>
+  </button>
 </main>

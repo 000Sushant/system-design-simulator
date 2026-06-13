@@ -242,6 +242,9 @@
       "mandatoryOutput": true,
       "allowFanIn": true,
       "allowFanOut": true,
+      "defaults": {
+        "retryPolicy": 0
+      },
       "rules": [
         {
           "target": "lambda",

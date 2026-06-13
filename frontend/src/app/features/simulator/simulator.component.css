@@ -1326,6 +1326,11 @@ select {
   font-size: 11px;
 }
 
+.toolbar-actions .icon-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .action-btn {
   display: inline-flex;
   gap: 8px;
@@ -3972,16 +3977,13 @@ small {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(15, 23, 42, 0.6) 0%,
-    rgba(10, 14, 23, 0.95) 100%
-  );
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  background: rgba(241, 245, 249, 0.4);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
   padding: 24px;
   align-items: center;
   justify-content: center;
+  animation: fadeIn 0.25s ease-out;
 }
 
 @media (max-width: 1100px) {
@@ -3990,31 +3992,35 @@ small {
   }
 }
 
+/* Frosted glass + subtle claymorphism — matches landing page glass-panel */
 .warning-glass-card {
-  max-width: 440px;
-  width: 100%;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.03)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 40px;
-  padding: 56px 36px;
-  text-align: center;
-  box-shadow:
-    0 30px 100px rgba(0, 0, 0, 0.6),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 40px rgba(99, 102, 241, 0.15);
   position: relative;
+  max-width: 420px;
+  width: 100%;
+  padding: 40px 32px 32px;
+  text-align: center;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.82),
+      rgba(255, 255, 255, 0.42)),
+    rgba(255, 255, 255, 0.46);
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+  box-shadow:
+    0 18px 46px rgba(124, 58, 237, 0.1),
+    0 8px 18px rgba(15, 23, 42, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 2px rgba(124, 58, 237, 0.08);
   overflow: hidden;
-  animation: warningCardPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: warningCardPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes warningCardPop {
   from {
     opacity: 0;
-    transform: scale(0.9) translateY(20px);
+    transform: scale(0.92) translateY(16px);
   }
 
   to {
@@ -4026,86 +4032,95 @@ small {
 .warning-glass-card::before {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 320px;
   background: radial-gradient(
-    circle at 50% 50%,
-    rgba(99, 102, 241, 0.05) 0%,
-    transparent 50%
+    circle,
+    rgba(124, 58, 237, 0.08) 0%,
+    transparent 65%
   );
   pointer-events: none;
 }
 
-.warning-icon-glow {
-  width: 96px;
-  height: 96px;
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.25),
-    rgba(168, 85, 247, 0.15)
-  );
-  border: 1px solid rgba(99, 102, 241, 0.4);
-  border-radius: 28px;
-  display: grid;
-  place-items: center;
-  margin: 0 auto 28px;
-  color: #a5b4fc;
-  font-size: 38px;
-  box-shadow:
-    0 15px 30px rgba(99, 102, 241, 0.25),
-    inset 0 0 20px rgba(255, 255, 255, 0.1);
+.warning-mascot {
   position: relative;
+  width: 132px;
+  margin: 0 auto 14px;
 }
 
-.warning-icon-glow i {
-  filter: drop-shadow(0 0 10px rgba(165, 180, 252, 0.5));
+.warning-mascot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 16px rgba(23, 32, 42, 0.14));
 }
 
 .warning-glass-card h2 {
-  color: white;
-  margin-bottom: 16px;
-  font-size: 28px;
+  position: relative;
+  color: #1e1b4b;
+  margin-bottom: 14px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(to bottom, #ffffff, #94a3b8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: initial;
+  background: none;
 }
 
 .warning-glass-card p {
-  color: #94a3b8;
-  margin-bottom: 40px;
-  font-size: 16px;
-  line-height: 1.6;
-  font-weight: 400;
+  position: relative;
+  color: #475569;
+  margin-bottom: 28px;
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 500;
 }
 
+/* Liquid-glass dismiss button (matches landing cta-button.primary) */
 .dismiss-warning-btn {
+  position: relative;
   width: 100%;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  padding: 16px 32px;
-  border-radius: 18px;
+  padding: 14px 28px;
+  border-radius: 999px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.01em;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+  color: #3b0764;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%),
+    linear-gradient(135deg,
+      rgba(167, 139, 250, 0.38) 0%,
+      rgba(236, 72, 153, 0.28) 40%,
+      rgba(6, 182, 212, 0.24) 75%,
+      rgba(167, 139, 250, 0.38) 100%),
+    rgba(255, 255, 255, 0.32);
+  box-shadow:
+    0 10px 25px rgba(124, 58, 237, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92),
+    inset 0 -2px 4px rgba(124, 58, 237, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .dismiss-warning-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 35px rgba(79, 70, 229, 0.5);
-  background: linear-gradient(135deg, #818cf8, #6366f1);
+  transform: translateY(-1.5px);
+  border-color: rgba(236, 72, 153, 0.7);
+  box-shadow:
+    0 14px 32px rgba(124, 58, 237, 0.14),
+    0 0 0 4px rgba(167, 139, 250, 0.2),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
 }
 
 .dismiss-warning-btn:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* Minimap — Foblex f-minimap inside sketchbook canvas */
@@ -4821,19 +4836,24 @@ small {
 
 .unsupported-region-card {
   position: relative;
-  max-width: 320px;
+  max-width: 340px;
   width: 100%;
-  background: #f8fafc;
-  border: 3px solid #ffffff;
-  border-radius: 32px;
-  padding: 32px 20px 24px;
+  padding: 32px 24px 24px;
   text-align: center;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.82),
+      rgba(255, 255, 255, 0.42)),
+    rgba(255, 255, 255, 0.46);
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
   box-shadow:
-    10px 10px 24px rgba(99, 102, 241, 0.1),
-    -10px -10px 24px #ffffff,
-    0 16px 36px rgba(15, 23, 42, 0.04),
-    inset 6px 6px 12px #ffffff,
-    inset -8px -8px 16px rgba(99, 102, 241, 0.12);
+    0 18px 46px rgba(124, 58, 237, 0.1),
+    0 8px 18px rgba(15, 23, 42, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 2px rgba(124, 58, 237, 0.08);
   overflow: hidden;
   animation: unsupportedCardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
@@ -4867,46 +4887,18 @@ small {
   pointer-events: none;
 }
 
-/* Claymorphic Icon ring */
-.unsupported-icon-ring {
-  width: 68px;
-  height: 68px;
-  margin: 0 auto 20px;
-  background: #e0e7ff;
-  border: 2.5px solid #ffffff;
-  border-radius: 22px;
-  display: grid;
-  place-items: center;
-  color: #4f46e5;
-  font-size: 26px;
-  box-shadow:
-    4px 4px 12px rgba(99, 102, 241, 0.18),
-    inset 3px 3px 6px #ffffff,
-    inset -3px -3px 6px rgba(99, 102, 241, 0.2);
-  animation: iconBounce 3s ease-in-out infinite;
+/* Sad-cat mascot (animated SVG) */
+.unsupported-mascot {
+  position: relative;
+  width: 128px;
+  margin: 0 auto 8px;
 }
 
-@keyframes iconBounce {
-  0%,
-  100% {
-    transform: translateY(0);
-    box-shadow:
-      4px 4px 12px rgba(99, 102, 241, 0.18),
-      inset 3px 3px 6px #ffffff,
-      inset -3px -3px 6px rgba(99, 102, 241, 0.2);
-  }
-
-  50% {
-    transform: translateY(-4px);
-    box-shadow:
-      4px 8px 16px rgba(99, 102, 241, 0.22),
-      inset 3px 3px 6px #ffffff,
-      inset -3px -3px 6px rgba(99, 102, 241, 0.2);
-  }
-}
-
-.unsupported-icon-ring i {
-  filter: drop-shadow(0 3px 4px rgba(99, 102, 241, 0.12));
+.unsupported-mascot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 16px rgba(23, 32, 42, 0.14));
 }
 
 /* Typography */
@@ -4919,19 +4911,23 @@ small {
 }
 
 .unsupported-region-code {
+  position: relative;
   font-family: "Roboto Mono", "Courier New", monospace;
   font-size: 13px;
   font-weight: 700;
   color: #4f46e5;
-  background: #e0e7ff;
-  border: 1px solid rgba(79, 70, 229, 0.15);
-  border-radius: 10px;
-  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  padding: 4px 14px;
   display: inline-block;
   margin-bottom: 16px;
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.7),
+      rgba(224, 231, 255, 0.55));
   box-shadow:
-    inset 1px 1px 3px rgba(255, 255, 255, 0.8),
-    inset -1px -1px 3px rgba(99, 102, 241, 0.08);
+    0 2px 6px rgba(99, 102, 241, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
 }
 
 .unsupported-desc {
@@ -4943,22 +4939,26 @@ small {
   padding: 0 4px;
 }
 
-/* Claymorphic Reverted Info */
+/* Subtle clay+glass reverted info */
 .unsupported-reverted {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   color: #64748b;
   font-size: 12px;
-  background: #f1f5f9;
-  border: 1.5px solid #ffffff;
-  border-radius: 12px;
-  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 14px;
+  padding: 8px 14px;
   margin-bottom: 24px;
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.6),
+      rgba(241, 245, 249, 0.4));
   box-shadow:
-    inset 2px 2px 4px rgba(0, 0, 0, 0.02),
-    inset -2px -2px 4px #ffffff;
+    0 2px 6px rgba(15, 23, 42, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
 .unsupported-reverted i {
@@ -4978,41 +4978,51 @@ small {
   justify-content: center;
 }
 
-/* Claymorphic dismiss button */
+/* Liquid-glass dismiss button — matches landing .cta-button.primary */
 .unsupported-dismiss-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 32px;
-  background: #4f46e5;
-  border: 2px solid #6366f1;
-  border-radius: 20px;
-  color: #ffffff;
+  gap: 8px;
+  padding: 11px 34px;
+  border-radius: 999px;
+  color: #3b0764;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%),
+    linear-gradient(135deg,
+      rgba(167, 139, 250, 0.38) 0%,
+      rgba(236, 72, 153, 0.28) 40%,
+      rgba(6, 182, 212, 0.24) 75%,
+      rgba(167, 139, 250, 0.38) 100%),
+    rgba(255, 255, 255, 0.32);
   box-shadow:
-    0 8px 16px rgba(79, 70, 229, 0.25),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.4),
-    inset -3px -3px 6px rgba(0, 0, 0, 0.2);
+    0 10px 25px rgba(124, 58, 237, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92),
+    inset 0 -2px 4px rgba(124, 58, 237, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .unsupported-dismiss-btn:hover {
-  transform: translateY(-1.5px) scale(1.02);
+  transform: translateY(-1.5px);
+  border-color: rgba(236, 72, 153, 0.7);
   box-shadow:
-    0 12px 20px rgba(79, 70, 229, 0.35),
-    inset 3px 3px 6px rgba(255, 255, 255, 0.5),
-    inset -3px -3px 6px rgba(0, 0, 0, 0.2);
+    0 14px 32px rgba(124, 58, 237, 0.14),
+    0 0 0 4px rgba(167, 139, 250, 0.22),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
 }
 
 .unsupported-dismiss-btn:active {
-  transform: translateY(0.5px) scale(0.98);
-  box-shadow:
-    0 4px 8px rgba(79, 70, 229, 0.25),
-    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.3),
-    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.2);
+  transform: scale(0.97);
 }
 
 /* Feedback Section styling: Premium Claymorphism + Liquid Glass */
@@ -5276,8 +5286,9 @@ small {
   right: 7px;
   color: #f59e0b;
   font-size: 10px;
-  opacity: 0.8;
+  opacity: 0.9;
   pointer-events: none;
+  z-index: 5;
 }
 
 .readonly-icon {
@@ -5304,4 +5315,110 @@ small {
   cursor: not-allowed;
   opacity: 1;
   font-style: italic;
+}
+
+/* Locked enum dropdowns (e.g. CloudFront Traffic Region synced from the Users node)
+   get the same greyed-out treatment as locked number inputs, with extra right
+   padding so the value text clears the corner lock icon. */
+.readonly-row select:disabled {
+  background: rgba(148, 163, 184, 0.13) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+  opacity: 1;
+  font-style: italic;
+  padding-right: 24px;
+}
+
+/* ── Traffic Management (per-edge fan-out shares) ─────────────────────────── */
+/* Lives on the LIGHT inspector panel — all text uses dark slate tokens. */
+.traffic-mgmt {
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.traffic-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.traffic-heading i {
+  font-size: 12px;
+  color: #6366f1;
+}
+
+.traffic-heading span {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #4338ca;
+}
+
+.traffic-heading small {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.traffic-hint {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+/* Reuse the standard field-row grid (label | 118px control), just tighter — the
+   base .field-list adds a 12px top / 24px bottom that would bloat this compact box. */
+.traffic-rows {
+  margin-top: 0;
+  padding-bottom: 0;
+  gap: 7px;
+}
+
+.traffic-target {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pct-control {
+  display: flex;
+  align-items: center;
+}
+
+.pct-control input {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  /* Hide the number spinner so it doesn't crowd the % suffix. */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.pct-control input::-webkit-outer-spin-button,
+.pct-control input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pct-suffix {
+  flex: 0 0 auto;
+  padding-left: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #94a3b8;
 }

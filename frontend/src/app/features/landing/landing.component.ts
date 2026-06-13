@@ -20,16 +20,22 @@ export class LandingComponent {
   @ViewChild("shell", { static: true }) shellRef!: ElementRef<HTMLElement>;
 
   navScrolled = false;
+  showBackToTop = false;
 
   onShellScroll(event: Event) {
     const el = event.target as HTMLElement;
     this.navScrolled = el.scrollTop > 60;
+    this.showBackToTop = el.scrollTop > 400;
+  }
+
+  scrollToTop(): void {
+    this.shellRef.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   openDocs(event: Event) {
     event.preventDefault();
-    window.history.pushState(null, '', '/docs');
-    window.dispatchEvent(new Event('popstate'));
+    window.history.pushState(null, "", "/docs");
+    window.dispatchEvent(new Event("popstate"));
   }
 
   onButtonMouseMove(event: MouseEvent) {
@@ -37,35 +43,35 @@ export class LandingComponent {
     const rect = btn.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     // Relative coordinates from center (-1 to 1)
     const rx = (x - rect.width / 2) / (rect.width / 2);
     const ry = (y - rect.height / 2) / (rect.height / 2);
-    
+
     // Cast shadow in opposite direction of mouse
     const shadowX = -rx * 8; // max 8px shift
     const shadowY = -ry * 8; // max 8px shift
-    
-    btn.style.setProperty('--mouse-x', `${x}px`);
-    btn.style.setProperty('--mouse-y', `${y}px`);
-    btn.style.setProperty('--shadow-x', `${shadowX}px`);
-    btn.style.setProperty('--shadow-y', `${shadowY}px`);
-    
-    // Calculate gorgeous 3D premium tilt
-    const tiltX = ry * 6;  // rotate around X axis
-    const tiltY = -rx * 6; // rotate around Y axis
-    btn.style.setProperty('--tilt-x', `${tiltX}deg`);
-    btn.style.setProperty('--tilt-y', `${tiltY}deg`);
+
+    btn.style.setProperty("--mouse-x", `${x}px`);
+    btn.style.setProperty("--mouse-y", `${y}px`);
+    btn.style.setProperty("--shadow-x", `${shadowX}px`);
+    btn.style.setProperty("--shadow-y", `${shadowY}px`);
+
+    // Subtle 3D tilt
+    const tiltX = ry * 4; // rotate around X axis
+    const tiltY = -rx * 4; // rotate around Y axis
+    btn.style.setProperty("--tilt-x", `${tiltX}deg`);
+    btn.style.setProperty("--tilt-y", `${tiltY}deg`);
   }
 
   onButtonMouseLeave(event: MouseEvent) {
     const btn = event.currentTarget as HTMLElement;
-    btn.style.removeProperty('--mouse-x');
-    btn.style.removeProperty('--mouse-y');
-    btn.style.removeProperty('--shadow-x');
-    btn.style.removeProperty('--shadow-y');
-    btn.style.removeProperty('--tilt-x');
-    btn.style.removeProperty('--tilt-y');
+    btn.style.removeProperty("--mouse-x");
+    btn.style.removeProperty("--mouse-y");
+    btn.style.removeProperty("--shadow-x");
+    btn.style.removeProperty("--shadow-y");
+    btn.style.removeProperty("--tilt-x");
+    btn.style.removeProperty("--tilt-y");
   }
 
   scrollToModes(): void {
@@ -94,52 +100,53 @@ export class LandingComponent {
       icon: "fas fa-diagram-project",
       title: "Design Architectures",
       description:
-        "Drag AWS services onto a visual canvas and build real cloud architectures interactively.",
+        "Shape real AWS architectures on a visual canvas — every service, connection, and parameter at your fingertips.",
     },
     {
       icon: "fas fa-bolt",
       title: "Real-Time Simulation",
       description:
-        "Watch traffic flow through your infrastructure and identify scaling behavior and bottlenecks.",
+        "Watch live traffic flow through every node and see bottlenecks surface before your users ever could.",
     },
     {
       icon: "fas fa-chart-line",
       title: "Performance Metrics",
       description:
-        "Monitor latency, throughput, failures, request flow, and infrastructure pressure live.",
+        "Per-node RPS, latency, utilization, and failures — streamed live while your system runs.",
     },
     {
       icon: "fas fa-sliders",
       title: "Tune & Optimize",
       description:
-        "Adjust service configuration, scaling, caching, retries, and capacity dynamically.",
+        "Explore scaling, caching, retries, and capacity freely — every adjustment reflected in real time.",
     },
     {
       icon: "fas fa-coins",
       title: "Cost Estimation",
       badge: "Beta",
       description:
-        "Generate realistic infrastructure cost approximations based on traffic and architecture configuration.",
+        "Real AWS pricing formulas behind every node. Your monthly bill, recalculated as you design.",
     },
     {
       icon: "fas fa-cubes",
       title: "Terraform Import",
       badge: "Coming Soon",
       description:
-        "Import HCL/Terraform configurations to automatically construct complete, ready-to-simulate cloud architectures in seconds.",
+        "Drop in your HCL and get a running, simulation-ready replica of your infrastructure in seconds.",
     },
     {
       icon: "fas fa-wand-magic-sparkles",
       title: "AI Intelligence",
       badge: "Coming Soon",
       description:
-        "AI-powered architecture analysis and optimization suggestions.",
+        "An AI architect that reviews your design and flags weaknesses before production does.",
     },
     {
       icon: "fas fa-globe",
       title: "Multi-Cloud Support",
       badge: "Coming Soon",
-      description: "Compare AWS, Azure, and GCP architecture simulations.",
+      description:
+        "One canvas for AWS, Azure, and GCP — compare the same architecture across clouds.",
     },
   ];
 
@@ -179,17 +186,16 @@ export class LandingComponent {
       badge: "Learning Mode",
       title: "Developer",
       description:
-        "Learn system design visually through interactive traffic simulation and architecture behavior.",
+        "Learn system design the way it actually behaves — by watching real traffic move through core architectures.",
       button: "Start Learning",
       icon: "fas fa-graduation-cap",
       visual: "developer-visual",
       features: [
-        "Guided AWS architecture learning",
-        "Simplified service selection",
-        "Traffic flow visualization",
-        "Real-time bottleneck understanding",
-        "Beginner friendly architecture playground",
-        "Clean focused experience",
+        "Learning-oriented playground",
+        "Learn to use core AWS services",
+        "Explore integrated documentation",
+        "Focused on design simplicity",
+        "Visualize user traffic and bottlenecks",
       ],
     },
     {
@@ -197,18 +203,16 @@ export class LandingComponent {
       badge: "Professional Mode",
       title: "Architect",
       description:
-        "Design production-scale cloud systems with accurate infrastructure simulation and cost estimation.",
+        "Model production-grade systems with 60+ AWS services, faithful traffic behavior, and cost estimates you can defend.",
       button: "Design Infrastructure",
       icon: "fas fa-building-columns",
       visual: "architect-visual",
       features: [
-        "65+ AWS services",
-        "Full architecture freedom",
-        "Infrastructure cost estimation",
-        "Stress-tested traffic simulation",
-        "Performance tuning",
-        "Production-focused workflow",
-        "Realistic cloud behavior modeling",
+        "Use 60+ AWS services",
+        "In-depth cost estimation",
+        "Build bigger and complex architectures",
+        "Stress-test production workloads",
+        "Granular performance tuning",
       ],
     },
   ];

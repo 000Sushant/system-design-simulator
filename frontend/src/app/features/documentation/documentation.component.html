@@ -121,6 +121,20 @@
                 <p>{{ getServiceDoc(serviceType).practicalExample }}</p>
               </div>
             </div>
+
+            <div class="doc-section" *ngIf="getServiceDoc(serviceType).bottleneck as bn">
+              <h4>Bottleneck &amp; Capacity</h4>
+              <div class="bottleneck-box" [class.is-offline]="bn.failureMode === 'offline'">
+                <div class="bottleneck-head">
+                  <span class="bottleneck-badge kind">{{ bn.kind }}</span>
+                  <span class="bottleneck-badge mode" [class.offline]="bn.failureMode === 'offline'">
+                    {{ bn.failureMode === 'offline' ? 'Can go offline' : (bn.failureMode === 'none' ? 'No hard limit' : 'Throttles, stays up') }}
+                  </span>
+                  <span class="bottleneck-driver">{{ bn.capacityDriver }}</span>
+                </div>
+                <p class="bottleneck-summary">{{ bn.summary }}</p>
+              </div>
+            </div>
           </div>
 
           <!-- Right Panel: Connectivity & Visual Map -->
@@ -293,7 +307,32 @@
             </div>
 
             <ng-template #articleGrid>
-              <div class="docs-grid">
+              <!-- Release Notes Timeline -->
+              <div *ngIf="cat.id === 'release-notes'" class="release-timeline">
+                <article *ngFor="let rel of filteredReleaseNotes" class="release-card glass-panel"
+                  [class.is-latest]="rel.current">
+                  <div class="release-rail">
+                    <span class="release-dot"><i class="fas fa-rocket"></i></span>
+                  </div>
+                  <div class="release-content">
+                    <div class="release-head">
+                      <span class="release-version">v{{ rel.version }}</span>
+                      <span class="release-pill" *ngIf="rel.current"><i class="fas fa-star"></i> Latest</span>
+                      <span class="release-date" *ngIf="rel.date"><i class="far fa-calendar"></i> {{ rel.date }}</span>
+                    </div>
+                    <h3 class="release-title">{{ rel.title }}</h3>
+                    <p class="release-summary">{{ rel.summary }}</p>
+                    <ul class="release-items">
+                      <li *ngFor="let item of rel.items">
+                        <span class="release-item-icon"><i [class]="item.icon"></i></span>
+                        <span>{{ item.text }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </article>
+              </div>
+
+              <div *ngIf="cat.id !== 'release-notes'" class="docs-grid">
                 <!-- Interactive Claymorphic Guide Card -->
                 <article *ngFor="let art of getArticlesByCategory(cat.id)" class="doc-card glass-panel">
                   <div class="doc-card-header">
@@ -343,4 +382,14 @@
     </section>
 
   </div>
+
+  <!-- Mobile back-to-top -->
+  <button
+    *ngIf="showBackToTop"
+    class="back-to-top"
+    aria-label="Back to top"
+    (click)="scrollToTop()"
+  >
+    <i class="fas fa-chevron-up"></i>
+  </button>
 </main>

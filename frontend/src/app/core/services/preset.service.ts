@@ -10,23 +10,39 @@ export class PresetService {
     private readonly validation: ValidationRuleService
   ) { }
 
-  ecommercePreset(): ArchitectureProject {
-    const layout: Array<[AwsServiceType, number, number]> = [
-      ['client', 80, 160],
-      ['route53', 280, 110],
-      ['cloudfront', 480, 150],
-      ['apiGateway', 700, 150],
-      ['lambda', 910, 95],
-      ['dynamoDb', 1130, 95],
-      ['s3', 1130, 250],
-      ['cloudWatch', 1130, -50]
+  messagingPreset(): ArchitectureProject {
+    // key, service type, display name, x, y
+    const layout: Array<[string, AwsServiceType, string, number, number]> = [
+      ['users', 'client', 'Chat Users', 60, 360],
+      ['dns', 'route53', 'App Domain (DNS)', 300, 220],
+      ['auth', 'cognito', 'User Authentication', 300, 520],
+      ['cdn', 'cloudfront', 'Media CDN', 540, 80],
+      ['wsApi', 'apiGateway', 'WebSocket API', 540, 360],
+      ['connFn', 'lambda', 'Connection Manager', 800, 240],
+      ['msgFn', 'lambda', 'Message Router', 800, 480],
+      ['presence', 'elastiCache', 'Presence Cache', 1060, 140],
+      ['messages', 'dynamoDb', 'Message Store', 1060, 340],
+      ['push', 'sns', 'Push Notifications', 1060, 520],
+      ['stream', 'kinesis', 'Message Stream', 1060, 700],
+      ['storage', 's3', 'Media & Archive Storage', 1320, 80],
+      ['deliveryQueue', 'sqs', 'Delivery Queue', 1320, 520],
+      ['archive', 'kinesisFirehose', 'Archive Pipeline', 1320, 700],
+      ['workers', 'ecs', 'Delivery Workers', 1580, 520],
+      ['search', 'openSearch', 'Message Search', 1580, 700],
+      ['monitoring', 'cloudWatch', 'Monitoring', 800, 720]
     ];
-    const nodes = layout.map(([type, x, y]) => this.factory.createNode(type, x, y));
-    const byType = (type: AwsServiceType) => nodes.find((node) => node.type === type)!;
+    const nodeByKey = new Map(
+      layout.map(([key, type, name, x, y]) => {
+        const node = this.factory.createNode(type, x, y);
+        node.name = name;
+        return [key, node] as const;
+      })
+    );
+    const nodes = layout.map(([key]) => nodeByKey.get(key)!);
     const connections: ArchitectureConnection[] = [];
-    const connect = (source: AwsServiceType, target: AwsServiceType): void => {
-      const sourceNode = byType(source);
-      const targetNode = byType(target);
+    const connect = (source: string, target: string): void => {
+      const sourceNode = nodeByKey.get(source)!;
+      const targetNode = nodeByKey.get(target)!;
       const sourcePorts = sourceNode.ports.filter((port) => port.direction === 'output');
       const targetPorts = targetNode.ports.filter((port) => port.direction === 'input');
       const match = sourcePorts
@@ -48,28 +64,66 @@ export class PresetService {
         match.result.message
       ));
     };
-    connect('client', 'route53');
-    connect('route53', 'cloudfront');
-    connect('cloudfront', 'apiGateway');
-    connect('apiGateway', 'lambda');
-    connect('lambda', 'dynamoDb');
-    connect('lambda', 's3');
-    connect('lambda', 'cloudWatch');
+    // Edge & authentication
+    connect('users', 'dns');
+    connect('users', 'auth');
+    connect('dns', 'cdn');
+    connect('dns', 'wsApi');
+    connect('cdn', 'storage');
+
+    // WebSocket connection lifecycle ($connect / $disconnect, presence)
+    connect('auth', 'connFn');
+    connect('wsApi', 'connFn');
+    connect('connFn', 'presence');
+    connect('connFn', 'messages');
+    connect('connFn', 'monitoring');
+
+    // Message send path (persist, look up presence, fan-out, stream)
+    connect('wsApi', 'msgFn');
+    connect('msgFn', 'messages');
+    connect('msgFn', 'presence');
+    connect('msgFn', 'storage');
+    connect('msgFn', 'push');
+    connect('msgFn', 'stream');
+    connect('msgFn', 'monitoring');
+
+    // Asynchronous fan-out & delivery workers
+    connect('push', 'deliveryQueue');
+    connect('deliveryQueue', 'workers');
+    connect('workers', 'messages');
+    connect('workers', 'monitoring');
+
+    // Message stream → archive & search
+    connect('stream', 'archive');
+    connect('archive', 'storage');
+    connect('stream', 'search');
+
     return {
-      id: 'preset-ecommerce-serverless',
-      name: 'Serverless Ecommerce',
+      id: 'preset-messaging-realtime',
+      name: 'Real-Time Messaging App',
       nodes,
       connections,
       annotations: [
         {
           id: 'anno-title',
-          text: 'Simple Ecommerce website',
-          x: 500,
-          y: -150,
-          width: 500,
+          text: 'Real-Time Messaging Application',
+          x: 520,
+          y: -110,
+          width: 640,
           height: 60,
-          fontSize: 24,
+          fontSize: 26,
           fontWeight: 'bold',
+          selected: false
+        },
+        {
+          id: 'anno-subtitle',
+          text: 'WebSocket chat backend with presence, push notifications, async delivery, and message search',
+          x: 520,
+          y: -52,
+          width: 760,
+          height: 40,
+          fontSize: 14,
+          fontWeight: 'normal',
           selected: false
         }
       ],

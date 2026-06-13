@@ -180,6 +180,7 @@ export interface ArchitectureConnection {
   type: PortType;
   allowed: boolean;
   label?: string;
+  trafficWeight?: number;
   traffic: {
     requestsPerSecond: number;
     latency: number;

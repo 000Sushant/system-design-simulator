@@ -60,6 +60,13 @@ export interface CanvasTab {
   tick: number;
 }
 
+/** Deep-cloned canvas state captured for undo/redo. */
+interface CanvasSnapshot {
+  nodes: ArchitectureNode[];
+  connections: ArchitectureConnection[];
+  annotations: Annotation[];
+}
+
 interface ConfigField {
   key: keyof ServiceConfig;
   label: string;
@@ -111,8 +118,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     ],
     apiGateway: [
       { key: 'requestRate', label: 'Request rate', min: 0, max: 50000, step: 100, suffix: 'rps', description: '$3.50 per million API calls.', affectsCost: true },
-      { key: 'timeoutMs', label: 'Integration timeout', min: 100, max: 30000, step: 100, suffix: 'ms', description: 'Max wait for backend response.' },
-      { key: 'retryPolicy', label: 'Retries', min: 0, max: 5, step: 1, description: 'Auto-retry attempts on backend failure.' }
+      { key: 'timeoutMs', label: 'Integration timeout', min: 100, max: 30000, step: 100, suffix: 'ms', description: 'Max wait for backend response.' }
     ],
     elb: [
       { key: 'connectionLimit', label: 'Connection limit', min: 10, max: 20000, step: 100, description: 'Max concurrent TCP connections.' },
@@ -324,6 +330,15 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedNodeIds: string[] = [];
   selectedConnectionIds: string[] = [];
   ctrlPressed = false;
+
+  // Undo / redo history (per active canvas). Snapshots are captured *before* a
+  // mutation, so undo restores the prior state. Rapid edits (slider drags, node
+  // drags) coalesce into one entry via a short time window + matching key.
+  private undoStack: CanvasSnapshot[] = [];
+  private redoStack: CanvasSnapshot[] = [];
+  private readonly historyLimit = 60;
+  private lastHistoryKey = '';
+  private lastHistoryTime = 0;
   advancedConfigExpanded = false;
   costEvaluationExpanded = false;
   public selectionTrigger = (event: any): boolean => {
@@ -388,10 +403,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     const local = this.storage.loadLocal();
     // If we have a local project and it's NOT the default preset, load it.
     // Otherwise, always load the latest preset code.
-    if (local && local.id !== 'preset-ecommerce-serverless') {
+    if (local && local.id !== 'preset-ecommerce-serverless' && local.id !== 'preset-messaging-realtime') {
       this.applyProject(local);
     } else {
-      this.applyProject(this.presets.ecommercePreset());
+      this.applyProject(this.presets.messagingPreset());
     }
 
     this.snapshotSubscription = this.simulation.snapshot$.subscribe((snapshot) => {
@@ -402,6 +417,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
         this.nodes = snapshot.nodes.map((node) => ({ ...node, selected: this.selectedNodeIds.includes(node.id) }));
         this.connections = snapshot.connections;
       }
+      this.refreshHealthHold();
     });
 
     // Subscribe to unsupported region events from the cost service
@@ -423,6 +439,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       y = point.y - 60;
     }
 
+    this.pushHistory();
     const id = `anno-${Date.now()}`;
     const annotation: Annotation = {
       id,
@@ -446,6 +463,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       x = point.x - 82;
       y = point.y - 42;
     }
+    this.pushHistory();
     const node = this.factory.createNode(type, x, y);
     this.nodes = [...this.nodes, node];
     this.selectNode(node.id);
@@ -465,6 +483,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     // We only update the model to sync state, but avoid triggering logic that might re-render the div
     const anno = this.annotations.find(a => a.id === id);
     if (anno && anno.text !== text) {
+      this.pushHistory(`annotext:${id}`);
       anno.text = text;
     }
   }
@@ -473,12 +492,14 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
+    this.pushHistory();
     this.annotations = this.annotations.filter(a => a.id !== id);
     this.setMessage('Annotation deleted.', 'neutral');
   }
 
   toggleAnnotationBold(id: string, event: MouseEvent): void {
     event.stopPropagation();
+    this.pushHistory();
     this.annotations = this.annotations.map(a =>
       a.id === id ? { ...a, fontWeight: a.fontWeight === 'bold' ? 'normal' : 'bold' } : a
     );
@@ -553,13 +574,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clearMinimapHideTimer();
     this.simulation.stop();
   }
-  private calculateNodeHealth(node: ArchitectureNode): { tone: 'success' | 'warning' | 'error' | 'neutral', message: string, short?: string } {
+  private calculateNodeHealth(node: ArchitectureNode): { tone: 'success' | 'warning' | 'error' | 'neutral', message: string, short?: string, blocksRun?: boolean } {
     // Parameter-level validation before connectivity checks
     if (node.type === 'elb') {
       const count = node.config?.['count'];
       const numCount = count !== undefined && count !== null && count !== '' ? Number(count) : 1;
       if (isNaN(numCount) || numCount < 1) {
-        return { tone: 'error', message: 'Parameter error: at least 1 load balancer is required. Set "Number of Load Balancers" to 1 or more.' };
+        return { tone: 'error', blocksRun: true, message: 'Parameter error: at least 1 load balancer is required. Set "Number of Load Balancers" to 1 or more.' };
       }
     }
 
@@ -573,6 +594,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (mandatoryInput && inputs === 0) {
       return {
         tone: 'error',
+        blocksRun: true,
         short: 'Integration required',
         message: `Integration error: ${node.name} must have at least one input connection.`
       };
@@ -582,6 +604,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (mandatoryOutput && outputs === 0) {
       return {
         tone: 'error',
+        blocksRun: true,
         short: 'Integration required',
         message: `Integration error: ${node.name} must have an output connection to continue the flow.`
       };
@@ -599,32 +622,28 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // FAN-IN CHECK
     if (!allowFanIn && inputs > 1) {
-      return { tone: 'error', message: `Architecture error: ${node.name} does not support multiple incoming connections (Fan-in prohibited).` };
+      return { tone: 'error', blocksRun: true, message: `Architecture error: ${node.name} does not support multiple incoming connections (Fan-in prohibited).` };
     }
 
     // FAN-OUT CHECK
     if (!allowFanOut && outputs > 1) {
-      return { tone: 'error', message: `Architecture error: ${node.name} does not support multiple outgoing connections (Fan-out prohibited).` };
+      return { tone: 'error', blocksRun: true, message: `Architecture error: ${node.name} does not support multiple outgoing connections (Fan-out prohibited).` };
     }
 
-    // Dynamic checks — applies whenever simulation has run (running or paused).
-    if (this.mode === 'running' || this.mode === 'paused') {
-      if (node.status === 'offline' || node.status === 'failing') {
-        return { tone: 'error', short: 'Over capacity', message: `Operational Failure: ${node.name} is ${node.status}. Traffic is being dropped.` };
-      }
-      if (node.status === 'overloaded' || node.status === 'busy') {
-        return { tone: 'warning', short: 'High load', message: `Performance Warning: ${node.name} is ${node.status}. Latency is increasing.` };
-      }
+    // Dynamic checks — driven by the runtime status a node carries. Statuses
+    // persist after the run stops (no reset on stop), so these errors/warnings
+    // stay exactly as they were during the run instead of being downgraded.
+    // They are NOT marked blocksRun, so the user can still re-run to tune.
+    if (node.status === 'offline' || node.status === 'failing') {
+      return { tone: 'error', short: 'Over capacity', message: `Operational Failure: ${node.name} is ${node.status}. Traffic is being dropped.` };
     }
-
-    // After a stopped run, statuses persist: surface capacity failures from the
-    // last execution as tuning advice instead of hard errors.
-    if (this.mode === 'idle' && (node.status === 'offline' || node.status === 'failing')) {
-      return {
-        tone: 'warning',
-        short: 'Tune capacity',
-        message: `Last run: ${node.name} went ${node.status} under load. Tweak ${node.name}'s capacity (RPS) or lower the Users traffic, then run again.`
-      };
+    // Overload = demand past capacity. Treated as an error (not a soft warning):
+    // requests are being throttled/dropped even though the node is still up.
+    if (node.status === 'overloaded') {
+      return { tone: 'error', short: 'Overloaded', message: `Overloaded: ${node.name} is past its capacity — excess requests are being throttled or dropped.` };
+    }
+    if (node.status === 'busy') {
+      return { tone: 'warning', short: 'High load', message: `Performance Warning: ${node.name} is busy and nearing capacity. Latency is increasing.` };
     }
 
     return { tone: 'success', message: `${node.name} is correctly integrated and ready for traffic.` };
@@ -640,7 +659,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (nodesWithErrors.length > 0) {
       return {
         tone: 'error',
-        message: `Architecture issues detected. ${nodesWithErrors.length} service(s) report critical errors or offline status.`
+        message: `Architecture issues detected. ${nodesWithErrors.length} service(s) are overloaded, failing, or offline.`
       };
     }
 
@@ -649,7 +668,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (nodesWithWarnings.length > 0) {
       return {
         tone: 'warning',
-        message: `Performance warning. ${nodesWithWarnings.length} service(s) are currently busy or overloaded.`
+        message: `Performance warning. ${nodesWithWarnings.length} service(s) are busy and nearing capacity.`
       };
     }
 
@@ -664,17 +683,66 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get isSimulationDisabled(): boolean {
-    // If any node has an 'error' health, we could disable it. 
-    // But the user specifically asked to disable it when health is red.
-    return this.nodes.some(n => this.calculateNodeHealth(n).tone === 'error');
+    // Only integration/config errors (missing connections, fan-in/out, bad
+    // params) should block running. Runtime capacity errors from a prior run
+    // persist for display but must not prevent re-running to tune the design.
+    return this.nodes.some(n => {
+      const health = this.calculateNodeHealth(n);
+      return health.tone === 'error' && health.blocksRun === true;
+    });
   }
 
   get erroredNodes(): ArchitectureNode[] {
-    return this.nodes.filter(n => this.calculateNodeHealth(n).tone === 'error');
+    return this.nodes.filter(n => this.stickyHealthTone(n) === 'error');
   }
 
   get warnedNodes(): ArchitectureNode[] {
-    return this.nodes.filter(n => this.calculateNodeHealth(n).tone === 'warning');
+    return this.nodes.filter(n => this.stickyHealthTone(n) === 'warning');
+  }
+
+  /** Stable trackBy so error/warning pills aren't torn down between sim ticks. */
+  trackByNodeId(_index: number, node: ArchitectureNode): string {
+    return node.id;
+  }
+
+  /**
+   * During a run a node's transient status flips between normal/busy/overloaded
+   * every tick, which would make its summary pill appear and disappear (and break
+   * hover). We keep a node in its error/warning bucket for a short grace window
+   * after it last qualified, so the list stays stable. When idle the hold map is
+   * empty, so this returns the live tone immediately.
+   */
+  private readonly healthHold = new Map<string, { tone: 'error' | 'warning'; until: number }>();
+  private static readonly healthHoldMs = 1500;
+
+  private stickyHealthTone(node: ArchitectureNode): 'error' | 'warning' | 'other' {
+    const current = this.calculateNodeHealth(node).tone;
+    // Grace hold only applies during an active run; when idle, report live tone.
+    const sticky = this.mode === 'running' || this.mode === 'paused';
+    const held = sticky ? this.healthHold.get(node.id)?.tone : undefined;
+    if (current === 'error' || held === 'error') return 'error';
+    if (current === 'warning' || held === 'warning') return 'warning';
+    return 'other';
+  }
+
+  /** Refresh the grace-period hold map from the latest snapshot statuses. */
+  private refreshHealthHold(): void {
+    if (this.mode !== 'running' && this.mode !== 'paused') {
+      this.healthHold.clear();
+      return;
+    }
+    const now = performance.now();
+    for (const node of this.nodes) {
+      const tone = this.calculateNodeHealth(node).tone;
+      if (tone === 'error' || tone === 'warning') {
+        this.healthHold.set(node.id, { tone, until: now + SimulatorComponent.healthHoldMs });
+      }
+    }
+    for (const [id, hold] of this.healthHold) {
+      if (hold.until <= now) {
+        this.healthHold.delete(id);
+      }
+    }
   }
 
   nodeHealthShort(node: ArchitectureNode): string {
@@ -712,7 +780,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   fieldLockTooltip(node: ArchitectureNode, field: any): string {
     if (field?.key === 'throughput' && node.config?.['_designThroughput'] !== undefined) {
-      return 'Capacity (RPS) is synced from the Users node. Disable "Sync RPS to all connected services" on the Users node to edit.';
+      return 'Requests/Second is synced from the Users node. Disable "Sync RPS to all connected services" on the Users node to edit.';
     }
     return 'Synced from: ' + (field?.syncSource || 'Client (Users) node') + '. Change the value on the source node.';
   }
@@ -788,6 +856,21 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
     const params = model?.costParams || [];
+    // CloudFront's Traffic Region is locked to the Users node — mirror that node's selected
+    // region into the (read-only) field so it stays visible and correct in the cost panel.
+    if (this.selectedNode.type === 'cloudfront') {
+      const clientNode = this.nodes.find(n => n.type === 'client');
+      const clientRegion = (clientNode?.config?.['requestRegion'] as string) || 'global';
+      this.selectedNode.config['region'] = clientRegion;
+      const regionField = params.find((p: any) => p.key === 'region');
+      if (regionField) {
+        const clientReqRegionParam = (serviceCostModelData.serviceCostModel as any)
+          .client?.primaryParams?.find((p: any) => p.key === 'requestRegion');
+        if (clientReqRegionParam?.options?.length) {
+          regionField.options = clientReqRegionParam.options;
+        }
+      }
+    }
     return params.filter((field: any) => this.isFieldVisible(field));
   }
 
@@ -800,6 +883,57 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   get costBreakdown(): CostBreakdown | null {
     if (!this.selectedNode) return null;
     return this.costService.getCostBreakdown(this.selectedNode, this.globalRegion, this.nodes);
+  }
+
+  // Memoised so the getter returns a STABLE array reference across change-detection
+  // passes while nodes/connections/selection are unchanged. Without this, returning a
+  // fresh array every CD pass makes the *ngFor + ngModel in the Traffic Management
+  // panel thrash and lock up the page.
+  private _outConnCache: {
+    nodeId: string;
+    connsRef: ArchitectureConnection[];
+    nodesRef: ArchitectureNode[];
+    value: { connection: ArchitectureConnection; targetName: string; targetType: string }[];
+  } | null = null;
+
+  /**
+   * Outgoing edges of the selected node, paired with their downstream target's
+   * name/type — backs the inspector's "Traffic Management" section so the user
+   * can set what share of this node's output each downstream receives.
+   */
+  get selectedOutgoingConnections(): { connection: ArchitectureConnection; targetName: string; targetType: string }[] {
+    const node = this.selectedNode;
+    if (!node) return [];
+    const cache = this._outConnCache;
+    if (cache && cache.nodeId === node.id && cache.connsRef === this.connections && cache.nodesRef === this.nodes) {
+      return cache.value;
+    }
+    const value = this.connections
+      .filter((c) => c.sourceNodeId === node.id)
+      .map((c) => {
+        const target = this.nodes.find((n) => n.id === c.targetNodeId);
+        return { connection: c, targetName: target?.name ?? 'Unknown', targetType: target?.type ?? '' };
+      });
+    this._outConnCache = { nodeId: node.id, connsRef: this.connections, nodesRef: this.nodes, value };
+    return value;
+  }
+
+  /** trackBy for the Traffic Management list — keeps DOM/ngModel stable across CD. */
+  trackByConnId(_: number, item: { connection: ArchitectureConnection }): string {
+    return item.connection.id;
+  }
+
+  /** Set a single outgoing edge's traffic share (0–100%). */
+  updateConnectionWeight(connectionId: string, value: number | string): void {
+    let weight = Number(value);
+    if (Number.isNaN(weight)) weight = 100;
+    weight = Math.max(0, Math.min(100, Math.round(weight)));
+    this.pushHistory(`weight:${connectionId}`);
+    this.connections = this.connections.map((c) =>
+      c.id === connectionId ? { ...c, trafficWeight: weight } : c
+    );
+    this.onConfigChange();
+    this.saveActiveTabState();
   }
 
   get selectedConnection(): ArchitectureConnection | undefined {
@@ -833,12 +967,6 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       // Architect Mode
       if (!this.showAllServices) {
         services = services.filter(s => devServices.has(s.type));
-      } else {
-        // Exclude governance/security services from being primary draggable blocks
-        const primaryExclusions = new Set([
-          'iam', 'kms', 'securityGroup', 'certificateManager', 'backup', 'cloudTrail'
-        ]);
-        services = services.filter(s => !primaryExclusions.has(s.type));
       }
     }
 
@@ -943,11 +1071,30 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @HostListener('window:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
-    const isSaveHotkey = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's';
+    const mod = event.ctrlKey || event.metaKey;
+    const target = event.target as HTMLElement;
+    const inEditable = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.contentEditable === 'true';
+
+    const isSaveHotkey = mod && event.key.toLowerCase() === 's';
     if (isSaveHotkey) {
       event.preventDefault();
       this.triggerSaveWithLoader();
       return;
+    }
+
+    // Undo / redo — skip while typing in a field so native text undo still works.
+    if (mod && !inEditable) {
+      const k = event.key.toLowerCase();
+      if (k === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        this.undo();
+        return;
+      }
+      if (k === 'y' || (k === 'z' && event.shiftKey)) {
+        event.preventDefault();
+        this.redo();
+        return;
+      }
     }
 
     if (event.key === 'Control' || event.key === 'Meta' || event.key === 'Shift') {
@@ -958,8 +1105,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (event.key !== 'Delete' && event.key !== 'Backspace') {
       return;
     }
-    const target = event.target as HTMLElement;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.contentEditable === 'true') {
+    if (inEditable) {
       return;
     }
     if (this.hasSelection) {
@@ -1034,14 +1180,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     event.preventDefault();
     const point = this.toCanvasPoint(event.clientX, event.clientY);
 
-    // Handle AWS Service Drop
+    // Handle AWS Service Drop — addService captures undo history + selects + messages
     const type = event.dataTransfer?.getData('application/aws-service') as AwsServiceType;
     if (type) {
-      const node = this.factory.createNode(type, point.x - 82, point.y - 42);
-      this.nodes = [...this.nodes, node];
-      this.selectNode(node.id);
-      this.revealMinimap();
-      this.setMessage(`${node.name} added to the architecture.`, 'success');
+      this.addService(type, point.x - 82, point.y - 42);
       return;
     }
 
@@ -1054,6 +1196,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onFoblexMoveNodes(event: FMoveNodesEvent): void {
+    this.pushHistory('move');
     this.nodes = this.nodes.map((node) => {
       const moved = event.nodes.find((item) => item.id === node.id);
       return moved ? { ...node, x: moved.position.x, y: moved.position.y } : node;
@@ -1171,6 +1314,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.pushHistory();
     const connection = this.factory.createConnection(
       sourceNode.id,
       finalSourcePort.id,
@@ -1212,6 +1356,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     const annoCount = selectedAnnoIds.length;
 
     if (nodeCount === 0 && connectionCount === 0 && annoCount === 0) return;
+
+    this.pushHistory();
 
     // 1. Delete selected connections
     if (connectionCount > 0) {
@@ -1342,14 +1488,19 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadPreset(): void {
     this.simulation.stop();
-    this.applyProject(this.presets.ecommercePreset());
-    this.setMessage('Loaded the serverless commerce preset.', 'success');
+    this.applyProject(this.presets.messagingPreset());
+    this.setMessage('Loaded the real-time messaging app preset.', 'success');
   }
 
   resetCanvas(): void {
     this.simulation.stop();
+    // Record the pre-clear state so Ctrl+Z can bring the architecture back.
+    if (this.nodes.length > 0 || this.connections.length > 0 || this.annotations.length > 0) {
+      this.pushHistory();
+    }
     this.nodes = [];
     this.connections = [];
+    this.annotations = [];
     this.packets = [];
     this.clearSelection();
     this.setMessage('Canvas reset.', 'neutral');
@@ -1421,6 +1572,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     const numValue = Number(value);
     const selectedType = this.selectedNode.type;
     const selectedId = this.selectedNode.id;
+    this.pushHistory(`config:${selectedId}:${key}`);
 
     this.nodes = this.nodes.map((node) =>
       this.selectedNodeIds.includes(node.id) ? { ...node, config: { ...node.config, [key]: numValue } } : node
@@ -1453,6 +1605,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     const selectedType = this.selectedNode.type;
     const selectedId = this.selectedNode.id;
+    this.pushHistory(`config:${selectedId}:${key}`);
 
     // Handle client booleans BEFORE applying so we can react to the transition
     if (selectedType === 'client' && key === 'syncRpsToServices') {
@@ -1608,6 +1761,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!targetId) {
       return;
     }
+    this.pushHistory(`rename:${targetId}`);
     this.nodes = this.nodes.map((node) =>
       node.id === targetId ? { ...node, name: value } : node
     );
@@ -1616,6 +1770,89 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   onConfigChange(): void {
     // Sync local changes to the simulation service so they take effect immediately
     this.simulation.updateNodes(this.nodes, this.connections);
+  }
+
+  // ── Undo / Redo ────────────────────────────────────────────────────────────
+
+  get canUndo(): boolean { return this.undoStack.length > 0; }
+  get canRedo(): boolean { return this.redoStack.length > 0; }
+
+  /** Deep-clone the current canvas into a snapshot. */
+  private snapshotState(): CanvasSnapshot {
+    return {
+      nodes: JSON.parse(JSON.stringify(this.nodes)),
+      connections: JSON.parse(JSON.stringify(this.connections)),
+      annotations: JSON.parse(JSON.stringify(this.annotations))
+    };
+  }
+
+  /**
+   * Capture the pre-mutation state. Call this at the start of any method that
+   * changes nodes / connections / annotations. Pass a `coalesceKey` for
+   * continuous edits (e.g. 'config', 'move') so a slider drag becomes a single
+   * undo entry instead of dozens.
+   */
+  private pushHistory(coalesceKey?: string): void {
+    const now = Date.now();
+    if (coalesceKey && coalesceKey === this.lastHistoryKey && now - this.lastHistoryTime < 700) {
+      this.lastHistoryTime = now;
+      return; // fold rapid successive edits into the entry already on the stack
+    }
+    this.undoStack.push(this.snapshotState());
+    if (this.undoStack.length > this.historyLimit) this.undoStack.shift();
+    this.redoStack = [];
+    this.lastHistoryKey = coalesceKey ?? '';
+    this.lastHistoryTime = now;
+  }
+
+  /** Clear history — used when loading a project or switching canvas tabs. */
+  private resetHistory(): void {
+    this.undoStack = [];
+    this.redoStack = [];
+    this.lastHistoryKey = '';
+    this.lastHistoryTime = 0;
+  }
+
+  private applySnapshot(snap: CanvasSnapshot): void {
+    this.nodes = snap.nodes.map(n => ({ ...n, selected: false }));
+    this.connections = [...snap.connections];
+    this.annotations = snap.annotations.map(a => ({ ...a, selected: false }));
+    this.selectedNodeIds = [];
+    this.selectedConnectionIds = [];
+    this.packets = [];
+    this.simulation.updateNodes(this.nodes, this.connections);
+    this.saveActiveTabState();
+    if (this.flowCanvas) this.flowCanvas.redraw();
+  }
+
+  undo(): void {
+    if (this.mode === 'running') {
+      this.setMessage('Stop the simulation before undoing changes.', 'error');
+      return;
+    }
+    if (this.undoStack.length === 0) {
+      this.setMessage('Nothing to undo.', 'neutral');
+      return;
+    }
+    this.redoStack.push(this.snapshotState());
+    this.applySnapshot(this.undoStack.pop()!);
+    this.lastHistoryKey = '';
+    this.setMessage('Undo.', 'neutral');
+  }
+
+  redo(): void {
+    if (this.mode === 'running') {
+      this.setMessage('Stop the simulation before redoing changes.', 'error');
+      return;
+    }
+    if (this.redoStack.length === 0) {
+      this.setMessage('Nothing to redo.', 'neutral');
+      return;
+    }
+    this.undoStack.push(this.snapshotState());
+    this.applySnapshot(this.redoStack.pop()!);
+    this.lastHistoryKey = '';
+    this.setMessage('Redo.', 'neutral');
   }
 
   nodeStyle(node: ArchitectureNode): Record<string, string> {
@@ -1672,8 +1909,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   statusColor(status: HealthStatus): string {
     const colors: Record<HealthStatus, string> = {
       normal: '#16a34a',
-      busy: '#d97706',
-      overloaded: '#ea580c',
+      busy: '#d97706', // amber — nearing capacity (warning)
+      overloaded: '#dc2626', // red — past capacity, treated as an error
       failing: '#dc2626',
       offline: '#dc2626' // red when stopped/offline
     };
@@ -1726,6 +1963,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.annotations = project.annotations || [];
     this.packets = [];
     this.clearSelection();
+    this.resetHistory();
 
     // Reset view to make the project visible
     this.zoom = this.isMobileViewport ? 0.65 : 0.85;
@@ -1829,6 +2067,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       tab.tick,
       tab.simulationMode
     );
+
+    this.resetHistory();
   }
 
   switchCanvasTab(index: number): void {

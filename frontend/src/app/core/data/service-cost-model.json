@@ -6,10 +6,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 20000,
           "affectsCost": true,
@@ -37,17 +37,6 @@
           "max": 29000,
           "costDriver": "Maximum wait time for backend response before failing.",
           "notes": "How long the API waits for a backend response before returning a 504 Gateway Timeout. Match this to your downstream service SLA."
-        },
-        {
-          "key": "retryPolicy",
-          "label": "Retries",
-          "type": "number",
-          "unit": "count",
-          "default": 0,
-          "min": 0,
-          "max": 5,
-          "costDriver": "Automatic retry attempts on backend failure.",
-          "notes": "Number of automatic retry attempts when a backend integration fails. Useful for transient failures but can amplify load on backends."
         }
       ],
       "costParams": [
@@ -119,6 +108,18 @@
             }
           ],
           "notes": "Dedicated in-memory cache for REST API responses. Reduces backend calls for repeated identical requests, improving latency and cutting downstream costs."
+        },
+        {
+          "key": "wsConnMinutesM",
+          "label": "Connection Minutes (M/mo)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 100000,
+          "group": "networking",
+          "visibleIf": "config.type === 'websocket'",
+          "costDriver": "WebSocket APIs bill for total connection time at $0.25 per million connection minutes, in addition to per-message charges.",
+          "notes": "Total minutes all clients stay connected per month, in millions. Example: 1,000 always-on connections ≈ 43.8M minutes/month. Only applies to WebSocket APIs."
         }
       ],
       "costEvaluation": {
@@ -132,7 +133,7 @@
               "requestCount",
               "apiType"
             ],
-            "note": "HTTP=$1.00/M, REST=$3.50/M, WebSocket=$1.00/M messages"
+            "note": "HTTP=$1.00/M, REST=$3.50/M, WebSocket=$1.00/M messages + $0.25/M connection minutes"
           },
           {
             "id": "dataTransferCost",
@@ -168,10 +169,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 10000,
           "affectsCost": true,
@@ -233,13 +234,14 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 50000,
-          "costDriver": "Maximum requests per second before degradation."
+          "affectsCost": true,
+          "costDriver": "Billed per request: RPS × 2.628 = millions of requests/month. Drives the CloudFront Requests cost line (rate set by the Users node's region)."
         },
         {
           "key": "latency",
@@ -267,51 +269,23 @@
           "key": "region",
           "label": "Traffic Region",
           "type": "enum",
-          "default": "us-eu",
+          "readonly": true,
+          "syncSource": "Users node (Request Region)",
+          "default": "global",
           "group": "networking",
-          "options": [
-            {
-              "value": "us-eu",
-              "label": "US, Europe & Canada"
-            },
-            {
-              "value": "ap",
-              "label": "Asia Pacific"
-            },
-            {
-              "value": "au",
-              "label": "Australia"
-            },
-            {
-              "value": "sa",
-              "label": "South America"
-            },
-            {
-              "value": "me-af",
-              "label": "Middle East & Africa"
-            }
-          ],
-          "notes": "Edge location pricing class. US/EU is cheapest; Asia Pacific, Australia, South America, and Middle East/Africa have higher per-GB rates."
+          "costDriver": "Sets the CloudFront edge price class for both data transfer and requests. Locked to the Users node's Request Region — change it there.",
+          "notes": "Locked to the Users node's Request Region. CloudFront bills by edge geography, so this region determines the per-GB transfer and per-request rates.",
+          "options": []
         },
         {
           "key": "dataTransferOut",
           "label": "Data Transfer Out (GB)",
           "type": "number",
-          "default": 1000,
+          "default": 100,
           "min": 0,
           "max": 1000000,
           "group": "networking",
-          "notes": "Estimated gigabytes of content delivered to end users monthly. Main cost driver for CloudFront-heavy architectures (video, large assets)."
-        },
-        {
-          "key": "requestsM",
-          "label": "HTTP/HTTPS Requests (Millions)",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 100000,
-          "group": "compute",
-          "notes": "Millions of HTTP/HTTPS requests served monthly. CloudFront charges per million requests in addition to data transfer."
+          "notes": "Estimated gigabytes of content delivered to end users monthly. Main cost driver for CloudFront-heavy architectures (video, large assets). Request count is derived from Requests/Second; the edge price class follows the Users node's Request Region."
         },
         {
           "key": "wafEnabled",
@@ -377,10 +351,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 50000,
           "affectsCost": true,
@@ -530,10 +504,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 10000,
           "costDriver": "Maximum requests per second before degradation."
@@ -723,6 +697,25 @@
           "max": 100000,
           "group": "networking",
           "notes": "Data sent from EC2 to the internet monthly. First 100 GB/mo free. Use CloudFront or VPC endpoints to reduce these charges."
+        },
+        {
+          "key": "os",
+          "label": "Operating System",
+          "type": "enum",
+          "default": "linux",
+          "group": "compute",
+          "options": [
+            {
+              "value": "linux",
+              "label": "Linux"
+            },
+            {
+              "value": "windows",
+              "label": "Windows"
+            }
+          ],
+          "costDriver": "Windows includes the license in the hourly rate — roughly 1.45× the Linux price for general-purpose families.",
+          "notes": "Instance operating system. Windows pricing bundles the OS license, which raises the hourly rate substantially."
         }
       ],
       "costEvaluation": {
@@ -785,10 +778,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 20000,
           "costDriver": "Maximum requests per second before degradation."
@@ -930,10 +923,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 100000,
           "affectsCost": true,
@@ -998,7 +991,7 @@
           "default": 10,
           "min": 0,
           "max": 1000,
-          "costDriver": "Percentage of RPS that results in a brand-new TCP/TLS handshake per second. For example, at 100 RPS with 10%, the LB handles 10 new connections/sec. AWS bills 1 LCU per 25 new connections/sec.",
+          "costDriver": "Percentage of RPS that results in a brand-new TCP/TLS handshake per second. For example, at 100 RPS with 10%, the LB handles 10 new connections/sec. AWS bills 1 LCU per 25 new conn/s (ALB), 800 new conn/s (NLB), or 600 new conn/s (GWLB).",
           "group": "networking",
           "visibleIf": "config.lbType !== 'clb'",
           "notes": "What percentage of your incoming RPS results in a brand-new TCP/TLS handshake. Stateless HTTP/2 reuses connections heavily (low %). Keep-alive disabled means higher new connection rates."
@@ -1010,7 +1003,7 @@
           "default": 1000,
           "min": 0,
           "max": 1000000,
-          "costDriver": "Total number of concurrent TCP connections that remain open at any moment. AWS bills 1 LCU per 3,000 active concurrent connections for ALB, or 1 NLCU per 1 active flow for NLB.",
+          "costDriver": "Total number of concurrent TCP connections that remain open at any moment. AWS bills 1 LCU per 3,000 active connections (ALB), 100,000 active flows (NLB), or 60,000 active flows (GWLB).",
           "group": "networking",
           "visibleIf": "config.lbType !== 'clb'",
           "notes": "Peak number of concurrent TCP connections open at any moment across all clients. Represents the size of your connection table, not request rate."
@@ -1095,6 +1088,17 @@
           "max": 10000,
           "group": "networking",
           "notes": "Data processed through VPC Interface Endpoints monthly. Billed per GB in addition to the hourly endpoint charge."
+        },
+        {
+          "key": "publicIPv4Count",
+          "label": "Public IPv4 Addresses",
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "max": 1000,
+          "group": "networking",
+          "costDriver": "Every public IPv4 costs $0.005/hr (~$3.65/mo) since February 2024 — including those attached to EC2, NAT gateways, and load balancers.",
+          "notes": "Count of public IPv4 addresses across this VPC (instance EIPs, NAT gateways, load balancer nodes). AWS has charged for all public IPv4s since Feb 2024."
         }
       ],
       "costEvaluation": {
@@ -1131,13 +1135,24 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 10000,
           "costDriver": "Impacts data transfer."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 1,
+          "min": 1,
+          "max": 10000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "NAT adds sub-millisecond forwarding overhead."
         }
       ],
       "costParams": [
@@ -1191,7 +1206,7 @@
           "key": "metrics",
           "label": "Custom Metrics",
           "type": "number",
-          "default": 100,
+          "default": 10,
           "min": 0,
           "max": 100000,
           "group": "compute",
@@ -1201,7 +1216,7 @@
           "key": "logsGB",
           "label": "Logs Ingested (GB)",
           "type": "number",
-          "default": 50,
+          "default": 10,
           "min": 0,
           "max": 100000,
           "group": "compute",
@@ -1214,6 +1229,28 @@
           "default": 2,
           "min": 0,
           "max": 500,
+          "group": "compute"
+        },
+        {
+          "key": "alarms",
+          "label": "Alarms",
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "max": 5000,
+          "costDriver": "Standard-resolution alarms bill $0.10/alarm/month.",
+          "notes": "Metric alarms watching your stack. Every production architecture carries dozens — they add up quietly.",
+          "group": "compute"
+        },
+        {
+          "key": "logsStorageGB",
+          "label": "Logs Stored (GB)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "costDriver": "Stored (compressed) log data bills $0.03/GB/month — separate from the $0.50/GB ingestion charge.",
+          "notes": "Cumulative retained log volume. Ingestion and storage are different line items on a real AWS bill.",
           "group": "compute"
         }
       ],
@@ -1261,6 +1298,17 @@
     },
     "dynamoDb": {
       "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 1000000,
+          "costDriver": "Requested operations per second. In provisioned mode the simulation caps this at what your RCU/WCU can serve.",
+          "notes": "On-demand mode scales automatically. In provisioned mode the real ceiling is RCU/WCU — under-provisioning shows as throttling in the simulation."
+        },
         {
           "key": "latency",
           "label": "Latency (ms)",
@@ -1335,7 +1383,7 @@
           "key": "wcu",
           "label": "Provisioned WCU",
           "type": "number",
-          "default": 100,
+          "default": 25,
           "min": 1,
           "max": 100000,
           "group": "compute",
@@ -1346,7 +1394,7 @@
           "key": "rcu",
           "label": "Provisioned RCU",
           "type": "number",
-          "default": 100,
+          "default": 25,
           "min": 1,
           "max": 100000,
           "group": "compute",
@@ -1370,6 +1418,17 @@
           "default": false,
           "group": "networking",
           "notes": "Multi-region active-active replication. Enables low-latency reads and writes worldwide, but multiplies WCU consumption by the number of replica regions."
+        },
+        {
+          "key": "itemSizeKB",
+          "label": "Avg Item Size (KB)",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 400,
+          "costDriver": "Capacity-unit math: a read consumes ceil(size/4KB) RCUs/RRUs, a write consumes ceil(size/1KB) WCUs/WRUs.",
+          "notes": "Average item size. Items over 4 KB consume multiple read units; over 1 KB, multiple write units. The AWS calculator requires this — cost is wrong without it.",
+          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -1428,16 +1487,6 @@
     "rds": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Capacity (RPS)",
-          "type": "number",
-          "unit": "rps",
-          "default": 100,
-          "min": 1,
-          "max": 50000,
-          "costDriver": "Database concurrency."
-        },
-        {
           "key": "latency",
           "label": "Latency (ms)",
           "type": "number",
@@ -1446,6 +1495,17 @@
           "min": 1,
           "max": 1000,
           "costDriver": "Query latency."
+        },
+        {
+          "key": "maxConnections",
+          "label": "Max Connections",
+          "type": "number",
+          "unit": "count",
+          "default": 1000,
+          "min": 10,
+          "max": 16000,
+          "costDriver": "Connection-pool ceiling — the classic RDS bottleneck. Effective max RPS ≈ connections ÷ query time.",
+          "notes": "Instance-class connection limit (db.m5.large ≈ 800–1,000 for PostgreSQL). The simulation caps throughput at connections ÷ (latency in seconds)."
         }
       ],
       "costParams": [
@@ -1505,7 +1565,7 @@
           "key": "multiAz",
           "label": "Multi-AZ Deployment",
           "type": "boolean",
-          "default": true,
+          "default": false,
           "group": "compute",
           "notes": "Synchronous standby replica in a different Availability Zone for automatic failover. Doubles the instance cost but eliminates single-AZ as a SPOF."
         },
@@ -1551,11 +1611,22 @@
           "key": "backupStorage",
           "label": "Backup Storage (GB)",
           "type": "number",
-          "default": 100,
+          "default": 20,
           "min": 0,
           "max": 65000,
           "group": "storage",
           "notes": "Snapshot backup retention in GB. AWS provides free backup storage equal to your total database size. Additional backup storage beyond that is billed."
+        },
+        {
+          "key": "readReplicas",
+          "label": "Read Replicas",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 15,
+          "costDriver": "Each replica bills as a single-AZ instance of the same class and serves read traffic.",
+          "notes": "Read replicas scale read throughput and bill like additional single-AZ instances. The simulation routes a share of reads to them.",
+          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -1585,16 +1656,6 @@
     "elastiCache": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Capacity (RPS)",
-          "type": "number",
-          "unit": "rps",
-          "default": 100,
-          "min": 1,
-          "max": 1000000,
-          "costDriver": "Cache hits per sec."
-        },
-        {
           "key": "latency",
           "label": "Latency (ms)",
           "type": "number",
@@ -1603,6 +1664,17 @@
           "min": 1,
           "max": 100,
           "costDriver": "Sub-millisecond latency."
+        },
+        {
+          "key": "cacheHitRate",
+          "label": "Cache Hit Rate (%)",
+          "type": "number",
+          "unit": "%",
+          "default": 80,
+          "min": 0,
+          "max": 100,
+          "costDriver": "Percent of reads served from memory. Higher hit rate boosts effective capacity and cuts latency.",
+          "notes": "Share of requests answered from cache. Misses fall through to the database behind it — a low hit rate means your DB still takes most of the load."
         }
       ],
       "costParams": [
@@ -1693,16 +1765,6 @@
     },
     "ecs": {
       "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Capacity (RPS)",
-          "type": "number",
-          "unit": "rps",
-          "default": 100,
-          "min": 1,
-          "max": 50000,
-          "costDriver": "Task capacity."
-        },
         {
           "key": "latency",
           "label": "Latency (ms)",
@@ -1805,24 +1867,6 @@
           "notes": "Total hours per month tasks run. 730h = always-on; reduce for batch or off-hours workloads."
         },
         {
-          "key": "os",
-          "label": "Operating System",
-          "type": "enum",
-          "default": "linux",
-          "group": "fargate",
-          "options": [
-            {
-              "value": "linux",
-              "label": "Linux"
-            },
-            {
-              "value": "windows",
-              "label": "Windows Server"
-            }
-          ],
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
-        },
-        {
           "key": "architecture",
           "label": "CPU Architecture",
           "type": "enum",
@@ -1862,14 +1906,6 @@
           "group": "fargate",
           "visibleIf": "config.launchType === 'fargate' || !config.launchType",
           "notes": "Percentage of tasks running on Fargate Spot (interruptible, up to 70% cheaper). Only suitable for fault-tolerant, stateless tasks."
-        },
-        {
-          "key": "publicIp",
-          "label": "Public IP Enabled",
-          "type": "boolean",
-          "default": false,
-          "group": "fargate",
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
         },
         {
           "key": "nodeInstanceType",
@@ -1950,33 +1986,6 @@
           "min": 0,
           "max": 100000,
           "group": "networking"
-        },
-        {
-          "key": "crossAzTraffic",
-          "label": "Cross-AZ Traffic",
-          "type": "number",
-          "unit": "GB",
-          "default": 50,
-          "min": 0,
-          "max": 100000,
-          "group": "networking"
-        },
-        {
-          "key": "loadBalancer",
-          "label": "Load Balancer Enabled",
-          "type": "boolean",
-          "default": true,
-          "group": "networking"
-        },
-        {
-          "key": "cloudWatchLogs",
-          "label": "CloudWatch Logs Ingestion",
-          "type": "number",
-          "unit": "GB",
-          "default": 10,
-          "min": 0,
-          "max": 10000,
-          "group": "observability"
         }
       ],
       "costEvaluation": {
@@ -2007,10 +2016,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 50000,
           "costDriver": "Batch job processing."
@@ -2091,13 +2100,14 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Throughput (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 100000,
-          "costDriver": "Message processing.",
+          "affectsCost": true,
+          "costDriver": "Billed per request: RPS × 2.628 = millions of requests/month. Drives the SQS Requests cost line.",
           "notes": "Message throughput capacity for simulation. Reflects how many messages/sec this queue can handle before producers back off."
         }
       ],
@@ -2118,15 +2128,6 @@
               "label": "FIFO"
             }
           ]
-        },
-        {
-          "key": "requestsM",
-          "label": "Requests (Millions)",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 100000,
-          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -2135,10 +2136,10 @@
           {
             "id": "req",
             "name": "Requests Cost",
-            "formula": "Millions × Price/M",
+            "formula": "(Requests/Second × 2.628) Millions × Price/M",
             "variables": [
               "queueType",
-              "requestsM"
+              "throughput"
             ]
           }
         ]
@@ -2148,32 +2149,34 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Throughput (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 100000,
-          "costDriver": "Publish rate.",
+          "affectsCost": true,
+          "costDriver": "Billed per publish: RPS × 2.628 = millions of publishes/month. Drives the SNS Publish cost line.",
           "notes": "Message publish throughput capacity for simulation."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 30,
+          "min": 1,
+          "max": 10000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Publish-to-delivery latency for push-based fan-out."
         }
       ],
       "costParams": [
         {
-          "key": "publishM",
-          "label": "Publish Reqs (Millions)",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 100000,
-          "group": "compute",
-          "notes": "Millions of messages published to SNS topics monthly. First 1M publishes are free."
-        },
-        {
           "key": "httpM",
           "label": "HTTP Deliveries (Millions)",
           "type": "number",
-          "default": 10,
+          "default": 1,
           "min": 0,
           "max": 100000,
           "group": "compute"
@@ -2222,10 +2225,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Throughput (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 10000,
           "costDriver": "Workflow executions.",
@@ -2264,7 +2267,7 @@
           "key": "expressReqsM",
           "label": "Express Reqs (Millions)",
           "type": "number",
-          "default": 10,
+          "default": 1,
           "min": 0,
           "max": 100000,
           "group": "compute",
@@ -2343,10 +2346,10 @@
           "label": "User Traffic (RPS)",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 1000,
-          "costDriver": "Source of simulation traffic. When Sync RPS is on, this value is pushed to every downstream service's Capacity (RPS).",
+          "costDriver": "Source of simulation traffic. When Sync RPS is on, this value is pushed to every downstream service's Requests/Second.",
           "notes": "Steady-state traffic from your users. Hidden when Variable Traffic is on (replaced by Min/Max RPS range).",
           "visibleIf": "config.variableTraffic !== true"
         },
@@ -2355,7 +2358,7 @@
           "label": "Sync RPS to all connected services",
           "type": "boolean",
           "default": false,
-          "costDriver": "When enabled, every downstream service's Capacity (RPS) is forced to match the user traffic value. Disable to restore each service's original capacity.",
+          "costDriver": "When enabled, every downstream service's Requests/Second is forced to match the user traffic value. Disable to restore each service's original capacity.",
           "notes": "Propagates the user traffic value to the throughput of every service reachable from this client. Original capacities are restored on uncheck."
         },
         {
@@ -2709,6 +2712,25 @@
           "min": 0,
           "max": 100000,
           "group": "networking"
+        },
+        {
+          "key": "os",
+          "label": "Operating System",
+          "type": "enum",
+          "default": "linux",
+          "group": "compute",
+          "options": [
+            {
+              "value": "linux",
+              "label": "Linux"
+            },
+            {
+              "value": "windows",
+              "label": "Windows"
+            }
+          ],
+          "costDriver": "Windows includes the license in the hourly rate — roughly 1.45× the Linux price for general-purpose families.",
+          "notes": "Instance operating system. Windows pricing bundles the OS license, which raises the hourly rate substantially."
         }
       ],
       "costEvaluation": {
@@ -2723,13 +2745,24 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Requests/sec",
+          "label": "Requests/Second",
           "type": "number",
-          "unit": "RPS",
-          "default": 100,
+          "unit": "rps",
+          "default": 50,
           "min": 1,
           "max": 100000,
           "costDriver": "Cluster workloads load."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 30,
+          "min": 1,
+          "max": 10000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Request latency through services running on the cluster."
         }
       ],
       "costParams": [
@@ -2818,24 +2851,6 @@
           "visibleIf": "config.computeType === 'fargate'"
         },
         {
-          "key": "utilization",
-          "label": "Average Pod Utilization (%)",
-          "type": "number",
-          "unit": "%",
-          "default": 100,
-          "min": 1,
-          "max": 100
-        },
-        {
-          "key": "runtimeHours",
-          "label": "Monthly Runtime Hours",
-          "type": "number",
-          "unit": "hrs",
-          "default": 730,
-          "min": 1,
-          "max": 730
-        },
-        {
           "key": "k8sSupport",
           "label": "K8s Version Support",
           "type": "enum",
@@ -2921,60 +2936,6 @@
           "max": 200,
           "group": "fargate",
           "visibleIf": "config.computeType === 'fargate'"
-        },
-        {
-          "key": "loadBalancers",
-          "label": "Load Balancer Count",
-          "type": "number",
-          "unit": "ELB/NLB",
-          "default": 1,
-          "min": 0,
-          "max": 50,
-          "group": "networking"
-        },
-        {
-          "key": "crossAzTraffic",
-          "label": "Cross-AZ Traffic",
-          "type": "number",
-          "unit": "GB",
-          "default": 100,
-          "min": 0,
-          "max": 100000,
-          "group": "networking"
-        },
-        {
-          "key": "natGateway",
-          "label": "NAT Gateway Enabled",
-          "type": "boolean",
-          "default": true,
-          "group": "networking"
-        },
-        {
-          "key": "publicTrafficOut",
-          "label": "Public Traffic Out",
-          "type": "number",
-          "unit": "GB",
-          "default": 100,
-          "min": 0,
-          "max": 100000,
-          "group": "networking"
-        },
-        {
-          "key": "cloudWatchLogs",
-          "label": "CloudWatch Logs Ingestion",
-          "type": "number",
-          "unit": "GB",
-          "default": 20,
-          "min": 0,
-          "max": 10000,
-          "group": "observability"
-        },
-        {
-          "key": "containerInsights",
-          "label": "Container Insights Enabled",
-          "type": "boolean",
-          "default": false,
-          "group": "observability"
         }
       ],
       "costEvaluation": {
@@ -3004,10 +2965,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 100000
         }
@@ -3117,34 +3078,71 @@
       }
     },
     "eventBridge": {
-      "primaryParams": [],
-      "costParams": [
+      "primaryParams": [
         {
-          "key": "eventsM",
-          "label": "Events Published (Millions)",
+          "key": "throughput",
+          "label": "Requests/Second",
           "type": "number",
-          "default": 10,
-          "min": 0,
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
           "max": 100000,
-          "group": "compute"
+          "affectsCost": true,
+          "costDriver": "Billed per event: RPS × 2.628 = millions of events/month. Drives the EventBridge Events cost line.",
+          "notes": "Maximum sustained request rate in the simulation. Default event-bus soft limit is ~10,000 events/s per region."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Default event-bus soft limit is ~10,000 events/s per region."
         }
       ],
+      "costParams": [],
       "costEvaluation": {
         "formula": "eventsCost",
         "components": [
           {
             "id": "events",
             "name": "Events Ingestion",
-            "formula": "eventsM × $1.00/Million",
+            "formula": "(Requests/Second × 2.628) Millions × $1.00/Million",
             "variables": [
-              "monthlyEventsM"
+              "throughput"
             ]
           }
         ]
       }
     },
     "kinesis": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 100000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Effective ceiling is shards × 1,000 records/s — the simulation caps at that."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Effective ceiling is shards × 1,000 records/s — the simulation caps at that."
+        }
+      ],
       "costParams": [
         {
           "key": "shards",
@@ -3197,7 +3195,30 @@
       }
     },
     "msk": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 500000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Aggregate produce rate across brokers. Scale brokers for more throughput."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Aggregate produce rate across brokers. Scale brokers for more throughput."
+        }
+      ],
       "costParams": [
         {
           "key": "brokers",
@@ -3229,7 +3250,7 @@
           "key": "storageGB",
           "label": "Storage per Broker (GB)",
           "type": "number",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 16384,
           "group": "storage"
@@ -3260,7 +3281,30 @@
       }
     },
     "cognito": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 50000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Token issuance/auth flows; default quota is ~120 RPS per user pool for sign-in."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 80,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Token issuance/auth flows; default quota is ~120 RPS per user pool for sign-in."
+        }
+      ],
       "costParams": [
         {
           "key": "mau",
@@ -3296,7 +3340,31 @@
       }
     },
     "waf": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 500000,
+          "affectsCost": true,
+          "costDriver": "Billed per inspected request: RPS × 2.628 = millions of requests/month. Drives the WAF Requests Analyzed cost line.",
+          "notes": "Maximum sustained request rate in the simulation. WAF inspects inline and adds ~1 ms; it rarely bottlenecks before the backend does."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 1,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "WAF inspects inline and adds ~1 ms; it rarely bottlenecks before the backend does."
+        }
+      ],
       "costParams": [
         {
           "key": "acls",
@@ -3314,15 +3382,6 @@
           "default": 5,
           "min": 0,
           "max": 100,
-          "group": "compute"
-        },
-        {
-          "key": "requestsM",
-          "label": "Requests Analyzed (M)",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 100000,
           "group": "compute"
         }
       ],
@@ -3358,7 +3417,30 @@
       }
     },
     "efs": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 500000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. NFS adds 1–3 ms per operation; throughput mode caps aggregate MB/s."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 3,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "NFS adds 1–3 ms per operation; throughput mode caps aggregate MB/s."
+        }
+      ],
       "costParams": [
         {
           "key": "storageClass",
@@ -3412,13 +3494,36 @@
       }
     },
     "athena": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 20,
+          "min": 1,
+          "max": 200,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Concurrent query limit is ~20 by default; queries run for seconds."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 3000,
+          "min": 1,
+          "max": 30000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Concurrent query limit is ~20 by default; queries run for seconds."
+        }
+      ],
       "costParams": [
         {
           "key": "dataTB",
           "label": "Data Scanned (TB)",
           "type": "number",
-          "default": 10,
+          "default": 1,
           "min": 0,
           "max": 10000,
           "group": "compute"
@@ -3445,7 +3550,7 @@
           "key": "secrets",
           "label": "Secret Count",
           "type": "number",
-          "default": 10,
+          "default": 5,
           "min": 1,
           "max": 100000,
           "group": "compute"
@@ -3483,7 +3588,30 @@
       }
     },
     "transitGateway": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 1000000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. TGW forwards at line rate and adds well under 1 ms."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 1,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "TGW forwards at line rate and adds well under 1 ms."
+        }
+      ],
       "costParams": [
         {
           "key": "attachments",
@@ -3527,7 +3655,30 @@
       }
     },
     "directConnect": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 1000000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Capacity is bounded by the port speed you provision."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Capacity is bounded by the port speed you provision."
+        }
+      ],
       "costParams": [
         {
           "key": "speed",
@@ -3554,7 +3705,7 @@
           "key": "dataTransferOut",
           "label": "Data Transfer Out (GB)",
           "type": "number",
-          "default": 1000,
+          "default": 100,
           "min": 0,
           "max": 1000000,
           "group": "networking"
@@ -3583,7 +3734,30 @@
       }
     },
     "globalAccelerator": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 1000000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Anycast edge ingress; typically reduces public-internet latency ~30%."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 1,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Anycast edge ingress; typically reduces public-internet latency ~30%."
+        }
+      ],
       "costParams": [
         {
           "key": "accelerators",
@@ -3598,7 +3772,7 @@
           "key": "dataGB",
           "label": "Data Transfer (GB)",
           "type": "number",
-          "default": 1000,
+          "default": 100,
           "min": 0,
           "max": 100000,
           "group": "networking"
@@ -3671,7 +3845,19 @@
       }
     },
     "openSearch": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 50,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Query latency is typically 10–100 ms; indexing-heavy loads reduce query throughput."
+        }
+      ],
       "costParams": [
         {
           "key": "nodes",
@@ -3738,7 +3924,30 @@
       }
     },
     "redshift": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 500,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Analytic queries run seconds-to-minutes; ~50 concurrent queries per cluster."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 2000,
+          "min": 1,
+          "max": 20000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Analytic queries run seconds-to-minutes; ~50 concurrent queries per cluster."
+        }
+      ],
       "costParams": [
         {
           "key": "type",
@@ -3934,7 +4143,30 @@
       }
     },
     "kinesisFirehose": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 500000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Firehose buffers 60–900 s before delivery — latency here models the buffer window."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 60000,
+          "min": 1,
+          "max": 600000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Firehose buffers 60–900 s before delivery — latency here models the buffer window."
+        }
+      ],
       "costParams": [
         {
           "key": "dataGB",
@@ -3968,7 +4200,30 @@
       }
     },
     "mq": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 100000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. A single mq.m5.large broker sustains roughly 1–5k msg/s depending on persistence."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "A single mq.m5.large broker sustains roughly 1–5k msg/s depending on persistence."
+        }
+      ],
       "costParams": [
         {
           "key": "brokers",
@@ -3995,6 +4250,17 @@
               "label": "mq.m5.large"
             }
           ]
+        },
+        {
+          "key": "storageGB",
+          "label": "Broker Storage (GB)",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 10000,
+          "group": "storage",
+          "costDriver": "ActiveMQ (EFS-backed) storage bills $0.30/GB-month per broker.",
+          "notes": "Message store size per broker. Durable/persistent messaging grows this over time."
         }
       ],
       "costEvaluation": {
@@ -4028,7 +4294,7 @@
           "key": "requestsM",
           "label": "Requests (Millions)",
           "type": "number",
-          "default": 10,
+          "default": 1,
           "min": 0,
           "max": 100000,
           "group": "compute"
@@ -4126,7 +4392,7 @@
           "key": "minutes",
           "label": "Build Minutes",
           "type": "number",
-          "default": 1000,
+          "default": 300,
           "min": 0,
           "max": 1000000,
           "group": "compute"
@@ -4192,7 +4458,30 @@
       }
     },
     "bedrock": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 10000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. LLM inference takes 0.5–5 s; account-level TPM/RPM quotas cap throughput."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 2000,
+          "min": 1,
+          "max": 20000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "LLM inference takes 0.5–5 s; account-level TPM/RPM quotas cap throughput."
+        }
+      ],
       "costParams": [
         {
           "key": "model",
@@ -4259,7 +4548,31 @@
       }
     },
     "sageMaker": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 10000,
+          "affectsCost": true,
+          "costDriver": "For serverless endpoints, billed per invocation: RPS × 2.628 = millions of invocations/month. Drives the SageMaker Serverless Requests cost line.",
+          "notes": "Maximum sustained request rate in the simulation. Real-time inference latency depends on the model; 50–500 ms is typical."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 200,
+          "min": 1,
+          "max": 2000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Real-time inference latency depends on the model; 50–500 ms is typical."
+        }
+      ],
       "costParams": [
         {
           "key": "type",
@@ -4331,16 +4644,6 @@
           "visibleIf": "config.type === 'serverless'"
         },
         {
-          "key": "invocationsM",
-          "label": "Invocations (Millions)",
-          "type": "number",
-          "default": 1,
-          "min": 0,
-          "max": 10000,
-          "group": "compute",
-          "visibleIf": "config.type === 'serverless'"
-        },
-        {
           "key": "trainingHours",
           "label": "Training Hours / Mo",
           "type": "number",
@@ -4367,17 +4670,32 @@
       }
     },
     "appSync": {
-      "primaryParams": [],
-      "costParams": [
+      "primaryParams": [
         {
-          "key": "requestsM",
-          "label": "GraphQL Reqs (Millions)",
+          "key": "throughput",
+          "label": "Requests/Second",
           "type": "number",
-          "default": 10,
-          "min": 0,
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
           "max": 100000,
-          "group": "compute"
+          "affectsCost": true,
+          "costDriver": "Billed per GraphQL request: RPS × 2.628 = millions of requests/month. Drives the AppSync GraphQL Requests cost line.",
+          "notes": "Maximum sustained request rate in the simulation. GraphQL request resolution including resolver overhead."
         },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 30,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "GraphQL request resolution including resolver overhead."
+        }
+      ],
+      "costParams": [
         {
           "key": "dtGB",
           "label": "Data Transfer Out (GB)",
@@ -4411,22 +4729,37 @@
       }
     },
     "iotCore": {
-      "primaryParams": [],
-      "costParams": [
+      "primaryParams": [
         {
-          "key": "messagesM",
-          "label": "Messages (Millions)",
+          "key": "throughput",
+          "label": "Requests/Second",
           "type": "number",
+          "unit": "rps",
           "default": 50,
-          "min": 0,
+          "min": 1,
           "max": 1000000,
-          "group": "compute"
+          "affectsCost": true,
+          "costDriver": "Billed per device message: RPS × 2.628 = millions of messages/month. Drives the IoT Core Messages cost line.",
+          "notes": "Maximum sustained request rate in the simulation. Inbound device messages per second across the fleet."
         },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Inbound device messages per second across the fleet."
+        }
+      ],
+      "costParams": [
         {
           "key": "rulesM",
           "label": "Rules Executed (M)",
           "type": "number",
-          "default": 50,
+          "default": 10,
           "min": 0,
           "max": 1000000,
           "group": "compute"
@@ -4492,6 +4825,33 @@
           "min": 0,
           "max": 10000,
           "group": "compute"
+        },
+        {
+          "key": "apiType",
+          "label": "API Operation",
+          "type": "enum",
+          "default": "detect",
+          "options": [
+            {
+              "value": "detect",
+              "label": "Detect Text ($1.50/1k)"
+            },
+            {
+              "value": "tables",
+              "label": "Analyze: Tables ($15/1k)"
+            },
+            {
+              "value": "forms",
+              "label": "Analyze: Forms ($50/1k)"
+            },
+            {
+              "value": "formsTables",
+              "label": "Analyze: Forms + Tables ($65/1k)"
+            }
+          ],
+          "costDriver": "Operation choice spans a 40× price range: DetectText $1.50/1k pages vs Forms+Tables $65/1k.",
+          "notes": "Which Textract API you call. Plain OCR (DetectText) is 40× cheaper than full forms + tables analysis — pick deliberately.",
+          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -4523,7 +4883,7 @@
           "key": "minutesHD",
           "label": "HD Output Minutes",
           "type": "number",
-          "default": 1000,
+          "default": 100,
           "min": 0,
           "max": 1000000,
           "group": "compute"
@@ -4581,7 +4941,7 @@
           "key": "warmGB",
           "label": "Warm Backup (GB)",
           "type": "number",
-          "default": 100,
+          "default": 20,
           "min": 0,
           "max": 100000,
           "group": "storage"
@@ -4619,7 +4979,41 @@
       }
     },
     "appRunner": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 50000,
+          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
+          "notes": "Maximum sustained request rate in the simulation. Effective ceiling is instances × concurrency per instance — the simulation caps at that."
+        },
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 30,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Effective ceiling is instances × concurrency per instance — the simulation caps at that."
+        },
+        {
+          "key": "concurrencyPerInstance",
+          "label": "Concurrency / Instance",
+          "type": "number",
+          "unit": "count",
+          "default": 100,
+          "min": 1,
+          "max": 200,
+          "costDriver": "App Runner autoscales when concurrent requests per instance exceed this (default 100).",
+          "notes": "Concurrent requests one instance handles before App Runner scales out. Effective RPS ceiling = instances × concurrency ÷ (latency in seconds)."
+        }
+      ],
       "costParams": [
         {
           "key": "instances",
@@ -4646,6 +5040,17 @@
           "default": 2,
           "min": 2,
           "max": 12,
+          "group": "compute"
+        },
+        {
+          "key": "activeHoursPercent",
+          "label": "Active Time (%)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100,
+          "costDriver": "Idle (provisioned) instances bill memory only; active instances bill vCPU + memory. This split is App Runner’s whole pricing model.",
+          "notes": "Share of the month instances actively serve requests. Idle provisioned instances cost only the memory rate.",
           "group": "compute"
         }
       ],
@@ -4822,6 +5227,25 @@
           "min": 0,
           "max": 100000,
           "group": "networking"
+        },
+        {
+          "key": "os",
+          "label": "Operating System",
+          "type": "enum",
+          "default": "linux",
+          "group": "compute",
+          "options": [
+            {
+              "value": "linux",
+              "label": "Linux"
+            },
+            {
+              "value": "windows",
+              "label": "Windows"
+            }
+          ],
+          "costDriver": "Windows includes the license in the hourly rate — roughly 1.45× the Linux price for general-purpose families.",
+          "notes": "Instance operating system. Windows pricing bundles the OS license, which raises the hourly rate substantially."
         }
       ],
       "costEvaluation": {
@@ -4877,7 +5301,7 @@
           "key": "storageGB",
           "label": "SSD Storage (GB)",
           "type": "number",
-          "default": 500,
+          "default": 100,
           "min": 32,
           "max": 65536,
           "group": "storage"
@@ -4971,10 +5395,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 1000,
           "costDriver": "Management of pull requests and API throughput."
@@ -4989,6 +5413,17 @@
           "min": 0,
           "max": 10000,
           "group": "storage"
+        },
+        {
+          "key": "dataTransferOutGB",
+          "label": "Data Transfer Out (GB/mo)",
+          "type": "number",
+          "default": 50,
+          "min": 0,
+          "max": 100000,
+          "group": "networking",
+          "costDriver": "Image pulls to the internet or across regions bill ~$0.09/GB — often a bigger line than storage.",
+          "notes": "Image pull traffic leaving AWS (CI runners, edge fleets, cross-region pulls). In-region pulls to EC2/Fargate are free."
         }
       ],
       "costEvaluation": {
@@ -5020,10 +5455,10 @@
       "primaryParams": [
         {
           "key": "throughput",
-          "label": "Capacity (RPS)",
+          "label": "Requests/Second",
           "type": "number",
           "unit": "rps",
-          "default": 100,
+          "default": 50,
           "min": 1,
           "max": 10000,
           "costDriver": "Private endpoint connection throughput limit."

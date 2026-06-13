@@ -6,6 +6,7 @@ import { AwsCatalogService } from '../../core/services/aws-catalog.service';
 import { AwsServiceDefinition, AwsServiceType } from '../../core/models/architecture.model';
 import awsServicesConfig from '../../core/config/aws-services.json';
 import serviceDocsData from '../../core/data/service-documentation.json';
+import serviceBottleneckData from '../../core/data/service-bottleneck.json';
 
 interface DocArticle {
   id: string;
@@ -17,6 +18,15 @@ interface DocArticle {
   tips?: string[];
 }
 
+interface ReleaseNote {
+  version: string;
+  date?: string;
+  current?: boolean;
+  title: string;
+  summary: string;
+  items: { icon: string; text: string }[];
+}
+
 interface ServiceDoc {
   whyNeeded: string;
   beginnerExplanation: string;
@@ -26,6 +36,7 @@ interface ServiceDoc {
   keyCapabilities: string[];
   useCases: string[];
   illustrationSvg: SafeHtml;
+  bottleneck: { kind: string; failureMode: string; capacityDriver: string; summary: string } | null;
 }
 
 @Component({
@@ -47,7 +58,55 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     { id: 'compute', name: 'Compute', icon: 'fas fa-server' },
     { id: 'storage', name: 'Storage & DB', icon: 'fas fa-database' },
     { id: 'integration', name: 'Integration', icon: 'fas fa-network-wired' },
-    { id: 'cost', name: 'Cost Dynamics', icon: 'fas fa-coins' }
+    { id: 'cost', name: 'Cost Dynamics', icon: 'fas fa-coins' },
+    { id: 'release-notes', name: 'Release Notes', icon: 'fas fa-rocket' }
+  ];
+
+  // Version history. v1.1 / v1.2 mirror the README changelog; v1.0 is the
+  // foundational release derived from the README's core "Key Highlights".
+  readonly releaseNotes: ReleaseNote[] = [
+    {
+      version: '1.2',
+      current: true,
+      title: 'Playground & Real-Time Cost',
+      summary: 'A developer- and architect-focused playground with 60+ services and live AWS pricing.',
+      items: [
+        { icon: 'fas fa-gamepad', text: 'Developer- and architect-focused playground' },
+        { icon: 'fas fa-layer-group', text: 'Introduced 60+ AWS services' },
+        { icon: 'fas fa-book-open', text: 'In-depth documentation for every service and the app itself' },
+        { icon: 'fas fa-clone', text: 'Create multiple canvases in a single playground' },
+        { icon: 'fas fa-sack-dollar', text: 'Real-time, accurate cost estimation via the AWS SDK' },
+        { icon: 'fas fa-code-branch', text: 'Tune traffic distribution between connected nodes' },
+        { icon: 'fas fa-wave-square', text: 'Realistic user behavior with variable traffic' },
+        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' }
+      ]
+    },
+    {
+      version: '1.1',
+      date: '2026-05-21',
+      title: 'Cost Transparency',
+      summary: 'Deeper, more transparent cost modeling and a responsive stats layout.',
+      items: [
+        { icon: 'fas fa-sliders', text: 'Added in-depth cost calculation parameters' },
+        { icon: 'fas fa-magnifying-glass-dollar', text: 'Added cost calculation transparency' },
+        { icon: 'fas fa-mobile-screen', text: 'Compact, responsive run stats for all screen sizes' },
+        { icon: 'fas fa-circle-info', text: 'Restructured and expanded the About section' },
+        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' }
+      ]
+    },
+    {
+      version: '1.0',
+      date: 'Initial release',
+      title: 'Foundation',
+      summary: 'The first release — drag-and-drop design backed by a deterministic traffic & cost engine.',
+      items: [
+        { icon: 'fas fa-diagram-project', text: 'Drag-and-drop AWS architecture design on a live canvas' },
+        { icon: 'fas fa-bolt', text: 'Real-time deterministic traffic simulation' },
+        { icon: 'fas fa-gauge-high', text: 'Per-node latency, throughput, error-rate & utilization metrics' },
+        { icon: 'fas fa-coins', text: 'Monthly cost estimation from simulated load' },
+        { icon: 'fas fa-circle-check', text: 'Built-in AWS connectivity validation' }
+      ]
+    }
   ];
 
   readonly articles: DocArticle[] = [
@@ -137,6 +196,32 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         '<li><span class="text-purple"><strong>Architect Mode:</strong></span> Focused on professional production-scale design. It exposes 65+ AWS services, adds deep configuration fields (LCU factors, compute classes, EBS types), and opens full cost breakdowns.</li>' +
         '</ul>',
         'Toggle modes on the launch dashboard. Your progress is synced and saved in your browser storage so you never lose your designs.'
+      ]
+    },
+    {
+      id: 'gs-hotkeys',
+      title: 'Keyboard Shortcuts',
+      category: 'start',
+      icon: 'fas fa-keyboard',
+      summary: 'Work faster on the canvas with undo/redo, quick save, multi-select, and deletion hotkeys.',
+      content: [
+        'The simulator canvas supports keyboard shortcuts for the most common actions. On macOS, use <code>⌘ Cmd</code> wherever <code>Ctrl</code> is listed.',
+        '<table class="hotkey-table">' +
+        '<thead><tr><th>Shortcut</th><th>Action</th></tr></thead>' +
+        '<tbody>' +
+        '<tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo the last change (add, delete, connect, move, rename, or config edit)</td></tr>' +
+        '<tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd> <span class="hk-or">or</span> <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo the change you just undid</td></tr>' +
+        '<tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save the current architecture to browser storage</td></tr>' +
+        '<tr><td><kbd>Delete</kbd> <span class="hk-or">or</span> <kbd>Backspace</kbd></td><td>Delete the selected service(s), connection(s), or note(s)</td></tr>' +
+        '<tr><td><kbd>Ctrl</kbd> / <kbd>Shift</kbd> + drag</td><td>Draw a selection box to multi-select nodes and links</td></tr>' +
+        '<tr><td>Scroll / pinch</td><td>Zoom the canvas in and out</td></tr>' +
+        '<tr><td>Double-click a canvas tab</td><td>Rename that canvas; <kbd>Enter</kbd> confirms, <kbd>Esc</kbd> cancels</td></tr>' +
+        '</tbody></table>',
+        'Undo history holds the last 60 changes per canvas and is cleared when you switch tabs or load a different project. Rapid edits — like dragging a slider or moving a node — collapse into a single undo step. Undo and redo are paused while a simulation is running; stop the run first.'
+      ],
+      tips: [
+        'While typing in a text field or note, <kbd>Ctrl</kbd> + <kbd>Z</kbd> performs normal text undo instead of canvas undo.',
+        'The circular undo/redo arrows in the top toolbar do the same thing and show when actions are available.'
       ]
     },
 
@@ -323,6 +408,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   ];
 
   navScrolled = false;
+  showBackToTop = false;
   isManualScrolling = false;
   indicatorStyle: any = { opacity: '0' };
 
@@ -3724,6 +3810,12 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
 
     const rawSvg = custom?.illustrationSvg || this.buildServiceIllustration(defaultInfo, connectedTargets);
 
+    // Bottleneck model (what limits this service and whether it throttles or fails).
+    const bnRaw = (serviceBottleneckData as any)[type];
+    const bottleneck = bnRaw && bnRaw.summary
+      ? { kind: bnRaw.kind, failureMode: bnRaw.failureMode, capacityDriver: bnRaw.capacityDriver || '', summary: bnRaw.summary }
+      : null;
+
     return {
       whyNeeded: docData.overview || defaultInfo.description,
       beginnerExplanation: docData.conceptualModel || '',
@@ -3732,7 +3824,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       practicalExample: docData.practicalScenario || '',
       keyCapabilities: docData.keyCharacteristics || [],
       useCases: docData.commonIntegrationPatterns || [],
-      illustrationSvg: this.sanitizer.bypassSecurityTrustHtml(rawSvg)
+      illustrationSvg: this.sanitizer.bypassSecurityTrustHtml(rawSvg),
+      bottleneck
     };
   }
 
@@ -3913,8 +4006,24 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       if (cat.id === 'services') {
         return this.filteredServices.length > 0;
       }
+      if (cat.id === 'release-notes') {
+        return this.filteredReleaseNotes.length > 0;
+      }
       return this.getArticlesByCategory(cat.id).length > 0;
     });
+  }
+
+  get filteredReleaseNotes(): ReleaseNote[] {
+    const query = this.searchQuery.trim().toLowerCase();
+    if (!query) {
+      return this.releaseNotes;
+    }
+    return this.releaseNotes.filter(rel =>
+      rel.version.includes(query) ||
+      rel.title.toLowerCase().includes(query) ||
+      rel.summary.toLowerCase().includes(query) ||
+      rel.items.some(i => i.text.toLowerCase().includes(query))
+    );
   }
 
   get filteredServices(): AwsServiceDefinition[] {
@@ -3979,6 +4088,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   onScroll(event: Event): void {
     const shell = event.target as HTMLElement;
     this.navScrolled = shell.scrollTop > 60;
+    this.showBackToTop = shell.scrollTop > 400;
 
     if (this.isManualScrolling) return;
 
@@ -4043,6 +4153,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
 
   backToServices(): void {
     this.selectCategory('services');
+  }
+
+  scrollToTop(): void {
+    const shell = this.el.nativeElement.querySelector('.docs-shell');
+    shell?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   goBack(): void {

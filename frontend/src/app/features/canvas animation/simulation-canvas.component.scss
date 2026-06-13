@@ -159,6 +159,7 @@ $glass-border: rgba(255, 255, 255, 0.08);
 
 .url-bar {
   flex: 1;
+  min-width: 0;
   max-width: 460px;
   margin: 0 auto;
   background: #ffffff;
@@ -182,6 +183,10 @@ $glass-border: rgba(255, 255, 255, 0.08);
   font-family: "JetBrains Mono", "Fira Code", monospace;
   color: #374151;
   letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .chrome-actions-spacer {
@@ -850,9 +855,30 @@ $glass-border: rgba(255, 255, 255, 0.08);
   }
 }
 
+// Disable 3D tilt on touch devices — mousemove never fires there,
+// and a static perspective transform just blurs text on some GPUs.
+@media (hover: none) {
+  .browser-chrome {
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
 @media (max-width: 768px) {
   .canvas-wrapper {
     height: clamp(380px, 45vh, 480px);
+  }
+
+  .chrome-nav-row {
+    padding: 0 10px;
+  }
+
+  .nav-arrows {
+    margin-left: 8px;
+  }
+
+  .chrome-actions-spacer {
+    width: 0;
   }
 
   .sim-node {
@@ -901,5 +927,52 @@ $glass-border: rgba(255, 255, 255, 0.08);
 
   .status-badge-text {
     font-size: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .browser-chrome {
+    border-radius: 10px;
+  }
+
+  .canvas-wrapper {
+    height: clamp(320px, 80vw, 400px);
+  }
+
+  .sim-node {
+    width: 76px;
+
+    .node-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+    }
+
+    .custom-vector-container {
+      width: 28px;
+      height: 28px;
+    }
+
+    .node-label h3 {
+      font-size: 9px;
+    }
+
+    .node-label p {
+      font-size: 7px;
+      letter-spacing: 0.3px;
+    }
+
+    .node-badge {
+      display: none;
+    }
+  }
+
+  .url-bar {
+    padding: 3px 8px;
+  }
+
+  .url-text {
+    font-size: 9px;
   }
 }

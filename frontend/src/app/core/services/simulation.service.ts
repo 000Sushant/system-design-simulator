@@ -2,6 +2,14 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, interval, Subscription } from 'rxjs';
 import { ArchitectureConnection, ArchitectureNode, DataPacket, HealthStatus, SimulationMode } from '../models/architecture.model';
 import { ArchitectureFactoryService } from './architecture-factory.service';
+import bottleneckData from '../data/service-bottleneck.json';
+
+/** Per-service bottleneck descriptor loaded from service-bottleneck.json. */
+interface BottleneckSpec {
+  kind: string;
+  failureMode: 'throttle' | 'offline' | 'none';
+  offlineAtRatio?: number;
+}
 
 export interface SimulationSnapshot {
   nodes: ArchitectureNode[];
@@ -35,6 +43,22 @@ export class SimulationService {
   /** Per-node running totals across the whole run, used to show averages on stop */
   private runStats = new Map<string, { throughput: number; latency: number; cpu: number; memory: number; received: number; count: number }>();
 
+  // ─── Per-class bottleneck model ───────────────────────────────────────────
+  /** Bottleneck spec per service type (failure mode + capacity class). */
+  private static readonly bottleneckByType = bottleneckData as unknown as Record<string, BottleneckSpec>;
+  /** Consecutive ticks each node has spent past its offline threshold. */
+  private overloadStreak = new Map<string, number>();
+  /** An "offline"-class service must stay overloaded this many ticks (~1.1s) before it actually fails — models sustained pressure, not a momentary spike. */
+  private static readonly OFFLINE_SUSTAIN_TICKS = 6;
+  /** Compute (ECS/EC2-style): concurrent requests one vCPU can carry. */
+  private static readonly CONC_PER_VCPU = 10;
+  /** Cache (ElastiCache): sustained ops/s a single node absorbs before saturating. */
+  private static readonly CACHE_OPS_PER_NODE = 40000;
+  /** Search (OpenSearch): concurrent queries a single data node can run. */
+  private static readonly SEARCH_CONC_PER_NODE = 6;
+  /** Database (RDS): true parallel queries are bounded by cores, not max_connections. */
+  private static readonly DB_PARALLEL_QUERIES = 64;
+
   constructor(private readonly factory: ArchitectureFactoryService) {}
 
   start(nodes: ArchitectureNode[], connections: ArchitectureConnection[]): void {
@@ -50,6 +74,7 @@ export class SimulationService {
     this.packets = [];
     this.tick = 0;
     this.runStats.clear();
+    this.overloadStreak.clear();
     // Reset variable-traffic running stats on each client
     for (const n of this.nodes) {
       if (n.type === 'client' && n.config['variableTraffic']) {
@@ -128,6 +153,7 @@ export class SimulationService {
     this.writeVariableTrafficMean();
     this.packets = [];
     this.tick = 0;
+    this.overloadStreak.clear();
     // Preserve run state: write the per-node averages of the whole execution
     // into the metrics so the tiles show what the run looked like on average.
     const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -261,6 +287,64 @@ export class SimulationService {
         baseCapacity = Math.min(baseCapacity, concurrencyCap);
       }
 
+      // Provisioned-capacity ceilings — under-provisioning shows up as throttling/queueing
+      if (node.type === 'dynamoDb' && node.config['capacityMode'] === 'provisioned') {
+        // A read consumes ceil(item/4KB) RCUs, a write ceil(item/1KB) WCUs
+        const itemKB = Math.max(1, Number(node.config['itemSizeKB']) || 1);
+        const maxReads = (Number(node.config['rcu']) || 100) / Math.ceil(itemKB / 4);
+        const maxWrites = (Number(node.config['wcu']) || 100) / Math.ceil(itemKB);
+        baseCapacity = Math.min(baseCapacity, maxReads + maxWrites);
+      }
+      if (node.type === 'kinesis') {
+        // Hard per-shard ingest limit: 1,000 records/s (or 1 MB/s) per shard
+        baseCapacity = Math.min(baseCapacity, (Number(node.config['shards']) || 2) * 1000);
+      }
+      if (node.type === 'sqs' && node.config['type'] === 'fifo') {
+        // FIFO queues: 300 msg/s, or 3,000 msg/s with batching
+        baseCapacity = Math.min(baseCapacity, (node.config.batchSize || 10) > 1 ? 3000 : 300);
+      }
+      if (node.type === 'appRunner') {
+        // Effective RPS = instances × concurrent requests per instance ÷ request duration
+        const instances = Number(node.config['instances']) || 2;
+        const conc = Number(node.config['concurrencyPerInstance']) || 100;
+        const durationSec = Math.max(0.001, (node.config.latency || 30) / 1000);
+        baseCapacity = Math.min(baseCapacity, (instances * conc) / durationSec);
+      }
+      if (node.type === 'rds') {
+        // Connection-pool + per-query CPU ceiling. True parallelism is bounded by
+        // CPU cores, not raw max_connections — a DB can't actually run 1,000
+        // queries at once — so cap effective parallel queries. Read replicas add
+        // read capacity. Sustained overload here exhausts the pool → 503 → offline.
+        const replicaBoost = 1 + (Number(node.config['readReplicas']) || 0) * 0.9;
+        const maxConn = Number(node.config['maxConnections']) || 1000;
+        const parallel = Math.min(maxConn, SimulationService.DB_PARALLEL_QUERIES * replicaBoost);
+        const durationSec = Math.max(0.001, (node.config.latency || 10) / 1000);
+        // Capacity is the connection/CPU ceiling itself (RDS has no request-rate knob).
+        baseCapacity = parallel / durationSec;
+      }
+      // Compute-bound containers: capacity = tasks × vCPU concurrency ÷ request time.
+      if (node.type === 'ecs') {
+        const tasks = Number(node.config['tasks']) || 2;
+        const vcpu = Number(node.config['vCPU']) || 0.5;
+        const durationSec = Math.max(0.001, (node.config.latency || 30) / 1000);
+        baseCapacity = (tasks * vcpu * SimulationService.CONC_PER_VCPU) / durationSec;
+      }
+      // In-memory cache: very high per-node op rate; fails on node saturation, not RPS.
+      if (node.type === 'elastiCache') {
+        const cacheNodes = Number(node.config['count']) || 2;
+        baseCapacity = cacheNodes * SimulationService.CACHE_OPS_PER_NODE;
+      }
+      // Search cluster: bound by per-data-node query concurrency ÷ query time.
+      if (node.type === 'openSearch') {
+        const dataNodes = Number(node.config['nodes']) || 2;
+        const durationSec = Math.max(0.001, (node.config.latency || 50) / 1000);
+        baseCapacity = (dataNodes * SimulationService.SEARCH_CONC_PER_NODE) / durationSec;
+      }
+      // Object storage: effectively unbounded request capacity — never the bottleneck.
+      if (node.type === 's3') {
+        baseCapacity = Math.max(baseCapacity, 1e9);
+      }
+
       const capacity = isOffline ? 0 : Math.max(1, node.type === 'elb' ? baseCapacity * lbCapacityMult : baseCapacity);
 
       const totalDemand = Math.max(0, baseRate + node.metrics.queueSize);
@@ -308,7 +392,7 @@ export class SimulationService {
       };
 
       if (!isOffline) {
-        node.status = this.statusFor(node.metrics.cpuPressure, node.metrics.errorRate, overloadRatio);
+        node.status = this.resolveStatus(node, overloadRatio);
       }
 
       const outputs = outgoingByNode.get(node.id) ?? [];
@@ -322,21 +406,27 @@ export class SimulationService {
         this.packets = this.packets.filter(p => !offlineConnIds.has(p.connectionId));
       }
       if (outputs.length > 0 && processed > 0 && node.status !== 'offline') {
-        const fanoutMultiplier = ['sns', 'stepFunctions', 'apiGateway', 'eventBridge', 'kinesis', 'msk', 'mq', 'appSync', 'transitGateway'].includes(node.type) ? 1 : outputs.length;
-        
         let processedForOutput = processed;
         if (node.type === 'apiGateway' && node.config['type'] === 'rest' && node.config['cacheGB'] && node.config['cacheGB'] !== '0') {
           const hitRate = node.config.cacheHitRate || 0;
           processedForOutput = processed * (1 - hitRate / 100);
+        } else if (node.type === 'elastiCache' || node.type === 'cloudfront') {
+          // Cache hits are answered here — only misses continue to the origin/database
+          const hitRate = node.config.cacheHitRate || 0;
+          processedForOutput = processed * (1 - hitRate / 100);
         }
 
-        const perConnection = processedForOutput / Math.max(1, fanoutMultiplier);
+        // Each outgoing edge carries an independent share of this node's output,
+        // controlled by the connection's trafficWeight (% , default 100). This lets a
+        // fan-out node send, say, 100% to logging, 80% to a DB and 20% to storage —
+        // instead of the old behaviour of splitting output equally across all edges.
         for (const connection of outputs) {
           const target = this.nodes.find((candidate) => candidate.id === connection.targetNodeId);
           if (!target) {
             continue;
           }
-          const load = Math.round(perConnection * (connection.type === 'cdn' ? 0.72 : 1) * 100) / 100;
+          const weight = connection.trafficWeight ?? 100;
+          const load = Math.round(processedForOutput * (weight / 100) * (connection.type === 'cdn' ? 0.72 : 1) * 100) / 100;
           incoming.set(target.id, (incoming.get(target.id) ?? 0) + load);
           connection.traffic = {
             requestsPerSecond: load,
@@ -497,6 +587,40 @@ export class SimulationService {
       }
     }
     return visited;
+  }
+
+  /**
+   * Resolve a node's health from its raw metrics AND its bottleneck class.
+   *
+   * - Untagged services keep the legacy behaviour (can go offline via cpu/error).
+   * - `throttle` / `none` services NEVER go offline: past capacity they shed load
+   *   (429/503 that recovers) and are clamped to a stressed-but-alive status.
+   * - `offline` services (compute / connections) only fail after sustained overload
+   *   beyond their offlineAtRatio — modelling CPU / connection-pool exhaustion.
+   */
+  private resolveStatus(node: ArchitectureNode, overloadRatio: number): HealthStatus {
+    const base = this.statusFor(node.metrics.cpuPressure, node.metrics.errorRate, overloadRatio);
+    const spec = SimulationService.bottleneckByType[node.type];
+    if (!spec) {
+      return base;
+    }
+
+    if (spec.failureMode === 'offline') {
+      const ratio = spec.offlineAtRatio ?? 1.5;
+      const streak = (overloadRatio > ratio ? (this.overloadStreak.get(node.id) ?? 0) + 1 : 0);
+      this.overloadStreak.set(node.id, streak);
+      if (streak >= SimulationService.OFFLINE_SUSTAIN_TICKS) {
+        return 'offline';
+      }
+      // Overloaded but not yet collapsed: surface stress without going dark.
+      return base === 'offline' ? 'failing' : base;
+    }
+
+    // throttle / none: reject excess but stay up. Clamp away from terminal states.
+    if (spec.failureMode === 'none') {
+      return base === 'offline' || base === 'failing' ? 'busy' : base;
+    }
+    return base === 'offline' || base === 'failing' ? 'overloaded' : base;
   }
 
   private statusFor(cpuPressure: number, errorRate: number, overloadRatio: number): HealthStatus {

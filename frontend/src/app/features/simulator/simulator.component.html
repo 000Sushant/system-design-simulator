@@ -30,6 +30,15 @@
           <i class="fas fa-search-plus"></i>
         </button>
         <span class="divider"></span>
+        <button type="button" class="icon-button" (mousemove)="onMouseMove($event)" title="Undo (Ctrl+Z)"
+          [disabled]="!canUndo" (click)="undo()">
+          <i class="fas fa-rotate-left"></i>
+        </button>
+        <button type="button" class="icon-button" (mousemove)="onMouseMove($event)" title="Redo (Ctrl+Y)"
+          [disabled]="!canRedo" (click)="redo()">
+          <i class="fas fa-rotate-right"></i>
+        </button>
+        <span class="divider"></span>
         <button type="button" class="action-btn" (click)="loadPreset()">
           <i class="fas fa-folder-open"></i> Preset
         </button>
@@ -293,13 +302,13 @@
 
           <!-- SUMMARY VIEW (List of errors when nothing selected) -->
           <div *ngIf="!selectedNode" class="error-pills">
-            <div *ngFor="let node of erroredNodes" class="error-pill" (click)="selectNode(node.id)">
+            <div *ngFor="let node of erroredNodes; trackBy: trackByNodeId" class="error-pill" (click)="selectNode(node.id)">
               <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
               <span class="pill-name">{{ node.name }}</span>
               <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
             </div>
 
-            <div *ngFor="let node of warnedNodes" class="error-pill warning" (click)="selectNode(node.id)">
+            <div *ngFor="let node of warnedNodes; trackBy: trackByNodeId" class="error-pill warning" (click)="selectNode(node.id)">
               <span class="pill-icon"><i class="fas fa-exclamation-triangle"></i></span>
               <span class="pill-name">{{ node.name }}</span>
               <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
@@ -375,6 +384,28 @@
             (click)="deleteSelected()">
             Delete this service and links
           </button>
+
+          <!-- Traffic Management: per-edge fan-out shares (only when the node fans out) -->
+          <div class="traffic-mgmt" *ngIf="selectedOutgoingConnections.length >= 2">
+            <div class="traffic-heading">
+              <i class="fas fa-code-branch"></i>
+              <span>Traffic Split</span>
+              <small>{{ selectedOutgoingConnections.length }} targets</small>
+            </div>
+            <p class="traffic-hint">Share of this node's output sent to each downstream — set per edge.</p>
+            <div class="field-list traffic-rows">
+              <label *ngFor="let item of selectedOutgoingConnections; trackBy: trackByConnId" (mousemove)="onMouseMove($event)">
+                <span class="traffic-target" [title]="item.targetName">{{ item.targetName }}</span>
+                <div class="number-control pct-control">
+                  <input type="number" min="0" max="100" step="5"
+                    [ngModel]="item.connection.trafficWeight ?? 100"
+                    (ngModelChange)="updateConnectionWeight(item.connection.id, $event)" />
+                  <span class="pct-suffix">%</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <ng-container *ngIf="!hasJsonModel">
             <div class="field-list select-list" *ngIf="selectedSelectFields.length">
               <label *ngFor="let field of selectedSelectFields" (mousemove)="onMouseMove($event)">
@@ -509,7 +540,7 @@
                   <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
                 </div>
                 <select *ngIf="field.type === 'enum'" [ngModel]="node.config[field.key] || field.default"
-                  (ngModelChange)="updateSelectConfig(field.key, $event)">
+                  (ngModelChange)="updateSelectConfig(field.key, $event)" [disabled]="field.readonly">
                   <ng-container *ngIf="field.options?.length; else costEnumFallback">
                     <option *ngFor="let opt of field.options" [value]="opt.value">
                       {{ opt.label }}
@@ -863,8 +894,8 @@
   <!-- Mobile/Tablet Warning Overlay -->
   <div class="mobile-warning-overlay" *ngIf="showMobileWarning" [class.dismissed]="mobileWarningDismissed">
     <div class="warning-glass-card">
-      <div class="warning-icon-glow">
-        <i class="fas fa-expand-alt"></i>
+      <div class="warning-mascot" aria-hidden="true">
+        <img src="assets/mascot/cat-expand.svg" alt="" />
       </div>
       <h2>Optimize Your Experience</h2>
       <p>
@@ -905,9 +936,9 @@
       <!-- Glow ring -->
       <div class="unsupported-glow"></div>
 
-      <!-- Icon -->
-      <div class="unsupported-icon-ring">
-        <i class="fas fa-map-marker-alt"></i>
+      <!-- Mascot -->
+      <div class="unsupported-mascot" aria-hidden="true">
+        <img src="assets/mascot/cat.svg" alt="" />
       </div>
 
       <!-- Body -->
