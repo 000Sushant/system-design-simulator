@@ -171,6 +171,8 @@ Obsessed with building high-performance, developer-centric tooling. Feel free to
 - Real-time and accurate cost modeling using live-fetched AWS pricing rates.
 - Multi-canvas configuration support.
 - Realistic variable traffic modeling (min-max traffic bounds).
+- **Canvas Keyboard Hotkeys**: Added intuitive keyboard shortcuts to accelerate design iteration (e.g., `Ctrl+Z` / `Ctrl+Y` or `Ctrl+Shift+Z` for Undo/Redo, `Ctrl+S` to save, and `Delete` / `Backspace` to remove selected canvas elements).
+- **Realistic Bottleneck Modeling**: Shifted simulation bottleneck checks from raw Request-per-Second (RPS) limits to multi-factor resource modeling (evaluating queue capacities, CPU pressure, and compute limits) with temporary load-shedding/throttling and sustained-pressure server collapses.
 
 ### Version 1.1
 - Integrated regional pricing calculations.

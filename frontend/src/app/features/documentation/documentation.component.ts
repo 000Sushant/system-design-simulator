@@ -78,6 +78,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         { icon: 'fas fa-sack-dollar', text: 'Real-time, accurate cost estimation via the AWS SDK' },
         { icon: 'fas fa-code-branch', text: 'Tune traffic distribution between connected nodes' },
         { icon: 'fas fa-wave-square', text: 'Realistic user behavior with variable traffic' },
+        { icon: 'fas fa-keyboard', text: 'Canvas keyboard hotkeys (e.g., Ctrl+Z/Ctrl+Y for Undo/Redo, Ctrl+S for Save, and Backspace/Delete to remove elements)' },
+        { icon: 'fas fa-triangle-exclamation', text: 'Realistic multi-factor bottleneck simulation (evaluating queue capacities, CPU pressure, and compute limits) with load-shedding and server collapse' },
         { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' }
       ]
     },
@@ -257,6 +259,22 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         '<li><span class="text-emerald">Success Logs (Green):</span> Indicate healthy <code>HTTP 200</code> transactions reaching databases or consumers.</li>' +
         '<li><span class="text-orange">Error Logs (Red):</span> Display overload failures, connection timeouts, or service integration faults.</li>' +
         '<li><span class="text-purple">Telemetry Feed (Top-Right):</span> Acts as your real-time cloud dashboard. It charts Latency, Requests Per Second (RPS), and total Error count across your cloud blueprint.</li>' +
+        '</ul>'
+      ]
+    },
+    {
+      id: 'sim-bottlenecks',
+      title: 'Bottlenecks & Collapses',
+      category: 'sim',
+      icon: 'fas fa-skull-crossbones',
+      summary: 'Understand the multi-factor bottleneck simulation, load shedding, and failure modes.',
+      content: [
+        'Rather than checking raw Requests-per-Second (RPS) thresholds, Sr. Architect simulates resource bottlenecks based on actual hardware limits and architecture behavior:',
+        '<ul>' +
+        '<li><span class="text-purple"><strong>Multi-Factor Saturation:</strong></span> Nodes saturate when concurrent query queues, CPU pressure, or physical limits (like DB parallel queries, EC2 vCPU threads, or Lambda reserved concurrency) are exceeded.</li>' +
+        '<li><span class="text-orange"><strong>Load Shedding & Throttling:</strong></span> Fully managed or serverless services (such as API Gateway, SQS, or DynamoDB) shed excess load. They return transient <code>HTTP 429 Too Many Requests</code> or <code>503 Service Unavailable</code> errors but remain online and recover immediately when traffic drops.</li>' +
+        '<li><span class="text-red"><strong>Hard Collapse (Offline States):</strong></span> Compute-bound resources (like EC2 instances, ECS container tasks, or RDS database connections) model physical failure. If sustained overload exceeds 150% capacity for over 1 second (6 simulation ticks), the node collapses into a terminal <code>offline</code> state (e.g. CPU exhaustion, connection pool exhaustion) and must be stopped and restarted.</li>' +
+        '<li><span class="text-blue"><strong>Cascading Failures:</strong></span> When an upstream service goes offline or is overloaded, its failed state propagates downstream. Any dependent microservices will lose incoming traffic, visualizing a realistic system-wide collapse.</li>' +
         '</ul>'
       ]
     },

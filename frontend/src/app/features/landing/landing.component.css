@@ -296,6 +296,25 @@
   font-weight: 900;
 }
 
+.brand-mark span {
+  font-family: 'Audiowide', sans-serif;
+  font-weight: 400;
+  color: #111827;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.brand-name-header {
+  font-family: 'Audiowide', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.brand-dot {
+  color: #ff9900 !important;
+  -webkit-text-stroke: 0 !important;
+}
+
 .brand-mark img {
   width: 32px;
   height: 32px;
@@ -708,12 +727,10 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(
-    180px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
-    rgba(156, 163, 175, 0.15) 0%,
-    rgba(156, 163, 175, 0.02) 50%,
-    transparent 100%
-  );
+  background: radial-gradient(180px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+      rgba(156, 163, 175, 0.15) 0%,
+      rgba(156, 163, 175, 0.02) 50%,
+      transparent 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1;
@@ -1207,12 +1224,24 @@
   animation: ghostPulse 3s ease-in-out infinite;
 }
 
-.ghost-avatar:nth-child(2) { animation-delay: 0.3s; }
-.ghost-avatar:nth-child(3) { animation-delay: 0.6s; }
-.ghost-avatar:nth-child(4) { animation-delay: 0.9s; }
-.ghost-avatar:nth-child(5) { animation-delay: 1.2s; }
+.ghost-avatar:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.ghost-avatar:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+.ghost-avatar:nth-child(4) {
+  animation-delay: 0.9s;
+}
+
+.ghost-avatar:nth-child(5) {
+  animation-delay: 1.2s;
+}
 
 @keyframes ghostPulse {
+
   0%,
   100% {
     opacity: 0.55;
@@ -1407,8 +1436,15 @@
   }
 
   @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 

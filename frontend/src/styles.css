@@ -1,5 +1,6 @@
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
 
 * {
   box-sizing: border-box;
@@ -18,9 +19,13 @@ body {
 
 /* Android Chrome fix: overflow:hidden on root blocks child touch scroll gestures.
    On mobile we keep the app locked but allow pointer events through. */
-@media (max-width: 900px), (hover: none) and (pointer: coarse) {
-  html, body {
-    overflow: clip; /* blocks page scroll but still allows child overflow scroll */
+@media (max-width: 900px),
+(hover: none) and (pointer: coarse) {
+
+  html,
+  body {
+    overflow: clip;
+    /* blocks page scroll but still allows child overflow scroll */
     overscroll-behavior: none;
   }
 }

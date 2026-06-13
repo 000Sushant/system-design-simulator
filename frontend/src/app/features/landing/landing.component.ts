@@ -90,7 +90,7 @@ export class LandingComponent {
   readonly trustPills = [
     "Open Source",
     "MIT Licensed",
-    "Beta v1.1",
+    "v1.2",
     "Real-time Simulation",
     "AWS Focused",
   ];
