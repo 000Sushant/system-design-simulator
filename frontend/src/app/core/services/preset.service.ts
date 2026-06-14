@@ -131,4 +131,79 @@ export class PresetService {
       updatedAt: new Date().toISOString()
     };
   }
+
+  ecommercePreset(): ArchitectureProject {
+    const layout: Array<[string, AwsServiceType, number, number]> = [
+      ['client', 'client', 80, 160],
+      ['route53', 'route53', 280, 110],
+      ['cloudfront', 'cloudfront', 480, 150],
+      ['apiGateway', 'apiGateway', 700, 150],
+      ['lambda', 'lambda', 910, 95],
+      ['dynamoDb', 'dynamoDb', 1130, 95],
+      ['s3', 's3', 1130, 250],
+      ['cloudWatch', 'cloudWatch', 1130, -50]
+    ];
+    const nodeByKey = new Map(
+      layout.map(([key, type, x, y]) => {
+        const node = this.factory.createNode(type, x, y);
+        return [key, node] as const;
+      })
+    );
+    const nodes = layout.map(([key]) => nodeByKey.get(key)!);
+    const connections: ArchitectureConnection[] = [];
+    const connect = (source: string, target: string): void => {
+      const sourceNode = nodeByKey.get(source)!;
+      const targetNode = nodeByKey.get(target)!;
+      const sourcePorts = sourceNode.ports.filter((port) => port.direction === 'output');
+      const targetPorts = targetNode.ports.filter((port) => port.direction === 'input');
+      const match = sourcePorts
+        .flatMap((sourcePort) => targetPorts.map((targetPort) => ({
+          sourcePort,
+          targetPort,
+          result: this.validation.validate(sourceNode, sourcePort, targetNode, targetPort, connections)
+        })))
+        .find((candidate) => candidate.result.allowed);
+      if (!match) {
+        throw new Error(`Preset connection ${source} -> ${target} has no valid rule.`);
+      }
+      connections.push(this.factory.createConnection(
+        sourceNode.id,
+        match.sourcePort.id,
+        targetNode.id,
+        match.targetPort.id,
+        this.validation.connectionTypeFor(match.result.ruleId, match.sourcePort.type),
+        match.result.message
+      ));
+    };
+
+    connect('client', 'route53');
+    connect('route53', 'cloudfront');
+    connect('cloudfront', 'apiGateway');
+    connect('apiGateway', 'lambda');
+    connect('lambda', 'dynamoDb');
+    connect('lambda', 's3');
+    connect('lambda', 'cloudWatch');
+
+    return {
+      id: 'preset-ecommerce-serverless',
+      name: 'Serverless Ecommerce',
+      nodes,
+      connections,
+      annotations: [
+        {
+          id: 'anno-title',
+          text: 'Simple Ecommerce website',
+          x: 500,
+          y: -150,
+          width: 500,
+          height: 60,
+          fontSize: 24,
+          fontWeight: 'bold',
+          selected: false
+        }
+      ],
+      currency: 'USD',
+      updatedAt: new Date().toISOString()
+    };
+  }
 }
