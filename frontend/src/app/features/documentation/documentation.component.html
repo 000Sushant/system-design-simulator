@@ -332,7 +332,26 @@
                 </article>
               </div>
 
-              <div *ngIf="cat.id !== 'release-notes'" class="docs-grid">
+              <!-- Ways to Contribute -->
+              <div *ngIf="cat.id === 'contribute'" class="contribute-section">
+                <section class="contribute-block glass-panel">
+                  <div class="contribute-head">
+                    <span class="contribute-kicker"><i class="fas fa-hands-helping"></i> Open Source</span>
+                    <p>Sr. Architect grows with everyone who pitches in. Pick whichever way fits you best — code or no code.</p>
+                  </div>
+                  <div class="contribute-grid">
+                    <a *ngFor="let way of filteredContributionWays" class="contribute-card" [class]="'accent-' + way.accent"
+                      [href]="way.href" target="_blank" rel="noopener noreferrer">
+                      <span class="contribute-icon"><i [class]="way.icon"></i></span>
+                      <h4>{{ way.title }}</h4>
+                      <p>{{ way.text }}</p>
+                      <span class="contribute-cta">{{ way.cta }} <i class="fas fa-arrow-right"></i></span>
+                    </a>
+                  </div>
+                </section>
+              </div>
+
+              <div *ngIf="cat.id !== 'release-notes' && cat.id !== 'contribute'" class="docs-grid">
                 <!-- Interactive Claymorphic Guide Card -->
                 <article *ngFor="let art of getArticlesByCategory(cat.id)" class="doc-card glass-panel">
                   <div class="doc-card-header">

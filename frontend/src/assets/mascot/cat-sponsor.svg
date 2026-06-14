@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <title>Cat mascot hugging a thank-you heart</title>
+
+  <defs>
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f9a8d4"/>
+      <stop offset="55%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <style>
+      #heart {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: heartPulse 1.4s ease-in-out infinite;
+      }
+      @keyframes heartPulse {
+        0%, 100% { transform: scale(1); }
+        30%      { transform: scale(1.08); }
+        60%      { transform: scale(1.03); }
+      }
+    </style>
+  </defs>
+
+  <!-- gentle whole-body bob -->
+  <g id="cat">
+    <animateTransform attributeName="transform" type="translate"
+      values="0 0; 0 -5; 0 0; 0 -3; 0 0" dur="4.4s" repeatCount="indefinite"/>
+
+    <!-- ground shadow (counter-bobs so it stays put) -->
+    <ellipse cx="200" cy="374" rx="118" ry="9" fill="#17202a" opacity="0.08">
+      <animateTransform attributeName="transform" type="translate"
+        values="0 0; 0 5; 0 0; 0 3; 0 0" dur="4.4s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <!-- tail: happy upright flick, slow sway -->
+    <g id="tail">
+      <path d="M252,340 C300,332 326,300 324,264" fill="none" stroke="#17202a" stroke-width="17" stroke-linecap="round"/>
+      <path d="M324,264 C322,236 306,220 288,226 C277,230 276,243 284,247" fill="none" stroke="#17202a" stroke-width="12" stroke-linecap="round"/>
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 252 340; 4 252 340; 0 252 340; -3 252 340; 0 252 340"
+        dur="5s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- body: sitting bell silhouette -->
+    <g id="body">
+      <path d="M152,152 C120,200 104,255 108,305 C111,348 134,366 200,366 C266,366 289,348 292,305 C296,255 280,205 228,152 Q190,134 152,152 Z" fill="#17202a"/>
+      <ellipse cx="200" cy="268" rx="44" ry="62" fill="#27313f" opacity="0.45"/>
+      <path d="M186,196 q14,18 28,0" fill="none" stroke="#2c3342" stroke-width="3" stroke-linecap="round"/>
+    </g>
+
+    <!-- hind paws -->
+    <ellipse cx="120" cy="360" rx="19" ry="10" fill="#1b2530"/>
+    <ellipse cx="280" cy="360" rx="19" ry="10" fill="#1b2530"/>
+    <path d="M114,356 l0,7 M124,356 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M274,356 l0,7 M284,356 l0,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- the hugged heart, with a soft squeeze pulse (see #heart in <style>) -->
+    <g id="heart">
+      <path d="M200,318
+               C176,296 150,280 150,254
+               C150,238 162,228 176,228
+               C188,228 196,236 200,244
+               C204,236 212,228 224,228
+               C238,228 250,238 250,254
+               C250,280 224,296 200,318 Z"
+            fill="url(#heartGrad)" stroke="#be185d" stroke-width="2"/>
+      <!-- shine -->
+      <ellipse cx="180" cy="250" rx="11" ry="7" fill="#fff" opacity="0.5"/>
+      <circle cx="171" cy="244" r="3" fill="#fff" opacity="0.7"/>
+    </g>
+
+    <!-- front legs hugging the heart -->
+    <g id="arm-l">
+      <path d="M170,262 C150,272 142,288 150,302" fill="none" stroke="#17202a" stroke-width="22" stroke-linecap="round"/>
+      <ellipse cx="156" cy="306" rx="16" ry="11" fill="#222d3b"/>
+      <path d="M150,304 l3,7 M160,302 l2,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    <g id="arm-r">
+      <path d="M230,262 C250,272 258,288 250,302" fill="none" stroke="#17202a" stroke-width="22" stroke-linecap="round"/>
+      <ellipse cx="244" cy="306" rx="16" ry="11" fill="#222d3b"/>
+      <path d="M238,302 l-2,7 M248,304 l-3,7" stroke="#141b24" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- collar -->
+    <g id="collar">
+      <path d="M148,158 Q190,178 232,158 L232,172 Q190,192 148,172 Z" fill="#ff9900" stroke="#e68a00" stroke-width="1.5"/>
+      <circle cx="190" cy="184" r="7" fill="#fff7e7" stroke="#e68a00" stroke-width="1.5"/>
+    </g>
+
+    <!-- head: content little tilt -->
+    <g id="head">
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 190 150; 2 190 150; 0 190 150; -2 190 150; 0 190 150"
+        dur="6s" repeatCount="indefinite"/>
+
+      <!-- cheek tufts -->
+      <path d="M138,112 L118,128 L142,136 Z" fill="#17202a"/>
+      <path d="M242,112 L262,128 L238,136 Z" fill="#17202a"/>
+
+      <!-- ears -->
+      <g id="ear-l">
+        <path d="M138,76 C132,44 140,22 152,12 C168,26 180,40 184,52 C168,60 150,70 138,76 Z" fill="#17202a"/>
+        <path d="M146,68 C143,46 148,30 155,22 C165,33 173,42 176,50 C164,57 152,63 146,68 Z" fill="#2c3342"/>
+      </g>
+      <g id="ear-r">
+        <path d="M242,76 C248,44 240,22 228,12 C212,26 200,40 196,52 C212,60 230,70 242,76 Z" fill="#17202a"/>
+        <path d="M234,68 C237,46 232,30 225,22 C215,33 207,42 204,50 C216,57 228,63 234,68 Z" fill="#2c3342"/>
+        <animateTransform attributeName="transform" type="rotate"
+          values="0 230 60; 0 230 60; 6 230 60; 0 230 60; 0 230 60"
+          keyTimes="0; 0.66; 0.71; 0.76; 1" dur="5s" repeatCount="indefinite"/>
+      </g>
+
+      <!-- skull -->
+      <ellipse cx="190" cy="108" rx="58" ry="52" fill="#17202a"/>
+      <ellipse cx="172" cy="84" rx="30" ry="17" fill="#ffffff" opacity="0.05"/>
+
+      <!-- soft happy brows -->
+      <path d="M148,80 q16,-7 30,-1" fill="none" stroke="#525e6e" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M202,79 q16,-6 30,1" fill="none" stroke="#525e6e" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- rosy grateful blush -->
+      <ellipse cx="150" cy="124" rx="11" ry="6" fill="#ec4899" opacity="0.28"/>
+      <ellipse cx="230" cy="124" rx="11" ry="6" fill="#ec4899" opacity="0.28"/>
+
+      <!-- eyes: warm happy arcs that occasionally open -->
+      <g id="eyes">
+        <ellipse cx="164" cy="108" rx="16" ry="14" fill="#fff7e7"/>
+        <ellipse cx="216" cy="108" rx="16" ry="14" fill="#fff7e7"/>
+        <ellipse cx="166" cy="110" rx="6.5" ry="8.5" fill="#0d0e14"/>
+        <ellipse cx="218" cy="110" rx="6.5" ry="8.5" fill="#0d0e14"/>
+        <circle cx="169" cy="106" r="2.4" fill="#fff7e7"/>
+        <circle cx="221" cy="106" r="2.4" fill="#fff7e7"/>
+        <circle cx="162" cy="113" r="1.3" fill="#fff7e7" opacity="0.7"/>
+        <circle cx="214" cy="113" r="1.3" fill="#fff7e7" opacity="0.7"/>
+      </g>
+
+      <!-- blink lids -->
+      <rect x="147" y="93" width="34" height="16" rx="6" fill="#17202a">
+        <animateTransform attributeName="transform" type="translate"
+          values="0 -18; 0 -18; 0 0; 0 -18; 0 -18" keyTimes="0; 0.47; 0.51; 0.55; 1"
+          dur="4.6s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="199" y="93" width="34" height="16" rx="6" fill="#17202a">
+        <animateTransform attributeName="transform" type="translate"
+          values="0 -18; 0 -18; 0 0; 0 -18; 0 -18" keyTimes="0; 0.47; 0.51; 0.55; 1"
+          dur="4.6s" repeatCount="indefinite"/>
+      </rect>
+
+      <!-- nose + sweet smile + fang -->
+      <path d="M185,126 L195,126 L190,132 Z" fill="#ff9900"/>
+      <path d="M170,137 Q190,155 212,137" fill="none" stroke="#fff7e7" stroke-width="3" stroke-linecap="round"/>
+      <path d="M186,145 L191,153 L195,144 Z" fill="#fff7e7"/>
+
+      <!-- whiskers, upturned -->
+      <g stroke="#4a5366" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7">
+        <path d="M138,124 q-24,-4 -38,2"/>
+        <path d="M140,134 q-22,2 -34,10"/>
+        <path d="M242,120 q24,-8 38,-4"/>
+        <path d="M240,130 q22,-2 34,6"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- floating thank-you sparkle hearts -->
+  <g fill="#ec4899">
+    <path d="M96,150 c-4,-4 -9,-7 -9,-12 c0,-3 2,-5 5,-5 c2,0 3,1 4,3 c1,-2 2,-3 4,-3 c3,0 5,2 5,5 c0,5 -5,8 -9,12 Z" opacity="0.0">
+      <animate attributeName="opacity" values="0;0.8;0" dur="3.2s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10; 0 -22" dur="3.2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M308,168 c-4,-4 -9,-7 -9,-12 c0,-3 2,-5 5,-5 c2,0 3,1 4,3 c1,-2 2,-3 4,-3 c3,0 5,2 5,5 c0,5 -5,8 -9,12 Z" opacity="0.0">
+      <animate attributeName="opacity" values="0;0.8;0" dur="3.6s" begin="1s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="translate" values="0 12; 0 -24" dur="3.6s" begin="1s" repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>

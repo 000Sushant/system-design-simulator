@@ -4,6 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare-workers&logoColor=white)](https://workers.cloudflare.com/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db2777?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/000Sushant)
 
 > **Design. Simulate. Optimize.** A browser-based AWS architecture sketchbook featuring a **deterministic traffic-and-cost simulation engine**. Drag AWS services onto a canvas, connect them, tune system knobs, and watch a live simulation trace traffic flow, detect bottlenecks, and evaluate real-time monthly billing.
 
@@ -159,6 +160,23 @@ Obsessed with building high-performance, developer-centric tooling. Feel free to
 - 💼 [LinkedIn](https://linkedin.com/in/sushant--kumar)
 - 🌐 [Portfolio](https://000sushant.github.io/sushant-portfolio/)
 - 🐙 [GitHub](https://github.com/000Sushant)
+
+---
+
+## 💜 Support the Project
+
+Sr. Architect is open source and free for everyone. If it has helped you learn, design, or estimate a little better, you can help it keep growing.
+
+**100% of every sponsorship goes directly into the development of this project** — keeping the weekly pricing pipeline running, expanding the AWS service catalog, and shipping new features. Even **$1 matters** and helps keep things running.
+
+> 💖 [**Become a sponsor on GitHub →**](https://github.com/sponsors/000Sushant)
+
+Not able to sponsor? There are plenty of other meaningful ways to contribute:
+
+- 🎯 **Take on the current open challenge** — pick up a focused, well-scoped task from the [open issues](https://github.com/000Sushant/system-design-simulator/issues).
+- 🧩 **Add a meaningful service** — the catalog is fully data-driven, so describe a service's real traffic and cost behavior in JSON and open a PR.
+- 💬 **Share your feedback** — send improvement suggestions or tell us about your experience via the [feedback form](https://forms.gle/2Kh6TKqcwYUSnYnHA).
+- 🐞 **Report a bug** — spotted something off? Let us know through the [bug report form](https://forms.gle/RJwRybjgRPPi11jg7).
 
 ---
 

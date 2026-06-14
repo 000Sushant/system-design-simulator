@@ -59,7 +59,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     { id: 'storage', name: 'Storage & DB', icon: 'fas fa-database' },
     { id: 'integration', name: 'Integration', icon: 'fas fa-network-wired' },
     { id: 'cost', name: 'Cost Dynamics', icon: 'fas fa-coins' },
-    { id: 'release-notes', name: 'Release Notes', icon: 'fas fa-rocket' }
+    { id: 'release-notes', name: 'Release Notes', icon: 'fas fa-rocket' },
+    { id: 'contribute', name: 'Ways to Contribute', icon: 'fas fa-hands-helping' }
   ];
 
   // Version history. v1.1 / v1.2 mirror the README changelog; v1.0 is the
@@ -108,6 +109,51 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         { icon: 'fas fa-coins', text: 'Monthly cost estimation from simulated load' },
         { icon: 'fas fa-circle-check', text: 'Built-in AWS connectivity validation' }
       ]
+    }
+  ];
+
+  // Rendered at the foot of the Release Notes view. Sr. Architect is open
+  // source; these are the ways people can help it grow.
+  readonly contributionWays = [
+    {
+      icon: 'fas fa-bullseye',
+      accent: 'challenge',
+      title: 'Take on the open challenge',
+      text: 'A focused, well-scoped challenge is always waiting to be claimed — a tricky simulation edge case, a pricing-accuracy tweak, or a new canvas interaction. A great place for a meaningful first contribution.',
+      cta: 'Browse open challenges',
+      href: 'https://github.com/000Sushant/system-design-simulator/issues'
+    },
+    {
+      icon: 'fas fa-layer-group',
+      accent: 'service',
+      title: 'Add a meaningful service',
+      text: 'The catalog is fully data-driven, so adding an AWS service is approachable. Describe its real traffic and cost behavior in JSON, give it a custom illustration, and open a PR.',
+      cta: 'Contribute on GitHub',
+      href: 'https://github.com/000Sushant/system-design-simulator/'
+    },
+    {
+      icon: 'fas fa-comment-dots',
+      accent: 'feedback',
+      title: 'Share your feedback',
+      text: 'No code required. Send improvement suggestions or tell us about your experience — what clicked and what felt confusing. Every bit shapes where this goes next.',
+      cta: 'Share feedback',
+      href: 'https://forms.gle/2Kh6TKqcwYUSnYnHA'
+    },
+    {
+      icon: 'fas fa-bug',
+      accent: 'bug',
+      title: 'Report a bug',
+      text: 'Spotted something behaving oddly? Tell us what you did, what you expected, and what happened. A clear report helps enormously and gets fixes shipped faster.',
+      cta: 'Report a bug',
+      href: 'https://forms.gle/RJwRybjgRPPi11jg7'
+    },
+    {
+      icon: 'fas fa-heart',
+      accent: 'sponsor',
+      title: 'Sponsor the project',
+      text: '100% of every sponsorship goes straight into building Sr. Architect — keeping the pricing pipeline running and shipping new features. Even $1 matters and helps keep things running.',
+      cta: 'Become a sponsor',
+      href: 'https://github.com/sponsors/000Sushant'
     }
   ];
 
@@ -4027,8 +4073,23 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       if (cat.id === 'release-notes') {
         return this.filteredReleaseNotes.length > 0;
       }
+      if (cat.id === 'contribute') {
+        return this.filteredContributionWays.length > 0;
+      }
       return this.getArticlesByCategory(cat.id).length > 0;
     });
+  }
+
+  get filteredContributionWays() {
+    const query = this.searchQuery.trim().toLowerCase();
+    if (!query) {
+      return this.contributionWays;
+    }
+    return this.contributionWays.filter(way =>
+      way.title.toLowerCase().includes(query) ||
+      way.text.toLowerCase().includes(query) ||
+      way.cta.toLowerCase().includes(query)
+    );
   }
 
   get filteredReleaseNotes(): ReleaseNote[] {
