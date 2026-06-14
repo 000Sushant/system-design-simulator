@@ -12,12 +12,28 @@
       <small>v1.2</small>
     </a>
     <div class="nav-actions">
-      <a href="/docs" (click)="openDocs($event)" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">Docs</a>
-      <a href="https://github.com/000Sushant/system-design-simulator/" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">GitHub</a>
-      <button type="button" class="mini-launch" (click)="scrollToModes()" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
+      <a
+        href="/docs"
+        (click)="openDocs($event)"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        >Docs</a
+      >
+      <a
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        >GitHub</a
+      >
+      <button
+        type="button"
+        class="mini-launch"
+        (click)="scrollToModes()"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <span>Launch</span>
       </button>
     </div>
@@ -39,13 +55,24 @@
         estimate take shape, all before anything is deployed.
       </p>
       <div class="hero-actions">
-        <button type="button" class="cta-button primary" (click)="scrollToModes()"
-          (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <button
+          type="button"
+          class="cta-button primary"
+          (click)="scrollToModes()"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
           <span>Launch Simulator</span>
           <i class="fas fa-arrow-right"></i>
         </button>
-        <a class="cta-button ghost" href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
-          rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <a
+          class="cta-button ghost"
+          href="https://github.com/000Sushant/system-design-simulator/"
+          target="_blank"
+          rel="noopener noreferrer"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
           <span>GitHub</span>
           <i class="fab fa-github"></i>
         </a>
@@ -75,8 +102,13 @@
     </div>
 
     <div class="mode-grid">
-      <article class="mode-card glass-panel" *ngFor="let mode of modes" [class]="mode.id"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <article
+        class="mode-card glass-panel"
+        *ngFor="let mode of modes"
+        [class]="mode.id"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <div class="mode-card-top">
           <span class="mode-badge">{{ mode.badge }}</span>
           <span class="mode-icon"><i [class]="mode.icon"></i></span>
@@ -99,7 +131,11 @@
             <i class="fas fa-check"></i>{{ feature }}
           </li>
         </ul>
-        <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
+        <button
+          type="button"
+          class="mode-button"
+          (click)="launch.emit(mode.id)"
+        >
           <span>{{ mode.button }}</span>
           <i class="fas fa-arrow-right"></i>
         </button>
@@ -115,11 +151,19 @@
   <section class="feature-section" id="features">
     <div class="section-heading">
       <span class="section-kicker">Know your Arsenal</span>
-      <h2>Know What can you do with<br><span class="brand-name-header">Sr<span class="brand-dot">.</span> Architect</span></h2>
+      <h2>
+        Know What can you do with<br /><span class="brand-name-header"
+          >Sr<span class="brand-dot">.</span> Architect</span
+        >
+      </h2>
     </div>
     <div class="feature-grid">
-      <article class="feature-card glass-panel" *ngFor="let feature of features" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
+      <article
+        class="feature-card glass-panel"
+        *ngFor="let feature of features"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <div class="feature-icon"><i [class]="feature.icon"></i></div>
         <div class="feature-title">
           <h3>{{ feature.title }}</h3>
@@ -147,8 +191,14 @@
       </div>
     </div>
     <div class="social-links">
-      <a *ngFor="let link of socialLinks" [href]="link.href" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <a
+        *ngFor="let link of socialLinks"
+        [href]="link.href"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <i [class]="link.icon"></i>{{ link.label }}
       </a>
     </div>
@@ -164,9 +214,47 @@
       <span class="ghost-avatar">?</span>
       <span class="ghost-avatar">?</span>
     </div>
-    <span class="contributors-soon-pill"><i class="fas fa-circle"></i> Coming Soon</span>
+    <span class="contributors-soon-pill"
+      ><i class="fas fa-circle"></i> Coming Soon</span
+    >
     <p class="contributors-note">
       Contributor spotlights will appear here. Open a PR and claim a spot.
+    </p>
+  </section>
+
+  <section class="sponsor-card glass-panel" aria-labelledby="sponsor-title">
+    <div class="sponsor-glow" aria-hidden="true"></div>
+    <div class="sponsor-mascot" aria-hidden="true">
+      <img src="assets/mascot/cat-sponsor.svg" alt="" />
+    </div>
+    <span class="section-kicker">Support the project</span>
+    <h2 id="sponsor-title">
+      Help keep Sr<span class="brand-dot">.</span> Architect alive
+    </h2>
+    <p class="sponsor-copy">
+      Sr. Architect is open source and free for everyone. If it has helped you,
+      you can help it keep growing.
+      <strong
+        >100% of every sponsorship goes directly into building this
+        project</strong
+      >. Even <strong>$1 matters</strong>
+      and helps keep things running.
+    </p>
+    <div class="hero-actions center">
+      <a
+        class="cta-button primary sponsor-cta"
+        href="https://github.com/sponsors/000Sushant"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
+        <i class="fas fa-heart"></i>
+        <span>Sponsor on GitHub</span>
+      </a>
+    </div>
+    <p class="sponsor-note">
+      Every contribution funds development, pricing accuracy, and new features.
     </p>
   </section>
 
@@ -174,21 +262,43 @@
     <span class="section-kicker">Start now</span>
     <h2>Watch your next architecture come alive before it ships.</h2>
     <div class="hero-actions center">
-      <button type="button" class="cta-button primary" (click)="launch.emit('architect')"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <button
+        type="button"
+        class="cta-button primary"
+        (click)="launch.emit('architect')"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <span>Launch Sr. Architect</span>
       </button>
-      <a class="cta-button secondary" href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
-        rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Explore GitHub</span></a>
-      <a class="cta-button ghost" href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
-        rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
+      <a
+        class="cta-button secondary"
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        ><span>Explore GitHub</span></a
+      >
+      <a
+        class="cta-button ghost"
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        ><span>Contribute</span></a
+      >
     </div>
   </section>
 
   <!-- Mobile back-to-top -->
-  <button *ngIf="showBackToTop" class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
+  <button
+    *ngIf="showBackToTop"
+    class="back-to-top"
+    aria-label="Back to top"
+    (click)="scrollToTop()"
+  >
     <i class="fas fa-chevron-up"></i>
   </button>
 </main>
