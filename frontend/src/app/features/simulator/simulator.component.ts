@@ -406,7 +406,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (local && local.id !== 'preset-ecommerce-serverless' && local.id !== 'preset-messaging-realtime') {
       this.applyProject(local);
     } else {
-      this.applyProject(this.presets.messagingPreset());
+      if (this.roleMode === 'developer') {
+        this.applyProject(this.presets.ecommercePreset());
+      } else {
+        this.applyProject(this.presets.messagingPreset());
+      }
     }
 
     this.snapshotSubscription = this.simulation.snapshot$.subscribe((snapshot) => {
@@ -1488,8 +1492,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadPreset(): void {
     this.simulation.stop();
-    this.applyProject(this.presets.messagingPreset());
-    this.setMessage('Loaded the real-time messaging app preset.', 'success');
+    if (this.roleMode === 'developer') {
+      this.applyProject(this.presets.ecommercePreset());
+      this.setMessage('Loaded the serverless ecommerce preset.', 'success');
+    } else {
+      this.applyProject(this.presets.messagingPreset());
+      this.setMessage('Loaded the real-time messaging app preset.', 'success');
+    }
   }
 
   resetCanvas(): void {

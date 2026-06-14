@@ -312,16 +312,39 @@ export class CostService {
         // Traffic region is locked to the client (Users) node's selected region — not configured per-distribution.
         const clientRegion = this.getClientRequestRegion(allNodes);
         const region = this.mapToCloudFrontClass(clientRegion);
+        // CloudFront Always Free tier (perpetual): 1 TB (1,024 GB) data transfer
+        // out + 10M HTTP/HTTPS requests per month.
+        const FREE_DT_GB = 1024;
+        const FREE_REQS_M = 10;
+
         const dtOut = this.getVal(config, 'cloudfront', 'dataTransferOut', 1000);
         const dtRate = pf.dtOut?.[region] || 0.085;
-        const dtCost = dtOut * dtRate;
-        lines.push({ label: 'Data Transfer Out', formula: dtOut + ' GB × $' + dtRate + '/GB (' + region + ' class)', value: dtCost });
+        const billableDtGb = Math.max(0, dtOut - FREE_DT_GB);
+        const savedDtGb = Math.min(dtOut, FREE_DT_GB);
+        const dtCost = billableDtGb * dtRate;
+        lines.push({
+          label: 'Data Transfer Out',
+          formula: billableDtGb > 0
+            ? billableDtGb.toLocaleString() + ' GB × $' + dtRate + '/GB (' + region + ' class)'
+            : dtOut.toLocaleString() + ' GB — within free allowance',
+          value: dtCost,
+          freeSaving: savedDtGb.toLocaleString() + ' GB free (Always Free tier)'
+        });
         // Monthly request count derived from the distribution's capacity (RPS), not a separate cost knob.
         const throughput = this.getVal(config, 'cloudfront', 'throughput', 100);
         const reqsM = (throughput * CostService.SECONDS_PER_MONTH) / 1_000_000;
         const reqRate = pf.requestsM?.[region] || 1.0;
-        const reqCost = reqsM * reqRate;
-        lines.push({ label: 'Requests', formula: throughput + ' RPS → ' + reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + reqRate + '/M', value: reqCost });
+        const billableReqM = Math.max(0, reqsM - FREE_REQS_M);
+        const savedReqM = Math.min(reqsM, FREE_REQS_M);
+        const reqCost = billableReqM * reqRate;
+        lines.push({
+          label: 'Requests',
+          formula: billableReqM > 0
+            ? throughput + ' RPS → ' + reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M — ' + billableReqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + reqRate + '/M'
+            : throughput + ' RPS → ' + reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo — within free allowance',
+          value: reqCost,
+          freeSaving: savedReqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M req free (Always Free tier)'
+        });
         let wafCost = 0;
         if (config.wafEnabled) {
           wafCost = (pf.wafBase || 5.0) + (reqsM * (pf.wafRequestM || 0.60));
@@ -564,21 +587,26 @@ export class CostService {
       }
 
       case 'cloudWatch': {
+        // Always Free tier (perpetual): 10 custom metrics, 10 alarms, 5 GB logs ingestion, 3 dashboards.
         const met = this.getVal(config, 'cloudWatch', 'metrics', 100);
-        const costMet = met * (pf.metricRate || 0.30);
-        lines.push({ label: 'Metrics', formula: met + ' Metrics × $' + (pf.metricRate || 0.30).toFixed(2), value: costMet });
+        const billMet = Math.max(0, met - 10);
+        const costMet = billMet * (pf.metricRate || 0.30);
+        lines.push({ label: 'Metrics', formula: billMet + ' billable × $' + (pf.metricRate || 0.30).toFixed(2), value: costMet, freeSaving: Math.min(met, 10) + ' metrics free (Always Free tier)' });
         const gb = this.getVal(config, 'cloudWatch', 'logsGB', 50);
-        const costGb = gb * (pf.logsGB || 0.50);
-        lines.push({ label: 'Log Ingestion', formula: gb + ' GB × $' + (pf.logsGB || 0.50).toFixed(2), value: costGb });
+        const billGb = Math.max(0, gb - 5);
+        const costGb = billGb * (pf.logsGB || 0.50);
+        lines.push({ label: 'Log Ingestion', formula: billGb + ' billable GB × $' + (pf.logsGB || 0.50).toFixed(2), value: costGb, freeSaving: Math.min(gb, 5) + ' GB free (Always Free tier)' });
         const storeGB = this.getVal(config, 'cloudWatch', 'logsStorageGB', 50);
         const costStore = storeGB * (pf.logsStorageGB || 0.03);
         if (costStore > 0) lines.push({ label: 'Log Storage', formula: storeGB + ' GB × $' + (pf.logsStorageGB || 0.03).toFixed(2) + '/GB', value: costStore });
         const alarms = this.getVal(config, 'cloudWatch', 'alarms', 10);
-        const costAlarms = alarms * (pf.alarmMonth || 0.10);
-        if (costAlarms > 0) lines.push({ label: 'Alarms', formula: alarms + ' Alarms × $' + (pf.alarmMonth || 0.10).toFixed(2), value: costAlarms });
+        const billAlarms = Math.max(0, alarms - 10);
+        const costAlarms = billAlarms * (pf.alarmMonth || 0.10);
+        if (costAlarms > 0) lines.push({ label: 'Alarms', formula: billAlarms + ' billable × $' + (pf.alarmMonth || 0.10).toFixed(2), value: costAlarms, freeSaving: Math.min(alarms, 10) + ' alarms free (Always Free tier)' });
         const dash = this.getVal(config, 'cloudWatch', 'dashboards', 2);
-        const costDash = dash * (pf.dashboard || 3.0);
-        if (costDash > 0) lines.push({ label: 'Dashboards', formula: dash + ' Dashboards × $' + (pf.dashboard || 3.0).toFixed(2), value: costDash });
+        const billDash = Math.max(0, dash - 3);
+        const costDash = billDash * (pf.dashboard || 3.0);
+        if (costDash > 0) lines.push({ label: 'Dashboards', formula: billDash + ' billable × $' + (pf.dashboard || 3.0).toFixed(2), value: costDash, freeSaving: Math.min(dash, 3) + ' dashboards free (Always Free tier)' });
         total = costMet + costGb + costStore + costAlarms + costDash;
         break;
       }
@@ -602,18 +630,23 @@ export class CostService {
           lines.push({ label: 'Write Requests', formula: `${writesM}M × ${writeUnits} WRU (${itemKB}KB items) × $${rates.writeM}/M`, value: writeCost });
           computeCost = readCost + writeCost;
         } else {
+          // Always Free tier (perpetual, provisioned mode): 25 WCU + 25 RCU.
           const wcu = this.getVal(config, 'dynamoDb', 'wcu', 100);
           const rcu = this.getVal(config, 'dynamoDb', 'rcu', 100);
-          const wCost = wcu * rates.wcuHr * 730;
-          lines.push({ label: 'Provisioned WCU', formula: `${wcu} WCU × $${rates.wcuHr.toFixed(5)}/hr × 730 hrs`, value: wCost });
-          const rCost = rcu * rates.rcuHr * 730;
-          lines.push({ label: 'Provisioned RCU', formula: `${rcu} RCU × $${rates.rcuHr.toFixed(5)}/hr × 730 hrs`, value: rCost });
+          const billWcu = Math.max(0, wcu - 25);
+          const billRcu = Math.max(0, rcu - 25);
+          const wCost = billWcu * rates.wcuHr * 730;
+          lines.push({ label: 'Provisioned WCU', formula: `${billWcu} billable WCU × $${rates.wcuHr.toFixed(5)}/hr × 730 hrs`, value: wCost, freeSaving: `${Math.min(wcu, 25)} WCU free (Always Free tier)` });
+          const rCost = billRcu * rates.rcuHr * 730;
+          lines.push({ label: 'Provisioned RCU', formula: `${billRcu} billable RCU × $${rates.rcuHr.toFixed(5)}/hr × 730 hrs`, value: rCost, freeSaving: `${Math.min(rcu, 25)} RCU free (Always Free tier)` });
           computeCost = wCost + rCost;
         }
 
+        // Always Free tier (perpetual): first 25 GB of storage.
         const storageGB = this.getVal(config, 'dynamoDb', 'storageGB', 50);
-        const storageCost = storageGB * rates.storageGB;
-        lines.push({ label: `Storage (${sClass})`, formula: `${storageGB} GB × $${rates.storageGB}/GB`, value: storageCost });
+        const billStorageGB = Math.max(0, storageGB - 25);
+        const storageCost = billStorageGB * rates.storageGB;
+        lines.push({ label: `Storage (${sClass})`, formula: `${billStorageGB} billable GB × $${rates.storageGB}/GB`, value: storageCost, freeSaving: `${Math.min(storageGB, 25)} GB free (Always Free tier)` });
 
         total = computeCost + storageCost;
 
@@ -807,24 +840,44 @@ export class CostService {
         const reqM = (throughput * CostService.SECONDS_PER_MONTH) / 1_000_000;
         const type = this.getVal(config, 'sqs', 'type', 'standard');
         const rate = pf[type] || 0.40;
-        const cost = reqM * rate;
-        lines.push({ label: 'SQS Requests', formula: throughput + ' RPS → ' + reqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + rate.toFixed(2) + '/M', value: cost });
+        // Always Free tier (perpetual): first 1M requests/month.
+        const billM = Math.max(0, reqM - 1);
+        const cost = billM * rate;
+        lines.push({
+          label: 'SQS Requests',
+          formula: billM > 0
+            ? throughput + ' RPS → ' + reqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M — ' + billM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + rate.toFixed(2) + '/M'
+            : throughput + ' RPS → ' + reqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo — within free allowance',
+          value: cost,
+          freeSaving: Math.min(reqM, 1).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M req free (Always Free tier)'
+        });
         total = cost;
         break;
       }
 
       case 'sns': {
         // Monthly publish count derived from topic throughput (RPS), not a separate cost knob.
+        // Always Free tier (perpetual): 1M publishes, 100K HTTP/S deliveries, 1K email deliveries.
         const throughput = this.getVal(config, 'sns', 'throughput', 100);
         const pubM = (throughput * CostService.SECONDS_PER_MONTH) / 1_000_000;
-        const costPub = pubM * (pf.publish || 0.50);
-        lines.push({ label: 'Publish', formula: throughput + ' RPS → ' + pubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + (pf.publish || 0.50).toFixed(2) + '/M', value: costPub });
+        const billPubM = Math.max(0, pubM - 1);
+        const costPub = billPubM * (pf.publish || 0.50);
+        lines.push({
+          label: 'Publish',
+          formula: billPubM > 0
+            ? throughput + ' RPS → ' + pubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M — ' + billPubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + (pf.publish || 0.50).toFixed(2) + '/M'
+            : throughput + ' RPS → ' + pubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo — within free allowance',
+          value: costPub,
+          freeSaving: Math.min(pubM, 1).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M publishes free (Always Free tier)'
+        });
         const delM = this.getVal(config, 'sns', 'httpM', 10);
-        const costDel = delM * (pf.http || 0.60);
-        lines.push({ label: 'HTTP Delivery', formula: delM + 'M × $' + (pf.http || 0.60).toFixed(2) + '/M', value: costDel });
+        const billDelM = Math.max(0, delM - 0.1);
+        const costDel = billDelM * (pf.http || 0.60);
+        lines.push({ label: 'HTTP Delivery', formula: billDelM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M billable × $' + (pf.http || 0.60).toFixed(2) + '/M', value: costDel, freeSaving: Math.min(delM, 0.1).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M deliveries free (Always Free tier)' });
         const emailM = this.getVal(config, 'sns', 'emailM', 0);
-        const costEmail = emailM * (pf.email || 20.0);
-        if (costEmail > 0) lines.push({ label: 'Email Delivery', formula: emailM + 'M × $' + (pf.email || 20.0).toFixed(2) + '/M', value: costEmail });
+        const billEmailM = Math.max(0, emailM - 0.001);
+        const costEmail = billEmailM * (pf.email || 20.0);
+        if (costEmail > 0) lines.push({ label: 'Email Delivery', formula: billEmailM.toLocaleString(undefined, { maximumFractionDigits: 3 }) + 'M billable × $' + (pf.email || 20.0).toFixed(2) + '/M', value: costEmail, freeSaving: '1K emails free (Always Free tier)' });
         total = costPub + costDel + costEmail;
         break;
       }
@@ -833,9 +886,11 @@ export class CostService {
         const type = this.getVal(config, 'stepFunctions', 'type', 'standard');
         let cost = 0;
         if (type === 'standard') {
+          // Always Free tier (perpetual): 4,000 state transitions/month (0.004M).
           const trans = this.getVal(config, 'stepFunctions', 'transitionsM', 1);
-          cost = trans * (pf.standardM || 25.0);
-          lines.push({ label: 'Standard Transitions', formula: trans + 'M × $' + (pf.standardM || 25.00).toFixed(2) + '/M', value: cost });
+          const billTrans = Math.max(0, trans - 0.004);
+          cost = billTrans * (pf.standardM || 25.0);
+          lines.push({ label: 'Standard Transitions', formula: billTrans.toLocaleString(undefined, { maximumFractionDigits: 3 }) + 'M billable × $' + (pf.standardM || 25.00).toFixed(2) + '/M', value: cost, freeSaving: '4,000 transitions free (Always Free tier)' });
         } else {
           const reqM = this.getVal(config, 'stepFunctions', 'expressReqsM', 10);
           const gbM = this.getVal(config, 'stepFunctions', 'expressGBsecM', 1);
@@ -1007,12 +1062,15 @@ export class CostService {
       }
 
       case 'xray': {
+        // Always Free tier (perpetual): 100K traces recorded (0.1M) + 1M traces scanned/retrieved.
         const tr = this.getVal(config, 'xray', 'tracesM', 1);
-        const costTr = tr * (pf.recordM || 5.0);
-        lines.push({ label: 'Traces Recorded', formula: tr + 'M × $' + (pf.recordM || 5.00).toFixed(2) + '/M', value: costTr });
+        const billTr = Math.max(0, tr - 0.1);
+        const costTr = billTr * (pf.recordM || 5.0);
+        lines.push({ label: 'Traces Recorded', formula: billTr.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M billable × $' + (pf.recordM || 5.00).toFixed(2) + '/M', value: costTr, freeSaving: Math.min(tr, 0.1).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M traces free (Always Free tier)' });
         const sc = this.getVal(config, 'xray', 'scansM', 10);
-        const costSc = sc * (pf.scanM || 0.50);
-        lines.push({ label: 'Traces Scanned', formula: sc + 'M × $' + (pf.scanM || 0.50).toFixed(2) + '/M', value: costSc });
+        const billSc = Math.max(0, sc - 1);
+        const costSc = billSc * (pf.scanM || 0.50);
+        lines.push({ label: 'Traces Scanned', formula: billSc.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M billable × $' + (pf.scanM || 0.50).toFixed(2) + '/M', value: costSc, freeSaving: Math.min(sc, 1).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M scans free (Always Free tier)' });
         total = costTr + costSc;
         break;
       }
@@ -1108,13 +1166,16 @@ export class CostService {
       }
 
       case 'kms': {
+        // Customer-managed keys are $1/key/mo (not free). API requests have a
+        // perpetual Always Free tier of 20,000 requests/month (0.02M).
         const keys = this.getVal(config, 'kms', 'keys', 5);
         const costKeys = keys * (pf.keyMonth || 1.0);
         lines.push({ label: 'CMKs', formula: keys + ' Keys × $' + (pf.keyMonth || 1.00).toFixed(2), value: costKeys });
         // $0.03 per 10,000 requests = $3.00 per million
         const reqM = this.getVal(config, 'kms', 'requestsM', 10);
-        const costReq = reqM * (pf.reqM || 3.00);
-        lines.push({ label: 'API Requests', formula: reqM + 'M × $' + (pf.reqM || 3.00).toFixed(2) + '/M', value: costReq });
+        const billReqM = Math.max(0, reqM - 0.02);
+        const costReq = billReqM * (pf.reqM || 3.00);
+        lines.push({ label: 'API Requests', formula: billReqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M billable × $' + (pf.reqM || 3.00).toFixed(2) + '/M', value: costReq, freeSaving: '20,000 requests free (Always Free tier)' });
         total = costKeys + costReq;
         break;
       }
@@ -1136,19 +1197,23 @@ export class CostService {
       }
 
       case 'codePipeline': {
+        // Always Free tier (perpetual): 1 active pipeline/month.
         const p = this.getVal(config, 'codePipeline', 'pipelines', 5);
-        const cost = p * (pf.pipelineMonth || 1.0);
-        lines.push({ label: 'Active Pipelines', formula: p + ' Pipelines × $' + (pf.pipelineMonth || 1.00).toFixed(2), value: cost });
+        const billP = Math.max(0, p - 1);
+        const cost = billP * (pf.pipelineMonth || 1.0);
+        lines.push({ label: 'Active Pipelines', formula: billP + ' billable × $' + (pf.pipelineMonth || 1.00).toFixed(2), value: cost, freeSaving: '1 pipeline free (Always Free tier)' });
         total = cost;
         break;
       }
 
       case 'codeBuild': {
+        // Always Free tier (perpetual): 100 build minutes/month.
         const min = this.getVal(config, 'codeBuild', 'minutes', 1000);
+        const billMin = Math.max(0, min - 100);
         const type = this.getVal(config, 'codeBuild', 'computeType', 'general1.small');
         const rate = pf.rates?.[type] || 0.005;
-        const cost = min * rate;
-        lines.push({ label: 'Build Compute', formula: min + ' min × $' + rate + '/min', value: cost });
+        const cost = billMin * rate;
+        lines.push({ label: 'Build Compute', formula: billMin + ' billable min × $' + rate + '/min', value: cost, freeSaving: '100 min free (Always Free tier)' });
         total = cost;
         break;
       }
