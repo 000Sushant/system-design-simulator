@@ -36,7 +36,14 @@ interface ServiceDoc {
   keyCapabilities: string[];
   useCases: string[];
   illustrationSvg: SafeHtml;
-  bottleneck: { kind: string; failureMode: string; capacityDriver: string; summary: string } | null;
+  bottleneck: {
+    kind: string;
+    failureMode: string;
+    capacityDriver: string;
+    summary: string;
+    saturationCondition?: string;
+    atSaturation?: string;
+  } | null;
 }
 
 @Component({
@@ -3877,7 +3884,14 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     // Bottleneck model (what limits this service and whether it throttles or fails).
     const bnRaw = (serviceBottleneckData as any)[type];
     const bottleneck = bnRaw && bnRaw.summary
-      ? { kind: bnRaw.kind, failureMode: bnRaw.failureMode, capacityDriver: bnRaw.capacityDriver || '', summary: bnRaw.summary }
+      ? {
+          kind: bnRaw.kind,
+          failureMode: bnRaw.failureMode,
+          capacityDriver: bnRaw.capacityDriver || '',
+          summary: bnRaw.summary,
+          saturationCondition: bnRaw.saturationCondition || '',
+          atSaturation: bnRaw.atSaturation || ''
+        }
       : null;
 
     return {

@@ -1229,7 +1229,8 @@
           "default": 2,
           "min": 0,
           "max": 500,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of custom CloudWatch dashboards. First 3 are free; each additional dashboard is $3/month."
         },
         {
           "key": "alarms",
@@ -1693,7 +1694,8 @@
               "value": "memcached",
               "label": "Memcached"
             }
-          ]
+          ],
+          "notes": "Cache engine. Redis adds replication and persistence; Memcached is simpler multi-threaded caching. Pricing is per node-hour and similar across engines."
         },
         {
           "key": "nodeType",
@@ -1882,7 +1884,8 @@
               "label": "ARM (Graviton)"
             }
           ],
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType",
+          "notes": "Fargate CPU architecture. ARM (Graviton) is ~20% cheaper than x86 for the same vCPU/memory."
         },
         {
           "key": "ephemeralStorage",
@@ -1893,7 +1896,8 @@
           "min": 20,
           "max": 200,
           "group": "fargate",
-          "visibleIf": "config.launchType === 'fargate' || !config.launchType"
+          "visibleIf": "config.launchType === 'fargate' || !config.launchType",
+          "notes": "Scratch disk per task beyond the free 20 GB. Billed at ~$0.000111/GB-hour on Fargate."
         },
         {
           "key": "spotUsage",
@@ -1931,7 +1935,8 @@
               "label": "m6g.large (ARM)"
             }
           ],
-          "visibleIf": "config.launchType === 'ec2'"
+          "visibleIf": "config.launchType === 'ec2'",
+          "notes": "EC2 instance type backing the ECS cluster (EC2 launch type only). Sets the per-hour compute rate."
         },
         {
           "key": "nodeCount",
@@ -1942,7 +1947,8 @@
           "min": 1,
           "max": 100,
           "group": "ec2",
-          "visibleIf": "config.launchType === 'ec2'"
+          "visibleIf": "config.launchType === 'ec2'",
+          "notes": "Number of EC2 container instances in the cluster. Each is billed at its full instance-hour rate."
         },
         {
           "key": "purchaseOption",
@@ -1964,7 +1970,8 @@
               "label": "Spot Instance"
             }
           ],
-          "visibleIf": "config.launchType === 'ec2'"
+          "visibleIf": "config.launchType === 'ec2'",
+          "notes": "EC2 pricing model: On-Demand (no commitment), Reserved (up to ~40% off for 1-3yr), or Spot (up to ~70% off, interruptible)."
         },
         {
           "key": "ebsStorage",
@@ -1975,7 +1982,8 @@
           "min": 8,
           "max": 1000,
           "group": "ec2",
-          "visibleIf": "config.launchType === 'ec2'"
+          "visibleIf": "config.launchType === 'ec2'",
+          "notes": "EBS root volume size per EC2 container instance, billed per GB-month."
         },
         {
           "key": "dataTransferOut",
@@ -1985,7 +1993,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Outbound data to the internet per month. First 100 GB free, then ~$0.09/GB."
         }
       ],
       "costEvaluation": {
@@ -2127,7 +2136,8 @@
               "value": "fifo",
               "label": "FIFO"
             }
-          ]
+          ],
+          "notes": "Standard queues bill $0.40 per million requests; FIFO queues bill $0.50 per million and guarantee ordering with exactly-once processing."
         }
       ],
       "costEvaluation": {
@@ -2179,7 +2189,8 @@
           "default": 1,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "HTTP/HTTPS notification deliveries per month, in millions. Billed at $0.60 per million after the free tier."
         },
         {
           "key": "emailM",
@@ -2188,7 +2199,8 @@
           "default": 0,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Email/email-JSON deliveries per month, in millions. Billed at $2.00 per million after the free tier."
         }
       ],
       "costEvaluation": {
@@ -2251,7 +2263,8 @@
               "value": "express",
               "label": "Express"
             }
-          ]
+          ],
+          "notes": "Standard workflows bill per state transition; Express workflows bill per request plus GB-second of duration and are cheaper at high volume."
         },
         {
           "key": "transitionsM",
@@ -2261,7 +2274,8 @@
           "min": 0,
           "max": 100000,
           "group": "compute",
-          "visibleIf": "config.type === 'standard' || !config.type"
+          "visibleIf": "config.type === 'standard' || !config.type",
+          "notes": "State transitions per month (Standard workflows), in millions. Billed at $25 per million after the free 4,000/month."
         },
         {
           "key": "expressReqsM",
@@ -2271,7 +2285,8 @@
           "min": 0,
           "max": 100000,
           "group": "compute",
-          "visibleIf": "config.type === 'express'"
+          "visibleIf": "config.type === 'express'",
+          "notes": "Express workflow requests per month, in millions. Billed at $1.00 per million requests."
         },
         {
           "key": "expressGBsecM",
@@ -2281,7 +2296,8 @@
           "min": 0,
           "max": 10000,
           "group": "compute",
-          "visibleIf": "config.type === 'express'"
+          "visibleIf": "config.type === 'express'",
+          "notes": "Express workflow compute, in millions of GB-seconds (memory x duration). Billed on a tiered GB-second rate."
         }
       ],
       "costEvaluation": {
@@ -2601,7 +2617,8 @@
               "value": "r6g",
               "label": "Memory Optimized ARM (r6g)"
             }
-          ]
+          ],
+          "notes": "EC2 hardware profile: t3=burstable/cheap, m=general purpose, c=compute-optimized, r=memory-optimized; g-suffix = Graviton (cheaper)."
         },
         {
           "key": "instanceSize",
@@ -2638,7 +2655,8 @@
               "value": "4xlarge",
               "label": "4xlarge"
             }
-          ]
+          ],
+          "notes": "Scales vCPU and RAM within the family. Each size step roughly doubles both capacity and price."
         },
         {
           "key": "count",
@@ -2647,7 +2665,8 @@
           "default": 2,
           "min": 1,
           "max": 1000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Desired number of running instances. Auto Scaling bills every running instance at its full hourly rate."
         },
         {
           "key": "purchaseOption",
@@ -2672,7 +2691,8 @@
               "value": "spot",
               "label": "Spot Instance"
             }
-          ]
+          ],
+          "notes": "Pricing model: On-Demand, Reserved (1yr/3yr commitment for discount), or Spot (deep discount, interruptible)."
         },
         {
           "key": "storageType",
@@ -2693,7 +2713,8 @@
               "value": "io2",
               "label": "Provisioned IOPS SSD (io2)"
             }
-          ]
+          ],
+          "notes": "EBS volume type. gp3 is the best default (cheaper than gp2 with baseline 3,000 IOPS); io2 for IOPS-intensive workloads."
         },
         {
           "key": "storageSize",
@@ -2702,7 +2723,8 @@
           "default": 30,
           "min": 8,
           "max": 16000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "EBS root volume size in GB per instance, billed monthly per GB."
         },
         {
           "key": "dataTransferOut",
@@ -2711,7 +2733,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Outbound data to the internet per month. First 100 GB free, then ~$0.09/GB."
         },
         {
           "key": "os",
@@ -2780,7 +2803,8 @@
               "value": "fargate",
               "label": "AWS Fargate"
             }
-          ]
+          ],
+          "notes": "Managed node groups run on EC2 (you pay per instance-hour); Fargate runs serverless pods billed per vCPU/GB-second."
         },
         {
           "key": "clusterCount",
@@ -2789,7 +2813,8 @@
           "unit": "qty",
           "default": 1,
           "min": 1,
-          "max": 10
+          "max": 10,
+          "notes": "Number of EKS clusters. Each control plane costs a flat $0.10/hour (~$73/month) regardless of node count."
         },
         {
           "key": "nodeCount",
@@ -2799,7 +2824,8 @@
           "default": 3,
           "min": 1,
           "max": 100,
-          "visibleIf": "config.computeType === 'managed' || !config.computeType"
+          "visibleIf": "config.computeType === 'managed' || !config.computeType",
+          "notes": "Number of EC2 worker nodes (managed node groups). Each is billed at its full instance-hour rate."
         },
         {
           "key": "tasks",
@@ -2809,7 +2835,8 @@
           "default": 10,
           "min": 1,
           "max": 10000,
-          "visibleIf": "config.computeType === 'fargate'"
+          "visibleIf": "config.computeType === 'fargate'",
+          "notes": "Number of Fargate pods running concurrently. Each is billed per vCPU-second and GB-second while running."
         },
         {
           "key": "vCPU",
@@ -2838,7 +2865,8 @@
               "value": "4",
               "label": "4 vCPU"
             }
-          ]
+          ],
+          "notes": "vCPU allocated per Fargate pod. Billed at ~$0.04048 per vCPU-hour."
         },
         {
           "key": "memoryGB",
@@ -2848,7 +2876,8 @@
           "default": 1,
           "min": 0.5,
           "max": 30,
-          "visibleIf": "config.computeType === 'fargate'"
+          "visibleIf": "config.computeType === 'fargate'",
+          "notes": "Memory allocated per Fargate pod, in GB. Billed at ~$0.004445 per GB-hour."
         },
         {
           "key": "k8sSupport",
@@ -2865,7 +2894,8 @@
               "value": "extended",
               "label": "Extended Support"
             }
-          ]
+          ],
+          "notes": "Standard support is free during a version's support window; extended support adds ~$0.50/hour per cluster for older Kubernetes versions."
         },
         {
           "key": "nodeInstanceType",
@@ -2891,7 +2921,8 @@
               "label": "m6g.large (ARM)"
             }
           ],
-          "visibleIf": "config.computeType === 'managed' || !config.computeType"
+          "visibleIf": "config.computeType === 'managed' || !config.computeType",
+          "notes": "EC2 instance type for managed worker nodes. Sets the per-node hourly compute rate."
         },
         {
           "key": "purchaseOption",
@@ -2913,7 +2944,8 @@
               "label": "Spot Instance"
             }
           ],
-          "visibleIf": "config.computeType === 'managed' || !config.computeType"
+          "visibleIf": "config.computeType === 'managed' || !config.computeType",
+          "notes": "EC2 pricing model for worker nodes: On-Demand, Reserved, or Spot."
         },
         {
           "key": "spotUsage",
@@ -2924,7 +2956,8 @@
           "min": 0,
           "max": 100,
           "group": "fargate",
-          "visibleIf": "config.computeType === 'fargate'"
+          "visibleIf": "config.computeType === 'fargate'",
+          "notes": "Share of Fargate capacity served by Fargate Spot, which is up to ~70% cheaper but can be reclaimed."
         },
         {
           "key": "ephemeralStorage",
@@ -2935,7 +2968,8 @@
           "min": 20,
           "max": 200,
           "group": "fargate",
-          "visibleIf": "config.computeType === 'fargate'"
+          "visibleIf": "config.computeType === 'fargate'",
+          "notes": "Scratch disk per Fargate pod beyond the free 20 GB, billed per GB-hour."
         }
       ],
       "costEvaluation": {
@@ -2970,7 +3004,8 @@
           "unit": "rps",
           "default": 50,
           "min": 1,
-          "max": 100000
+          "max": 100000,
+          "costDriver": "Maximum requests/second the cluster handles before latency degrades. Sets the simulation capacity ceiling."
         }
       ],
       "costParams": [
@@ -2989,7 +3024,8 @@
               "value": "provisioned",
               "label": "Provisioned"
             }
-          ]
+          ],
+          "notes": "Serverless v2 auto-scales capacity and bills per ACU-hour; Provisioned uses fixed instance classes billed per instance-hour."
         },
         {
           "key": "avgAcus",
@@ -2999,7 +3035,8 @@
           "min": 0.5,
           "max": 128,
           "group": "compute",
-          "visibleIf": "config.mode === 'serverless-v2' || !config.mode"
+          "visibleIf": "config.mode === 'serverless-v2' || !config.mode",
+          "notes": "Average Aurora Capacity Units consumed (Serverless v2). Each ACU is ~$0.12/hour and bundles ~2 GB RAM with proportional CPU."
         },
         {
           "key": "count",
@@ -3008,7 +3045,8 @@
           "default": 2,
           "min": 1,
           "max": 15,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of provisioned DB instances (writer + readers). Each is billed at its instance-class hourly rate."
         },
         {
           "key": "instanceClass",
@@ -3030,7 +3068,8 @@
               "value": "db.r6g.large",
               "label": "db.r6g.large (ARM)"
             }
-          ]
+          ],
+          "notes": "Provisioned instance size. Larger classes add vCPU/RAM and cost; r-class is memory-optimized for databases."
         },
         {
           "key": "storageSize",
@@ -3039,7 +3078,8 @@
           "default": 100,
           "min": 10,
           "max": 128000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Cluster storage in GB, billed at ~$0.10/GB-month. Aurora storage grows automatically as data is written."
         },
         {
           "key": "ioRequestsM",
@@ -3048,7 +3088,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Storage I/O operations per month, in millions, billed at ~$0.20/million (standard mode; I/O-Optimized removes this charge)."
         }
       ],
       "costEvaluation": {
@@ -3151,7 +3192,8 @@
           "default": 2,
           "min": 1,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Provisioned shards, each providing 1 MB/s ingest and 2 MB/s egress. Billed at ~$0.015 per shard-hour."
         },
         {
           "key": "putUnitsM",
@@ -3160,7 +3202,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "PUT payload units per month (one per 25 KB written), in millions. Billed at ~$0.014 per million units."
         },
         {
           "key": "retentionDays",
@@ -3169,7 +3212,8 @@
           "default": 1,
           "min": 1,
           "max": 365,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Days of extended data retention beyond the free 24 hours. Billed per shard-hour for the extended window."
         }
       ],
       "costEvaluation": {
@@ -3227,7 +3271,8 @@
           "default": 2,
           "min": 2,
           "max": 30,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of Kafka broker nodes in the cluster. Each is billed at its instance-type hourly rate."
         },
         {
           "key": "instance",
@@ -3244,7 +3289,8 @@
               "value": "kafka.m5.large",
               "label": "kafka.m5.large"
             }
-          ]
+          ],
+          "notes": "Broker instance type. Larger types add throughput and cost; sized by partitions and traffic."
         },
         {
           "key": "storageGB",
@@ -3253,7 +3299,8 @@
           "default": 50,
           "min": 1,
           "max": 16384,
-          "group": "storage"
+          "group": "storage",
+          "notes": "EBS storage provisioned per broker, in GB, billed monthly per GB."
         }
       ],
       "costEvaluation": {
@@ -3313,7 +3360,8 @@
           "default": 50000,
           "min": 0,
           "max": 100000000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Monthly active users. The first 10,000 (or 50,000 with social/SAML tiers) are free; beyond that ~$0.0055/MAU on a sliding scale."
         }
       ],
       "costEvaluation": {
@@ -3373,7 +3421,8 @@
           "default": 1,
           "min": 1,
           "max": 50,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of Web ACLs. Each costs a flat $5/month regardless of traffic."
         },
         {
           "key": "rules",
@@ -3382,7 +3431,8 @@
           "default": 5,
           "min": 0,
           "max": 100,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Rules attached per Web ACL. Each rule adds $1/month; requests are billed separately at $0.60 per million."
         }
       ],
       "costEvaluation": {
@@ -3457,7 +3507,8 @@
               "value": "ia",
               "label": "EFS Infrequent Access"
             }
-          ]
+          ],
+          "notes": "Standard for frequently accessed files; Infrequent Access (IA) is ~90% cheaper to store but adds a per-GB read fee."
         },
         {
           "key": "storageGB",
@@ -3466,7 +3517,8 @@
           "default": 100,
           "min": 0,
           "max": 1000000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "File system storage in GB. Standard is ~$0.30/GB-month; IA is ~$0.025/GB-month."
         },
         {
           "key": "provisionedThroughput",
@@ -3475,7 +3527,8 @@
           "default": 0,
           "min": 0,
           "max": 1024,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Throughput provisioned beyond the baseline that scales with storage size, billed per MB/s-month."
         }
       ],
       "costEvaluation": {
@@ -3526,7 +3579,8 @@
           "default": 1,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Data scanned by queries per month, in TB. Billed at $5/TB; compression and columnar formats (Parquet) reduce this directly."
         }
       ],
       "costEvaluation": {
@@ -3553,7 +3607,8 @@
           "default": 5,
           "min": 1,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of stored secrets. Each costs $0.40/month, prorated."
         },
         {
           "key": "callsM",
@@ -3562,7 +3617,8 @@
           "default": 1,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "API calls to retrieve secrets per month, in millions. Billed at $0.05 per 10,000 calls."
         }
       ],
       "costEvaluation": {
@@ -3620,7 +3676,8 @@
           "default": 2,
           "min": 1,
           "max": 100,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Number of VPC/VPN attachments to the Transit Gateway. Each is billed per attachment-hour (~$0.05)."
         },
         {
           "key": "dataGB",
@@ -3629,7 +3686,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data processed through the Transit Gateway per month, in GB, billed at ~$0.02/GB."
         }
       ],
       "costEvaluation": {
@@ -3699,7 +3757,8 @@
               "value": "100g",
               "label": "100 Gbps"
             }
-          ]
+          ],
+          "notes": "Dedicated port capacity. Higher port speeds carry a higher flat hourly port fee."
         },
         {
           "key": "dataTransferOut",
@@ -3708,7 +3767,8 @@
           "default": 100,
           "min": 0,
           "max": 1000000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data egress over Direct Connect per month, in GB, billed at the discounted DX rate (cheaper than internet egress)."
         }
       ],
       "costEvaluation": {
@@ -3766,7 +3826,8 @@
           "default": 1,
           "min": 1,
           "max": 10,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Number of accelerators. Each carries a flat $0.025/hour (~$18/month) fixed fee."
         },
         {
           "key": "dataGB",
@@ -3775,7 +3836,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data transferred through the accelerator per month, in GB, billed per GB by source/destination region."
         }
       ],
       "costEvaluation": {
@@ -3810,7 +3872,8 @@
           "default": 1,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Traces recorded per month, in millions. First 100,000 free, then $5 per million traces recorded."
         },
         {
           "key": "scansM",
@@ -3819,7 +3882,8 @@
           "default": 10,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Traces retrieved or scanned per month, in millions, billed at $0.50 per million."
         }
       ],
       "costEvaluation": {
@@ -3866,7 +3930,8 @@
           "default": 2,
           "min": 1,
           "max": 200,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of data nodes in the domain. Each is billed at its instance-type hourly rate."
         },
         {
           "key": "instance",
@@ -3887,7 +3952,8 @@
               "value": "r6g.large",
               "label": "r6g.large"
             }
-          ]
+          ],
+          "notes": "Data node instance type. Larger types add CPU/RAM for indexing and search throughput."
         },
         {
           "key": "storageGB",
@@ -3896,7 +3962,8 @@
           "default": 100,
           "min": 10,
           "max": 300000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "EBS storage attached per node, in GB, billed monthly per GB."
         }
       ],
       "costEvaluation": {
@@ -3964,7 +4031,8 @@
               "value": "serverless",
               "label": "Serverless"
             }
-          ]
+          ],
+          "notes": "Provisioned bills per node-hour for a fixed cluster; Serverless bills per RPU-hour only while queries run."
         },
         {
           "key": "nodes",
@@ -3974,7 +4042,8 @@
           "min": 2,
           "max": 128,
           "group": "compute",
-          "visibleIf": "config.type === 'provisioned' || !config.type"
+          "visibleIf": "config.type === 'provisioned' || !config.type",
+          "notes": "Number of compute nodes (provisioned). Each is billed at its node-type hourly rate."
         },
         {
           "key": "instance",
@@ -3992,7 +4061,8 @@
               "value": "ra3.4xlarge",
               "label": "ra3.4xlarge"
             }
-          ]
+          ],
+          "notes": "Node type. ra3 separates compute from managed storage; larger nodes add vCPU/RAM."
         },
         {
           "key": "rpus",
@@ -4002,7 +4072,8 @@
           "min": 8,
           "max": 512,
           "group": "compute",
-          "visibleIf": "config.type === 'serverless'"
+          "visibleIf": "config.type === 'serverless'",
+          "notes": "Base Redshift Processing Units (serverless). Capacity billed per RPU-hour while active."
         },
         {
           "key": "hours",
@@ -4011,7 +4082,8 @@
           "default": 730,
           "min": 1,
           "max": 730,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Hours per month the serverless workgroup is actively processing queries."
         },
         {
           "key": "storageTB",
@@ -4020,7 +4092,8 @@
           "default": 1,
           "min": 0,
           "max": 1000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Managed storage for ra3/serverless, in TB, billed at ~$24/TB-month independent of compute."
         }
       ],
       "costEvaluation": {
@@ -4048,7 +4121,8 @@
           "default": 10,
           "min": 2,
           "max": 100,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Data Processing Units per job. Each DPU provides 4 vCPU/16 GB and is billed per DPU-hour (~$0.44)."
         },
         {
           "key": "hours",
@@ -4057,7 +4131,8 @@
           "default": 50,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Total ETL job runtime per month, in hours, multiplied by DPUs to compute DPU-hours."
         },
         {
           "key": "crawlers",
@@ -4066,7 +4141,8 @@
           "default": 10,
           "min": 0,
           "max": 1000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Crawler runtime per month, in hours, billed at the same ~$0.44/DPU-hour rate."
         }
       ],
       "costEvaluation": {
@@ -4094,7 +4170,8 @@
           "default": 3,
           "min": 1,
           "max": 1000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of cluster nodes (EC2). Billed at the EC2 instance rate plus a per-node EMR surcharge."
         },
         {
           "key": "instance",
@@ -4115,7 +4192,8 @@
               "value": "r5.xlarge",
               "label": "r5.xlarge"
             }
-          ]
+          ],
+          "notes": "EC2 instance type for cluster nodes. Larger types add CPU/RAM and cost."
         },
         {
           "key": "hours",
@@ -4124,7 +4202,8 @@
           "default": 100,
           "min": 1,
           "max": 730,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Cluster runtime per month, in hours. EMR bills only while the cluster is running."
         }
       ],
       "costEvaluation": {
@@ -4175,14 +4254,16 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Data ingested into the delivery stream per month, in GB, billed on a tiered per-GB rate (~$0.029/GB)."
         },
         {
           "key": "conversion",
           "label": "Format Conversion",
           "type": "boolean",
           "default": false,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Enables record format conversion (e.g. JSON to Parquet), which adds a per-GB processing charge."
         }
       ],
       "costEvaluation": {
@@ -4232,7 +4313,8 @@
           "default": 1,
           "min": 1,
           "max": 50,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of broker instances. A single-instance broker is cheapest; active/standby doubles cost for high availability."
         },
         {
           "key": "instance",
@@ -4249,7 +4331,8 @@
               "value": "mq.m5.large",
               "label": "mq.m5.large"
             }
-          ]
+          ],
+          "notes": "Broker instance type. Larger types add throughput and connection capacity, billed per instance-hour."
         },
         {
           "key": "storageGB",
@@ -4288,7 +4371,8 @@
           "default": 5,
           "min": 1,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of customer-managed keys (CMKs). Each costs $1/month, prorated; AWS-managed keys are free."
         },
         {
           "key": "requestsM",
@@ -4297,7 +4381,8 @@
           "default": 1,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Cryptographic API requests per month, in millions. Billed at $0.03 per 10,000 requests."
         }
       ],
       "costEvaluation": {
@@ -4330,7 +4415,8 @@
           "label": "Shield Advanced",
           "type": "boolean",
           "default": false,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Shield Advanced adds DDoS protection and cost-protection for a flat $3,000/month commitment (plus data fees); Standard is free."
         }
       ],
       "costEvaluation": {
@@ -4368,7 +4454,8 @@
           "default": 5,
           "min": 1,
           "max": 1000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Active pipelines per month. First one is free; each additional active pipeline costs $1/month."
         }
       ],
       "costEvaluation": {
@@ -4395,7 +4482,8 @@
           "default": 300,
           "min": 0,
           "max": 1000000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Build minutes per month. Billed per minute at a rate set by the chosen compute type."
         },
         {
           "key": "computeType",
@@ -4412,7 +4500,8 @@
               "value": "general1.large",
               "label": "Large"
             }
-          ]
+          ],
+          "notes": "Build compute size. Larger instances build faster but cost more per minute."
         }
       ],
       "costEvaluation": {
@@ -4440,7 +4529,8 @@
           "default": 0,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "On-premises instance updates per month. EC2/Lambda deployments are free; on-prem updates cost $0.02 each."
         }
       ],
       "costEvaluation": {
@@ -4502,7 +4592,8 @@
               "value": "titan",
               "label": "Titan Text"
             }
-          ]
+          ],
+          "notes": "Foundation model tier. Larger/more-capable models cost more per token; pricing differs for input vs. output tokens."
         },
         {
           "key": "inTokensM",
@@ -4511,7 +4602,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Input (prompt) tokens processed per month, in millions, billed at the model's input-token rate."
         },
         {
           "key": "outTokensM",
@@ -4520,7 +4612,8 @@
           "default": 2,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Output (completion) tokens generated per month, in millions, billed at the model's higher output-token rate."
         }
       ],
       "costEvaluation": {
@@ -4589,7 +4682,8 @@
               "value": "serverless",
               "label": "Serverless Inference"
             }
-          ]
+          ],
+          "notes": "Real-time instance endpoints bill per instance-hour while running; Serverless Inference bills only per request and GB-second."
         },
         {
           "key": "instance",
@@ -4611,7 +4705,8 @@
               "value": "ml.p3.2xlarge",
               "label": "ml.p3.2xlarge (GPU)"
             }
-          ]
+          ],
+          "notes": "Endpoint instance type. ml.p/g GPU types are far more expensive than ml.t/m CPU types."
         },
         {
           "key": "count",
@@ -4621,7 +4716,8 @@
           "min": 1,
           "max": 100,
           "group": "compute",
-          "visibleIf": "config.type === 'instance' || !config.type"
+          "visibleIf": "config.type === 'instance' || !config.type",
+          "notes": "Number of inference instances behind the endpoint. Each is billed at its instance-hour rate."
         },
         {
           "key": "memoryMB",
@@ -4631,7 +4727,8 @@
           "min": 1024,
           "max": 6144,
           "group": "compute",
-          "visibleIf": "config.type === 'serverless'"
+          "visibleIf": "config.type === 'serverless'",
+          "notes": "Memory allocated for a serverless endpoint, in MB. Higher memory raises the per-request GB-second cost."
         },
         {
           "key": "durationMs",
@@ -4641,7 +4738,8 @@
           "min": 10,
           "max": 60000,
           "group": "compute",
-          "visibleIf": "config.type === 'serverless'"
+          "visibleIf": "config.type === 'serverless'",
+          "notes": "Average inference duration per request, in ms. Multiplied by memory for serverless GB-second billing."
         },
         {
           "key": "trainingHours",
@@ -4650,7 +4748,8 @@
           "default": 10,
           "min": 0,
           "max": 730,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Training instance hours per month, billed separately from inference at the training instance rate."
         }
       ],
       "costEvaluation": {
@@ -4703,7 +4802,8 @@
           "default": 100,
           "min": 0,
           "max": 10000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data transferred out of AppSync per month, in GB, billed at standard egress rates (~$0.09/GB)."
         }
       ],
       "costEvaluation": {
@@ -4762,7 +4862,8 @@
           "default": 10,
           "min": 0,
           "max": 1000000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Rules-engine actions executed per month, in millions, billed at ~$0.15 per million rule actions."
         }
       ],
       "costEvaluation": {
@@ -4797,7 +4898,8 @@
           "default": 1,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Images analyzed per month, in millions. Billed per image on a tiered rate (~$1.00 per 1,000 for the first tier)."
         }
       ],
       "costEvaluation": {
@@ -4824,7 +4926,8 @@
           "default": 0.1,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Pages processed per month, in millions. Detect-text is cheapest; forms/tables analysis costs more per page."
         },
         {
           "key": "apiType",
@@ -4886,7 +4989,8 @@
           "default": 100,
           "min": 0,
           "max": 1000000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "HD output minutes transcoded per month, billed per output-minute by resolution and codec."
         }
       ],
       "costEvaluation": {
@@ -4914,7 +5018,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Data events recorded per month, in millions. Management events' first copy is free; data events cost ~$0.10 per 100,000."
         }
       ],
       "costEvaluation": {
@@ -4944,7 +5049,8 @@
           "default": 20,
           "min": 0,
           "max": 100000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Warm (frequently restorable) backup storage in GB, billed per GB-month by the source service."
         },
         {
           "key": "coldGB",
@@ -4953,7 +5059,8 @@
           "default": 0,
           "min": 0,
           "max": 1000000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Cold backup storage in GB, much cheaper per GB-month but with a minimum retention and a retrieval fee."
         }
       ],
       "costEvaluation": {
@@ -5022,7 +5129,8 @@
           "default": 2,
           "min": 1,
           "max": 100,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of active application instances. Each is billed for provisioned memory plus active-request vCPU."
         },
         {
           "key": "vcpu",
@@ -5031,7 +5139,8 @@
           "default": 1,
           "min": 1,
           "max": 4,
-          "group": "compute"
+          "group": "compute",
+          "notes": "vCPU provisioned per instance. Billed only while actively processing requests (~$0.064/vCPU-hour)."
         },
         {
           "key": "memGB",
@@ -5040,7 +5149,8 @@
           "default": 2,
           "min": 2,
           "max": 12,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Memory provisioned per instance, in GB, billed continuously while the instance is provisioned (~$0.007/GB-hour)."
         },
         {
           "key": "activeHoursPercent",
@@ -5116,7 +5226,8 @@
               "value": "r6g",
               "label": "Memory Optimized ARM (r6g)"
             }
-          ]
+          ],
+          "notes": "EC2 hardware profile for the environment: t3=burstable/cheap, m=general, c=compute, r=memory-optimized (g=Graviton)."
         },
         {
           "key": "instanceSize",
@@ -5153,7 +5264,8 @@
               "value": "4xlarge",
               "label": "4xlarge"
             }
-          ]
+          ],
+          "notes": "Scales vCPU and RAM within the family. Beanstalk itself is free; you pay for the underlying EC2."
         },
         {
           "key": "count",
@@ -5162,7 +5274,8 @@
           "default": 2,
           "min": 1,
           "max": 1000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Number of EC2 instances in the environment. Each is billed at its full hourly rate."
         },
         {
           "key": "purchaseOption",
@@ -5187,7 +5300,8 @@
               "value": "spot",
               "label": "Spot Instance"
             }
-          ]
+          ],
+          "notes": "EC2 pricing model: On-Demand, Reserved (1yr/3yr), or Spot."
         },
         {
           "key": "storageType",
@@ -5208,7 +5322,8 @@
               "value": "io2",
               "label": "Provisioned IOPS SSD (io2)"
             }
-          ]
+          ],
+          "notes": "EBS volume type per instance. gp3 is the best default; io2 for IOPS-heavy workloads."
         },
         {
           "key": "storageSize",
@@ -5217,7 +5332,8 @@
           "default": 30,
           "min": 8,
           "max": 16000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "EBS root volume size in GB per instance, billed monthly per GB."
         },
         {
           "key": "dataTransferOut",
@@ -5226,7 +5342,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Outbound data to the internet per month. First 100 GB free, then ~$0.09/GB."
         },
         {
           "key": "os",
@@ -5278,7 +5395,8 @@
               "value": "ontap",
               "label": "NetApp ONTAP"
             }
-          ]
+          ],
+          "notes": "File system engine: Windows (SMB), Lustre (high-performance compute), or NetApp ONTAP (multi-protocol). Rates differ by type."
         },
         {
           "key": "deployment",
@@ -5295,7 +5413,8 @@
               "value": "multiAz",
               "label": "Multi-AZ"
             }
-          ]
+          ],
+          "notes": "Single-AZ is cheaper; Multi-AZ roughly doubles storage cost for automatic failover and higher availability."
         },
         {
           "key": "storageGB",
@@ -5304,7 +5423,8 @@
           "default": 100,
           "min": 32,
           "max": 65536,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Provisioned SSD storage in GB, billed monthly per GB at a type-specific rate."
         },
         {
           "key": "throughputMBps",
@@ -5313,7 +5433,8 @@
           "default": 8,
           "min": 8,
           "max": 2048,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Provisioned throughput capacity in MB/s, billed per MB/s-month separately from storage."
         }
       ],
       "costEvaluation": {
@@ -5362,7 +5483,8 @@
           "default": 0,
           "min": 0,
           "max": 10000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Managed instances on the Advanced tier, billed at ~$0.00695/instance-hour; the Standard tier is free up to its limits."
         },
         {
           "key": "paramCallsM",
@@ -5371,7 +5493,8 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "group": "compute"
+          "group": "compute",
+          "notes": "Advanced Parameter Store API interactions per month, in millions, billed at $0.05 per 10,000 calls."
         }
       ],
       "costEvaluation": {
@@ -5412,7 +5535,8 @@
           "default": 50,
           "min": 0,
           "max": 10000,
-          "group": "storage"
+          "group": "storage",
+          "notes": "Container image storage in GB, billed at $0.10/GB-month across all repositories."
         },
         {
           "key": "dataTransferOutGB",
@@ -5472,7 +5596,8 @@
           "default": 1,
           "min": 1,
           "max": 100,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Number of interface VPC endpoints. Each is billed per endpoint-hour per Availability Zone (~$0.01)."
         },
         {
           "key": "dataGB",
@@ -5481,7 +5606,8 @@
           "default": 100,
           "min": 0,
           "max": 100000,
-          "group": "networking"
+          "group": "networking",
+          "notes": "Data processed through the endpoints per month, in GB, billed at ~$0.01/GB."
         }
       ],
       "costEvaluation": {

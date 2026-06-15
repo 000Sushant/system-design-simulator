@@ -127,12 +127,28 @@
               <div class="bottleneck-box" [class.is-offline]="bn.failureMode === 'offline'">
                 <div class="bottleneck-head">
                   <span class="bottleneck-badge kind">{{ bn.kind }}</span>
-                  <span class="bottleneck-badge mode" [class.offline]="bn.failureMode === 'offline'">
-                    {{ bn.failureMode === 'offline' ? 'Can go offline' : (bn.failureMode === 'none' ? 'No hard limit' : 'Throttles, stays up') }}
-                  </span>
+
+                  <!-- Runtime behaviour: whether it can overload, and the outcome at saturation -->
+                  <ng-container [ngSwitch]="bn.failureMode">
+                    <span *ngSwitchCase="'none'" class="bottleneck-badge mode none">No hard limit</span>
+                    <ng-container *ngSwitchCase="'offline'">
+                      <span class="bottleneck-badge mode overload">Can overload</span>
+                      <span class="bottleneck-badge mode offline">Goes offline</span>
+                    </ng-container>
+                    <ng-container *ngSwitchDefault>
+                      <span class="bottleneck-badge mode overload">Can overload</span>
+                      <span class="bottleneck-badge mode">Stays up · throttles</span>
+                    </ng-container>
+                  </ng-container>
+
                   <span class="bottleneck-driver">{{ bn.capacityDriver }}</span>
                 </div>
+
                 <p class="bottleneck-summary">{{ bn.summary }}</p>
+
+                <p class="bottleneck-at-capacity" *ngIf="bn.atSaturation">
+                  <strong>At capacity:</strong> {{ bn.atSaturation }}
+                </p>
               </div>
             </div>
           </div>

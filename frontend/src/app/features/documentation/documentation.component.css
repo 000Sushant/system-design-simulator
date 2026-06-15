@@ -1452,6 +1452,31 @@
   border-color: rgba(239, 68, 68, 0.3);
 }
 
+/* "Can overload" tag — red, matching the offline tag */
+.bottleneck-badge.mode.overload {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Neutral "no hard limit" tag for sources / unbounded services */
+.bottleneck-badge.mode.none {
+  color: #475569;
+  background: rgba(100, 116, 139, 0.12);
+  border-color: rgba(100, 116, 139, 0.25);
+}
+
+.bottleneck-at-capacity {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #475569;
+}
+
+.bottleneck-at-capacity strong {
+  color: #334155;
+}
+
 .bottleneck-driver {
   flex-basis: 100%;
   font-size: 11.5px;
@@ -1874,6 +1899,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Grow to fill the right column so its bottom aligns with the left section. */
+  flex: 1;
+  min-height: 0;
 }
 
 .integrations-list-wrapper h4 {
@@ -1887,6 +1915,9 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* Absorb the wrapper's stretched height and scroll internally. */
+  flex: 1;
+  min-height: 0;
   max-height: 640px;
   overflow-y: auto;
   padding-right: 4px;
