@@ -188,7 +188,7 @@
           </f-connection>
 
           <article *ngFor="let node of nodes; trackBy: trackById" fNode fDragHandle [fNodeId]="node.id"
-            [fNodePosition]="{ x: node.x, y: node.y }" class="node-card" [class.vpc-card]="node.type === 'vpc'"
+            [fNodePosition]="nodePos(node)" class="node-card" [class.vpc-card]="node.type === 'vpc'"
             [class.selected]="node.selected" [class.offline]="node.status === 'offline'"
             [style.borderColor]="statusColor(node.status)" [style.backgroundColor]="serviceColor(node.type) + '14'"
             (mousemove)="onMouseMove($event)" (click)="selectNode(node.id)">
@@ -236,7 +236,7 @@
 
           <!-- Annotations Layer -->
           <div *ngFor="let anno of annotations; trackBy: trackById" fNode fDragHandle [fNodeId]="anno.id"
-            [fNodePosition]="{ x: anno.x, y: anno.y }" class="annotation-node" [class.selected]="anno.selected"
+            [fNodePosition]="nodePos(anno)" class="annotation-node" [class.selected]="anno.selected"
             [style.width.px]="anno.width" [style.height.px]="anno.height"
             (pointerdown)="selectAnnotation(anno.id); $event.stopPropagation()">
             <div class="annotation-controls" *ngIf="anno.selected">
@@ -431,6 +431,8 @@
                   [class.cost-field]="field.affectsCost && roleMode === 'architect'">
                   {{ field.label }}
                   <small *ngIf="field.suffix">{{ field.suffix }}</small>
+                  <i class="fas fa-gauge-high info-icon sim-icon"
+                    title="Simulation parameter — drives the live traffic, latency &amp; utilization simulation."></i>
                   <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
                     title="Affects monthly cost"></i>
                   <i *ngIf="(field.affectsCost && roleMode === 'architect') || field.description"
@@ -456,10 +458,12 @@
                 <span class="field-label-with-info"
                   [class.cost-field]="field.affectsCost && roleMode === 'architect'">
                   {{ field.label }}
+                  <i class="fas fa-gauge-high info-icon sim-icon"
+                    title="Simulation parameter — drives the live traffic, latency &amp; utilization simulation."></i>
                   <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
                     [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
-                  <i *ngIf="field.notes || field.description || isFieldLocked(node, field)" class="fas fa-info-circle info-icon"
-                    [title]="isFieldLocked(node, field) ? fieldLockTooltip(node, field) : (field.notes || field.description || '')"></i>
+                  <i *ngIf="field.notes || field.description || field.costDriver || isFieldLocked(node, field)" class="fas fa-info-circle info-icon"
+                    [title]="isFieldLocked(node, field) ? fieldLockTooltip(node, field) : (field.notes || field.description || field.costDriver || '')"></i>
                 </span>
                 <div class="number-control" [class.readonly-input-wrap]="isFieldLocked(node, field)"
                   *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
@@ -522,9 +526,9 @@
                   {{ field.label }}
                   <i class="fas fa-coins info-icon cost-icon"
                     [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
-                  <i *ngIf="field.notes || field.description || field.syncSource"
+                  <i *ngIf="field.notes || field.description || field.costDriver || field.syncSource"
                     class="fas fa-info-circle info-icon"
-                    [title]="field.notes || field.description || (field.readonly ? 'Synced from: ' + (field.syncSource || 'Client node') : '')"></i>
+                    [title]="field.notes || field.description || field.costDriver || (field.readonly ? 'Synced from: ' + (field.syncSource || 'Client node') : '')"></i>
                   <i *ngIf="field.readonly && !field.notes && !field.description"
                     class="fas fa-info-circle info-icon"
                     [title]="'Synced from: ' + (field.syncSource || 'Client node') + '. Change the value on the Client (Users) node.'"></i>

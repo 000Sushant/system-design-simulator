@@ -187,6 +187,19 @@ select {
   transform: scale(1.15);
 }
 
+/* Simulation-impacting field indicator */
+.sim-icon {
+  color: #0ea5e9 !important;
+  opacity: 0.75;
+  cursor: help;
+}
+
+.sim-icon:hover {
+  opacity: 1 !important;
+  color: #0284c7 !important;
+  transform: scale(1.15);
+}
+
 .cost-field {
   color: #334155;
 }
