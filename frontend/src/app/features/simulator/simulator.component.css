@@ -2205,6 +2205,46 @@ small {
   margin-top: 6px;
 }
 
+/* Users (source) node: outgoing traffic rate, no latency/health */
+.source-rate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.source-arrow {
+  color: #0891b2;
+  font-size: 12px;
+}
+
+.source-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0e7490;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.source-value small {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 1px;
+}
+
+.source-tag {
+  margin-left: auto;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #0e7490;
+  background: #ecfeff;
+  border: 1px solid rgba(34, 211, 238, 0.6);
+  border-radius: 999px;
+  padding: 2px 6px;
+}
+
 .load-bar {
   height: 5px;
   background: #e8eef6;

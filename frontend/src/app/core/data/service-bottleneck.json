@@ -4,15 +4,15 @@
     "kind": "source",
     "failureMode": "none",
     "capacityDriver": "Request rate you set (or variable-traffic peak)",
-    "atSaturation": "It's the load source, not a processing node — it never overloads or goes offline; it only generates the traffic you set.",
-    "summary": "Represents the end users generating traffic. It is the load source for everything downstream — it never bottlenecks or goes offline; its 'capacity' is simply the request rate (or variable-traffic peak) you configure."
+    "atSaturation": "It's the load source, not a processing node. It never overloads or goes offline; it only generates the traffic you set.",
+    "summary": "Represents the end users generating traffic. It is the load source for everything downstream. It never bottlenecks or goes offline; its 'capacity' is simply the request rate (or variable-traffic peak) you configure."
   },
   "route53": {
     "kind": "throughput",
     "failureMode": "throttle",
     "capacityDriver": "Managed query throughput (very high ceiling)",
     "atSaturation": "DNS resolution stays up to extreme rates; past AWS's ceiling queries are throttled, never offline.",
-    "summary": "Fully managed DNS with effectively unlimited query throughput. Under extreme rates AWS throttles resolutions, but the service stays up — it does not go offline. Bottleneck: request throughput, with a very high ceiling."
+    "summary": "Fully managed DNS with effectively unlimited query throughput. Under extreme rates AWS throttles resolutions, but the service stays up. It does not go offline. Bottleneck: request throughput, with a very high ceiling."
   },
   "cognito": {
     "kind": "throughput",
@@ -54,14 +54,14 @@
     "failureMode": "throttle",
     "capacityDriver": "FIFO cap (300/s, 3,000/s batched); standard ≈ unlimited",
     "atSaturation": "Over the FIFO limit sends are throttled (standard queues effectively never saturate); the queue never goes offline.",
-    "summary": "Standard queues have effectively unlimited throughput; FIFO queues cap at 300 messages/s (3,000 with batching). Over the limit, sends are throttled — the queue does not go offline. Bottleneck: FIFO throughput cap (standard is practically unbounded)."
+    "summary": "Standard queues have effectively unlimited throughput; FIFO queues cap at 300 messages/s (3,000 with batching). Over the limit, sends are throttled. The queue does not go offline. Bottleneck: FIFO throughput cap (standard is practically unbounded)."
   },
   "kinesis": {
     "kind": "provisioned",
     "failureMode": "throttle",
     "capacityDriver": "Shard count (1,000 records/s or 1 MB/s each)",
     "atSaturation": "Past a shard's limit, writes are throttled (ProvisionedThroughputExceeded); add shards to scale. The stream stays up.",
-    "summary": "Throughput is provisioned in shards — 1,000 records/s (1 MB/s) per shard. Exceeding a shard throttles (ProvisionedThroughputExceeded); you add shards to scale. Bottleneck: shard count."
+    "summary": "Throughput is provisioned in shards. 1,000 records/s (1 MB/s) per shard. Exceeding a shard throttles (ProvisionedThroughputExceeded); you add shards to scale. Bottleneck: shard count."
   },
   "kinesisFirehose": {
     "kind": "throughput",
@@ -81,8 +81,8 @@
     "kind": "storage",
     "failureMode": "none",
     "capacityDriver": "Effectively unbounded request + durability capacity",
-    "atSaturation": "Effectively unbounded request capacity — it isn't an RPS bottleneck and never goes offline.",
-    "summary": "Object storage with effectively unlimited request and durability capacity at application scale. It is not an RPS bottleneck and does not go offline. Bottleneck: practically none — per-prefix request rate is extremely high."
+    "atSaturation": "Effectively unbounded request capacity. It isn't an RPS bottleneck and never goes offline.",
+    "summary": "Object storage with effectively unlimited request and durability capacity at application scale. It is not an RPS bottleneck and does not go offline. Bottleneck: practically none. Per-prefix request rate is extremely high."
   },
   "cloudWatch": {
     "kind": "throughput",
@@ -96,8 +96,8 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
     "capacityDriver": "tasks × vCPU ÷ request time",
-    "atSaturation": "Sustained overload saturates task CPU, requests time out and unhealthy tasks are killed — it goes Offline until it scales out or load drops.",
-    "summary": "Containers run on real CPU and memory you provision. Capacity ≈ tasks × vCPU ÷ request time. Sustained overload saturates task CPU, requests time out, and unhealthy tasks are killed — so the service goes OFFLINE until it scales out or load drops. Bottleneck: task CPU (vCPU × task count)."
+    "atSaturation": "Sustained overload saturates task CPU, requests time out and unhealthy tasks are killed. It goes Offline until it scales out or load drops.",
+    "summary": "Containers run on real CPU and memory you provision. Capacity ≈ tasks × vCPU ÷ request time. Sustained overload saturates task CPU, requests time out, and unhealthy tasks are killed, so the service goes OFFLINE until it scales out or load drops. Bottleneck: task CPU (vCPU × task count)."
   },
   "elastiCache": {
     "kind": "connections",
@@ -105,14 +105,14 @@
     "offlineAtRatio": 1.6,
     "capacityDriver": "node count × per-node CPU/connections",
     "atSaturation": "Sustained overload (or memory pressure and hot keys) exhausts the node; connections time out and it goes Offline until load drops.",
-    "summary": "In-memory cache bound by node CPU, memory and client connections. Throughput is very high normally, but sustained overload (or memory pressure and hot keys) exhausts the node — connections time out and it goes OFFLINE. Bottleneck: node count × per-node CPU/connections."
+    "summary": "In-memory cache bound by node CPU, memory and client connections. Throughput is very high normally, but sustained overload (or memory pressure and hot keys) exhausts the node. Connections time out and it goes OFFLINE. Bottleneck: node count × per-node CPU/connections."
   },
   "openSearch": {
     "kind": "connections",
     "failureMode": "offline",
     "offlineAtRatio": 1.4,
     "capacityDriver": "data-node count × per-node query concurrency",
-    "atSaturation": "Heavy queries saturate the data nodes; circuit breakers trip and the cluster returns 5xx — it goes Offline until load drops.",
+    "atSaturation": "Heavy queries saturate the data nodes; circuit breakers trip and the cluster returns 5xx. It goes Offline until load drops.",
     "summary": "A search and analytics cluster bound by data-node CPU and JVM heap. Heavy queries and aggregations saturate the nodes; circuit breakers trip and the cluster returns 5xx / goes OFFLINE. Bottleneck: data-node count × per-node query concurrency."
   },
   "rds": {
@@ -121,7 +121,7 @@
     "offlineAtRatio": 1.4,
     "capacityDriver": "max connections (cores-bounded) × per-query cost",
     "atSaturation": "Heavy or slow queries exhaust connections and CPU; new requests get 503s and the instance goes Offline until load drops.",
-    "summary": "A relational database bound by its connection pool and per-query CPU/IO. Heavy or slow queries exhaust connections and CPU; new requests get 503s and the instance becomes unresponsive — OFFLINE. Read replicas raise read capacity. Bottleneck: effective parallel queries (cores) ÷ query time."
+    "summary": "A relational database bound by its connection pool and per-query CPU/IO. Heavy or slow queries exhaust connections and CPU; new requests get 503s and the instance becomes unresponsive, going offline. Read replicas raise read capacity. Bottleneck: effective parallel queries (cores) ÷ query time."
   },
   "elb": {
     "kind": "throughput",
@@ -135,7 +135,7 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
     "capacityDriver": "vCPU x instance count / request time",
-    "atSaturation": "Sustained overload saturates CPU and the instance stops responding — it goes Offline until you add instances or load drops.",
+    "atSaturation": "Sustained overload saturates CPU and the instance stops responding. It goes Offline until you add instances or load drops.",
     "summary": "A server you size yourself. Sustained overload saturates CPU and the instance stops responding (offline). Bottleneck: instance CPU - add instances or autoscale."
   },
   "stepFunctions": {
@@ -149,14 +149,14 @@
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "Not in the request hot path",
-    "atSaturation": "A network boundary, not in the request hot path — it never overloads or goes offline.",
+    "atSaturation": "A network boundary, not in the request hot path. It never overloads or goes offline.",
     "summary": "A network boundary, not a request-processing service - it has no throughput bottleneck of its own and never fails under load."
   },
   "iam": {
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "Identity / authorization (control plane)",
-    "atSaturation": "A control-plane authorization check evaluated alongside requests — it never overloads or goes offline under load.",
+    "atSaturation": "A control-plane authorization check evaluated alongside requests. It never overloads or goes offline under load.",
     "summary": "Identity and access control evaluated alongside requests; it is not a traffic bottleneck and does not go offline."
   },
   "autoScalingGroup": {
@@ -164,14 +164,14 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.6,
     "capacityDriver": "Instance count between min and max",
-    "atSaturation": "Past the max fleet size capacity runs out; backing instances saturate and fail — the group goes Offline until load drops.",
+    "atSaturation": "Past the max fleet size capacity runs out; backing instances saturate and fail. The group goes Offline until load drops.",
     "summary": "Manages an EC2 fleet between a min and max size. Capacity grows with instances, but past the max it saturates and backing instances fail (offline). Bottleneck: max instance count."
   },
   "securityGroup": {
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "Stateful firewall rules",
-    "atSaturation": "A stateful firewall that filters traffic — it doesn't process load, so it never overloads or goes offline.",
+    "atSaturation": "A stateful firewall that filters traffic. It doesn't process load, so it never overloads or goes offline.",
     "summary": "A virtual firewall applied to traffic - it filters, it does not process load, so it has no capacity bottleneck."
   },
   "natGateway": {
@@ -193,7 +193,7 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
     "capacityDriver": "Worker-node CPU x node count",
-    "atSaturation": "Sustained overload saturates worker-node CPU and pods stop responding — it goes Offline until it scales out or load drops.",
+    "atSaturation": "Sustained overload saturates worker-node CPU and pods stop responding. It goes Offline until it scales out or load drops.",
     "summary": "Kubernetes on worker nodes you provision. Sustained overload saturates node CPU and pods become unresponsive (offline). Bottleneck: worker-node CPU."
   },
   "aurora": {
@@ -229,7 +229,7 @@
     "kind": "storage",
     "failureMode": "none",
     "capacityDriver": "Elastic file throughput (scales)",
-    "atSaturation": "Elastic file throughput that scales with usage — not a request bottleneck and never goes offline.",
+    "atSaturation": "Elastic file throughput that scales with usage. Not a request bottleneck and never goes offline.",
     "summary": "Elastic shared file storage that scales throughput with usage; it is not a request bottleneck and does not go offline."
   },
   "athena": {
@@ -279,7 +279,7 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.4,
     "capacityDriver": "Query slots x node count",
-    "atSaturation": "Heavy analytical queries saturate the query slots and nodes; the cluster stops responding — it goes Offline until load drops.",
+    "atSaturation": "Heavy analytical queries saturate the query slots and nodes; the cluster stops responding. It goes Offline until load drops.",
     "summary": "Data warehouse bound by node CPU and concurrency slots; heavy analytical queries saturate the cluster and it stops responding (offline). Bottleneck: node count x query slots."
   },
   "glue": {
@@ -294,7 +294,7 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
     "capacityDriver": "Core / task node CPU",
-    "atSaturation": "Sustained overload saturates the cluster nodes and tasks fail — it goes Offline until you add nodes or load drops.",
+    "atSaturation": "Sustained overload saturates the cluster nodes and tasks fail. It goes Offline until you add nodes or load drops.",
     "summary": "Big-data cluster on nodes you size; sustained overload saturates the cluster and tasks fail (offline). Bottleneck: core/task node CPU."
   },
   "mq": {
@@ -302,7 +302,7 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
     "capacityDriver": "Broker connections & throughput",
-    "atSaturation": "Overload exhausts broker connections and CPU; the broker becomes unresponsive — it goes Offline until load drops.",
+    "atSaturation": "Overload exhausts broker connections and CPU; the broker becomes unresponsive. It goes Offline until load drops.",
     "summary": "Managed message broker bound by broker connections and CPU; overload exhausts the broker and it becomes unresponsive (offline). Bottleneck: broker connections x throughput."
   },
   "kms": {
@@ -316,21 +316,21 @@
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "DDoS protection (out of band)",
-    "atSaturation": "Out-of-band DDoS protection — it isn't in your request path, so it never overloads or goes offline.",
+    "atSaturation": "Out-of-band DDoS protection. It isn't in your request path, so it never overloads or goes offline.",
     "summary": "DDoS protection that mitigates attacks rather than processing your traffic - it has no request-rate bottleneck."
   },
   "organizations": {
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "Account governance (control plane)",
-    "atSaturation": "Pure account and policy governance — never in the request path, so it never overloads or goes offline.",
+    "atSaturation": "Pure account and policy governance. Never in the request path, so it never overloads or goes offline.",
     "summary": "Account and policy governance - entirely control-plane, never in the request path or a bottleneck."
   },
   "codePipeline": {
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "CI/CD orchestration",
-    "atSaturation": "A CI/CD control-plane workflow — not in the runtime request path, so it never overloads or goes offline.",
+    "atSaturation": "A CI/CD control-plane workflow. Not in the runtime request path, so it never overloads or goes offline.",
     "summary": "Orchestrates build/deploy stages - a control-plane workflow, not a runtime traffic bottleneck."
   },
   "codeBuild": {
@@ -344,7 +344,7 @@
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "Deployment orchestration",
-    "atSaturation": "A deployment control-plane service — not in the runtime request path, so it never overloads or goes offline.",
+    "atSaturation": "A deployment control-plane service. Not in the runtime request path, so it never overloads or goes offline.",
     "summary": "Coordinates deployments to your compute - a control-plane service with no runtime traffic bottleneck."
   },
   "bedrock": {
@@ -359,7 +359,7 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
     "capacityDriver": "Endpoint instance count x type",
-    "atSaturation": "Sustained load saturates the endpoint instances and inference stops responding — it goes Offline; enable autoscaling.",
+    "atSaturation": "Sustained load saturates the endpoint instances and inference stops responding. It goes Offline; enable autoscaling.",
     "summary": "Hosts ML inference on instances you provision; sustained load saturates the endpoint and it stops responding (offline). Bottleneck: endpoint instances - enable autoscaling."
   },
   "appSync": {
@@ -408,7 +408,7 @@
     "kind": "storage",
     "failureMode": "none",
     "capacityDriver": "Backup throughput (out of band)",
-    "atSaturation": "Runs scheduled backups out of band — not in the request path, so it never overloads or goes offline.",
+    "atSaturation": "Runs scheduled backups out of band. Not in the request path, so it never overloads or goes offline.",
     "summary": "Runs scheduled backups out of the request path - not a runtime bottleneck and never offline."
   },
   "appRunner": {
@@ -423,35 +423,35 @@
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
     "capacityDriver": "Underlying EC2 instance CPU",
-    "atSaturation": "Sustained overload saturates the underlying EC2 instances and they fail — it goes Offline until the environment scales.",
+    "atSaturation": "Sustained overload saturates the underlying EC2 instances and they fail. It goes Offline until the environment scales.",
     "summary": "Runs your app on managed EC2 instances; sustained overload saturates them and they fail (offline). Bottleneck: instance CPU - scale the environment."
   },
   "fsx": {
     "kind": "storage",
     "failureMode": "none",
     "capacityDriver": "File-system throughput (provisioned)",
-    "atSaturation": "Provisioned file-system throughput — not in the request hot path, so it never overloads or goes offline.",
+    "atSaturation": "Provisioned file-system throughput. Not in the request hot path, so it never overloads or goes offline.",
     "summary": "High-performance shared file storage; throughput is provisioned but it is not a request bottleneck and does not go offline."
   },
   "certificateManager": {
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "TLS certificate provisioning",
-    "atSaturation": "Provisions and renews TLS certificates as control-plane work — never a traffic bottleneck or offline.",
+    "atSaturation": "Provisions and renews TLS certificates as control-plane work. Never a traffic bottleneck or offline.",
     "summary": "Provisions and renews TLS certificates - control-plane only, never a traffic bottleneck."
   },
   "systemsManager": {
     "kind": "control-plane",
     "failureMode": "none",
     "capacityDriver": "Operations & configuration (control plane)",
-    "atSaturation": "Operational and config management on the control plane — not in request processing, so it never overloads or goes offline.",
+    "atSaturation": "Operational and config management on the control plane. Not in request processing, so it never overloads or goes offline.",
     "summary": "Operational management and configuration - control-plane, not part of request processing."
   },
   "ecr": {
     "kind": "storage",
     "failureMode": "none",
     "capacityDriver": "Image pull / push throughput",
-    "atSaturation": "Image pulls are high-throughput and happen at deploy time — not a runtime request bottleneck.",
+    "atSaturation": "Image pulls are high-throughput and happen at deploy time. Not a runtime request bottleneck.",
     "summary": "Container image registry; pulls are high-throughput and cached at deploy time, so it is not a runtime request bottleneck."
   },
   "privateLink": {

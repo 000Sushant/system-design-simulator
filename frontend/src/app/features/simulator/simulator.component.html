@@ -190,7 +190,7 @@
           <article *ngFor="let node of nodes; trackBy: trackById" fNode fDragHandle [fNodeId]="node.id"
             [fNodePosition]="nodePos(node)" class="node-card" [class.vpc-card]="node.type === 'vpc'"
             [class.selected]="node.selected" [class.offline]="node.status === 'offline'"
-            [style.borderColor]="statusColor(node.status)" [style.backgroundColor]="serviceColor(node.type) + '14'"
+            [style.borderColor]="node.type === 'client' ? serviceColor(node.type) : statusColor(node.status)" [style.backgroundColor]="serviceColor(node.type) + '14'"
             (mousemove)="onMouseMove($event)" (click)="selectNode(node.id)">
             <button type="button" class="node-delete" title="Delete service and links"
               (click)="deleteNode($event, node.id)">
@@ -214,10 +214,10 @@
                 <small>{{node.type == 'client'? 'Users': node.type}}</small>
               </div>
             </div>
-            <div class="node-status" [style.color]="statusColor(node.status)">
+            <div class="node-status" *ngIf="node.type !== 'client'" [style.color]="statusColor(node.status)">
               {{ node.status | titlecase }}
             </div>
-            <div class="metric-row">
+            <div class="metric-row" *ngIf="node.type !== 'client'">
               <span>{{
                 (mode === 'idle'
                   ? (node.metrics.throughput || node.config.throughput)
@@ -225,9 +225,21 @@
                 ) | number: "1.0-0"
                 }}
                 rps</span>
-              <span>{{ (mode === 'idle' ? (node.metrics.avgLatency || node.config.latency) : node.metrics.avgLatency) | number: "1.0-0" }}ms</span>
+              <span>{{ formatLatency(mode === 'idle' ? (node.metrics.avgLatency || node.config.latency) : node.metrics.avgLatency) }}</span>
             </div>
-            <div class="load-bar">
+            <!-- Users node is a traffic source: show only the outgoing rate, no latency/health. -->
+            <div class="source-rate" *ngIf="node.type === 'client'">
+              <i class="fas fa-arrow-up source-arrow" aria-hidden="true"></i>
+              <ng-container *ngIf="node.config['variableTraffic']; else steadyRate">
+                <span class="source-value" *ngIf="mode === 'idle'">{{ node.config['variableMinRps'] | number: "1.0-0" }} to {{ node.config['variableMaxRps'] | number: "1.0-0" }} <small>rps</small></span>
+                <span class="source-value" *ngIf="mode !== 'idle'">{{ node.metrics.throughput | number: "1.0-0" }} <small>rps</small></span>
+                <span class="source-tag">VARIABLE</span>
+              </ng-container>
+              <ng-template #steadyRate>
+                <span class="source-value">{{ (mode === 'idle' ? node.config['requestRate'] : node.metrics.throughput) | number: "1.0-0" }} <small>rps</small></span>
+              </ng-template>
+            </div>
+            <div class="load-bar" *ngIf="node.type !== 'client'">
               <span [style.width.%]="mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure"
                 [style.background]="statusColor(node.status)"
                 [title]="(mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure) + '%'"></span>
@@ -627,9 +639,7 @@
                     }}</strong><small>rps</small>
                 </div>
                 <div>
-                  <strong>{{
-                    connection.traffic.latency | number: "1.0-0"
-                    }}ms</strong><small>latency</small>
+                  <strong>{{ formatLatency(connection.traffic.latency) }}</strong><small>latency</small>
                 </div>
               </div>
               <button type="button" class="delete-panel-button" (click)="deleteConnection($event, connection.id)">
@@ -886,7 +896,7 @@
 
           <div class="metric-block info">
             <small>Latency</small>
-            <strong>{{ totals.avgLatency }}ms</strong>
+            <strong>{{ formatLatency(totals.avgLatency) }}</strong>
           </div>
         </div>
       </div>

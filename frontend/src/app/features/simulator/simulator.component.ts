@@ -1324,11 +1324,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get erroredNodes(): ArchitectureNode[] {
-    return this.nodes.filter((n) => this.stickyHealthTone(n) === "error");
+    // The Users node is a pure traffic source and carries no health state.
+    return this.nodes.filter(
+      (n) => n.type !== "client" && this.stickyHealthTone(n) === "error",
+    );
   }
 
   get warnedNodes(): ArchitectureNode[] {
-    return this.nodes.filter((n) => this.stickyHealthTone(n) === "warning");
+    return this.nodes.filter(
+      (n) => n.type !== "client" && this.stickyHealthTone(n) === "warning",
+    );
   }
 
   /** Stable trackBy so error/warning pills aren't torn down between sim ticks. */
@@ -2636,20 +2641,14 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
         snapshot[node.id] = node.config["throughput"];
       }
     }
-    // Also stamp _designThroughput on each downstream node — the simulator
-    // uses this as the stable capacity reference so utilization can swing even
-    // when the cost-side throughput tracks the live sampled RPS.
-    this.nodes = this.nodes.map((n) => {
-      if (n.id === clientId)
-        return { ...n, config: { ...n.config, _syncSnapshot: snapshot } };
-      if (snapshot[n.id] !== undefined) {
-        return {
-          ...n,
-          config: { ...n.config, _designThroughput: snapshot[n.id] },
-        };
-      }
-      return n;
-    });
+    // Store the originals on the client for restore-on-toggle-off. The stable
+    // capacity reference (_designThroughput) is set by propagateRpsToDownstream to
+    // the synced RPS, so the simulation actually uses the pushed value.
+    this.nodes = this.nodes.map((n) =>
+      n.id === clientId
+        ? { ...n, config: { ...n.config, _syncSnapshot: snapshot } }
+        : n,
+    );
   }
 
   private restoreDownstreamThroughput(clientId: string): void {
@@ -2675,7 +2674,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     const rounded = Math.max(1, Math.round(rps * 100) / 100);
     this.nodes = this.nodes.map((n) =>
       downstream.has(n.id)
-        ? { ...n, config: { ...n.config, throughput: rounded } }
+        ? {
+            ...n,
+            // throughput drives the cost panel; _designThroughput is the capacity
+            // the simulation reads, so both must reflect the synced RPS for the
+            // pushed value to actually change latency/utilization.
+            config: { ...n.config, throughput: rounded, _designThroughput: rounded },
+          }
         : n,
     );
   }
@@ -2884,6 +2889,22 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       offline: "#dc2626", // red when stopped/offline
     };
     return colors[status];
+  }
+
+  /**
+   * Human-readable latency: ms under 1s, seconds under 1 min, then "Xm Ys".
+   * Keeps overloaded nodes legible as latency climbs from ms into minutes.
+   */
+  formatLatency(ms: number | null | undefined): string {
+    const v = Math.max(0, Math.round(Number(ms) || 0));
+    if (v < 1000) return `${v}ms`;
+    if (v < 60000) {
+      const s = v / 1000;
+      return `${s % 1 === 0 ? s : s.toFixed(1)}s`;
+    }
+    const mins = Math.floor(v / 60000);
+    const secs = Math.round((v % 60000) / 1000);
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
   }
 
   connectionColor(connection: ArchitectureConnection): string {
