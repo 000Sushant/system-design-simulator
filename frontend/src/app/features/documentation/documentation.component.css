@@ -937,6 +937,11 @@
   font-weight: 700;
 }
 
+.text-red {
+  color: #dc2626 !important;
+  font-weight: 700;
+}
+
 /* ── Pro Tips Sub-Card ────────────────────────────── */
 .doc-tips {
   border-radius: 16px;

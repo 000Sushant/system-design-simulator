@@ -62,6 +62,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     { id: 'start', name: 'Getting Started', icon: 'fas fa-play' },
     { id: 'services', name: 'Services', icon: 'fas fa-layer-group' },
     { id: 'sim', name: 'Simulator Core', icon: 'fas fa-bolt' },
+    { id: 'formulas', name: 'Formulas & Calculations', icon: 'fas fa-square-root-variable' },
     { id: 'compute', name: 'Compute', icon: 'fas fa-server' },
     { id: 'storage', name: 'Storage & DB', icon: 'fas fa-database' },
     { id: 'integration', name: 'Integration', icon: 'fas fa-network-wired' },
@@ -108,7 +109,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       version: '1.0',
       date: 'Initial release',
       title: 'Foundation',
-      summary: 'The first release — drag-and-drop design backed by a deterministic traffic & cost engine.',
+      summary: 'The first release: drag-and-drop design backed by a deterministic traffic & cost engine.',
       items: [
         { icon: 'fas fa-diagram-project', text: 'Drag-and-drop AWS architecture design on a live canvas' },
         { icon: 'fas fa-bolt', text: 'Real-time deterministic traffic simulation' },
@@ -126,7 +127,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       icon: 'fas fa-bullseye',
       accent: 'challenge',
       title: 'Take on the open challenge',
-      text: 'A focused, well-scoped challenge is always waiting to be claimed — a tricky simulation edge case, a pricing-accuracy tweak, or a new canvas interaction. A great place for a meaningful first contribution.',
+      text: 'A focused, well-scoped challenge is always waiting to be claimed: a tricky simulation edge case, a pricing-accuracy tweak, or a new canvas interaction. A great place for a meaningful first contribution.',
       cta: 'Browse open challenges',
       href: 'https://github.com/000Sushant/system-design-simulator/issues'
     },
@@ -142,7 +143,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       icon: 'fas fa-comment-dots',
       accent: 'feedback',
       title: 'Share your feedback',
-      text: 'No code required. Send improvement suggestions or tell us about your experience — what clicked and what felt confusing. Every bit shapes where this goes next.',
+      text: 'No code required. Send improvement suggestions or tell us about your experience: what clicked and what felt confusing. Every bit shapes where this goes next.',
       cta: 'Share feedback',
       href: 'https://forms.gle/2Kh6TKqcwYUSnYnHA'
     },
@@ -158,7 +159,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       icon: 'fas fa-heart',
       accent: 'sponsor',
       title: 'Sponsor the project',
-      text: '100% of every sponsorship goes straight into building Sr. Architect — keeping the pricing pipeline running and shipping new features. Even $1 matters and helps keep things running.',
+      text: '100% of every sponsorship goes straight into building Sr. Architect, keeping the pricing pipeline running and shipping new features. Even $1 matters and helps keep things running.',
       cta: 'Become a sponsor',
       href: 'https://github.com/sponsors/000Sushant'
     }
@@ -272,7 +273,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         '<tr><td>Scroll / pinch</td><td>Zoom the canvas in and out</td></tr>' +
         '<tr><td>Double-click a canvas tab</td><td>Rename that canvas; <kbd>Enter</kbd> confirms, <kbd>Esc</kbd> cancels</td></tr>' +
         '</tbody></table>',
-        'Undo history holds the last 60 changes per canvas and is cleared when you switch tabs or load a different project. Rapid edits — like dragging a slider or moving a node — collapse into a single undo step. Undo and redo are paused while a simulation is running; stop the run first.'
+        'Undo history holds the last 60 changes per canvas and is cleared when you switch tabs or load a different project. Rapid edits (like dragging a slider or moving a node) collapse into a single undo step. Undo and redo are paused while a simulation is running; stop the run first.'
       ],
       tips: [
         'While typing in a text field or note, <kbd>Ctrl</kbd> + <kbd>Z</kbd> performs normal text undo instead of canvas undo.',
@@ -329,6 +330,124 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         '<li><span class="text-red"><strong>Hard Collapse (Offline States):</strong></span> Compute-bound resources (like EC2 instances, ECS container tasks, or RDS database connections) model physical failure. If sustained overload exceeds 150% capacity for over 1 second (6 simulation ticks), the node collapses into a terminal <code>offline</code> state (e.g. CPU exhaustion, connection pool exhaustion) and must be stopped and restarted.</li>' +
         '<li><span class="text-blue"><strong>Cascading Failures:</strong></span> When an upstream service goes offline or is overloaded, its failed state propagates downstream. Any dependent microservices will lose incoming traffic, visualizing a realistic system-wide collapse.</li>' +
         '</ul>'
+      ]
+    },
+
+    // --- FORMULAS & CALCULATIONS ---
+    {
+      id: 'formula-engine',
+      title: 'The 180ms Heartbeat',
+      category: 'formulas',
+      icon: 'fas fa-heart-pulse',
+      summary: 'How the engine recalculates your entire system about five times a second.',
+      content: [
+        'Every architecture you draw runs on one simple loop. Roughly every <code>180ms</code>, about five times a second, the engine wakes up, walks your whole graph, and recomputes traffic, latency, pressure and cost for every node. Each pass is called a <strong>tick</strong>.',
+        '<ul>' +
+        '<li><span class="text-purple"><strong>Producers before consumers:</strong></span> each tick visits nodes in <em>flow order</em> (a topological sort), so a node always sees its full upstream traffic before it runs. Fan-outs and fan-ins stay accurate.</li>' +
+        '<li><span class="text-blue"><strong>Fresh each tick, but with memory:</strong></span> incoming traffic is recomputed from scratch every tick, yet two things deliberately carry over: each node\'s request <strong>queue</strong> and its accumulated <strong>overload latency</strong>. That memory is what makes congestion build and then drain over time.</li>' +
+        '<li><span class="text-emerald"><strong>Nothing is hand-set:</strong></span> during a run no number is faked. Capacity, demand, latency, CPU and cost are all <em>derived</em> from the formulas in this section.</li>' +
+        '</ul>'
+      ],
+      tips: [
+        'Hit Pause to freeze a single tick and read the exact numbers each node resolved.'
+      ]
+    },
+    {
+      id: 'formula-capacity',
+      title: 'Capacity: How Much Can a Node Take?',
+      category: 'formulas',
+      icon: 'fas fa-gauge-high',
+      summary: 'The ceiling each service can serve before it struggles, and why it is rarely just "RPS".',
+      content: [
+        'Picture every node as a <strong>kitchen</strong>: capacity is how many orders its cooks can plate per second. Push more than that and orders pile up. Capacity is computed differently per service, because real services bottleneck on different resources:',
+        '<ul>' +
+        '<li><span class="text-purple"><strong>Lambda (concurrency-bound):</strong></span> <code>capacity = reserved concurrency ÷ execution time(s)</code>. A 200ms function with 100 concurrency serves ~500 rps.</li>' +
+        '<li><span class="text-orange"><strong>EC2 / ECS (compute-bound):</strong></span> <code>capacity = tasks × vCPU × concurrency-per-vCPU ÷ request time(s)</code>.</li>' +
+        '<li><span class="text-blue"><strong>RDS (connection-bound):</strong></span> <code>capacity = parallel queries ÷ query time(s)</code>. Parallel queries are capped by CPU cores (not raw max-connections) and lifted by read replicas.</li>' +
+        '<li><span class="text-emerald"><strong>ElastiCache / OpenSearch:</strong></span> scale with <code>node count × per-node op/query rate</code>.</li>' +
+        '<li><strong>S3:</strong> effectively unbounded, so it is never the bottleneck.</li>' +
+        '</ul>',
+        'This is why a slow 500ms function saturates at a far lower request rate than a fast 10ms one, even with identical concurrency. The cooks are simply tied up longer per order.'
+      ]
+    },
+    {
+      id: 'formula-demand',
+      title: 'Demand, Queue & the Overload Ratio',
+      category: 'formulas',
+      icon: 'fas fa-arrow-trend-up',
+      summary: 'How incoming traffic, backlog and capacity combine into one "how cooked is this node?" number.',
+      content: [
+        'Each tick a node works out how much it is facing versus how much it can clear:',
+        '<ul>' +
+        '<li><code>total demand = incoming rps + leftover queue</code>: new orders plus the existing backlog.</li>' +
+        '<li><code>processed = min(total demand, capacity)</code>: you can only plate as fast as the cooks allow.</li>' +
+        '<li><code>queue = total demand − processed</code>: whatever could not be served waits in line.</li>' +
+        '<li><span class="text-orange"><code>overload ratio = total demand ÷ capacity</code></span> is the single most important number. <code>1.0</code> = exactly full; <code>2.0</code> = twice what the node can handle.</li>' +
+        '</ul>',
+        'When a node fans out to several children, each edge carries a share set by its <strong>traffic weight</strong>: <code>load = processed × (weight ÷ 100)</code>. That is how you model a 90/10 canary or a 70/30 pool split.',
+        'The queue is deliberately <strong>capped</strong> at a few seconds\' worth of capacity. Without a cap, a node that briefly overloaded would hoard an impossible backlog and never look healthy again. The cap lets it recover the instant traffic eases.'
+      ]
+    },
+    {
+      id: 'formula-latency',
+      title: 'Latency: Why Milliseconds Climb to Minutes',
+      category: 'formulas',
+      icon: 'fas fa-stopwatch',
+      summary: 'The exact formula behind the ms / s / min ticking up on an overloaded node.',
+      content: [
+        'Latency is the headline number on every node, and it is just a sum of intuitive parts:',
+        '<code>latency = base + queue-wait + load-penalty + overload-climb − cache-savings</code>',
+        '<ul>' +
+        '<li><strong>Base:</strong> the node\'s own processing time at rest (its <code>Base Latency</code> param).</li>' +
+        '<li><strong>Queue-wait</strong> <code>= min(500, queue × 0.5)</code> is time spent waiting in line, capped so it never dominates on its own.</li>' +
+        '<li><span class="text-orange"><strong>Load-penalty</strong> <code>= overload ratio × 18</code></span> is a steady tax for running hot.</li>' +
+        '<li><span class="text-emerald"><strong>Cache-savings:</strong></span> CloudFront / ElastiCache / API Gateway subtract <code>cache hit rate × 0.28</code>.</li>' +
+        '</ul>',
+        'The <strong>overload-climb</strong> is the part that makes a stuck node feel real. While a node stays past capacity, this penalty <em>compounds</em> every tick: <code>next = (previous + (overload ratio − 1) × 12) × 1.12</code>. So latency does not plateau. It escalates milliseconds → seconds → minutes the longer overload lasts. The moment load drops back under capacity it decays ~40% per tick and the node visibly recovers.',
+        'It cannot climb forever. It is capped at the <strong>request timeout</strong> (default 60s). Hitting that means requests are timing out, which sheds the backlog and, for real hardware, tips the node offline (see the next article).',
+        '<em>Example:</em> a 50ms node held at <code>2×</code> overload starts around a few hundred ms, then compounds upward through seconds toward the 60s timeout if the pressure is sustained.'
+      ],
+      tips: [
+        'These multipliers (× 0.5, × 18, × 1.12) are tuned for a readable, realistic feel on a 180ms tick. They are a behavioural model, not measured AWS numbers.'
+      ]
+    },
+    {
+      id: 'formula-health',
+      title: 'Health States & the Point of Collapse',
+      category: 'formulas',
+      icon: 'fas fa-heart-crack',
+      summary: 'The thresholds that turn a node green → amber → red, and when it goes dark for good.',
+      content: [
+        'A node\'s colour is decided purely by the numbers above, mainly the overload ratio and CPU pressure:',
+        '<ul>' +
+        '<li><span class="text-emerald"><strong>Normal:</strong></span> overload ratio below ~0.78, comfortable headroom.</li>' +
+        '<li><span class="text-orange"><strong>Busy:</strong></span> ratio above ~0.78 (or CPU > 66%). <em>Exactly at capacity (ratio = 1.0) a node is Busy, not Overloaded.</em></li>' +
+        '<li><span class="text-red"><strong>Overloaded:</strong></span> ratio above ~1.12 (or CPU > 84%), shedding load with latency climbing.</li>' +
+        '<li><span class="text-red"><strong>Offline:</strong></span> sustained collapse, the node goes dark.</li>' +
+        '</ul>',
+        'Pressure gauges have their own formulas: <code>CPU = baseline × 0.45 + overload ratio × 58</code>, while memory rises with the queue (for Lambda it is concurrency utilisation instead).',
+        'Whether a node can actually go <strong>offline</strong> depends on its class, the same split shown in every service\'s <strong>Bottleneck &amp; Capacity</strong> card:',
+        '<ul>' +
+        '<li><span class="text-orange"><strong>Throttle services</strong></span> (Lambda, API Gateway, SQS, DynamoDB…) shed excess as <code>HTTP 429/503</code> and <strong>stay up</strong>. They return errors and recover, never going dark.</li>' +
+        '<li><span class="text-red"><strong>Resource-bound services</strong></span> (EC2, ECS, RDS…) model real hardware. Stay past the offline threshold for ~1 second (6 ticks), <em>or</em> pin latency at the request timeout, and they <strong>collapse offline</strong>, cascading to everything downstream.</li>' +
+        '</ul>'
+      ]
+    },
+    {
+      id: 'formula-cost',
+      title: 'Cost: The Live Monthly Bill',
+      category: 'formulas',
+      icon: 'fas fa-coins',
+      summary: 'How the side panel turns your design into real dollars using live AWS rates.',
+      content: [
+        'While traffic flows, the same loop prices your architecture from <strong>real AWS Price List API rates</strong> (refreshed weekly). Every service has its own formula; a few favourites:',
+        '<ul>' +
+        '<li><span class="text-purple"><strong>Lambda:</strong></span> <code>(invocations × $/M requests) + (GB-seconds × $/GB-s)</code>, where <code>GB-seconds = invocations × duration(s) × memory(GB)</code>.</li>' +
+        '<li><span class="text-orange"><strong>EC2:</strong></span> <code>instances × hourly rate × 730 hrs</code> (+ EBS storage + data transfer).</li>' +
+        '<li><span class="text-blue"><strong>Requests (API Gateway, etc.):</strong></span> tiered <code>$ per million requests</code>.</li>' +
+        '<li><span class="text-emerald"><strong>Storage:</strong></span> <code>GB × $/GB-month</code>, by storage class.</li>' +
+        '</ul>',
+        'Free-tier allowances are subtracted and shown as a separate green badge, so you can see exactly what you are saving. Switch on <strong>Variable Traffic</strong> and the panel reports both the <em>average</em> and the <em>peak</em> monthly cost.'
       ]
     },
 
