@@ -73,6 +73,38 @@ export interface ReferenceNode {
   name?: string;
   x: number;
   y: number;
+  /**
+   * Per-challenge param overrides merged onto the service-type defaults. Lets a
+   * challenge express its workload (e.g. a write-heavy limiter vs a read-heavy
+   * shortener) using existing sim/cost knobs like requestRate, packageSize,
+   * cacheHitRate, throughput. Only keys present here override the defaults.
+   */
+  config?: Record<string, number | string | boolean>;
+}
+
+/** One service's plain-English role in the reference solution. */
+export interface SolutionService {
+  /** Service type, used to look up its icon/color. */
+  type: AwsServiceType;
+  /** Display name (defaults to the service name if omitted). */
+  name?: string;
+  /** What this service does in this architecture. */
+  role: string;
+  /** Why it's the right choice over alternatives. */
+  why: string;
+}
+
+/**
+ * A friendly post-completion walkthrough: how the architecture satisfies the
+ * requirements, and the role + rationale of each service.
+ */
+export interface SolutionExplanation {
+  /** One or two sentences summarizing how the design meets the brief. */
+  summary: string;
+  /** Maps each requirement to the part of the design that satisfies it. */
+  requirementsMet?: { requirement: string; satisfiedBy: string }[];
+  /** Per-service role and rationale. */
+  services: SolutionService[];
 }
 
 export interface ReferenceSolution {
@@ -99,6 +131,8 @@ export interface Challenge {
   milestones: Milestone[];
   rubric: Rubric;
   referenceSolution: ReferenceSolution;
+  /** Friendly walkthrough shown once the challenge is passed. */
+  solution?: SolutionExplanation;
   /** Stub challenges (authored === false) appear locked/"coming soon". */
   authored: boolean;
   companyTag?: string;

@@ -31,6 +31,9 @@ export class GraphBuilderService {
         if (item.name) {
           node.name = item.name;
         }
+        if (item.config) {
+          node.config = { ...node.config, ...item.config };
+        }
         return [item.key, node] as const;
       }),
     );

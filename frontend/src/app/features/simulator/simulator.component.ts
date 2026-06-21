@@ -43,6 +43,7 @@ import { ValidationRuleService } from "../../core/services/validation-rule.servi
 import { CostService, CostBreakdown } from "../../core/services/cost.service";
 import { Currency } from "../../core/models/architecture.model";
 import serviceCostModelData from "../../core/data/service-cost-model.json";
+import serviceDocumentationData from "../../core/data/service-documentation.json";
 import { ChallengeService } from "../../core/services/challenge.service";
 import { OnboardingService } from "../../core/services/onboarding.service";
 import { GraphBuilderService } from "../../core/services/graph-builder.service";
@@ -72,6 +73,8 @@ export interface CanvasTab {
   simulationMode: SimulationMode;
   totals: { processed: number; dropped: number; avgLatency: number };
   tick: number;
+  /** True when the canvas has unsaved changes (orange dot); false once saved (green dot). */
+  dirty: boolean;
 }
 
 /** Deep-cloned canvas state captured for undo/redo. */
@@ -868,6 +871,48 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedConnectionIds: string[] = [];
   ctrlPressed = false;
 
+  // Keyboard-shortcuts panel. Auto-shown once for new visitors, reopenable via
+  // the "?" key or the thinking-cat button at any time.
+  showHotkeys = false;
+  private static readonly HOTKEYS_SEEN_KEY = "sds.hotkeysSeen";
+  readonly hotkeyGroups: {
+    title: string;
+    items: { keys: string[]; label: string }[];
+  }[] = [
+    {
+      title: "Editing",
+      items: [
+        { keys: ["Ctrl", "C"], label: "Copy selected service(s)" },
+        { keys: ["Ctrl", "V"], label: "Paste copied service(s)" },
+        { keys: ["Ctrl", "D"], label: "Duplicate selected service(s)" },
+        { keys: ["Del"], label: "Delete selection" },
+      ],
+    },
+    {
+      title: "History",
+      items: [
+        { keys: ["Ctrl", "Z"], label: "Undo" },
+        { keys: ["Ctrl", "Y"], label: "Redo" },
+        { keys: ["Ctrl", "S"], label: "Save to this browser" },
+      ],
+    },
+    {
+      title: "Canvas",
+      items: [
+        { keys: ["Ctrl", "Click"], label: "Add to multi-selection" },
+        { keys: ["?"], label: "Open this shortcuts panel" },
+        { keys: ["Esc"], label: "Close panel / clear selection" },
+      ],
+    },
+  ];
+
+  // Copy / paste buffer. Holds deep clones so later canvas edits never mutate it.
+  private clipboard: {
+    nodes: ArchitectureNode[];
+    connections: ArchitectureConnection[];
+  } | null = null;
+  private pasteCount = 0;
+
   // Undo / redo history (per active canvas). Snapshots are captured *before* a
   // mutation, so undo restores the prior state. Rapid edits (slider drags, node
   // drags) coalesce into one entry via a short time window + matching key.
@@ -961,6 +1006,9 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       local.id !== "preset-messaging-realtime"
     ) {
       this.applyProject(local);
+      // Restored straight from saved storage: nothing unsaved yet (green dot).
+      const restored = this.tabs[this.activeTabIndex];
+      if (restored) restored.dirty = false;
     } else if (this.roleMode === "developer") {
       // Developer Mode opens to the Challenge hub on a clean canvas; the
       // onboarding tour runs on first visit. "Free practice" loads the preset.
@@ -1005,6 +1053,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
         // Revert to the previous valid region silently (without re-fetching)
         this.globalRegion = this.previousRegion;
       });
+
+    // First visit: surface the keyboard shortcuts once. Desktop only (shortcuts
+    // are irrelevant on touch). Defer if the guided tour is running.
+    if (
+      !this.hotkeysSeen() &&
+      !this.onboarding.isRunning &&
+      !this.isMobileViewport
+    ) {
+      this.showHotkeys = true;
+    }
   }
 
   addAnnotation(x?: number, y?: number): void {
@@ -1833,6 +1891,171 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalCurrency = currency;
   }
 
+  nodeIconUrl(type: AwsServiceType): string {
+    return this.awsCatalog.getByType(type).iconUrl;
+  }
+
+  /**
+   * Distinct AWS services on the canvas, each with a short docs overview and a
+   * deep link into the full docs. Powers the architect-mode "Services on this
+   * canvas" panel — contextual (only what's used), not random.
+   */
+  get canvasServices(): { type: AwsServiceType; name: string; overview: string }[] {
+    const docs = serviceDocumentationData as Record<
+      string,
+      { overview?: string }
+    >;
+    const seen = new Set<AwsServiceType>();
+    const out: { type: AwsServiceType; name: string; overview: string }[] = [];
+    for (const node of this.nodes) {
+      if (node.type === "client" || seen.has(node.type)) {
+        continue;
+      }
+      seen.add(node.type);
+      const def = this.awsCatalog.getByType(node.type);
+      out.push({
+        type: node.type,
+        name: def.name,
+        overview: docs[node.type]?.overview || def.description || "",
+      });
+    }
+    return out;
+  }
+
+  /** Unified view of active services on the canvas, aggregating instance counts, costs, and percentage contributions. */
+  get unifiedServices(): {
+    type: AwsServiceType;
+    name: string;
+    overview: string;
+    totalCost: number;
+    formattedCost: string;
+    pct: number;
+    count: number;
+  }[] {
+    const docs = serviceDocumentationData as Record<
+      string,
+      { overview?: string }
+    >;
+    const rate =
+      this.globalCurrency === "USD"
+        ? 1
+        : this.costService["conversionRates"][this.globalCurrency];
+    const symbol = this.costService.getCurrencySymbol(this.globalCurrency);
+
+    // Calculate node costs in USD
+    const nodeCosts = new Map<string, number>();
+    let totalUsd = 0;
+    for (const node of this.nodes) {
+      if (node.type === "client") {
+        continue;
+      }
+      const usd = this.costService.calculateNodeCostUsd(
+        node,
+        this.globalRegion,
+        this.nodes,
+      );
+      nodeCosts.set(node.id, usd);
+      totalUsd += usd;
+    }
+
+    // Group by AwsServiceType
+    const grouped = new Map<
+      AwsServiceType,
+      {
+        nodes: any[];
+        cost: number;
+      }
+    >();
+
+    for (const node of this.nodes) {
+      if (node.type === "client") {
+        continue;
+      }
+      if (!grouped.has(node.type)) {
+        grouped.set(node.type, { nodes: [], cost: 0 });
+      }
+      const g = grouped.get(node.type)!;
+      g.nodes.push(node);
+      g.cost += nodeCosts.get(node.id) || 0;
+    }
+
+    const out: {
+      type: AwsServiceType;
+      name: string;
+      overview: string;
+      totalCost: number;
+      formattedCost: string;
+      pct: number;
+      count: number;
+    }[] = [];
+
+    const divisor = totalUsd || 1;
+
+    for (const [type, info] of grouped.entries()) {
+      const def = this.awsCatalog.getByType(type);
+      const pct = totalUsd > 0 ? Math.round((info.cost / divisor) * 100) : 0;
+
+      out.push({
+        type,
+        name: def.name,
+        overview: docs[type]?.overview || def.description || "",
+        totalCost: info.cost,
+        formattedCost: `${symbol}${(info.cost * rate).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
+        pct,
+        count: info.nodes.length,
+      });
+    }
+
+    // Sort: cost descending, then count descending, then name
+    return out.sort((a, b) => {
+      if (Math.abs(a.totalCost - b.totalCost) > 0.0001) {
+        return b.totalCost - a.totalCost;
+      }
+      if (a.count !== b.count) {
+        return b.count - a.count;
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  /** Top monthly cost contributors for the architect-mode empty state. */
+  get costDrivers(): {
+    name: string;
+    type: AwsServiceType;
+    formatted: string;
+    pct: number;
+  }[] {
+    const rate =
+      this.globalCurrency === "USD"
+        ? 1
+        : this.costService["conversionRates"][this.globalCurrency];
+    const symbol = this.costService.getCurrencySymbol(this.globalCurrency);
+    const items = this.nodes
+      .map((n) => ({
+        node: n,
+        usd: this.costService.calculateNodeCostUsd(
+          n,
+          this.globalRegion,
+          this.nodes,
+        ),
+      }))
+      .filter((i) => i.usd > 0.0001)
+      .sort((a, b) => b.usd - a.usd);
+    const totalUsd = items.reduce((s, i) => s + i.usd, 0) || 1;
+    return items.slice(0, 4).map((i) => ({
+      name: i.node.name,
+      type: i.node.type,
+      formatted: `${symbol}${(i.usd * rate).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
+      pct: Math.max(4, Math.round((i.usd / totalUsd) * 100)),
+    }));
+  }
+
   setRegion(region: string): void {
     this.previousRegion = this.globalRegion; // Save before switching
     this.globalRegion = region;
@@ -1898,6 +2121,21 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
         this.redo();
         return;
       }
+      if (k === "c") {
+        event.preventDefault();
+        this.copySelection();
+        return;
+      }
+      if (k === "v") {
+        event.preventDefault();
+        this.pasteClipboard();
+        return;
+      }
+      if (k === "d") {
+        event.preventDefault();
+        this.duplicateSelection();
+        return;
+      }
     }
 
     if (
@@ -1907,6 +2145,23 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     ) {
       this.ctrlPressed = true;
       return;
+    }
+
+    // "?" opens the shortcuts panel; Esc closes it (or clears selection).
+    if (!mod && !inEditable && event.key === "?") {
+      event.preventDefault();
+      this.toggleHotkeys();
+      return;
+    }
+    if (event.key === "Escape") {
+      if (this.showHotkeys) {
+        this.closeHotkeys();
+        return;
+      }
+      if (!inEditable && this.hasSelection) {
+        this.clearSelection();
+        return;
+      }
     }
 
     if (event.key !== "Delete" && event.key !== "Backspace") {
@@ -1962,6 +2217,25 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     // Library handles panning via fZoom directive
+  }
+
+  /**
+   * Clears the selection when the user clicks empty canvas. We handle this
+   * ourselves rather than relying only on Foblex's fSelectionChange: after a
+   * node drag, Foblex swallows the click that immediately follows, leaving the
+   * selection stuck until another node is clicked.
+   */
+  onCanvasBackgroundClick(event: MouseEvent): void {
+    const target = event.target;
+    if (
+      this.isFlowInteractiveTarget(target) ||
+      (target instanceof Element && target.closest(".canvas-tab-bar"))
+    ) {
+      return;
+    }
+    if (this.hasSelection) {
+      this.clearSelection();
+    }
   }
 
   onCanvasPointerMove(event: PointerEvent): void {
@@ -2319,6 +2593,176 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.deleteSelected();
   }
 
+  // ───── Keyboard-shortcuts panel ─────
+  private hotkeysSeen(): boolean {
+    try {
+      return localStorage.getItem(SimulatorComponent.HOTKEYS_SEEN_KEY) === "true";
+    } catch {
+      return false;
+    }
+  }
+
+  openHotkeys(): void {
+    // Keyboard shortcuts are desktop-only — never surface them on touch/tablet.
+    if (this.isMobileViewport) {
+      return;
+    }
+    this.showHotkeys = true;
+  }
+
+  closeHotkeys(): void {
+    this.showHotkeys = false;
+    try {
+      localStorage.setItem(SimulatorComponent.HOTKEYS_SEEN_KEY, "true");
+    } catch {
+      // ignore persistence failures
+    }
+  }
+
+  toggleHotkeys(): void {
+    this.showHotkeys ? this.closeHotkeys() : this.openHotkeys();
+  }
+
+  // ───── Copy / paste / duplicate ─────
+  private newId(): string {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return (
+      "id-" +
+      Date.now().toString(36) +
+      "-" +
+      Math.random().toString(36).substring(2, 11)
+    );
+  }
+
+  /**
+   * Deep-clones a set of nodes plus the connections wholly contained within
+   * that set, assigning fresh ids and shifting positions by (dx, dy). Port ids
+   * are preserved so the remapped connections still resolve to the right ports.
+   */
+  private cloneGraph(
+    srcNodes: ArchitectureNode[],
+    srcConnections: ArchitectureConnection[],
+    dx: number,
+    dy: number,
+  ): { nodes: ArchitectureNode[]; connections: ArchitectureConnection[] } {
+    const idMap = new Map<string, string>();
+    const nodes: ArchitectureNode[] = srcNodes.map((n): ArchitectureNode => {
+      const id = this.newId();
+      idMap.set(n.id, id);
+      return {
+        ...n,
+        id,
+        x: n.x + dx,
+        y: n.y + dy,
+        selected: false,
+        status: "normal",
+        config: { ...n.config },
+        ports: n.ports.map((p) => ({ ...p })),
+        metrics: this.factory.emptyMetrics(),
+      };
+    });
+    const connections: ArchitectureConnection[] = srcConnections
+      .filter((c) => idMap.has(c.sourceNodeId) && idMap.has(c.targetNodeId))
+      .map((c): ArchitectureConnection => ({
+        ...c,
+        id: this.newId(),
+        sourceNodeId: idMap.get(c.sourceNodeId)!,
+        targetNodeId: idMap.get(c.targetNodeId)!,
+        traffic: {
+          requestsPerSecond: 0,
+          latency: 0,
+          errorRate: 0,
+          intensity: 0,
+        },
+        animationOffset: Math.random(),
+      }));
+    return { nodes, connections };
+  }
+
+  private selectNodes(ids: string[]): void {
+    this.selectedNodeIds = ids;
+    this.selectedConnectionIds = [];
+    this.annotations = this.annotations.map((a) => ({ ...a, selected: false }));
+    this.nodes = this.nodes.map((n) => ({
+      ...n,
+      selected: ids.includes(n.id),
+    }));
+  }
+
+  copySelection(): void {
+    if (this.selectedNodeIds.length === 0) {
+      return;
+    }
+    const selected = this.nodes.filter((n) =>
+      this.selectedNodeIds.includes(n.id),
+    );
+    const ids = new Set(selected.map((n) => n.id));
+    const internal = this.connections.filter(
+      (c) => ids.has(c.sourceNodeId) && ids.has(c.targetNodeId),
+    );
+    this.clipboard = {
+      nodes: selected.map((n) => ({
+        ...n,
+        config: { ...n.config },
+        ports: n.ports.map((p) => ({ ...p })),
+      })),
+      connections: internal.map((c) => ({ ...c, traffic: { ...c.traffic } })),
+    };
+    this.pasteCount = 0;
+    this.setMessage(
+      `Copied ${selected.length} service(s). Press Ctrl+V to paste.`,
+      "neutral",
+    );
+  }
+
+  pasteClipboard(): void {
+    if (!this.clipboard || this.clipboard.nodes.length === 0) {
+      return;
+    }
+    this.pushHistory();
+    const offset = 40 * ++this.pasteCount;
+    const { nodes, connections } = this.cloneGraph(
+      this.clipboard.nodes,
+      this.clipboard.connections,
+      offset,
+      offset,
+    );
+    this.nodes = [...this.nodes, ...nodes];
+    this.connections = [...this.connections, ...connections];
+    this.selectNodes(nodes.map((n) => n.id));
+    this.revealMinimap();
+    this.setMessage(`Pasted ${nodes.length} service(s).`, "success");
+    this.afterGraphMutated();
+  }
+
+  duplicateSelection(): void {
+    if (this.selectedNodeIds.length === 0) {
+      return;
+    }
+    const selected = this.nodes.filter((n) =>
+      this.selectedNodeIds.includes(n.id),
+    );
+    const ids = new Set(selected.map((n) => n.id));
+    const internal = this.connections.filter(
+      (c) => ids.has(c.sourceNodeId) && ids.has(c.targetNodeId),
+    );
+    this.pushHistory();
+    const { nodes, connections } = this.cloneGraph(
+      selected,
+      internal,
+      40,
+      40,
+    );
+    this.nodes = [...this.nodes, ...nodes];
+    this.connections = [...this.connections, ...connections];
+    this.selectNodes(nodes.map((n) => n.id));
+    this.revealMinimap();
+    this.setMessage(`Duplicated ${nodes.length} service(s).`, "success");
+    this.afterGraphMutated();
+  }
+
   startSimulation(): void {
     if (this.isSimulationDisabled) {
       this.setMessage(
@@ -2366,6 +2810,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSaveSuccess = true;
       const project = this.currentProject();
       this.storage.save(project).subscribe();
+      const savedTab = this.tabs[this.activeTabIndex];
+      if (savedTab) savedTab.dirty = false;
       this.setMessage("Architecture saved successfully.", "success");
       setTimeout(() => {
         this.showSaveSuccess = false;
@@ -2783,19 +3229,29 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
-  /** Panel → start a challenge: clears the canvas and seeds a Users node. */
+  /** Panel → start a challenge: always opens a fresh canvas seeded with a Users node. */
   onStartChallenge(challenge: Challenge): void {
     this.simulation.stop();
     this.challengeService.start(challenge.id);
-    this.pushHistory();
+    // Open every challenge on its own new canvas so existing work is preserved.
+    this.addCanvasTab(challenge.title, challenge.title);
     const client = this.factory.createNode("client", 80, 220);
+    // Seed the Users node with this challenge's workload (RPS / payload / spikes)
+    // so the simulation reflects the problem from the first run.
+    const refClient = challenge.referenceSolution?.nodes.find(
+      (n) => n.type === "client",
+    );
+    if (refClient?.config) {
+      client.config = { ...client.config, ...refClient.config } as typeof client.config;
+    }
     this.nodes = [client];
     this.connections = [];
     this.annotations = [];
     this.packets = [];
     this.clearSelection();
+    this.saveActiveTabState();
     this.afterGraphMutated();
-    this.setMessage(`Challenge started: ${challenge.title}`, "success");
+    this.setMessage(`Challenge started on a new canvas: ${challenge.title}`, "success");
   }
 
   /** Panel → reset/redesign a challenge: clears progress and resets canvas. */
@@ -2882,6 +3338,9 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
    * undo entry instead of dozens.
    */
   private pushHistory(coalesceKey?: string): void {
+    // Any edit that records history makes the active canvas unsaved (orange dot).
+    const activeTab = this.tabs[this.activeTabIndex];
+    if (activeTab) activeTab.dirty = true;
     const now = Date.now();
     if (
       coalesceKey &&
@@ -2914,6 +3373,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedConnectionIds = [];
     this.packets = [];
     this.simulation.updateNodes(this.nodes, this.connections);
+    const activeTab = this.tabs[this.activeTabIndex];
+    if (activeTab) activeTab.dirty = true;
     this.saveActiveTabState();
     if (this.flowCanvas) this.flowCanvas.redraw();
   }
@@ -3124,6 +3585,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
           simulationMode: "idle",
           totals: { processed: 0, dropped: 0, avgLatency: 0 },
           tick: 0,
+          dirty: true,
         },
       ];
       this.activeTabIndex = 0;
@@ -3144,6 +3606,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       tab.simulationMode = "idle";
       tab.totals = { processed: 0, dropped: 0, avgLatency: 0 };
       tab.tick = 0;
+      tab.dirty = true;
     }
   }
 
@@ -3209,13 +3672,17 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadTabState(index);
   }
 
-  addNewTab(): void {
+  /**
+   * Creates a fresh empty canvas tab, makes it active, and returns its index.
+   * New canvases start dirty (orange dot) since they have never been saved.
+   */
+  private addCanvasTab(name: string, projectName: string): number {
     this.saveActiveTabState();
     const tabIndex = this.tabs.length;
     const newTab: CanvasTab = {
       id: `tab-${Date.now()}`,
-      name: `Canvas ${tabIndex + 1}`,
-      projectName: `Untitled AWS Architecture ${tabIndex + 1}`,
+      name,
+      projectName,
       nodes: [],
       connections: [],
       annotations: [],
@@ -3229,9 +3696,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       simulationMode: "idle",
       totals: { processed: 0, dropped: 0, avgLatency: 0 },
       tick: 0,
+      dirty: true,
     };
     this.tabs.push(newTab);
     this.loadTabState(tabIndex);
+    return tabIndex;
+  }
+
+  addNewTab(): void {
+    const next = this.tabs.length + 1;
+    this.addCanvasTab(`Canvas ${next}`, `Untitled AWS Architecture ${next}`);
     this.setMessage("New canvas tab added.", "success");
   }
 

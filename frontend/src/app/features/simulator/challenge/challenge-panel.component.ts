@@ -11,6 +11,8 @@ import {
 } from '../../../core/models/challenge.model';
 import { ChallengeService } from '../../../core/services/challenge.service';
 import { VoteService } from '../../../core/services/vote.service';
+import { AwsCatalogService } from '../../../core/services/aws-catalog.service';
+import { AwsServiceType } from '../../../core/models/architecture.model';
 import { ChallengeTagComponent, categoryStyle } from './challenge-tag.component';
 
 @Component({
@@ -45,11 +47,29 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
 
   indicatorStyle: any = { opacity: '0' };
 
+  /** Collapsible state for the post-completion solution walkthrough. */
+  solutionExpanded = true;
+
   constructor(
     private el: ElementRef,
     readonly challenges: ChallengeService,
     readonly votes: VoteService,
+    private readonly catalog: AwsCatalogService,
   ) {}
+
+  /** Icon URL for a service shown in the solution walkthrough. */
+  solutionIcon(type: AwsServiceType): string {
+    return this.catalog.getByType(type).iconUrl;
+  }
+
+  /** Theme color for a service shown in the solution walkthrough. */
+  solutionColor(type: AwsServiceType): string {
+    return this.catalog.getByType(type).color;
+  }
+
+  toggleSolution(): void {
+    this.solutionExpanded = !this.solutionExpanded;
+  }
 
   ngAfterViewChecked(): void {
     this.updateIndicator();

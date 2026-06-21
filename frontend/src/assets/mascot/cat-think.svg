@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <title>Thinking cat with a question mark</title>
+
+  <!-- floating thought question mark -->
+  <g id="think">
+    <circle cx="150" cy="40" r="20" fill="#fff7e7" opacity="0.12"/>
+    <text x="150" y="51" text-anchor="middle" font-family="'Plus Jakarta Sans', 'Segoe UI', sans-serif" font-size="32" font-weight="800" fill="#ff9900">?</text>
+    <circle cx="128" cy="66" r="4" fill="#ff9900" opacity="0.4"/>
+    <circle cx="120" cy="78" r="2.6" fill="#ff9900" opacity="0.28"/>
+    <animateTransform attributeName="transform" type="translate"
+      values="0 0; 0 -5; 0 0; 0 -3; 0 0" dur="4s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- ears -->
+  <g id="ear-l">
+    <path d="M62,70 C56,40 64,20 76,12 C92,26 102,40 106,52 C90,60 74,64 62,70 Z" fill="#17202a"/>
+    <path d="M70,62 C67,42 72,28 79,22 C89,32 96,40 99,48 C87,54 78,58 70,62 Z" fill="#2c3342"/>
+  </g>
+  <g transform="rotate(8 116 50)">
+    <g id="ear-r">
+      <path d="M138,70 C144,40 136,20 124,12 C108,26 98,40 94,52 C110,60 126,64 138,70 Z" fill="#17202a"/>
+      <path d="M130,62 C133,42 128,28 121,22 C111,32 104,40 101,48 C113,54 122,58 130,62 Z" fill="#2c3342"/>
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 116 50; 0 116 50; 6 116 50; 0 116 50; 0 116 50"
+        keyTimes="0;0.7;0.76;0.82;1" dur="5s" repeatCount="indefinite"/>
+    </g>
+  </g>
+
+  <!-- skull -->
+  <ellipse cx="100" cy="98" rx="56" ry="50" fill="#17202a"/>
+  <ellipse cx="82" cy="76" rx="28" ry="15" fill="#ffffff" opacity="0.05"/>
+
+  <!-- cheek tufts -->
+  <path d="M48,104 L30,118 L52,126 Z" fill="#17202a"/>
+  <path d="M152,104 L170,118 L148,126 Z" fill="#17202a"/>
+
+  <!-- raised eyebrow (thinking) -->
+  <path d="M60,72 q15,-9 29,-3" fill="none" stroke="#525e6e" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- eyes looking up in thought -->
+  <ellipse cx="78" cy="98" rx="15" ry="13" fill="#fff7e7"/>
+  <ellipse cx="124" cy="98" rx="15" ry="13" fill="#fff7e7"/>
+  <g id="pupils">
+    <ellipse cx="80" cy="93" rx="6" ry="8" fill="#0d0e14"/>
+    <ellipse cx="126" cy="93" rx="6" ry="8" fill="#0d0e14"/>
+    <circle cx="82" cy="89" r="2" fill="#fff7e7"/>
+    <circle cx="128" cy="89" r="2" fill="#fff7e7"/>
+    <animateTransform attributeName="transform" type="translate"
+      values="0 0; 2 -1; 0 0; -1 0; 0 0" dur="6s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- blink lids (drop down briefly) -->
+  <rect x="63" y="86" width="30" height="14" rx="6" fill="#17202a">
+    <animateTransform attributeName="transform" type="translate"
+      values="0 -16; 0 -16; 0 0; 0 -16; 0 -16" keyTimes="0;0.46;0.52;0.58;1" dur="5s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="109" y="86" width="30" height="14" rx="6" fill="#17202a">
+    <animateTransform attributeName="transform" type="translate"
+      values="0 -16; 0 -16; 0 0; 0 -16; 0 -16" keyTimes="0;0.46;0.52;0.58;1" dur="5s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- nose + mouth -->
+  <path d="M95,116 L105,116 L100,122 Z" fill="#ff9900"/>
+  <path d="M88,128 Q100,138 116,129" fill="none" stroke="#fff7e7" stroke-width="2.6" stroke-linecap="round"/>
+
+  <!-- whiskers -->
+  <g stroke="#4a5366" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.7">
+    <path d="M50,116 q-22,-4 -34,2"/>
+    <path d="M50,124 q-20,2 -32,8"/>
+    <path d="M150,116 q22,-4 34,2"/>
+    <path d="M150,124 q20,2 32,8"/>
+  </g>
+
+  <!-- collar hint -->
+  <path d="M70,142 Q100,158 130,142 L130,150 Q100,166 70,150 Z" fill="#ff9900" stroke="#e68a00" stroke-width="1.2" opacity="0.95"/>
+  <circle cx="100" cy="160" r="5" fill="#fff7e7" stroke="#e68a00" stroke-width="1.2"/>
+
+  <!-- raised thinking paw resting near chin -->
+  <g id="paw">
+    <ellipse cx="132" cy="158" rx="14" ry="10" fill="#1b2530"/>
+    <ellipse cx="132" cy="160" rx="11" ry="7" fill="#222d3b"/>
+    <path d="M126,158 l0,6 M133,157 l0,7 M140,159 l0,5" stroke="#141b24" stroke-width="1.4" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="rotate"
+      values="0 120 150; -3 120 150; 0 120 150; -2 120 150; 0 120 150" dur="4s" repeatCount="indefinite"/>
+  </g>
+</svg>
