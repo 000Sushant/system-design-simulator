@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ArchitectureConnection, ArchitectureNode, ConnectionRule, PortType, ServicePort, ValidationResult } from '../models/architecture.model';
 import awsServicesConfig from '../config/aws-services.json';
+import { VPC_ATTACHABLE_TYPES } from '../constants/connection-rules.constants';
 
 @Injectable({ providedIn: 'root' })
 export class ValidationRuleService {
@@ -48,7 +49,7 @@ export class ValidationRuleService {
       return { allowed: false, message: 'Connections must start from an output port and end at an input port.' };
     }
 
-    if (source.type === 'vpc' && !['ec2', 'ecs', 'lambda', 'rds', 'elastiCache', 'autoScalingGroup', 'elb', 'natGateway', 'eks', 'aurora', 'msk', 'efs', 'secretsManager', 'mq', 'redshift', 'openSearch', 'fsx', 'ecr', 'privateLink'].includes(target.type)) {
+    if (source.type === 'vpc' && !VPC_ATTACHABLE_TYPES.includes(target.type)) {
       return { allowed: false, message: 'VPC is a network boundary and can only contain network-aware services.' };
     }
 

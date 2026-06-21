@@ -1,0 +1,40 @@
+{
+  "steps": [
+    {
+      "id": "welcome",
+      "title": "Welcome to Developer Mode",
+      "body": "Let's build your first architecture in four quick steps. You can skip anytime.",
+      "completeOn": "manual"
+    },
+    {
+      "id": "drag",
+      "title": "1. Add a service",
+      "body": "Drag any service from the palette on the left onto the canvas. A Lambda or DynamoDB is a good start.",
+      "completeOn": "nodeAdded"
+    },
+    {
+      "id": "connect",
+      "title": "2. Connect two services",
+      "body": "Drag from a service's output port (right side) to another service's input port (left side) to wire them together.",
+      "completeOn": "edgeCreated"
+    },
+    {
+      "id": "configure",
+      "title": "3. Configure a node",
+      "body": "Click a node to select it, then change a value in the right panel — like throughput or capacity.",
+      "completeOn": "configChanged"
+    },
+    {
+      "id": "run",
+      "title": "4. Run the simulation",
+      "body": "Press Run to send traffic through your design and watch where it flows and bottlenecks.",
+      "completeOn": "simulationStarted"
+    },
+    {
+      "id": "done",
+      "title": "You're ready",
+      "body": "Now pick a challenge from the panel and design it like a real system-design interview. Hints and milestones will guide you.",
+      "completeOn": "manual"
+    }
+  ]
+}

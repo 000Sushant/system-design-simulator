@@ -14,6 +14,16 @@ id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 
 # ──────────────────────────────────────────────
+# D1 database (challenge thumbs up/down votes)
+# 1. wrangler d1 create dummy-value (paste the returned database_id below)
+# Frontend points at this Worker via environment.votesApiBase (dev: http://127.0.0.1:8787).
+# ──────────────────────────────────────────────
+[[d1_databases]]
+binding = "DB"
+database_name = "dummy-value"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# ──────────────────────────────────────────────
 # Cron: every 5 minutes
 # - Used for sequential "one region per invocation" processing
 # - Weekly reset is detected internally via KV timestamp

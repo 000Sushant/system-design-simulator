@@ -1,0 +1,1892 @@
+{
+  "challenges": [
+    {
+      "id": "url-shortener",
+      "title": "URL Shortener",
+      "difficulty": "easy",
+      "category": "Web Services",
+      "companyTag": "Bit.ly",
+      "estMinutes": 15,
+      "authored": true,
+      "problem": "Design a service like bit.ly that turns long URLs into short codes and redirects visitors to the original URL. The system is extremely read-heavy: codes are created rarely but redirected to constantly, and redirects must feel instant.",
+      "functionalRequirements": [
+        "Create a short code for a given long URL",
+        "Redirect a short code to its original URL",
+        "Serve a very high volume of redirects with low latency"
+      ],
+      "constraints": [
+        "Read:write ratio is roughly 100:1",
+        "Redirects should resolve in under ~50ms",
+        "Short codes are permanent once created"
+      ],
+      "targetScale": "~10k redirects/sec, millions of stored codes",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "Start at the edge",
+          "body": "Clients need a single HTTPS entry point. Put an API Gateway in front of your compute so every request lands in one place."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Add compute logic",
+          "body": "API Gateway doesn't run code. Connect it to a compute service (like Lambda or ECS) to execute redirect and short code creation logic."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Where do codes live?",
+          "body": "A code -> URL mapping is a simple key-value lookup. A NoSQL store like DynamoDB fits perfectly and scales easily."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Make reads cheap",
+          "body": "100:1 read-heavy workload means most lookups hit hot codes. Put ElastiCache (or CloudFront) in front of the database so requests never touch the database."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Enable Observability",
+          "body": "Add a CloudWatch node to monitor your application's request latencies and check for traffic overload logs."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Clients can reach an API",
+          "detail": "An API Gateway is wired into the request path.",
+          "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true }
+        },
+        {
+          "id": "m2",
+          "label": "Compute handles requests",
+          "detail": "The API forwards to a compute service.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] }
+        },
+        {
+          "id": "m3",
+          "label": "Mappings are persisted",
+          "detail": "Compute writes to a database.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["dynamoDb", "rds", "aurora"] }
+        },
+        {
+          "id": "m4",
+          "label": "Reads are cached",
+          "detail": "A cache layer absorbs hot redirects.",
+          "rule": { "kind": "hasService", "anyOf": ["elastiCache", "cloudfront"], "mustBeConnected": true }
+        },
+        {
+          "id": "m5",
+          "label": "CloudWatch Observability",
+          "detail": "Wire CloudWatch into the request path for health and metrics monitoring.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node so traffic has a source."
+          },
+          {
+            "id": "c-api",
+            "label": "API Gateway is connected",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true },
+            "failHint": "Add an API Gateway and connect it so clients have one HTTPS entry point."
+          },
+          {
+            "id": "c-compute",
+            "label": "API forwards to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service like Lambda to run redirect logic."
+          },
+          {
+            "id": "c-db",
+            "label": "Mappings stored in a database",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "Persist code → URL mappings in a connected database. DynamoDB is ideal for key lookups."
+          },
+          {
+            "id": "c-compute-db",
+            "label": "Compute writes to the database",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["dynamoDb", "rds", "aurora"] },
+            "failHint": "Wire your compute service to the database so it can read and write mappings."
+          },
+          {
+            "id": "c-cache",
+            "label": "Read caching for hot redirects",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["elastiCache", "cloudfront"], "mustBeConnected": true },
+            "failHint": "This workload is 100:1 read-heavy. Add ElastiCache or CloudFront so popular redirects skip the database."
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to monitor latency and error rates.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Add caching or raise throughput/capacity on the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Edge → API → Lambda, with DynamoDB for storage and ElastiCache absorbing the read-heavy redirect traffic.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 220 },
+          { "key": "dns", "type": "route53", "name": "DNS", "x": 280, "y": 160 },
+          { "key": "cdn", "type": "cloudfront", "name": "CDN", "x": 480, "y": 220 },
+          { "key": "api", "type": "apiGateway", "name": "Redirect API", "x": 700, "y": 220 },
+          { "key": "fn", "type": "lambda", "name": "Redirect Fn", "x": 920, "y": 220 },
+          { "key": "cache", "type": "elastiCache", "name": "Hot Code Cache", "x": 1140, "y": 120 },
+          { "key": "db", "type": "dynamoDb", "name": "Code Store", "x": 1140, "y": 320 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 920, "y": 420 }
+        ],
+        "edges": [
+          ["users", "dns"],
+          ["dns", "cdn"],
+          ["cdn", "api"],
+          ["api", "fn"],
+          ["fn", "cache"],
+          ["fn", "db"],
+          ["fn", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "celebrity-feed",
+      "title": "Celebrity Photo Feed",
+      "difficulty": "medium",
+      "category": "Social",
+      "companyTag": "Instagram",
+      "estMinutes": 30,
+      "authored": true,
+      "problem": "A celebrity with 50 million followers posts a photo. Design the system that stores the post and delivers it to every follower's feed. The hard part is fan-out: a single write must reach millions of feeds without blocking the post request or melting the database.",
+      "functionalRequirements": [
+        "Upload and store a photo",
+        "Record the post and fan it out to followers' feeds",
+        "Serve follower feeds quickly, even for celebrity-scale fan-out"
+      ],
+      "constraints": [
+        "One post can trigger millions of feed writes",
+        "The post request must not wait for fan-out to finish",
+        "Media reads vastly outnumber writes"
+      ],
+      "targetScale": "50M followers per celebrity, heavy media read traffic",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "API Gateway and Compute",
+          "body": "Configure a central API Gateway entry point and route posts/uploads to a compute handler (like Lambda or ECS)."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Store media separately",
+          "body": "Photos are large blobs - keep them in S3, not a database. Serve them through CloudFront so the origin isn't hammered."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Decouple the write from the fan-out",
+          "body": "Don't update millions of feeds inside the post request. Publish an event to SNS/SQS (or EventBridge) and let workers fan out asynchronously."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Persist follower feeds",
+          "body": "Create worker compute instances (ECS) that consume the queue events and write materialized feed lists into a DynamoDB database."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Cache hot feeds",
+          "body": "A celebrity's feed is read constantly. Front the busiest feed databases with ElastiCache to cut database read load."
+        },
+        {
+          "id": "h6",
+          "order": 6,
+          "title": "Enable Observability",
+          "body": "Add a CloudWatch node to monitor workers queue performance and track fan-out lag statistics."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "API handles posts",
+          "detail": "The API forwards uploads to compute.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] }
+        },
+        {
+          "id": "m2",
+          "label": "Media stored in object storage",
+          "detail": "Photos land in S3, connected to the request path.",
+          "rule": { "kind": "hasService", "anyOf": ["s3"], "mustBeConnected": true }
+        },
+        {
+          "id": "m3",
+          "label": "Fan-out is asynchronous",
+          "detail": "A queue or topic decouples the post write from feed delivery.",
+          "rule": { "kind": "hasService", "anyOf": ["sqs", "sns", "eventBridge"], "mustBeConnected": true }
+        },
+        {
+          "id": "m4",
+          "label": "Workers write feeds",
+          "detail": "Async workers consume the fan-out and update a feed store.",
+          "rule": {
+            "kind": "allOf",
+            "rules": [
+              { "kind": "hasEdge", "fromAnyOf": ["sqs", "sns", "eventBridge"], "toAnyOf": ["ecs", "lambda", "ec2"] },
+              { "kind": "hasService", "anyOf": ["dynamoDb"], "mustBeConnected": true }
+            ]
+          }
+        },
+        {
+          "id": "m5",
+          "label": "Hot feeds cached",
+          "detail": "ElastiCache fronts the busiest feeds.",
+          "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true }
+        },
+        {
+          "id": "m6",
+          "label": "CloudWatch Observability",
+          "detail": "Add CloudWatch to monitor queue sizes and processing latencies.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node as the traffic source."
+          },
+          {
+            "id": "c-compute",
+            "label": "API forwards posts to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service to handle uploads."
+          },
+          {
+            "id": "c-media",
+            "label": "Media stored in S3",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["s3"], "mustBeConnected": true },
+            "failHint": "Store photos in S3 (object storage), not a database."
+          },
+          {
+            "id": "c-cdn",
+            "label": "Media served via CDN",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["cloudfront"], "toAnyOf": ["s3"] },
+            "failHint": "Put CloudFront in front of S3 so massive media read traffic is offloaded from the origin."
+          },
+          {
+            "id": "c-async",
+            "label": "Asynchronous fan-out",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["sqs", "sns", "eventBridge"], "mustBeConnected": true },
+            "failHint": "Celebrity fan-out must be async. Publish to SNS/SQS or EventBridge so the post write isn't blocked by millions of feed updates."
+          },
+          {
+            "id": "c-workers",
+            "label": "Workers consume the fan-out",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["sqs", "sns", "eventBridge"], "toAnyOf": ["ecs", "lambda", "ec2"] },
+            "failHint": "Add worker compute (e.g. ECS) that consumes the queue/topic and writes feeds."
+          },
+          {
+            "id": "c-feeds",
+            "label": "Feeds persisted",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb"], "mustBeConnected": true },
+            "failHint": "Materialize follower feeds into a connected DynamoDB table."
+          },
+          {
+            "id": "c-cache",
+            "label": "Hot feeds cached",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true },
+            "failHint": "Front the hottest feeds with ElastiCache to cut read load."
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to watch fan-out lag and error rates.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Scale workers or add caching at the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Synchronous post path stores media in S3 + metadata in DynamoDB, then publishes to SNS→SQS for async worker fan-out into a feed store, with ElastiCache fronting hot feeds and CloudFront serving media.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 320 },
+          { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 220 },
+          { "key": "cdn", "type": "cloudfront", "name": "Media CDN", "x": 460, "y": 120 },
+          { "key": "api", "type": "apiGateway", "name": "Post API", "x": 460, "y": 360 },
+          { "key": "apiFn", "type": "lambda", "name": "Post Handler", "x": 700, "y": 360 },
+          { "key": "media", "type": "s3", "name": "Photo Store", "x": 940, "y": 120 },
+          { "key": "posts", "type": "dynamoDb", "name": "Post Metadata", "x": 940, "y": 260 },
+          { "key": "topic", "type": "sns", "name": "Fan-out Topic", "x": 940, "y": 420 },
+          { "key": "cache", "type": "elastiCache", "name": "Feed Cache", "x": 940, "y": 560 },
+          { "key": "queue", "type": "sqs", "name": "Fan-out Queue", "x": 1160, "y": 420 },
+          { "key": "workers", "type": "ecs", "name": "Fan-out Workers", "x": 1380, "y": 420 },
+          { "key": "feeds", "type": "dynamoDb", "name": "Follower Feeds", "x": 1600, "y": 420 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 700, "y": 540 }
+        ],
+        "edges": [
+          ["users", "dns"],
+          ["dns", "cdn"],
+          ["dns", "api"],
+          ["cdn", "media"],
+          ["api", "apiFn"],
+          ["apiFn", "media"],
+          ["apiFn", "posts"],
+          ["apiFn", "topic"],
+          ["apiFn", "cache"],
+          ["apiFn", "mon"],
+          ["topic", "queue"],
+          ["queue", "workers"],
+          ["workers", "feeds"],
+          ["workers", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "pastebin",
+      "title": "Pastebin",
+      "difficulty": "easy",
+      "category": "Web Services",
+      "companyTag": "Pastebin",
+      "estMinutes": 15,
+      "authored": true,
+      "problem": "Design a service where users paste text or code and get a short shareable link to view it later. Most pastes are written once and read many times, and some expire after a set time.",
+      "functionalRequirements": [
+        "Save a paste and return a shareable link",
+        "Fetch a paste by its id",
+        "Support optional expiry (TTL) on pastes"
+      ],
+      "constraints": [
+        "Reads far outnumber writes",
+        "Pastes are immutable once created",
+        "Large pastes shouldn't bloat the primary database"
+      ],
+      "targetScale": "Millions of stored pastes, heavily read-skewed traffic",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "Start at the edge",
+          "body": "Give clients one HTTPS entry point with an API Gateway so every save and fetch lands in one place."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Add compute logic",
+          "body": "API Gateway can't run code. Connect it to a compute service (Lambda or ECS) to create and look up pastes."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Where does text live?",
+          "body": "Store paste metadata and short text in DynamoDB (great for key lookups, and TTL handles expiry). Keep very large pastes as objects in S3."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Make reads cheap",
+          "body": "Pastes are immutable and read-heavy, so they cache perfectly. Put CloudFront (or ElastiCache) in front so popular pastes skip the database."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Enable observability",
+          "body": "Add a CloudWatch node to watch request latency and error rates."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Clients can reach an API",
+          "detail": "An API Gateway is wired into the request path.",
+          "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true }
+        },
+        {
+          "id": "m2",
+          "label": "Compute handles requests",
+          "detail": "The API forwards to a compute service.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] }
+        },
+        {
+          "id": "m3",
+          "label": "Pastes are persisted",
+          "detail": "Compute writes pastes to a database.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["dynamoDb", "rds", "aurora"] }
+        },
+        {
+          "id": "m4",
+          "label": "Reads are cached",
+          "detail": "A CDN or cache absorbs hot reads.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudfront", "elastiCache"], "mustBeConnected": true }
+        },
+        {
+          "id": "m5",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in for health and metrics monitoring.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node so traffic has a source."
+          },
+          {
+            "id": "c-api",
+            "label": "API Gateway is connected",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true },
+            "failHint": "Add an API Gateway and connect it so clients have one HTTPS entry point."
+          },
+          {
+            "id": "c-compute",
+            "label": "API forwards to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service like Lambda."
+          },
+          {
+            "id": "c-db",
+            "label": "Pastes stored in a database",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "Persist pastes in a connected database. DynamoDB with TTL fits well."
+          },
+          {
+            "id": "c-compute-db",
+            "label": "Compute writes to the database",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["dynamoDb", "rds", "aurora"] },
+            "failHint": "Wire your compute service to the database so it can save and load pastes."
+          },
+          {
+            "id": "c-cache",
+            "label": "Read caching for hot pastes",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["cloudfront", "elastiCache"], "mustBeConnected": true },
+            "failHint": "Pastes are immutable and read-heavy. Add CloudFront or ElastiCache so popular pastes skip the database."
+          },
+          {
+            "id": "c-blob",
+            "label": "Large pastes offloaded to object storage",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["s3"], "mustBeConnected": true },
+            "failHint": "Keep very large pastes in S3 so they don't bloat the database.",
+            "optional": true
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to monitor latency and error rates.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Add caching or raise capacity on the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Edge → API → Lambda. DynamoDB (with TTL) holds metadata and small pastes; S3 holds large blobs; CloudFront serves hot immutable pastes.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 220 },
+          { "key": "dns", "type": "route53", "name": "DNS", "x": 280, "y": 160 },
+          { "key": "cdn", "type": "cloudfront", "name": "CDN", "x": 480, "y": 220 },
+          { "key": "api", "type": "apiGateway", "name": "Paste API", "x": 700, "y": 220 },
+          { "key": "fn", "type": "lambda", "name": "Paste Fn", "x": 920, "y": 220 },
+          { "key": "db", "type": "dynamoDb", "name": "Paste Store", "x": 1140, "y": 140 },
+          { "key": "blob", "type": "s3", "name": "Large Pastes", "x": 1140, "y": 320 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 920, "y": 420 }
+        ],
+        "edges": [
+          ["users", "dns"],
+          ["dns", "cdn"],
+          ["cdn", "api"],
+          ["api", "fn"],
+          ["fn", "db"],
+          ["fn", "blob"],
+          ["cdn", "blob"],
+          ["fn", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "rate-limiter",
+      "title": "API Rate Limiter",
+      "difficulty": "easy",
+      "category": "Platform",
+      "companyTag": "Stripe",
+      "estMinutes": 20,
+      "authored": true,
+      "problem": "Design a distributed rate limiter that caps how many requests each client can make in a time window. It must work across many API servers, so the counter can't live in a single server's memory.",
+      "functionalRequirements": [
+        "Count requests per client per time window",
+        "Allow or reject a request based on its limit",
+        "Share counts consistently across all API instances"
+      ],
+      "constraints": [
+        "Limit checks must add minimal latency",
+        "Counters must be consistent across servers",
+        "Limits differ per client and per route"
+      ],
+      "targetScale": "Tens of thousands of checks/sec across many instances",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "One entry point",
+          "body": "Front everything with an API Gateway so every request passes one checkpoint."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Evaluate the limit in compute",
+          "body": "Connect the gateway to a compute service (Lambda or ECS) that decides allow vs reject for each request."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Counters can't be local",
+          "body": "If each server keeps counts in its own memory, the limit breaks behind a load balancer. Use a fast shared store — ElastiCache (Redis) — for atomic per-client counters."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Read counters from compute",
+          "body": "On each request, have your compute atomically read and increment the client's counter in ElastiCache, then allow or reject. (Keep per-client limit rules in DynamoDB so they change without a redeploy.)"
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Enable observability",
+          "body": "Add CloudWatch to track rejection rates and counter latency."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Clients can reach an API",
+          "detail": "An API Gateway is wired into the request path.",
+          "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true }
+        },
+        {
+          "id": "m2",
+          "label": "Compute evaluates limits",
+          "detail": "The API forwards to a compute service.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] }
+        },
+        {
+          "id": "m3",
+          "label": "Shared counter store",
+          "detail": "A fast shared cache holds per-client counters.",
+          "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true }
+        },
+        {
+          "id": "m4",
+          "label": "Compute reads the shared counters",
+          "detail": "Compute is wired to the counter store.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["elastiCache"] }
+        },
+        {
+          "id": "m5",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in for health and metrics monitoring.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node so traffic has a source."
+          },
+          {
+            "id": "c-api",
+            "label": "API Gateway is connected",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true },
+            "failHint": "Add an API Gateway as the single checkpoint for all requests."
+          },
+          {
+            "id": "c-compute",
+            "label": "Compute evaluates the limit",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service that allows or rejects each request."
+          },
+          {
+            "id": "c-counter",
+            "label": "Distributed counter store",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true },
+            "failHint": "Counters must be shared across instances. Add a connected ElastiCache (Redis) store."
+          },
+          {
+            "id": "c-counter-edge",
+            "label": "Compute reads the shared counters",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["elastiCache"] },
+            "failHint": "Wire your compute service to ElastiCache so every instance sees the same counts."
+          },
+          {
+            "id": "c-policies",
+            "label": "Limit policies stored",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "Keep per-client limit rules in DynamoDB so they can change without a redeploy.",
+            "optional": true
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to track rejection rates and latency.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Raise capacity on the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "API → Lambda evaluates each request against atomic counters in ElastiCache (Redis); per-client policies live in DynamoDB.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "API Clients", "x": 60, "y": 220 },
+          { "key": "api", "type": "apiGateway", "name": "API Gateway", "x": 320, "y": 220 },
+          { "key": "fn", "type": "lambda", "name": "Limiter Fn", "x": 580, "y": 220 },
+          { "key": "counters", "type": "elastiCache", "name": "Counter Cache", "x": 840, "y": 130 },
+          { "key": "policies", "type": "dynamoDb", "name": "Limit Policies", "x": 840, "y": 320 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 580, "y": 420 }
+        ],
+        "edges": [
+          ["users", "api"],
+          ["api", "fn"],
+          ["fn", "counters"],
+          ["fn", "policies"],
+          ["fn", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "chat-notifications",
+      "title": "Real-time Notifications",
+      "difficulty": "medium",
+      "category": "Social",
+      "companyTag": "WhatsApp",
+      "estMinutes": 30,
+      "authored": true,
+      "problem": "Design a system that delivers real-time notifications (messages, mentions, alerts) to millions of connected clients. Producers must not block waiting for every device to receive the event.",
+      "functionalRequirements": [
+        "Authenticate connected users",
+        "Track which users and devices are currently online",
+        "Deliver notifications to recipients in near real-time",
+        "Decouple event producers from delivery workers"
+      ],
+      "constraints": [
+        "Millions of concurrent connections",
+        "Producers must not block on delivery",
+        "A recipient may be offline and reconnect later"
+      ],
+      "targetScale": "Millions of concurrent connections, high event fan-out",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "Authenticate first",
+          "body": "Use Cognito so only signed-in users open a connection and receive notifications."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Real-time API + connection handler",
+          "body": "Route connections through an API Gateway to a compute handler (Lambda or ECS) that manages each client's live connection."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Track who is online",
+          "body": "Store the connection registry in DynamoDB and keep hot presence lookups in ElastiCache."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Decouple producers from delivery",
+          "body": "Publish notification events to SNS/SQS (or EventBridge) so producers return instantly and never wait on delivery."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Delivery workers",
+          "body": "Run worker compute (ECS) that consumes the queue and pushes notifications to connected clients, updating delivery state."
+        },
+        {
+          "id": "h6",
+          "order": 6,
+          "title": "Enable observability",
+          "body": "Add CloudWatch to monitor queue depth and fan-out lag."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Users are authenticated",
+          "detail": "Cognito is wired into the entry path.",
+          "rule": { "kind": "hasService", "anyOf": ["cognito"], "mustBeConnected": true }
+        },
+        {
+          "id": "m2",
+          "label": "Real-time API handles connections",
+          "detail": "The API forwards to a compute handler.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] }
+        },
+        {
+          "id": "m3",
+          "label": "Connection registry persisted",
+          "detail": "Compute records connections in a database.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2"], "toAnyOf": ["dynamoDb"] }
+        },
+        {
+          "id": "m4",
+          "label": "Delivery is asynchronous",
+          "detail": "A queue or topic decouples producers from delivery.",
+          "rule": { "kind": "hasService", "anyOf": ["sqs", "sns", "eventBridge"], "mustBeConnected": true }
+        },
+        {
+          "id": "m5",
+          "label": "Workers deliver notifications",
+          "detail": "Async workers consume the queue/topic.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["sqs", "sns", "eventBridge"], "toAnyOf": ["ecs", "lambda", "ec2"] }
+        },
+        {
+          "id": "m6",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in to watch queue depth and lag.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node as the traffic source."
+          },
+          {
+            "id": "c-auth",
+            "label": "Users are authenticated",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["cognito"], "mustBeConnected": true },
+            "failHint": "Add a connected Cognito node so only signed-in users connect."
+          },
+          {
+            "id": "c-compute",
+            "label": "API forwards to a connection handler",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] },
+            "failHint": "Connect the API Gateway to compute that manages live connections."
+          },
+          {
+            "id": "c-registry",
+            "label": "Connection registry persisted",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb"], "mustBeConnected": true },
+            "failHint": "Track active connections in a connected DynamoDB table."
+          },
+          {
+            "id": "c-async",
+            "label": "Asynchronous delivery",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["sqs", "sns", "eventBridge"], "mustBeConnected": true },
+            "failHint": "Producers must not block on delivery. Publish to SNS/SQS or EventBridge."
+          },
+          {
+            "id": "c-workers",
+            "label": "Workers consume the queue",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["sqs", "sns", "eventBridge"], "toAnyOf": ["ecs", "lambda", "ec2"] },
+            "failHint": "Add worker compute that consumes the queue/topic and pushes notifications."
+          },
+          {
+            "id": "c-presence",
+            "label": "Presence cache for online lookups",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true },
+            "failHint": "Keep hot online/presence lookups in ElastiCache.",
+            "optional": true
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to watch queue depth and fan-out lag.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Scale workers or add caching at the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Cognito-authed clients connect via API Gateway to a connection manager (Lambda) that stores connections in DynamoDB and presence in ElastiCache. Events publish to SNS→SQS, and ECS workers deliver and update state.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300 },
+          { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 210 },
+          { "key": "auth", "type": "cognito", "name": "Auth", "x": 260, "y": 410 },
+          { "key": "api", "type": "apiGateway", "name": "Realtime API", "x": 480, "y": 300 },
+          { "key": "conn", "type": "lambda", "name": "Connection Manager", "x": 720, "y": 300 },
+          { "key": "registry", "type": "dynamoDb", "name": "Connection Registry", "x": 960, "y": 180 },
+          { "key": "presence", "type": "elastiCache", "name": "Presence Cache", "x": 960, "y": 320 },
+          { "key": "topic", "type": "sns", "name": "Notification Topic", "x": 960, "y": 460 },
+          { "key": "queue", "type": "sqs", "name": "Delivery Queue", "x": 1180, "y": 460 },
+          { "key": "workers", "type": "ecs", "name": "Delivery Workers", "x": 1400, "y": 460 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 720, "y": 480 }
+        ],
+        "edges": [
+          ["users", "dns"],
+          ["dns", "api"],
+          ["users", "auth"],
+          ["auth", "conn"],
+          ["api", "conn"],
+          ["conn", "registry"],
+          ["conn", "presence"],
+          ["conn", "topic"],
+          ["topic", "queue"],
+          ["queue", "workers"],
+          ["workers", "registry"],
+          ["conn", "mon"],
+          ["workers", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "video-streaming",
+      "title": "Video Streaming Platform",
+      "difficulty": "hard",
+      "category": "Media",
+      "companyTag": "YouTube",
+      "estMinutes": 45,
+      "authored": true,
+      "problem": "Design a global video platform: users upload videos, the system transcodes them into multiple resolutions, and viewers stream them smoothly anywhere in the world.",
+      "functionalRequirements": [
+        "Accept large video uploads",
+        "Transcode uploads into multiple bitrates asynchronously",
+        "Store and globally deliver video segments",
+        "Track a catalog of videos and their processing status"
+      ],
+      "constraints": [
+        "Uploads are large; transcoding is slow and bursty",
+        "Viewers vastly outnumber uploaders",
+        "Playback must start fast for a global audience"
+      ],
+      "targetScale": "Global viewers, heavy egress, bursty transcode load",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "Deliver from the edge",
+          "body": "Viewers are global and reads dominate. Put CloudFront in front so video segments stream from edge locations (pointed at your S3 renditions), not the origin."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Upload API + compute",
+          "body": "Route uploads through an API Gateway to a compute handler (Lambda or ECS) that accepts the file and records the video."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Store raw and renditions in S3",
+          "body": "Video files are large blobs — keep raw uploads and every transcoded rendition in S3, not a database."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Transcode asynchronously",
+          "body": "Transcoding is slow and bursty. Emit a 'new upload' event to a queue (SQS / EventBridge) so the upload returns instantly instead of transcoding inline."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Run a transcode worker fleet",
+          "body": "Have a worker fleet (ECS) consume the queue and transcode each upload into multiple bitrates in the background."
+        },
+        {
+          "id": "h6",
+          "order": 6,
+          "title": "Track the catalog",
+          "body": "Store video metadata and processing status in DynamoDB so the UI knows when a video is ready."
+        },
+        {
+          "id": "h7",
+          "order": 7,
+          "title": "Enable observability",
+          "body": "Add CloudWatch to watch transcode backlog and playback errors."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Global delivery via CDN",
+          "detail": "CloudFront is wired into the request path.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudfront"], "mustBeConnected": true }
+        },
+        {
+          "id": "m2",
+          "label": "Upload API handles uploads",
+          "detail": "The API forwards to a compute handler.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] }
+        },
+        {
+          "id": "m3",
+          "label": "Videos stored in object storage",
+          "detail": "S3 holds raw uploads and renditions.",
+          "rule": { "kind": "hasService", "anyOf": ["s3"], "mustBeConnected": true }
+        },
+        {
+          "id": "m4",
+          "label": "Transcoding is asynchronous",
+          "detail": "A queue or topic decouples upload from transcoding.",
+          "rule": { "kind": "hasService", "anyOf": ["sqs", "sns", "eventBridge"], "mustBeConnected": true }
+        },
+        {
+          "id": "m5",
+          "label": "Transcode workers run",
+          "detail": "Workers consume the queue and process videos.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["sqs", "sns", "eventBridge"], "toAnyOf": ["ecs", "lambda", "ec2"] }
+        },
+        {
+          "id": "m6",
+          "label": "Catalog tracks status",
+          "detail": "Video metadata and status live in a database.",
+          "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true }
+        },
+        {
+          "id": "m7",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in to watch transcode backlog.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node as the traffic source."
+          },
+          {
+            "id": "c-cdn",
+            "label": "Global delivery via CloudFront",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["cloudfront"], "mustBeConnected": true },
+            "failHint": "Add a connected CloudFront so global viewers stream from the edge."
+          },
+          {
+            "id": "c-compute",
+            "label": "Upload API forwards to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service to accept uploads."
+          },
+          {
+            "id": "c-storage",
+            "label": "Videos stored in S3",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["s3"], "mustBeConnected": true },
+            "failHint": "Store raw uploads and renditions in connected S3, not a database."
+          },
+          {
+            "id": "c-async",
+            "label": "Asynchronous transcoding pipeline",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["sqs", "sns", "eventBridge"], "mustBeConnected": true },
+            "failHint": "Transcoding is bursty. Emit upload events to SQS/SNS/EventBridge instead of transcoding inline."
+          },
+          {
+            "id": "c-workers",
+            "label": "Transcode workers consume the queue",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["sqs", "sns", "eventBridge"], "toAnyOf": ["ecs", "lambda", "ec2"] },
+            "failHint": "Add a worker fleet (ECS) that consumes the queue and transcodes."
+          },
+          {
+            "id": "c-catalog",
+            "label": "Catalog tracks video status",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "Track video metadata and processing status in a connected database."
+          },
+          {
+            "id": "c-deliver",
+            "label": "CDN serves segments from storage",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["cloudfront"], "toAnyOf": ["s3"] },
+            "failHint": "Point CloudFront at the S3 bucket of finished renditions so playback streams from the edge."
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to watch transcode backlog and playback errors.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Scale transcode workers or capacity at the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Edge (CloudFront) → upload API → Lambda stores raw video in S3 and a record in DynamoDB. S3 emits an event to SQS; ECS workers transcode renditions back to S3 and update status. CloudFront serves finished segments from S3.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Viewers & Uploaders", "x": 60, "y": 300 },
+          { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 220 },
+          { "key": "cdn", "type": "cloudfront", "name": "Video CDN", "x": 460, "y": 220 },
+          { "key": "api", "type": "apiGateway", "name": "Upload API", "x": 460, "y": 400 },
+          { "key": "uploadFn", "type": "lambda", "name": "Upload Handler", "x": 700, "y": 400 },
+          { "key": "store", "type": "s3", "name": "Video Storage", "x": 940, "y": 220 },
+          { "key": "catalog", "type": "dynamoDb", "name": "Video Catalog", "x": 940, "y": 400 },
+          { "key": "queue", "type": "sqs", "name": "Transcode Queue", "x": 1160, "y": 220 },
+          { "key": "workers", "type": "ecs", "name": "Transcode Workers", "x": 1380, "y": 300 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 700, "y": 560 }
+        ],
+        "edges": [
+          ["users", "dns"],
+          ["dns", "cdn"],
+          ["cdn", "api"],
+          ["cdn", "store"],
+          ["api", "uploadFn"],
+          ["uploadFn", "store"],
+          ["uploadFn", "catalog"],
+          ["store", "queue"],
+          ["queue", "workers"],
+          ["workers", "store"],
+          ["workers", "catalog"],
+          ["uploadFn", "mon"],
+          ["workers", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "job-scheduler",
+      "title": "Distributed Job Scheduler",
+      "difficulty": "hard",
+      "category": "Platform",
+      "companyTag": "Airflow",
+      "estMinutes": 45,
+      "authored": true,
+      "problem": "Design a service that schedules millions of delayed and recurring jobs and runs them reliably — triggering at the right time, retrying failures, and never losing a job.",
+      "functionalRequirements": [
+        "Accept and store job definitions and their schedules",
+        "Trigger jobs at the right time (delayed and recurring)",
+        "Execute jobs reliably with retries",
+        "Decouple scheduling from execution"
+      ],
+      "constraints": [
+        "Millions of scheduled jobs",
+        "At-least-once execution — no lost jobs",
+        "Execution load is spiky"
+      ],
+      "targetScale": "Millions of scheduled jobs, spiky execution bursts",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "Submit jobs through an API",
+          "body": "Expose an API Gateway to a compute handler (Lambda or ECS) that accepts new job definitions and schedules."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Store job definitions",
+          "body": "Persist every job and its schedule in a durable database like DynamoDB so nothing is lost."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Trigger on time",
+          "body": "Use EventBridge as a time-based scheduler to fire due jobs into compute — both one-off delays and recurring cron-style runs."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Decouple dispatch with a queue",
+          "body": "Push due jobs onto a durable queue (SQS). The queue absorbs spikes and guarantees a job isn't lost if a worker dies."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Worker fleet executes",
+          "body": "Run worker compute (ECS or Lambda) that pulls from the queue, executes with retries, and writes status back. Use Step Functions for jobs with several dependent steps."
+        },
+        {
+          "id": "h6",
+          "order": 6,
+          "title": "Enable observability",
+          "body": "Add CloudWatch to watch the due-job backlog and execution failure rates."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Jobs can be submitted",
+          "detail": "The API forwards to a compute handler.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] }
+        },
+        {
+          "id": "m2",
+          "label": "Job definitions persisted",
+          "detail": "Schedules are stored in a database.",
+          "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true }
+        },
+        {
+          "id": "m3",
+          "label": "Time-based trigger wired",
+          "detail": "EventBridge fires due jobs into compute.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["eventBridge"], "toAnyOf": ["lambda", "ecs"] }
+        },
+        {
+          "id": "m4",
+          "label": "Durable due-job queue",
+          "detail": "Due jobs are pushed onto a queue.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "eventBridge", "stepFunctions"], "toAnyOf": ["sqs"] }
+        },
+        {
+          "id": "m5",
+          "label": "Workers execute jobs",
+          "detail": "A worker fleet consumes the queue.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["sqs"], "toAnyOf": ["ecs", "lambda", "ec2"] }
+        },
+        {
+          "id": "m6",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in to watch backlog and failures.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node so jobs can be submitted."
+          },
+          {
+            "id": "c-compute",
+            "label": "Submit API forwards to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "appRunner"] },
+            "failHint": "Connect the API Gateway to compute that accepts and stores jobs."
+          },
+          {
+            "id": "c-store",
+            "label": "Job definitions stored",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "Persist job definitions and schedules in a connected database."
+          },
+          {
+            "id": "c-trigger",
+            "label": "Time-based trigger",
+            "weight": 3,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["eventBridge"], "toAnyOf": ["lambda", "ecs"] },
+            "failHint": "Use EventBridge as a scheduler that fires due jobs into compute."
+          },
+          {
+            "id": "c-queue",
+            "label": "Durable due-job queue",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "eventBridge", "stepFunctions"], "toAnyOf": ["sqs"] },
+            "failHint": "Push due jobs onto SQS so spikes are absorbed and jobs aren't lost."
+          },
+          {
+            "id": "c-workers",
+            "label": "Workers execute jobs",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["sqs"], "toAnyOf": ["ecs", "lambda", "ec2"] },
+            "failHint": "Add a worker fleet that consumes the queue and runs jobs with retries."
+          },
+          {
+            "id": "c-orchestrate",
+            "label": "Orchestration for multi-step jobs",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["stepFunctions"], "mustBeConnected": true },
+            "failHint": "Use Step Functions to coordinate jobs with several dependent steps.",
+            "optional": true
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to watch backlog and failure rates.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Scale workers or capacity at the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Submit path (API → Lambda → DynamoDB) stores schedules. EventBridge fires a dispatcher Lambda that enqueues due jobs to SQS; ECS workers execute and update status, with Step Functions orchestrating multi-step jobs.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Clients", "x": 60, "y": 240 },
+          { "key": "api", "type": "apiGateway", "name": "Submit API", "x": 280, "y": 240 },
+          { "key": "submitFn", "type": "lambda", "name": "Submit Handler", "x": 500, "y": 240 },
+          { "key": "jobs", "type": "dynamoDb", "name": "Job Store", "x": 720, "y": 140 },
+          { "key": "sched", "type": "eventBridge", "name": "Scheduler", "x": 280, "y": 440 },
+          { "key": "dispatchFn", "type": "lambda", "name": "Dispatcher", "x": 520, "y": 440 },
+          { "key": "queue", "type": "sqs", "name": "Due Jobs Queue", "x": 760, "y": 440 },
+          { "key": "workers", "type": "ecs", "name": "Job Executors", "x": 1000, "y": 440 },
+          { "key": "orch", "type": "stepFunctions", "name": "Workflow", "x": 760, "y": 600 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 1000, "y": 240 }
+        ],
+        "edges": [
+          ["users", "api"],
+          ["api", "submitFn"],
+          ["submitFn", "jobs"],
+          ["submitFn", "orch"],
+          ["sched", "dispatchFn"],
+          ["dispatchFn", "jobs"],
+          ["dispatchFn", "queue"],
+          ["queue", "workers"],
+          ["workers", "jobs"],
+          ["orch", "workers"],
+          ["submitFn", "mon"],
+          ["workers", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "gaming-leaderboard",
+      "title": "Gaming Leaderboard",
+      "difficulty": "easy",
+      "category": "Gaming",
+      "companyTag": "Duolingo",
+      "estMinutes": 15,
+      "authored": true,
+      "problem": "Design a real-time leaderboard that ranks millions of players by score. Players' scores change constantly, and the app must instantly show the global top N as well as any single player's rank and the players just above and below them.",
+      "functionalRequirements": [
+        "Update a player's score after each match",
+        "Return the global top N players instantly",
+        "Return a single player's current rank and nearby players"
+      ],
+      "constraints": [
+        "Rank and top-N queries must resolve in under ~50ms",
+        "Scores update heavily during peak hours",
+        "Reads (viewing ranks) far outnumber writes (score updates)"
+      ],
+      "targetScale": "Millions of players, tens of thousands of score updates/sec at peak",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "One entry point",
+          "body": "Give clients a single HTTPS entry point with an API Gateway so every score update and rank query lands in one place."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Add compute logic",
+          "body": "API Gateway can't run code. Connect it to a compute service (Lambda or ECS) that processes score updates and answers rank queries."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Pick the right ranking structure",
+          "body": "A relational table can't sort millions of rows per keystroke. Use ElastiCache (Redis) sorted sets: O(log n) score updates and instant top-N and rank lookups straight from memory."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Don't lose scores",
+          "body": "Redis is the fast ranking layer, not the source of truth. Persist authoritative scores in DynamoDB so the leaderboard can be rebuilt if the cache is lost."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Enable observability",
+          "body": "Add a CloudWatch node to track query latency and update throughput."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Clients can reach an API",
+          "detail": "An API Gateway is wired into the request path.",
+          "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true }
+        },
+        {
+          "id": "m2",
+          "label": "Compute handles requests",
+          "detail": "The API forwards to a compute service.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] }
+        },
+        {
+          "id": "m3",
+          "label": "In-memory ranking store",
+          "detail": "An ElastiCache (Redis) store holds the sorted scores.",
+          "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true }
+        },
+        {
+          "id": "m4",
+          "label": "Compute ranks via the cache",
+          "detail": "Compute reads and updates the sorted set in ElastiCache.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["elastiCache"] }
+        },
+        {
+          "id": "m5",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in for health and metrics monitoring.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node so traffic has a source."
+          },
+          {
+            "id": "c-api",
+            "label": "API Gateway is connected",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["apiGateway"], "mustBeConnected": true },
+            "failHint": "Add an API Gateway and connect it so clients have one HTTPS entry point."
+          },
+          {
+            "id": "c-compute",
+            "label": "API forwards to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service like Lambda to process scores and ranks."
+          },
+          {
+            "id": "c-rank",
+            "label": "In-memory ranking store",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true },
+            "failHint": "Ranking must be instant. Add a connected ElastiCache (Redis) sorted set — a relational sort over millions of rows is too slow."
+          },
+          {
+            "id": "c-rank-edge",
+            "label": "Compute uses the ranking store",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["elastiCache"] },
+            "failHint": "Wire your compute service to ElastiCache so updates and top-N reads hit the sorted set directly."
+          },
+          {
+            "id": "c-durable",
+            "label": "Scores persisted durably",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "The cache isn't the source of truth. Persist authoritative scores in a connected DynamoDB so the board can be rebuilt."
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to track query latency and update throughput.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Raise capacity on the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "API → Lambda updates and queries a Redis sorted set in ElastiCache for instant ranking; DynamoDB holds the authoritative scores so the board can be rebuilt.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Players", "x": 60, "y": 220 },
+          { "key": "api", "type": "apiGateway", "name": "Leaderboard API", "x": 300, "y": 220 },
+          { "key": "fn", "type": "lambda", "name": "Leaderboard Fn", "x": 560, "y": 220 },
+          { "key": "ranks", "type": "elastiCache", "name": "Rank Store (Redis)", "x": 820, "y": 130 },
+          { "key": "scores", "type": "dynamoDb", "name": "Score Store", "x": 820, "y": 320 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 560, "y": 420 }
+        ],
+        "edges": [
+          ["users", "api"],
+          ["api", "fn"],
+          ["fn", "ranks"],
+          ["fn", "scores"],
+          ["fn", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "image-hosting",
+      "title": "Image Hosting Service",
+      "difficulty": "easy",
+      "category": "Media",
+      "companyTag": "Imgur",
+      "estMinutes": 15,
+      "authored": true,
+      "problem": "Design an image hosting service where users upload an image and get a shareable link. Once uploaded, an image is viewed far more often than it is written, by a global audience that expects it to load instantly.",
+      "functionalRequirements": [
+        "Upload an image and return a shareable link",
+        "Serve images quickly to a global audience",
+        "Store image metadata (owner, title, timestamps)"
+      ],
+      "constraints": [
+        "Images are large binary blobs",
+        "Views vastly outnumber uploads",
+        "Global viewers expect fast load times"
+      ],
+      "targetScale": "Millions of images, heavily read-skewed global traffic",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "Deliver from the edge",
+          "body": "Viewers are global and reads dominate. Put CloudFront in front so images stream from edge locations (pointed at your S3 bucket), not the origin."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Upload API + compute",
+          "body": "Route uploads through an API Gateway to a compute handler (Lambda or ECS) that accepts the file and records the image."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Store blobs in S3",
+          "body": "Images are large blobs — keep them in S3 (object storage), not a database. Databases are for metadata, not megabytes of pixels."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Track metadata",
+          "body": "Store each image's metadata (owner, title, link, timestamps) in DynamoDB so listings and lookups stay fast and cheap."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Enable observability",
+          "body": "Add a CloudWatch node to watch upload latency and cache hit rates."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Global delivery via CDN",
+          "detail": "CloudFront is wired into the request path.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudfront"], "mustBeConnected": true }
+        },
+        {
+          "id": "m2",
+          "label": "Upload API handles uploads",
+          "detail": "The API forwards to a compute handler.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] }
+        },
+        {
+          "id": "m3",
+          "label": "Images stored in object storage",
+          "detail": "S3 holds the uploaded images.",
+          "rule": { "kind": "hasService", "anyOf": ["s3"], "mustBeConnected": true }
+        },
+        {
+          "id": "m4",
+          "label": "CDN serves images from storage",
+          "detail": "CloudFront is pointed at the S3 bucket.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["cloudfront"], "toAnyOf": ["s3"] }
+        },
+        {
+          "id": "m5",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in for health and metrics monitoring.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node so traffic has a source."
+          },
+          {
+            "id": "c-cdn",
+            "label": "Global delivery via CloudFront",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["cloudfront"], "mustBeConnected": true },
+            "failHint": "Add a connected CloudFront so global viewers load images from the edge."
+          },
+          {
+            "id": "c-compute",
+            "label": "Upload API forwards to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service to accept uploads."
+          },
+          {
+            "id": "c-storage",
+            "label": "Images stored in S3",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["s3"], "mustBeConnected": true },
+            "failHint": "Store images in connected S3 (object storage), not a database."
+          },
+          {
+            "id": "c-deliver",
+            "label": "CDN serves images from S3",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["cloudfront"], "toAnyOf": ["s3"] },
+            "failHint": "Point CloudFront at the S3 bucket so reads stream from the edge instead of hitting the origin."
+          },
+          {
+            "id": "c-meta",
+            "label": "Image metadata stored",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "Keep image metadata (owner, title, link) in a connected database like DynamoDB."
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to watch upload latency and cache hit rate.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Lean harder on the CDN/S3 read path or raise capacity at the bottleneck."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Edge (CloudFront) serves images straight from S3. Upload path: API → Lambda writes the blob to S3 and a metadata record to DynamoDB.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300 },
+          { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 210 },
+          { "key": "cdn", "type": "cloudfront", "name": "Image CDN", "x": 460, "y": 210 },
+          { "key": "api", "type": "apiGateway", "name": "Upload API", "x": 460, "y": 400 },
+          { "key": "fn", "type": "lambda", "name": "Upload Handler", "x": 700, "y": 400 },
+          { "key": "store", "type": "s3", "name": "Image Store", "x": 940, "y": 210 },
+          { "key": "meta", "type": "dynamoDb", "name": "Image Metadata", "x": 940, "y": 400 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 700, "y": 560 }
+        ],
+        "edges": [
+          ["users", "dns"],
+          ["dns", "cdn"],
+          ["cdn", "api"],
+          ["cdn", "store"],
+          ["api", "fn"],
+          ["fn", "store"],
+          ["fn", "meta"],
+          ["fn", "mon"]
+        ]
+      }
+    },
+    {
+      "id": "search-autocomplete",
+      "title": "Search Autocomplete",
+      "difficulty": "medium",
+      "category": "Search",
+      "companyTag": "Google",
+      "estMinutes": 30,
+      "authored": true,
+      "problem": "Design a search autocomplete (typeahead) service that returns the top suggestions for whatever prefix a user has typed so far, within a few milliseconds per keystroke. Suggestions are ranked by popularity and must stay fresh as search trends shift — without ever slowing down the live read path.",
+      "functionalRequirements": [
+        "Return the top suggestions for a given prefix with very low latency",
+        "Log every executed search query",
+        "Rebuild ranked suggestions from query frequency over time",
+        "Keep the fast read path independent from the heavy rebuild path"
+      ],
+      "constraints": [
+        "A suggestion lookup fires on every keystroke and must return in a few ms",
+        "The system ingests a massive, continuous stream of query logs",
+        "Suggestion rankings change as trends shift",
+        "The rebuild must never slow the live read path"
+      ],
+      "targetScale": "Tens of thousands of prefix lookups/sec; billions of query events ingested",
+      "hints": [
+        {
+          "id": "h1",
+          "order": 1,
+          "title": "Read path entry",
+          "body": "Front the lookups with an API Gateway routed to a compute handler (Lambda or ECS) that answers prefix queries."
+        },
+        {
+          "id": "h2",
+          "order": 2,
+          "title": "Serve prefixes from memory",
+          "body": "A database query per keystroke is far too slow. Keep precomputed top-K suggestions per prefix in ElastiCache (Redis) so each lookup is a single in-memory read."
+        },
+        {
+          "id": "h3",
+          "order": 3,
+          "title": "Capture the query stream",
+          "body": "Every executed search is an event. Stream raw queries into Kinesis so ingestion scales independently from the read path and the producer never blocks."
+        },
+        {
+          "id": "h4",
+          "order": 4,
+          "title": "Aggregate asynchronously",
+          "body": "Run worker compute that consumes the stream, counts prefix frequencies, and stores ranked suggestions durably in DynamoDB."
+        },
+        {
+          "id": "h5",
+          "order": 5,
+          "title": "Refresh the cache",
+          "body": "Have the rebuild write the new top-K per prefix back into ElastiCache, so the read path always serves fresh, precomputed results without touching the aggregation pipeline."
+        },
+        {
+          "id": "h6",
+          "order": 6,
+          "title": "Enable observability",
+          "body": "Add CloudWatch to watch ingestion lag and the cache hit rate."
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "label": "Lookup API handles prefixes",
+          "detail": "The API forwards prefix lookups to compute.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] }
+        },
+        {
+          "id": "m2",
+          "label": "Prefix cache in place",
+          "detail": "ElastiCache holds precomputed top-K suggestions.",
+          "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true }
+        },
+        {
+          "id": "m3",
+          "label": "Reads served from the cache",
+          "detail": "Compute reads suggestions straight from ElastiCache.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["elastiCache"] }
+        },
+        {
+          "id": "m4",
+          "label": "Query stream ingested",
+          "detail": "Raw queries flow into a stream or queue.",
+          "rule": { "kind": "hasService", "anyOf": ["kinesis", "sqs", "kinesisFirehose"], "mustBeConnected": true }
+        },
+        {
+          "id": "m5",
+          "label": "Suggestions rebuilt asynchronously",
+          "detail": "Workers consume the stream and persist ranked suggestions.",
+          "rule": {
+            "kind": "allOf",
+            "rules": [
+              { "kind": "hasEdge", "fromAnyOf": ["kinesis", "sqs", "kinesisFirehose"], "toAnyOf": ["lambda", "ecs", "ec2"] },
+              { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true }
+            ]
+          }
+        },
+        {
+          "id": "m6",
+          "label": "CloudWatch observability",
+          "detail": "Wire CloudWatch in to watch ingestion lag and cache hits.",
+          "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+          "hidden": true
+        }
+      ],
+      "rubric": {
+        "passScore": 70,
+        "checks": [
+          {
+            "id": "c-client",
+            "label": "Has a client entry point",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["client"] },
+            "failHint": "Add a Users (client) node as the traffic source."
+          },
+          {
+            "id": "c-compute",
+            "label": "API forwards lookups to compute",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda", "ecs", "ec2", "appRunner"] },
+            "failHint": "Connect the API Gateway to a compute service that answers prefix lookups."
+          },
+          {
+            "id": "c-cache",
+            "label": "Precomputed prefix cache",
+            "weight": 3,
+            "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true },
+            "failHint": "A DB query per keystroke is too slow. Add connected ElastiCache holding top-K suggestions per prefix."
+          },
+          {
+            "id": "c-cache-edge",
+            "label": "Reads come from the cache",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "appRunner"], "toAnyOf": ["elastiCache"] },
+            "failHint": "Wire the lookup compute to ElastiCache so each keystroke is a single in-memory read."
+          },
+          {
+            "id": "c-stream",
+            "label": "Query log ingestion",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["kinesis", "sqs", "kinesisFirehose"], "mustBeConnected": true },
+            "failHint": "Capture the raw query firehose with a connected Kinesis stream (or queue) so ingestion scales on its own."
+          },
+          {
+            "id": "c-ingest-edge",
+            "label": "Queries are logged to the stream",
+            "weight": 1,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "apiGateway"], "toAnyOf": ["kinesis", "sqs", "kinesisFirehose"] },
+            "failHint": "Have the read path publish each executed query into the stream without blocking the response."
+          },
+          {
+            "id": "c-aggregate",
+            "label": "Workers rebuild suggestions",
+            "weight": 2,
+            "rule": { "kind": "hasEdge", "fromAnyOf": ["kinesis", "sqs", "kinesisFirehose"], "toAnyOf": ["lambda", "ecs", "ec2"] },
+            "failHint": "Add worker compute that consumes the stream and counts prefix frequencies."
+          },
+          {
+            "id": "c-store",
+            "label": "Ranked suggestions persisted",
+            "weight": 2,
+            "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true },
+            "failHint": "Persist the rebuilt ranked suggestions in a connected database like DynamoDB."
+          },
+          {
+            "id": "c-monitor",
+            "label": "Observability in place",
+            "weight": 1,
+            "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
+            "failHint": "Add CloudWatch to watch ingestion lag and cache hit rate.",
+            "optional": true
+          },
+          {
+            "id": "c-health",
+            "label": "No node overloaded under load",
+            "weight": 2,
+            "rule": { "kind": "noOverload" },
+            "failHint": "Run the simulation — a node is saturating. Scale the aggregation workers or lean harder on the cache for reads."
+          }
+        ]
+      },
+      "referenceSolution": {
+        "notes": "Read path (API → Suggest Handler → ElastiCache) answers each keystroke from precomputed top-K. The handler also logs queries to a Kinesis stream; an Aggregator consumes the stream, persists ranked suggestions to DynamoDB, and refreshes the prefix cache.",
+        "nodes": [
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300 },
+          { "key": "api", "type": "apiGateway", "name": "Suggest API", "x": 280, "y": 300 },
+          { "key": "lookupFn", "type": "lambda", "name": "Suggest Handler", "x": 520, "y": 300 },
+          { "key": "cache", "type": "elastiCache", "name": "Prefix Cache", "x": 780, "y": 180 },
+          { "key": "stream", "type": "kinesis", "name": "Query Stream", "x": 520, "y": 500 },
+          { "key": "aggFn", "type": "lambda", "name": "Aggregator", "x": 780, "y": 500 },
+          { "key": "store", "type": "dynamoDb", "name": "Suggestions Store", "x": 1040, "y": 420 },
+          { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 1040, "y": 180 }
+        ],
+        "edges": [
+          ["users", "api"],
+          ["api", "lookupFn"],
+          ["lookupFn", "cache"],
+          ["lookupFn", "stream"],
+          ["stream", "aggFn"],
+          ["aggFn", "store"],
+          ["aggFn", "cache"],
+          ["lookupFn", "mon"],
+          ["aggFn", "mon"]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+name: Validate challenges
+
+on:
+  push:
+    paths:
+      - 'frontend/src/app/core/data/challenges.json'
+      - 'frontend/src/app/core/config/aws-services.json'
+      - 'frontend/scripts/validate-challenges.mjs'
+  pull_request:
+    paths:
+      - 'frontend/src/app/core/data/challenges.json'
+      - 'frontend/src/app/core/config/aws-services.json'
+      - 'frontend/scripts/validate-challenges.mjs'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # No install needed — the validator is dependency-free.
+      - run: node frontend/scripts/validate-challenges.mjs

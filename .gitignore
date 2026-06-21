@@ -22,3 +22,17 @@ yarn-error.log*
 # Cloudflare secrets
 .dev.vars
 backend/.dev.vars
+
+# Environment files (never commit real secrets; *.example files are tracked)
+.env
+*/.env
+**/.env
+!*.env.example
+!**/.env.example
+
+# Wrangler local state
+.wrangler/
+
+# Claude Code (local AI assistant files, not for the repo)
+.claude/
+CLAUDE.md

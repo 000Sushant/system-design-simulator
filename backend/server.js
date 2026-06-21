@@ -10,9 +10,11 @@
 
 const express = require('express');
 const cors    = require('cors');
+const helmet  = require('helmet');
 const dotenv  = require('dotenv');
 const fs      = require('fs');
 const path    = require('path');
+const { SUPPORTED_REGIONS } = require('./regions');
 
 // ── Load credentials from .dev.vars (local dev only) ────────────────────────
 const devVarsPath = path.join(__dirname, '.dev.vars');
@@ -47,7 +49,23 @@ function isKVConfigured() {
 
 const CF_KV_BASE = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values`;
 
-app.use(cors());
+// Comma-separated list of origins allowed to call this API.
+// Defaults to the local Angular dev server when unset.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:4200')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(helmet());
+app.use(cors({
+  origin(origin, callback) {
+    // Allow same-origin / non-browser callers (no Origin header).
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origin ${origin} is not allowed by CORS.`));
+  },
+}));
 app.use(express.json());
 
 // ── In-memory cache (session-scoped, avoids repeated KV reads) ───────────────
@@ -125,6 +143,16 @@ async function getPricingFromKV(regionCode) {
  */
 app.get('/api/prices', async (req, res) => {
   const regionCode = (req.query.region || 'us-east-1').trim().toLowerCase();
+
+  // 0. Reject unknown region codes before any KV / filesystem lookup.
+  if (!SUPPORTED_REGIONS.has(regionCode)) {
+    return res.status(404).json({
+      unsupportedRegion: true,
+      regionCode,
+      message: `Region "${regionCode}" is not a recognized AWS region code.`,
+    });
+  }
+
   // 1. If it's us-east-1, serve the local us-east-1.json file directly from frontend src folder to avoid duplicates
   if (regionCode === 'us-east-1') {
     const localFilePath = path.join(__dirname, '..', 'frontend', 'src', 'app', 'core', 'data', 'regions', 'us-east-1.json');
