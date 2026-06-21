@@ -151,6 +151,46 @@
         <span>Challenge Completed Successfully!</span>
       </div>
 
+      <!-- How this architecture works -->
+      <div class="solution-explainer" *ngIf="active.solution as sol">
+        <button type="button" class="solution-toggle" (click)="toggleSolution()"
+          [attr.aria-expanded]="solutionExpanded">
+          <i class="fas fa-lightbulb"></i>
+          <span>Why this architecture works</span>
+          <i class="fas chevron" [class.fa-chevron-up]="solutionExpanded" [class.fa-chevron-down]="!solutionExpanded"></i>
+        </button>
+
+        <div class="solution-body" *ngIf="solutionExpanded">
+          <p class="solution-summary">{{ sol.summary }}</p>
+
+          <div class="solution-reqs" *ngIf="sol.requirementsMet?.length">
+            <h5>How it meets the requirements</h5>
+            <div class="req-row" *ngFor="let r of sol.requirementsMet">
+              <i class="fas fa-circle-check"></i>
+              <div>
+                <strong>{{ r.requirement }}</strong>
+                <span>{{ r.satisfiedBy }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="solution-services">
+            <h5>The role of each service</h5>
+            <div class="svc-row" *ngFor="let s of sol.services"
+              [style.--svc-color]="solutionColor(s.type)">
+              <span class="svc-icon">
+                <img [src]="solutionIcon(s.type)" [alt]="(s.name || s.type) + ' icon'" />
+              </span>
+              <div class="svc-text">
+                <strong>{{ s.name || s.type }}</strong>
+                <span class="svc-role">{{ s.role }}</span>
+                <span class="svc-why"><i class="fas fa-circle-info"></i> {{ s.why }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="design-again-container">
         <button type="button" class="btn-design-again" (click)="onDesignAgain()">
           <i class="fas fa-rotate-left"></i> Design Again

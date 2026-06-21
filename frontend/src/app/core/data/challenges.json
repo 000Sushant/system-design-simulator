@@ -143,20 +143,20 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Add caching or raise throughput/capacity on the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Add caching or raise throughput/capacity on the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Edge → API → Lambda, with DynamoDB for storage and ElastiCache absorbing the read-heavy redirect traffic.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 220 },
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 220, "config": { "requestRate": 4000, "packageSize": 1 } },
           { "key": "dns", "type": "route53", "name": "DNS", "x": 280, "y": 160 },
           { "key": "cdn", "type": "cloudfront", "name": "CDN", "x": 480, "y": 220 },
           { "key": "api", "type": "apiGateway", "name": "Redirect API", "x": 700, "y": 220 },
           { "key": "fn", "type": "lambda", "name": "Redirect Fn", "x": 920, "y": 220 },
-          { "key": "cache", "type": "elastiCache", "name": "Hot Code Cache", "x": 1140, "y": 120 },
-          { "key": "db", "type": "dynamoDb", "name": "Code Store", "x": 1140, "y": 320 },
+          { "key": "cache", "type": "elastiCache", "name": "Hot Code Cache", "x": 1140, "y": 120, "config": { "cacheHitRate": 92 } },
+          { "key": "db", "type": "dynamoDb", "name": "Code Store", "x": 1140, "y": 320, "config": { "throughput": 200 } },
           { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 920, "y": 420 }
         ],
         "edges": [
@@ -167,6 +167,23 @@
           ["fn", "cache"],
           ["fn", "db"],
           ["fn", "mon"]
+        ]
+      },
+      "solution": {
+        "summary": "A URL shortener is read far more than it's written: a link is created once but clicked thousands of times. So the whole design is about making every click cheap and instant, while keeping 'create a link' simple.",
+        "requirementsMet": [
+          { "requirement": "Create a short code for a long URL", "satisfiedBy": "When someone makes a link, the logic layer (Lambda) saves one simple entry, 'this short code points to that long URL', in the database. A create is just one quick write, so it stays cheap and easy." },
+          { "requirement": "Redirect a short code to its original URL", "satisfiedBy": "On a click, the logic looks up the code (checking fast memory first, then the database) and sends the visitor straight to the original URL." },
+          { "requirement": "Serve a very high volume of clicks with low latency", "satisfiedBy": "Most clicks are for the same popular links. The CDN answers many of them right next to the user, and a cache answers the rest in about a millisecond, so the database is barely touched. That is how it stays fast even at very high traffic." }
+        ],
+        "services": [
+          { "type": "route53", "name": "DNS", "role": "Points your domain to an entry point.", "why": "It is the internet's address book. A managed one (Route 53) is reliable and points each visitor to the closest entry point, with nothing for you to run." },
+          { "type": "cloudfront", "name": "CDN", "role": "Serves popular redirects from nearby.", "why": "A redirect for a popular link is the same for everyone, so it can be reused. Serving it from a nearby location is faster for the user and takes load off everything behind it." },
+          { "type": "apiGateway", "name": "Redirect API", "role": "The single front door for all requests.", "why": "It gives you one secure entry point that grows with traffic on its own, so you never have to run or babysit web servers." },
+          { "type": "lambda", "name": "Redirect Fn", "role": "Creates and looks up short codes.", "why": "The work per request is tiny and comes in bursts. Code that runs only when needed scales instantly, and you pay per request instead of paying for idle servers." },
+          { "type": "elastiCache", "name": "Hot Code Cache", "role": "Remembers the most-clicked links in memory.", "why": "Reading from memory is much faster than reading from a database, and the same links get clicked over and over, so this answers most requests in about a millisecond. It speeds things up, but the database is still the real source of truth." },
+          { "type": "dynamoDb", "name": "Code Store", "role": "Stores every code-to-URL mapping.", "why": "Every lookup is just 'find by code', which this kind of database does extremely fast at any size with almost no setup. It keeps your data safe even though the cache serves most of the reads." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks speed and cache effectiveness.", "why": "If something slows down or the cache stops working, you can see it here before your users ever feel it." }
         ]
       }
     },
@@ -345,14 +362,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Scale workers or add caching at the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Scale workers or add caching at the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Synchronous post path stores media in S3 + metadata in DynamoDB, then publishes to SNS→SQS for async worker fan-out into a feed store, with ElastiCache fronting hot feeds and CloudFront serving media.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 320 },
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 320, "config": { "requestRate": 3000, "packageSize": 600, "variableTraffic": true, "variableMinRps": 1500, "variableMaxRps": 6000 } },
           { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 220 },
           { "key": "cdn", "type": "cloudfront", "name": "Media CDN", "x": 460, "y": 120 },
           { "key": "api", "type": "apiGateway", "name": "Post API", "x": 460, "y": 360 },
@@ -535,14 +552,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Add caching or raise capacity on the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Add caching or raise capacity on the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Edge → API → Lambda. DynamoDB (with TTL) holds metadata and small pastes; S3 holds large blobs; CloudFront serves hot immutable pastes.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 220 },
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 220, "config": { "requestRate": 1200, "packageSize": 400 } },
           { "key": "dns", "type": "route53", "name": "DNS", "x": 280, "y": 160 },
           { "key": "cdn", "type": "cloudfront", "name": "CDN", "x": 480, "y": 220 },
           { "key": "api", "type": "apiGateway", "name": "Paste API", "x": 700, "y": 220 },
@@ -600,7 +617,7 @@
           "id": "h3",
           "order": 3,
           "title": "Counters can't be local",
-          "body": "If each server keeps counts in its own memory, the limit breaks behind a load balancer. Use a fast shared store — ElastiCache (Redis) — for atomic per-client counters."
+          "body": "If each server keeps counts in its own memory, the limit breaks behind a load balancer. Use a fast shared store like ElastiCache (Redis) for atomic per-client counters."
         },
         {
           "id": "h4",
@@ -707,17 +724,17 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Raise capacity on the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Raise capacity on the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "API → Lambda evaluates each request against atomic counters in ElastiCache (Redis); per-client policies live in DynamoDB.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "API Clients", "x": 60, "y": 220 },
+          { "key": "users", "type": "client", "name": "API Clients", "x": 60, "y": 220, "config": { "requestRate": 8000, "packageSize": 1 } },
           { "key": "api", "type": "apiGateway", "name": "API Gateway", "x": 320, "y": 220 },
-          { "key": "fn", "type": "lambda", "name": "Limiter Fn", "x": 580, "y": 220 },
-          { "key": "counters", "type": "elastiCache", "name": "Counter Cache", "x": 840, "y": 130 },
+          { "key": "fn", "type": "lambda", "name": "Limiter Fn", "x": 580, "y": 220, "config": { "throughput": 200 } },
+          { "key": "counters", "type": "elastiCache", "name": "Counter Cache", "x": 840, "y": 130, "config": { "cacheHitRate": 5 } },
           { "key": "policies", "type": "dynamoDb", "name": "Limit Policies", "x": 840, "y": 320 },
           { "key": "mon", "type": "cloudWatch", "name": "Monitoring", "x": 580, "y": 420 }
         ],
@@ -894,14 +911,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Scale workers or add caching at the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Scale workers or add caching at the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Cognito-authed clients connect via API Gateway to a connection manager (Lambda) that stores connections in DynamoDB and presence in ElastiCache. Events publish to SNS→SQS, and ECS workers deliver and update state.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300 },
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300, "config": { "requestRate": 5000, "packageSize": 4, "variableTraffic": true, "variableMinRps": 2000, "variableMaxRps": 9000 } },
           { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 210 },
           { "key": "auth", "type": "cognito", "name": "Auth", "x": 260, "y": 410 },
           { "key": "api", "type": "apiGateway", "name": "Realtime API", "x": 480, "y": 300 },
@@ -968,7 +985,7 @@
           "id": "h3",
           "order": 3,
           "title": "Store raw and renditions in S3",
-          "body": "Video files are large blobs — keep raw uploads and every transcoded rendition in S3, not a database."
+          "body": "Video files are large blobs, so keep raw uploads and every transcoded rendition in S3, not a database."
         },
         {
           "id": "h4",
@@ -1112,14 +1129,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Scale transcode workers or capacity at the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Scale transcode workers or capacity at the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Edge (CloudFront) → upload API → Lambda stores raw video in S3 and a record in DynamoDB. S3 emits an event to SQS; ECS workers transcode renditions back to S3 and update status. CloudFront serves finished segments from S3.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Viewers & Uploaders", "x": 60, "y": 300 },
+          { "key": "users", "type": "client", "name": "Viewers & Uploaders", "x": 60, "y": 300, "config": { "requestRate": 2000, "packageSize": 4000 } },
           { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 220 },
           { "key": "cdn", "type": "cloudfront", "name": "Video CDN", "x": 460, "y": 220 },
           { "key": "api", "type": "apiGateway", "name": "Upload API", "x": 460, "y": 400 },
@@ -1155,7 +1172,7 @@
       "companyTag": "Airflow",
       "estMinutes": 45,
       "authored": true,
-      "problem": "Design a service that schedules millions of delayed and recurring jobs and runs them reliably — triggering at the right time, retrying failures, and never losing a job.",
+      "problem": "Design a service that schedules millions of delayed and recurring jobs and runs them reliably, triggering at the right time, retrying failures, and never losing a job.",
       "functionalRequirements": [
         "Accept and store job definitions and their schedules",
         "Trigger jobs at the right time (delayed and recurring)",
@@ -1164,7 +1181,7 @@
       ],
       "constraints": [
         "Millions of scheduled jobs",
-        "At-least-once execution — no lost jobs",
+        "At-least-once execution, so no lost jobs",
         "Execution load is spiky"
       ],
       "targetScale": "Millions of scheduled jobs, spiky execution bursts",
@@ -1185,7 +1202,7 @@
           "id": "h3",
           "order": 3,
           "title": "Trigger on time",
-          "body": "Use EventBridge as a time-based scheduler to fire due jobs into compute — both one-off delays and recurring cron-style runs."
+          "body": "Use EventBridge as a time-based scheduler to fire due jobs into compute, both one-off delays and recurring cron-style runs."
         },
         {
           "id": "h4",
@@ -1311,14 +1328,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Scale workers or capacity at the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Scale workers or capacity at the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Submit path (API → Lambda → DynamoDB) stores schedules. EventBridge fires a dispatcher Lambda that enqueues due jobs to SQS; ECS workers execute and update status, with Step Functions orchestrating multi-step jobs.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Clients", "x": 60, "y": 240 },
+          { "key": "users", "type": "client", "name": "Clients", "x": 60, "y": 240, "config": { "requestRate": 600, "packageSize": 5, "variableTraffic": true, "variableMinRps": 100, "variableMaxRps": 2000 } },
           { "key": "api", "type": "apiGateway", "name": "Submit API", "x": 280, "y": 240 },
           { "key": "submitFn", "type": "lambda", "name": "Submit Handler", "x": 500, "y": 240 },
           { "key": "jobs", "type": "dynamoDb", "name": "Job Store", "x": 720, "y": 140 },
@@ -1459,7 +1476,7 @@
             "label": "In-memory ranking store",
             "weight": 3,
             "rule": { "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true },
-            "failHint": "Ranking must be instant. Add a connected ElastiCache (Redis) sorted set — a relational sort over millions of rows is too slow."
+            "failHint": "Ranking must be instant. Add a connected ElastiCache (Redis) sorted set, because a relational sort over millions of rows is too slow."
           },
           {
             "id": "c-rank-edge",
@@ -1488,14 +1505,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Raise capacity on the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Raise capacity on the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "API → Lambda updates and queries a Redis sorted set in ElastiCache for instant ranking; DynamoDB holds the authoritative scores so the board can be rebuilt.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Players", "x": 60, "y": 220 },
+          { "key": "users", "type": "client", "name": "Players", "x": 60, "y": 220, "config": { "requestRate": 6000, "packageSize": 1 } },
           { "key": "api", "type": "apiGateway", "name": "Leaderboard API", "x": 300, "y": 220 },
           { "key": "fn", "type": "lambda", "name": "Leaderboard Fn", "x": 560, "y": 220 },
           { "key": "ranks", "type": "elastiCache", "name": "Rank Store (Redis)", "x": 820, "y": 130 },
@@ -1548,7 +1565,7 @@
           "id": "h3",
           "order": 3,
           "title": "Store blobs in S3",
-          "body": "Images are large blobs — keep them in S3 (object storage), not a database. Databases are for metadata, not megabytes of pixels."
+          "body": "Images are large blobs, so keep them in S3 (object storage), not a database. Databases are for metadata, not megabytes of pixels."
         },
         {
           "id": "h4",
@@ -1654,14 +1671,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Lean harder on the CDN/S3 read path or raise capacity at the bottleneck."
+            "failHint": "Run the simulation. A node is saturating. Lean harder on the CDN/S3 read path or raise capacity at the bottleneck."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Edge (CloudFront) serves images straight from S3. Upload path: API → Lambda writes the blob to S3 and a metadata record to DynamoDB.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300 },
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300, "config": { "requestRate": 1500, "packageSize": 2000 } },
           { "key": "dns", "type": "route53", "name": "DNS", "x": 260, "y": 210 },
           { "key": "cdn", "type": "cloudfront", "name": "Image CDN", "x": 460, "y": 210 },
           { "key": "api", "type": "apiGateway", "name": "Upload API", "x": 460, "y": 400 },
@@ -1690,7 +1707,7 @@
       "companyTag": "Google",
       "estMinutes": 30,
       "authored": true,
-      "problem": "Design a search autocomplete (typeahead) service that returns the top suggestions for whatever prefix a user has typed so far, within a few milliseconds per keystroke. Suggestions are ranked by popularity and must stay fresh as search trends shift — without ever slowing down the live read path.",
+      "problem": "Design a search autocomplete (typeahead) service that returns the top suggestions for whatever prefix a user has typed so far, within a few milliseconds per keystroke. Suggestions are ranked by popularity and must stay fresh as search trends shift, without ever slowing down the live read path.",
       "functionalRequirements": [
         "Return the top suggestions for a given prefix with very low latency",
         "Log every executed search query",
@@ -1859,14 +1876,14 @@
             "label": "No node overloaded under load",
             "weight": 2,
             "rule": { "kind": "noOverload" },
-            "failHint": "Run the simulation — a node is saturating. Scale the aggregation workers or lean harder on the cache for reads."
+            "failHint": "Run the simulation. A node is saturating. Scale the aggregation workers or lean harder on the cache for reads."
           }
         ]
       },
       "referenceSolution": {
         "notes": "Read path (API → Suggest Handler → ElastiCache) answers each keystroke from precomputed top-K. The handler also logs queries to a Kinesis stream; an Aggregator consumes the stream, persists ranked suggestions to DynamoDB, and refreshes the prefix cache.",
         "nodes": [
-          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300 },
+          { "key": "users", "type": "client", "name": "Users", "x": 60, "y": 300, "config": { "requestRate": 9000, "packageSize": 1 } },
           { "key": "api", "type": "apiGateway", "name": "Suggest API", "x": 280, "y": 300 },
           { "key": "lookupFn", "type": "lambda", "name": "Suggest Handler", "x": 520, "y": 300 },
           { "key": "cache", "type": "elastiCache", "name": "Prefix Cache", "x": 780, "y": 180 },

@@ -53,6 +53,11 @@
         <button type="button" class="action-btn outline" (mousemove)="onMouseMove($event)" (click)="resetCanvas()">
           <i class="fas fa-undo"></i> Clear
         </button>
+        <span class="divider" *ngIf="!isMobileViewport"></span>
+        <button type="button" class="hotkeys-btn" *ngIf="!isMobileViewport" (click)="openHotkeys()"
+          title="Keyboard shortcuts (?)" aria-label="Open keyboard shortcuts">
+          <i class="fas fa-question"></i>
+        </button>
       </div>
     </div>
   </header>
@@ -148,16 +153,24 @@
     <section #canvas class="canvas" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)"
       (pointerdown)="onCanvasPointerDown($event)" (pointermove)="onCanvasPointerMove($event)"
       (pointerup)="onCanvasPointerUp($event)" (pointercancel)="onCanvasPointerUp($event)"
+      (click)="onCanvasBackgroundClick($event)"
       (touchstart)="onCanvasTouchStart($event)">
       <!-- Canvas-level Browser Tab Bar -->
       <div class="canvas-tab-bar">
         <div class="canvas-tabs-container">
           <div *ngFor="let tab of tabs; let i = index" class="canvas-tab" [class.active]="i === activeTabIndex"
             (click)="switchCanvasTab(i)" (dblclick)="startRenameTab(i, $event)">
+            <span class="tab-status-dot" [class.modified]="tab.dirty" [class.saved]="!tab.dirty"
+              [title]="tab.dirty ? 'Unsaved changes. Press Ctrl+S to save' : 'All changes saved'"
+              aria-hidden="true"></span>
             <span *ngIf="editingTabIndex !== i" class="tab-title-text">{{ tab.name }}</span>
             <input *ngIf="editingTabIndex === i" #renameInput type="text" [value]="tab.name"
               (blur)="finishRenameTab(i, renameInput.value)" (keydown.enter)="finishRenameTab(i, renameInput.value)"
               (keydown.escape)="editingTabIndex = null" class="tab-rename-input" autofocus />
+            <button *ngIf="editingTabIndex !== i" type="button" class="tab-rename-btn" title="Rename canvas"
+              (click)="startRenameTab(i, $event)">
+              <i class="fas fa-pen"></i>
+            </button>
             <button *ngIf="tabs.length > 1" type="button" class="tab-close-btn" title="Close canvas"
               (click)="closeTab(i, $event)">
               <i class="fas fa-times"></i>
@@ -318,8 +331,8 @@
             </div>
           </div>
 
-          <!-- SUMMARY VIEW (List of errors when nothing selected) -->
-          <div *ngIf="!selectedNode" class="error-pills">
+          <!-- SUMMARY VIEW (List of errors when nothing selected AND in developer mode) -->
+          <div *ngIf="!selectedNode && roleMode === 'developer'" class="error-pills">
             <div *ngFor="let node of erroredNodes; trackBy: trackByNodeId" class="error-pill"
               (click)="selectNode(node.id)">
               <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
@@ -664,154 +677,182 @@
                 (showReference)="onShowReference($event)"></app-challenge-panel>
 
               <ng-container *ngIf="roleMode === 'architect'">
-                <h2>Key Highlights</h2>
+                <!-- Unified Architecture Dashboard Container -->
+                <div class="arch-dashboard-panel">
+                  <div class="arch-panel-head">
+                    <i class="fas fa-project-diagram" style="color: #7c3aed;"></i>
+                    <span>Architecture Dashboard</span>
+                  </div>
 
-                <div class="highlights-section">
-                  <!-- Architecture -->
-                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('arch')"
-                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('arch')">
-                    <span class="highlight-icon"><i class="fas fa-building"></i></span>
-                    <div class="highlight-content">
-                      <strong>Design Architectures <i class="fas fa-chevron-down"></i></strong>
-                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('arch')">
-                        <div class="collapsible-content">
-                          <small>Drop services from the palette and visualize your AWS
-                            infrastructure</small>
+                  <div class="dashboard-card-wrapper">
+                    <!-- 1. Known Errors & Warnings Subsection -->
+                    <div class="dashboard-subsection errors-subsection">
+                      <div class="subsection-header">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Architecture Health</span>
+                      </div>
+
+                      <div class="error-pills-container">
+                        <div *ngFor="let node of erroredNodes; trackBy: trackByNodeId" class="error-pill"
+                          (click)="selectNode(node.id)">
+                          <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
+                          <span class="pill-name">{{ node.name }}</span>
+                          <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+                        </div>
+
+                        <div *ngFor="let node of warnedNodes; trackBy: trackByNodeId" class="error-pill warning"
+                          (click)="selectNode(node.id)">
+                          <span class="pill-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                          <span class="pill-name">{{ node.name }}</span>
+                          <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+                        </div>
+
+                        <!-- Overall Success Pill if no errors or warnings -->
+                        <div *ngIf="erroredNodes.length === 0 && warnedNodes.length === 0 && nodes.length > 0"
+                          class="status-pill success">
+                          <i class="fas fa-check-circle"></i> Architecture Healthy
+                        </div>
+
+                        <!-- Empty state if no services placed -->
+                        <div *ngIf="nodes.length === 0" class="dashboard-empty-subtext">
+                          No services on canvas.
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- Simulation -->
-                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('sim')"
-                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('sim')">
-                    <span class="highlight-icon"><i class="fas fa-bolt"></i></span>
-                    <div class="highlight-content">
-                      <strong>Real-time Simulation <i class="fas fa-chevron-down"></i></strong>
-                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('sim')">
-                        <div class="collapsible-content">
-                          <small>Watch traffic flow through your design and identify
-                            bottlenecks</small>
+                    <!-- 2. Cost Analytics & Services Subsection -->
+                    <div class="dashboard-subsection cost-subsection">
+                      <div class="subsection-header">
+                        <i class="fas fa-coins"></i>
+                        <span>Cost Analysis</span>
+                      </div>
+
+                      <div class="dashboard-cost-hero">
+                        <div class="dch-label">
+                          <span class="dch-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <path d="M12 6v12M15 9H10.5a2.5 2.5 0 0 0 0 5h3a2.5 2.5 0 0 1 0 5H9"></path>
+                            </svg>
+                          </span>
+                          <span>Estimated monthly spend</span>
+                        </div>
+                        <div class="dch-value">{{ totalCostFormatted }}</div>
+                      </div>
+
+                      <div class="svc-dashboard-list" *ngIf="unifiedServices.length; else noCanvasServices">
+                        <div class="svc-dashboard-row" *ngFor="let s of unifiedServices; let last = last"
+                          [style.--svc-color]="serviceColor(s.type)"
+                          [class.last-row]="last"
+                          [title]="'Open ' + s.name + ' docs in a new tab'"
+                          (click)="openDocsForService(s.type)">
+                          <div class="svc-row-main">
+                            <div class="svc-row-icon">
+                              <img [src]="nodeIconUrl(s.type)" [alt]="s.name + ' icon'" />
+                              <div class="tint-overlay" [style.background]="serviceColor(s.type)"></div>
+                            </div>
+                            <div class="svc-row-body">
+                              <div class="svc-row-title-row">
+                                <span class="svc-row-name-wrap">
+                                  <span class="svc-row-name">{{ s.name }}</span>
+                                  <span class="svc-row-badge" *ngIf="s.count > 1">x{{ s.count }}</span>
+                                </span>
+                                <span class="svc-row-cost" *ngIf="s.totalCost > 0.0001">{{ s.formattedCost }}</span>
+                              </div>
+                              <p class="svc-row-desc">{{ s.overview }}</p>
+                            </div>
+                            <div class="svc-row-arrow">
+                              <i class="fas fa-arrow-up-right-from-square"></i>
+                            </div>
+                          </div>
+                          <!-- Progress bar indicating cost contribution -->
+                          <div class="svc-row-progress-bar" *ngIf="s.pct > 0">
+                            <span [style.width.%]="s.pct"></span>
+                          </div>
                         </div>
                       </div>
+                      <ng-template #noCanvasServices>
+                        <p class="dashboard-empty-text">
+                          Drag AWS services from the palette to see active infrastructure, cost details, and docs.
+                        </p>
+                      </ng-template>
                     </div>
-                  </div>
 
-                  <!-- Metrics -->
-                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('metrics')"
-                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('metrics')">
-                    <span class="highlight-icon"><i class="fas fa-chart-bar"></i></span>
-                    <div class="highlight-content">
-                      <strong>Performance Metrics <i class="fas fa-chevron-down"></i></strong>
-                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('metrics')">
-                        <div class="collapsible-content">
-                          <small>Monitor latency, throughput, error rates, and
-                            resource utilization</small>
-                        </div>
+                    <!-- 3. Share Feedback Subsection -->
+                    <div class="dashboard-subsection feedback-subsection-new">
+                      <div class="subsection-header">
+                        <i class="fas fa-comments"></i>
+                        <span>Share Feedback</span>
                       </div>
-                    </div>
-                  </div>
 
-                  <!-- Tuning -->
-                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('tune')"
-                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('tune')">
-                    <span class="highlight-icon"><i class="fas fa-wrench"></i></span>
-                    <div class="highlight-content">
-                      <strong>Tune & Optimize <i class="fas fa-chevron-down"></i></strong>
-                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('tune')">
-                        <div class="collapsible-content">
-                          <small>Adjust capacity, configure services, and run
-                            scenarios</small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                      <div class="feedback-options-list">
+                        <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                          <div class="feedback-card-icon testimonial-icon">
+                            <i class="fas fa-star"></i>
+                          </div>
+                          <div class="feedback-card-body">
+                            <div class="feedback-card-title">
+                              <span>Submit Testimonial</span>
+                              <i class="fas fa-external-link-alt external-link-icon"></i>
+                            </div>
+                            <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be featured!</p>
+                          </div>
+                        </a>
 
-                  <!-- Cost -->
-                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('cost')"
-                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('cost')">
-                    <span class="highlight-icon"><i class="fa-solid fa-hand-holding-dollar"></i></span>
-                    <div class="highlight-content">
-                      <strong>Cost Estimation <i class="fas fa-chevron-down"></i></strong>
-                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('cost')">
-                        <div class="collapsible-content">
-                          <small>Get realistic monthly cost approximations based on
-                            traffic and service configuration.</small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- AI Intelligence -->
-                  <div class="highlight-item coming-soon" [class.expanded]="isHighlightExpanded('ai')"
-                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('ai')">
-                    <span class="highlight-icon ai-icon"><i class="fas fa-robot"></i></span>
-                    <div class="highlight-content">
-                      <strong>AI Intelligence <span class="badge">Coming Soon</span>
-                        <i class="fas fa-chevron-down"></i></strong>
-                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('ai')">
-                        <div class="collapsible-content">
-                          <small>AI powered cost and architecture analysis and
-                            suggestions based on your business
-                            requirements.</small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Multi-Cloud Support -->
-                  <div class="highlight-item coming-soon" [class.expanded]="isHighlightExpanded('multiCloud')"
-                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('multiCloud')">
-                    <span class="highlight-icon cloud-icon"><i class="fas fa-globe"></i></span>
-                    <div class="highlight-content">
-                      <strong>Multi-Cloud Support
-                        <span class="badge">Coming Soon</span>
-                        <i class="fas fa-chevron-down"></i></strong>
-                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('multiCloud')">
-                        <div class="collapsible-content">
-                          <small>Introducing GCP and Azure services to compare cost of
-                            similar architecture by different service
-                            prodvider</small>
-                        </div>
+                        <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                          <div class="feedback-card-icon support-icon">
+                            <i class="fas fa-bug"></i>
+                          </div>
+                          <div class="feedback-card-body">
+                            <div class="feedback-card-title">
+                              <span>Bugs &amp; Improvements</span>
+                              <i class="fas fa-external-link-alt external-link-icon"></i>
+                            </div>
+                            <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the platform.</p>
+                          </div>
+                        </a>
                       </div>
                     </div>
                   </div>
                 </div>
               </ng-container>
 
-              <div class="feedback-section">
-                <div class="block-header">
-                  <i class="fas fa-comments"></i>
-                  <span>Share Feedback</span>
-                </div>
-                <div class="feedback-options-list">
-                  <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer" class="feedback-card">
-                    <div class="feedback-card-icon testimonial-icon">
-                      <i class="fas fa-star"></i>
-                    </div>
-                    <div class="feedback-card-body">
-                      <div class="feedback-card-title">
-                        <span>Submit Testimonial</span>
-                        <i class="fas fa-external-link-alt external-link-icon"></i>
+              <!-- For Developer Mode, keep the old standalone feedback list outside -->
+              <ng-container *ngIf="roleMode === 'developer'">
+                <div class="feedback-section">
+                  <div class="block-header">
+                    <i class="fas fa-comments"></i>
+                    <span>Share Feedback</span>
+                  </div>
+                  <div class="feedback-options-list">
+                    <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                      <div class="feedback-card-icon testimonial-icon">
+                        <i class="fas fa-star"></i>
                       </div>
-                      <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be featured!</p>
-                    </div>
-                  </a>
+                      <div class="feedback-card-body">
+                        <div class="feedback-card-title">
+                          <span>Submit Testimonial</span>
+                          <i class="fas fa-external-link-alt external-link-icon"></i>
+                        </div>
+                        <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be featured!</p>
+                      </div>
+                    </a>
 
-                  <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer" class="feedback-card">
-                    <div class="feedback-card-icon support-icon">
-                      <i class="fas fa-bug"></i>
-                    </div>
-                    <div class="feedback-card-body">
-                      <div class="feedback-card-title">
-                        <span>Bugs & Improvements</span>
-                        <i class="fas fa-external-link-alt external-link-icon"></i>
+                    <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                      <div class="feedback-card-icon support-icon">
+                        <i class="fas fa-bug"></i>
                       </div>
-                      <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the platform.</p>
-                    </div>
-                  </a>
+                      <div class="feedback-card-body">
+                        <div class="feedback-card-title">
+                          <span>Bugs &amp; Improvements</span>
+                          <i class="fas fa-external-link-alt external-link-icon"></i>
+                        </div>
+                        <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the platform.</p>
+                      </div>
+                    </a>
+                  </div>
                 </div>
-              </div>
+              </ng-container>
             </div>
           </ng-template>
         </ng-template>
@@ -958,7 +999,7 @@
     <div class="toast-content">
       <i class="fas fa-check-circle success-icon"></i>
       <div class="toast-text">
-        <strong>Saved in memory</strong>
+        <strong>{{ (tabs[activeTabIndex] && tabs[activeTabIndex].name) || "Canvas" }} saved in memory</strong>
         <small>Architecture synced with local browser storage</small>
       </div>
     </div>
@@ -992,6 +1033,47 @@
         <button type="button" id="dismiss-unsupported-region-btn" class="unsupported-dismiss-btn"
           (click)="dismissUnsupportedRegion()">
           <i class="fas fa-check"></i> Got it
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── Keyboard Shortcuts Panel ───── -->
+  <div class="hotkeys-overlay" *ngIf="showHotkeys" (click)="closeHotkeys()">
+    <div class="hotkeys-card" (click)="$event.stopPropagation()">
+      <button type="button" class="hotkeys-close" (click)="closeHotkeys()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="hotkeys-header">
+        <span class="hotkeys-mascot" aria-hidden="true">
+          <img src="assets/mascot/cat-think.svg" alt="" />
+        </span>
+        <div class="hotkeys-heading">
+          <h3>Keyboard Shortcuts</h3>
+          <p>Work faster on the canvas. Press <kbd>?</kbd> anytime to reopen this.</p>
+        </div>
+      </div>
+
+      <div class="hotkeys-groups">
+        <div class="hotkeys-group" *ngFor="let group of hotkeyGroups">
+          <h4>{{ group.title }}</h4>
+          <ul>
+            <li *ngFor="let item of group.items">
+              <span class="hotkeys-keys">
+                <ng-container *ngFor="let key of item.keys; let last = last">
+                  <kbd>{{ key }}</kbd><span class="hotkeys-plus" *ngIf="!last">+</span>
+                </ng-container>
+              </span>
+              <span class="hotkeys-label">{{ item.label }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="hotkeys-actions">
+        <button type="button" class="hotkeys-got-it" (click)="closeHotkeys()">
+          Got it, let's build
         </button>
       </div>
     </div>
