@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
-import { ArchitectureConnection, ArchitectureProject, AwsServiceType } from '../models/architecture.model';
-import { ArchitectureFactoryService } from './architecture-factory.service';
-import { ValidationRuleService } from './validation-rule.service';
+import { ArchitectureProject, AwsServiceType } from '../models/architecture.model';
+import { ReferenceNode } from '../models/challenge.model';
+import { GraphBuilderService } from './graph-builder.service';
 
 @Injectable({ providedIn: 'root' })
 export class PresetService {
-  constructor(
-    private readonly factory: ArchitectureFactoryService,
-    private readonly validation: ValidationRuleService
-  ) { }
+  constructor(private readonly graphBuilder: GraphBuilderService) {}
+
+  private toLayout(rows: Array<[string, AwsServiceType, string, number, number]>): ReferenceNode[] {
+    return rows.map(([key, type, name, x, y]) => ({ key, type, name, x, y }));
+  }
 
   messagingPreset(): ArchitectureProject {
-    // key, service type, display name, x, y
-    const layout: Array<[string, AwsServiceType, string, number, number]> = [
+    const layout = this.toLayout([
       ['users', 'client', 'Chat Users', 60, 360],
       ['dns', 'route53', 'App Domain (DNS)', 300, 220],
       ['auth', 'cognito', 'User Authentication', 300, 520],
@@ -29,74 +29,22 @@ export class PresetService {
       ['archive', 'kinesisFirehose', 'Archive Pipeline', 1320, 700],
       ['workers', 'ecs', 'Delivery Workers', 1580, 520],
       ['search', 'openSearch', 'Message Search', 1580, 700],
-      ['monitoring', 'cloudWatch', 'Monitoring', 800, 720]
+      ['monitoring', 'cloudWatch', 'Monitoring', 800, 720],
+    ]);
+    const edges: Array<[string, string]> = [
+      // Edge & authentication
+      ['users', 'dns'], ['users', 'auth'], ['dns', 'cdn'], ['dns', 'wsApi'], ['cdn', 'storage'],
+      // WebSocket connection lifecycle ($connect / $disconnect, presence)
+      ['auth', 'connFn'], ['wsApi', 'connFn'], ['connFn', 'presence'], ['connFn', 'messages'], ['connFn', 'monitoring'],
+      // Message send path (persist, look up presence, fan-out, stream)
+      ['wsApi', 'msgFn'], ['msgFn', 'messages'], ['msgFn', 'presence'], ['msgFn', 'storage'],
+      ['msgFn', 'push'], ['msgFn', 'stream'], ['msgFn', 'monitoring'],
+      // Asynchronous fan-out & delivery workers
+      ['push', 'deliveryQueue'], ['deliveryQueue', 'workers'], ['workers', 'messages'], ['workers', 'monitoring'],
+      // Message stream → archive & search
+      ['stream', 'archive'], ['archive', 'storage'], ['stream', 'search'],
     ];
-    const nodeByKey = new Map(
-      layout.map(([key, type, name, x, y]) => {
-        const node = this.factory.createNode(type, x, y);
-        node.name = name;
-        return [key, node] as const;
-      })
-    );
-    const nodes = layout.map(([key]) => nodeByKey.get(key)!);
-    const connections: ArchitectureConnection[] = [];
-    const connect = (source: string, target: string): void => {
-      const sourceNode = nodeByKey.get(source)!;
-      const targetNode = nodeByKey.get(target)!;
-      const sourcePorts = sourceNode.ports.filter((port) => port.direction === 'output');
-      const targetPorts = targetNode.ports.filter((port) => port.direction === 'input');
-      const match = sourcePorts
-        .flatMap((sourcePort) => targetPorts.map((targetPort) => ({
-          sourcePort,
-          targetPort,
-          result: this.validation.validate(sourceNode, sourcePort, targetNode, targetPort, connections)
-        })))
-        .find((candidate) => candidate.result.allowed);
-      if (!match) {
-        throw new Error(`Preset connection ${source} -> ${target} has no valid rule.`);
-      }
-      connections.push(this.factory.createConnection(
-        sourceNode.id,
-        match.sourcePort.id,
-        targetNode.id,
-        match.targetPort.id,
-        this.validation.connectionTypeFor(match.result.ruleId, match.sourcePort.type),
-        match.result.message
-      ));
-    };
-    // Edge & authentication
-    connect('users', 'dns');
-    connect('users', 'auth');
-    connect('dns', 'cdn');
-    connect('dns', 'wsApi');
-    connect('cdn', 'storage');
-
-    // WebSocket connection lifecycle ($connect / $disconnect, presence)
-    connect('auth', 'connFn');
-    connect('wsApi', 'connFn');
-    connect('connFn', 'presence');
-    connect('connFn', 'messages');
-    connect('connFn', 'monitoring');
-
-    // Message send path (persist, look up presence, fan-out, stream)
-    connect('wsApi', 'msgFn');
-    connect('msgFn', 'messages');
-    connect('msgFn', 'presence');
-    connect('msgFn', 'storage');
-    connect('msgFn', 'push');
-    connect('msgFn', 'stream');
-    connect('msgFn', 'monitoring');
-
-    // Asynchronous fan-out & delivery workers
-    connect('push', 'deliveryQueue');
-    connect('deliveryQueue', 'workers');
-    connect('workers', 'messages');
-    connect('workers', 'monitoring');
-
-    // Message stream → archive & search
-    connect('stream', 'archive');
-    connect('archive', 'storage');
-    connect('stream', 'search');
+    const { nodes, connections } = this.graphBuilder.build(layout, edges);
 
     return {
       id: 'preset-messaging-realtime',
@@ -133,56 +81,26 @@ export class PresetService {
   }
 
   ecommercePreset(): ArchitectureProject {
-    const layout: Array<[string, AwsServiceType, number, number]> = [
-      ['client', 'client', 80, 160],
-      ['route53', 'route53', 280, 110],
-      ['cloudfront', 'cloudfront', 480, 150],
-      ['apiGateway', 'apiGateway', 700, 150],
-      ['lambda', 'lambda', 910, 95],
-      ['dynamoDb', 'dynamoDb', 1130, 95],
-      ['s3', 's3', 1130, 250],
-      ['cloudWatch', 'cloudWatch', 1130, -50]
+    const layout: ReferenceNode[] = [
+      { key: 'client', type: 'client', x: 80, y: 160 },
+      { key: 'route53', type: 'route53', x: 280, y: 110 },
+      { key: 'cloudfront', type: 'cloudfront', x: 480, y: 150 },
+      { key: 'apiGateway', type: 'apiGateway', x: 700, y: 150 },
+      { key: 'lambda', type: 'lambda', x: 910, y: 95 },
+      { key: 'dynamoDb', type: 'dynamoDb', x: 1130, y: 95 },
+      { key: 's3', type: 's3', x: 1130, y: 250 },
+      { key: 'cloudWatch', type: 'cloudWatch', x: 1130, y: -50 },
     ];
-    const nodeByKey = new Map(
-      layout.map(([key, type, x, y]) => {
-        const node = this.factory.createNode(type, x, y);
-        return [key, node] as const;
-      })
-    );
-    const nodes = layout.map(([key]) => nodeByKey.get(key)!);
-    const connections: ArchitectureConnection[] = [];
-    const connect = (source: string, target: string): void => {
-      const sourceNode = nodeByKey.get(source)!;
-      const targetNode = nodeByKey.get(target)!;
-      const sourcePorts = sourceNode.ports.filter((port) => port.direction === 'output');
-      const targetPorts = targetNode.ports.filter((port) => port.direction === 'input');
-      const match = sourcePorts
-        .flatMap((sourcePort) => targetPorts.map((targetPort) => ({
-          sourcePort,
-          targetPort,
-          result: this.validation.validate(sourceNode, sourcePort, targetNode, targetPort, connections)
-        })))
-        .find((candidate) => candidate.result.allowed);
-      if (!match) {
-        throw new Error(`Preset connection ${source} -> ${target} has no valid rule.`);
-      }
-      connections.push(this.factory.createConnection(
-        sourceNode.id,
-        match.sourcePort.id,
-        targetNode.id,
-        match.targetPort.id,
-        this.validation.connectionTypeFor(match.result.ruleId, match.sourcePort.type),
-        match.result.message
-      ));
-    };
-
-    connect('client', 'route53');
-    connect('route53', 'cloudfront');
-    connect('cloudfront', 'apiGateway');
-    connect('apiGateway', 'lambda');
-    connect('lambda', 'dynamoDb');
-    connect('lambda', 's3');
-    connect('lambda', 'cloudWatch');
+    const edges: Array<[string, string]> = [
+      ['client', 'route53'],
+      ['route53', 'cloudfront'],
+      ['cloudfront', 'apiGateway'],
+      ['apiGateway', 'lambda'],
+      ['lambda', 'dynamoDb'],
+      ['lambda', 's3'],
+      ['lambda', 'cloudWatch'],
+    ];
+    const { nodes, connections } = this.graphBuilder.build(layout, edges);
 
     return {
       id: 'preset-ecommerce-serverless',

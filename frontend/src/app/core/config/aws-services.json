@@ -81,6 +81,17 @@
           ],
           "type": "identity",
           "description": "Users authenticate with Cognito."
+        },
+        {
+          "target": "elasticBeanstalk",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users call the Elastic Beanstalk environment URL."
         }
       ],
       "description": "Needed to represent external clients (browsers, mobile apps, IoT) generating request traffic and latency benchmarks for testing."
@@ -148,7 +159,8 @@
         "identity"
       ],
       "outputs": [
-        "cdn"
+        "cdn",
+        "http"
       ],
       "mandatoryInput": true,
       "mandatoryOutput": true,
@@ -188,17 +200,6 @@
           ],
           "type": "http",
           "description": "CloudFront can use ELB as an origin."
-        },
-        {
-          "target": "waf",
-          "sourcePorts": [
-            "http"
-          ],
-          "targetPorts": [
-            "http"
-          ],
-          "type": "http",
-          "description": "CloudFront queries WAF for threat detection."
         },
         {
           "target": "appRunner",
@@ -508,6 +509,17 @@
           ],
           "type": "http",
           "description": "ELB routes traffic to App Runner."
+        },
+        {
+          "target": "autoScalingGroup",
+          "sourcePorts": [
+            "compute"
+          ],
+          "targetPorts": [
+            "compute"
+          ],
+          "type": "compute",
+          "description": "ELB routes traffic to an Auto Scaling Group target group."
         }
       ],
       "description": "Needed to distribute HTTP traffic across multiple compute targets, ensuring high availability and handling load scaling."
@@ -645,11 +657,9 @@
         {
           "target": "stepFunctions",
           "sourcePorts": [
-            "event",
-            "workflow"
+            "event"
           ],
           "targetPorts": [
-            "workflow",
             "event"
           ],
           "type": "workflow",
@@ -779,10 +789,10 @@
         {
           "target": "mq",
           "sourcePorts": [
-            "queue"
+            "event"
           ],
           "targetPorts": [
-            "queue"
+            "event"
           ],
           "type": "queue",
           "description": "Lambda publishes messages to Amazon MQ broker."
@@ -923,10 +933,10 @@
         {
           "target": "athena",
           "sourcePorts": [
-            "http"
+            "event"
           ],
           "targetPorts": [
-            "http"
+            "event"
           ],
           "type": "http",
           "description": "Lambda triggers Athena queries for serverless analytics."
@@ -963,7 +973,9 @@
         "cache",
         "queue",
         "topic",
-        "observability"
+        "observability",
+        "event",
+        "identity"
       ],
       "mandatoryInput": true,
       "mandatoryOutput": false,
@@ -1052,8 +1064,7 @@
         {
           "target": "aurora",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -1064,8 +1075,7 @@
         {
           "target": "openSearch",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -1076,8 +1086,7 @@
         {
           "target": "redshift",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -1088,8 +1097,7 @@
         {
           "target": "efs",
           "sourcePorts": [
-            "compute",
-            "network"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -1100,8 +1108,7 @@
         {
           "target": "fsx",
           "sourcePorts": [
-            "compute",
-            "network"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -1112,7 +1119,7 @@
         {
           "target": "backup",
           "sourcePorts": [
-            "compute"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -1123,7 +1130,7 @@
         {
           "target": "eventBridge",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1134,7 +1141,7 @@
         {
           "target": "kinesis",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1145,7 +1152,7 @@
         {
           "target": "kinesisFirehose",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1156,8 +1163,7 @@
         {
           "target": "msk",
           "sourcePorts": [
-            "compute",
-            "network"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1168,8 +1174,7 @@
         {
           "target": "mq",
           "sourcePorts": [
-            "compute",
-            "network"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1180,7 +1185,7 @@
         {
           "target": "appSync",
           "sourcePorts": [
-            "compute"
+            "http"
           ],
           "targetPorts": [
             "http"
@@ -1191,7 +1196,7 @@
         {
           "target": "secretsManager",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
             "identity"
@@ -1202,7 +1207,7 @@
         {
           "target": "kms",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
             "identity"
@@ -1213,7 +1218,7 @@
         {
           "target": "xray",
           "sourcePorts": [
-            "compute"
+            "observability"
           ],
           "targetPorts": [
             "observability"
@@ -1224,7 +1229,7 @@
         {
           "target": "cloudTrail",
           "sourcePorts": [
-            "compute"
+            "observability"
           ],
           "targetPorts": [
             "observability"
@@ -1235,7 +1240,7 @@
         {
           "target": "systemsManager",
           "sourcePorts": [
-            "compute"
+            "observability"
           ],
           "targetPorts": [
             "observability"
@@ -1246,10 +1251,10 @@
         {
           "target": "bedrock",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "EC2 calls Bedrock LLMs."
@@ -1257,10 +1262,10 @@
         {
           "target": "sageMaker",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
-            "compute"
+            "event"
           ],
           "type": "compute",
           "description": "EC2 runs inference on SageMaker."
@@ -1268,10 +1273,10 @@
         {
           "target": "rekognition",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "EC2 calls Rekognition API."
@@ -1279,10 +1284,10 @@
         {
           "target": "textract",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "EC2 calls Textract API."
@@ -1290,10 +1295,10 @@
         {
           "target": "ecr",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "EC2 instances pull docker images from ECR."
@@ -1301,10 +1306,9 @@
         {
           "target": "privateLink",
           "sourcePorts": [
-            "network"
+            "http"
           ],
           "targetPorts": [
-            "network",
             "http"
           ],
           "type": "network",
@@ -1332,7 +1336,9 @@
         "cache",
         "queue",
         "topic",
-        "observability"
+        "observability",
+        "event",
+        "identity"
       ],
       "mandatoryInput": true,
       "mandatoryOutput": false,
@@ -1421,8 +1427,7 @@
         {
           "target": "aurora",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -1433,8 +1438,7 @@
         {
           "target": "openSearch",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -1445,8 +1449,7 @@
         {
           "target": "redshift",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -1457,8 +1460,7 @@
         {
           "target": "efs",
           "sourcePorts": [
-            "compute",
-            "network"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -1469,8 +1471,7 @@
         {
           "target": "fsx",
           "sourcePorts": [
-            "compute",
-            "network"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -1481,7 +1482,7 @@
         {
           "target": "backup",
           "sourcePorts": [
-            "compute"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -1492,7 +1493,7 @@
         {
           "target": "eventBridge",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1503,7 +1504,7 @@
         {
           "target": "kinesis",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1514,7 +1515,7 @@
         {
           "target": "kinesisFirehose",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1525,8 +1526,7 @@
         {
           "target": "msk",
           "sourcePorts": [
-            "compute",
-            "network"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1537,8 +1537,7 @@
         {
           "target": "mq",
           "sourcePorts": [
-            "compute",
-            "network"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -1549,7 +1548,7 @@
         {
           "target": "appSync",
           "sourcePorts": [
-            "compute"
+            "http"
           ],
           "targetPorts": [
             "http"
@@ -1560,7 +1559,7 @@
         {
           "target": "secretsManager",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
             "identity"
@@ -1571,7 +1570,7 @@
         {
           "target": "kms",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
             "identity"
@@ -1582,7 +1581,7 @@
         {
           "target": "xray",
           "sourcePorts": [
-            "compute"
+            "observability"
           ],
           "targetPorts": [
             "observability"
@@ -1593,7 +1592,7 @@
         {
           "target": "cloudTrail",
           "sourcePorts": [
-            "compute"
+            "observability"
           ],
           "targetPorts": [
             "observability"
@@ -1604,7 +1603,7 @@
         {
           "target": "systemsManager",
           "sourcePorts": [
-            "compute"
+            "observability"
           ],
           "targetPorts": [
             "observability"
@@ -1615,10 +1614,10 @@
         {
           "target": "bedrock",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "ECS calls Bedrock LLMs."
@@ -1626,10 +1625,10 @@
         {
           "target": "sageMaker",
           "sourcePorts": [
-            "compute"
+            "event"
           ],
           "targetPorts": [
-            "compute"
+            "event"
           ],
           "type": "compute",
           "description": "ECS runs inference on SageMaker."
@@ -1637,10 +1636,10 @@
         {
           "target": "rekognition",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "ECS calls Rekognition API."
@@ -1648,10 +1647,10 @@
         {
           "target": "textract",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "ECS calls Textract API."
@@ -1659,10 +1658,10 @@
         {
           "target": "ecr",
           "sourcePorts": [
-            "compute"
+            "identity"
           ],
           "targetPorts": [
-            "compute"
+            "identity"
           ],
           "type": "compute",
           "description": "ECS pulls container images from ECR."
@@ -1670,10 +1669,9 @@
         {
           "target": "privateLink",
           "sourcePorts": [
-            "network"
+            "http"
           ],
           "targetPorts": [
-            "network",
             "http"
           ],
           "type": "network",
@@ -1799,17 +1797,6 @@
           ],
           "type": "event",
           "description": "SNS can invoke Lambda subscribers."
-        },
-        {
-          "target": "http",
-          "sourcePorts": [
-            "http"
-          ],
-          "targetPorts": [
-            "http"
-          ],
-          "type": "http",
-          "description": "SNS can call HTTP endpoints."
         },
         {
           "target": "cloudWatch",
@@ -2651,66 +2638,6 @@
           "description": "ASG manages EC2 capacity."
         },
         {
-          "target": "aurora",
-          "sourcePorts": [
-            "compute",
-            "network"
-          ],
-          "targetPorts": [
-            "database"
-          ],
-          "type": "database",
-          "description": "AUTOSCALINGGROUP connects to Aurora."
-        },
-        {
-          "target": "openSearch",
-          "sourcePorts": [
-            "compute",
-            "network"
-          ],
-          "targetPorts": [
-            "database"
-          ],
-          "type": "database",
-          "description": "AUTOSCALINGGROUP queries OpenSearch."
-        },
-        {
-          "target": "redshift",
-          "sourcePorts": [
-            "compute",
-            "network"
-          ],
-          "targetPorts": [
-            "database"
-          ],
-          "type": "database",
-          "description": "AUTOSCALINGGROUP queries Redshift."
-        },
-        {
-          "target": "efs",
-          "sourcePorts": [
-            "compute",
-            "network"
-          ],
-          "targetPorts": [
-            "storage"
-          ],
-          "type": "storage",
-          "description": "AUTOSCALINGGROUP mounts EFS."
-        },
-        {
-          "target": "fsx",
-          "sourcePorts": [
-            "compute",
-            "network"
-          ],
-          "targetPorts": [
-            "storage"
-          ],
-          "type": "storage",
-          "description": "AUTOSCALINGGROUP mounts FSx."
-        },
-        {
           "target": "backup",
           "sourcePorts": [
             "compute"
@@ -2753,30 +2680,6 @@
           ],
           "type": "event",
           "description": "AUTOSCALINGGROUP streams to Firehose."
-        },
-        {
-          "target": "msk",
-          "sourcePorts": [
-            "compute",
-            "network"
-          ],
-          "targetPorts": [
-            "event"
-          ],
-          "type": "event",
-          "description": "AUTOSCALINGGROUP writes to MSK."
-        },
-        {
-          "target": "mq",
-          "sourcePorts": [
-            "compute",
-            "network"
-          ],
-          "targetPorts": [
-            "event"
-          ],
-          "type": "event",
-          "description": "AUTOSCALINGGROUP publishes to MQ."
         },
         {
           "target": "appSync",
@@ -3029,18 +2932,6 @@
           "description": "NAT Gateway allows outbound SNS access."
         },
         {
-          "target": "sqs",
-          "sourcePorts": [
-            "network"
-          ],
-          "targetPorts": [
-            "http",
-            "queue"
-          ],
-          "type": "network",
-          "description": "NAT Gateway allows outbound SQS access."
-        },
-        {
           "target": "dynamoDb",
           "sourcePorts": [
             "network"
@@ -3051,18 +2942,6 @@
           ],
           "type": "network",
           "description": "NAT Gateway allows outbound DynamoDB access."
-        },
-        {
-          "target": "cloudWatch",
-          "sourcePorts": [
-            "network"
-          ],
-          "targetPorts": [
-            "http",
-            "observability"
-          ],
-          "type": "network",
-          "description": "NAT Gateway allows outbound CloudWatch access."
         }
       ],
       "description": "NAT Gateway is a Network Address Translation (NAT) service that enables instances in a private subnet to connect to services outside your VPC."
@@ -3081,7 +2960,12 @@
       "outputs": [
         "job",
         "compute",
-        "result"
+        "result",
+        "storage",
+        "queue",
+        "event",
+        "observability",
+        "database"
       ],
       "mandatoryInput": true,
       "mandatoryOutput": false,
@@ -3111,11 +2995,10 @@
         {
           "target": "sqs",
           "sourcePorts": [
-            "job"
+            "queue"
           ],
           "targetPorts": [
-            "queue",
-            "http"
+            "queue"
           ],
           "type": "queue",
           "description": "AWS Batch consumes jobs from Amazon SQS."
@@ -3135,12 +3018,10 @@
         {
           "target": "stepFunctions",
           "sourcePorts": [
-            "job",
-            "result"
+            "event"
           ],
           "targetPorts": [
-            "workflow",
-            "http"
+            "event"
           ],
           "type": "workflow",
           "description": "AWS Batch integrates with AWS Step Functions for orchestration."
@@ -3160,11 +3041,10 @@
         {
           "target": "cloudWatch",
           "sourcePorts": [
-            "compute"
+            "observability"
           ],
           "targetPorts": [
-            "observability",
-            "http"
+            "observability"
           ],
           "type": "monitoring",
           "description": "AWS Batch publishes logs and metrics to Amazon CloudWatch."
@@ -3196,8 +3076,7 @@
         {
           "target": "aurora",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -3208,8 +3087,7 @@
         {
           "target": "openSearch",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -3220,8 +3098,7 @@
         {
           "target": "redshift",
           "sourcePorts": [
-            "compute",
-            "network"
+            "database"
           ],
           "targetPorts": [
             "database"
@@ -3232,8 +3109,7 @@
         {
           "target": "efs",
           "sourcePorts": [
-            "compute",
-            "network"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -3244,8 +3120,7 @@
         {
           "target": "fsx",
           "sourcePorts": [
-            "compute",
-            "network"
+            "storage"
           ],
           "targetPorts": [
             "storage"
@@ -3300,8 +3175,7 @@
         {
           "target": "msk",
           "sourcePorts": [
-            "compute",
-            "network"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -3312,8 +3186,7 @@
         {
           "target": "mq",
           "sourcePorts": [
-            "compute",
-            "network"
+            "event"
           ],
           "targetPorts": [
             "event"
@@ -3484,10 +3357,10 @@
         {
           "target": "secretsManager",
           "sourcePorts": [
-            "identity"
+            "network"
           ],
           "targetPorts": [
-            "identity"
+            "network"
           ],
           "type": "identity",
           "description": "EKS pods fetch secrets."
@@ -3752,7 +3625,7 @@
         "workflow",
         "observability"
       ],
-      "mandatoryInput": true,
+      "mandatoryInput": false,
       "mandatoryOutput": true,
       "allowFanIn": true,
       "allowFanOut": true,
@@ -4865,7 +4738,7 @@
         "network",
         "identity"
       ],
-      "mandatoryInput": true,
+      "mandatoryInput": false,
       "mandatoryOutput": true,
       "allowFanIn": true,
       "allowFanOut": true,
@@ -4939,7 +4812,7 @@
         "identity"
       ],
       "mandatoryInput": false,
-      "mandatoryOutput": true,
+      "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": true,
       "rules": [],
@@ -5290,10 +5163,10 @@
         {
           "target": "lambda",
           "sourcePorts": [
-            "http"
+            "event"
           ],
           "targetPorts": [
-            "http"
+            "event"
           ],
           "type": "http",
           "description": "AppSync invokes Lambda as a data source resolver."
@@ -5360,7 +5233,7 @@
         "topic",
         "queue"
       ],
-      "mandatoryInput": true,
+      "mandatoryInput": false,
       "mandatoryOutput": true,
       "allowFanIn": true,
       "allowFanOut": true,
@@ -5891,7 +5764,7 @@
         "identity",
         "network"
       ],
-      "mandatoryInput": true,
+      "mandatoryInput": false,
       "mandatoryOutput": false,
       "allowFanIn": true,
       "allowFanOut": false,

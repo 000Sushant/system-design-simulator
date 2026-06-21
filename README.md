@@ -97,6 +97,31 @@ Exposes the complete feature set needed by Senior Engineers and Cloud Architects
 
 ---
 
+## 🧱 Project Structure
+
+The codebase follows a **Layered (Clean-lite) architecture** so each file's role
+is obvious. See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full map.
+
+```
+frontend/src/app/
+  core/
+    models/        # Domain — pure types (no logic, no deps)
+    services/      # Application — simulation, cost & validation engines
+    constants/     # shared named constants (no magic literals in logic)
+    data/ config/  # data-driven core: 64 services described in JSON
+  features/        # Presentation — Angular components (canvas, docs, landing)
+worker/            # Infrastructure — Cloudflare Worker: weekly pricing generation
+backend/           # Infrastructure — Express reader serving pricing from KV
+```
+
+### 🧩 Adding a Design Challenge
+
+Challenges are pure data — add one object to `frontend/src/app/core/data/challenges.json`,
+then run `cd frontend && npm run validate:challenges`. No code changes needed.
+Full guide: **[docs/CHALLENGES.md](docs/CHALLENGES.md)**.
+
+---
+
 ## 🚀 Getting Started
 
 Sr. Architect is split into a frontend Angular simulator application, a Cloudflare Worker directory, and localized automation scripts.

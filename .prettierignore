@@ -1,0 +1,12 @@
+# Build output & dependencies
+dist/
+.angular/
+.wrangler/
+node_modules/
+
+# Generated / large data files
+**/package-lock.json
+frontend/src/app/core/data/regions/*.json
+
+# Lockfiles and env
+*.env

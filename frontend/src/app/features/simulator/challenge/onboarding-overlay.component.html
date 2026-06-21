@@ -1,0 +1,21 @@
+<div class="onboarding-card" *ngIf="step" role="dialog" aria-live="polite">
+  <div class="onboarding-progress">
+    <span class="step-count">Step {{ stepNumber }} of {{ total }}</span>
+    <div class="dots">
+      <span class="dot" *ngFor="let s of onboarding.steps; let i = index" [class.active]="i < stepNumber"></span>
+    </div>
+  </div>
+
+  <h3>{{ step.title }}</h3>
+  <p>{{ step.body }}</p>
+
+  <div class="onboarding-actions">
+    <button type="button" class="skip" (click)="skip()">Skip tour</button>
+    <button type="button" class="next" *ngIf="isManual" (click)="next()">
+      {{ stepNumber === total ? 'Finish' : 'Next' }}
+    </button>
+    <span class="waiting" *ngIf="!isManual">
+      <i class="fas fa-hand-pointer"></i> Try it on the canvas…
+    </span>
+  </div>
+</div>

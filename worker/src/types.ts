@@ -2,6 +2,8 @@ export interface Env {
   AWS_PRICING_KV: KVNamespace;
   AWS_ACCESS_KEY_ID: string;
   AWS_SECRET_ACCESS_KEY: string;
+  /** D1 database holding per-challenge thumbs up/down tallies. */
+  DB: D1Database;
 }
 
 /** Persisted in KV under key: "worker:progress" */

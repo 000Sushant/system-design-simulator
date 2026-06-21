@@ -190,8 +190,9 @@
           <article *ngFor="let node of nodes; trackBy: trackById" fNode fDragHandle [fNodeId]="node.id"
             [fNodePosition]="nodePos(node)" class="node-card" [class.vpc-card]="node.type === 'vpc'"
             [class.selected]="node.selected" [class.offline]="node.status === 'offline'"
-            [style.borderColor]="node.type === 'client' ? serviceColor(node.type) : statusColor(node.status)" [style.backgroundColor]="serviceColor(node.type) + '14'"
-            (mousemove)="onMouseMove($event)" (click)="selectNode(node.id)">
+            [style.borderColor]="node.type === 'client' ? serviceColor(node.type) : statusColor(node.status)"
+            [style.backgroundColor]="serviceColor(node.type) + '14'" (mousemove)="onMouseMove($event)"
+            (click)="selectNode(node.id)">
             <button type="button" class="node-delete" title="Delete service and links"
               (click)="deleteNode($event, node.id)">
               Delete
@@ -220,27 +221,32 @@
             <div class="metric-row" *ngIf="node.type !== 'client'">
               <span>{{
                 (mode === 'idle'
-                  ? (node.metrics.throughput || node.config.throughput)
-                  : (node.status === 'offline' ? node.metrics.received : node.metrics.throughput)
+                ? (node.metrics.throughput || node.config.throughput)
+                : (node.status === 'offline' ? node.metrics.received : node.metrics.throughput)
                 ) | number: "1.0-0"
                 }}
                 rps</span>
-              <span>{{ formatLatency(mode === 'idle' ? (node.metrics.avgLatency || node.config.latency) : node.metrics.avgLatency) }}</span>
+              <span>{{ formatLatency(mode === 'idle' ? (node.metrics.avgLatency || node.config.latency) :
+                node.metrics.avgLatency) }}</span>
             </div>
             <!-- Users node is a traffic source: show only the outgoing rate, no latency/health. -->
             <div class="source-rate" *ngIf="node.type === 'client'">
               <i class="fas fa-arrow-up source-arrow" aria-hidden="true"></i>
               <ng-container *ngIf="node.config['variableTraffic']; else steadyRate">
-                <span class="source-value" *ngIf="mode === 'idle'">{{ node.config['variableMinRps'] | number: "1.0-0" }} to {{ node.config['variableMaxRps'] | number: "1.0-0" }} <small>rps</small></span>
-                <span class="source-value" *ngIf="mode !== 'idle'">{{ node.metrics.throughput | number: "1.0-0" }} <small>rps</small></span>
+                <span class="source-value" *ngIf="mode === 'idle'">{{ node.config['variableMinRps'] | number: "1.0-0" }}
+                  to {{ node.config['variableMaxRps'] | number: "1.0-0" }} <small>rps</small></span>
+                <span class="source-value" *ngIf="mode !== 'idle'">{{ node.metrics.throughput | number: "1.0-0" }}
+                  <small>rps</small></span>
                 <span class="source-tag">VARIABLE</span>
               </ng-container>
               <ng-template #steadyRate>
-                <span class="source-value">{{ (mode === 'idle' ? node.config['requestRate'] : node.metrics.throughput) | number: "1.0-0" }} <small>rps</small></span>
+                <span class="source-value">{{ (mode === 'idle' ? node.config['requestRate'] : node.metrics.throughput) |
+                  number: "1.0-0" }} <small>rps</small></span>
               </ng-template>
             </div>
             <div class="load-bar" *ngIf="node.type !== 'client'">
-              <span [style.width.%]="mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure"
+              <span
+                [style.width.%]="mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure"
                 [style.background]="statusColor(node.status)"
                 [title]="(mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure) + '%'"></span>
             </div>
@@ -314,13 +320,15 @@
 
           <!-- SUMMARY VIEW (List of errors when nothing selected) -->
           <div *ngIf="!selectedNode" class="error-pills">
-            <div *ngFor="let node of erroredNodes; trackBy: trackByNodeId" class="error-pill" (click)="selectNode(node.id)">
+            <div *ngFor="let node of erroredNodes; trackBy: trackByNodeId" class="error-pill"
+              (click)="selectNode(node.id)">
               <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
               <span class="pill-name">{{ node.name }}</span>
               <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
             </div>
 
-            <div *ngFor="let node of warnedNodes; trackBy: trackByNodeId" class="error-pill warning" (click)="selectNode(node.id)">
+            <div *ngFor="let node of warnedNodes; trackBy: trackByNodeId" class="error-pill warning"
+              (click)="selectNode(node.id)">
               <span class="pill-icon"><i class="fas fa-exclamation-triangle"></i></span>
               <span class="pill-name">{{ node.name }}</span>
               <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
@@ -406,11 +414,11 @@
             </div>
             <p class="traffic-hint">Share of this node's output sent to each downstream — set per edge.</p>
             <div class="field-list traffic-rows">
-              <label *ngFor="let item of selectedOutgoingConnections; trackBy: trackByConnId" (mousemove)="onMouseMove($event)">
+              <label *ngFor="let item of selectedOutgoingConnections; trackBy: trackByConnId"
+                (mousemove)="onMouseMove($event)">
                 <span class="traffic-target" [title]="item.targetName">{{ item.targetName }}</span>
                 <div class="number-control pct-control">
-                  <input type="number" min="0" max="100" step="5"
-                    [ngModel]="item.connection.trafficWeight ?? 100"
+                  <input type="number" min="0" max="100" step="5" [ngModel]="item.connection.trafficWeight ?? 100"
                     (ngModelChange)="updateConnectionWeight(item.connection.id, $event)" />
                   <span class="pct-suffix">%</span>
                 </div>
@@ -467,14 +475,14 @@
                 [class.readonly-row]="isFieldLocked(node, field)">
                 <i *ngIf="isFieldLocked(node, field)" class="fas fa-lock readonly-corner-lock"
                   [title]="fieldLockTooltip(node, field)"></i>
-                <span class="field-label-with-info"
-                  [class.cost-field]="field.affectsCost && roleMode === 'architect'">
+                <span class="field-label-with-info" [class.cost-field]="field.affectsCost && roleMode === 'architect'">
                   {{ field.label }}
                   <i class="fas fa-gauge-high info-icon sim-icon"
                     title="Simulation parameter — drives the live traffic, latency &amp; utilization simulation."></i>
                   <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
                     [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
-                  <i *ngIf="field.notes || field.description || field.costDriver || isFieldLocked(node, field)" class="fas fa-info-circle info-icon"
+                  <i *ngIf="field.notes || field.description || field.costDriver || isFieldLocked(node, field)"
+                    class="fas fa-info-circle info-icon"
                     [title]="isFieldLocked(node, field) ? fieldLockTooltip(node, field) : (field.notes || field.description || field.costDriver || '')"></i>
                 </span>
                 <div class="number-control" [class.readonly-input-wrap]="isFieldLocked(node, field)"
@@ -483,8 +491,7 @@
                       node.config[field.key] !== undefined
                         ? node.config[field.key]
                         : field.default
-                    " (ngModelChange)="updateConfig(field.key, $event)"
-                    [class.input-error]="isFieldInvalid(field)"
+                    " (ngModelChange)="updateConfig(field.key, $event)" [class.input-error]="isFieldInvalid(field)"
                     [disabled]="isFieldLocked(node, field)" />
                   <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
                 </div>
@@ -541,17 +548,16 @@
                   <i *ngIf="field.notes || field.description || field.costDriver || field.syncSource"
                     class="fas fa-info-circle info-icon"
                     [title]="field.notes || field.description || field.costDriver || (field.readonly ? 'Synced from: ' + (field.syncSource || 'Client node') : '')"></i>
-                  <i *ngIf="field.readonly && !field.notes && !field.description"
-                    class="fas fa-info-circle info-icon"
+                  <i *ngIf="field.readonly && !field.notes && !field.description" class="fas fa-info-circle info-icon"
                     [title]="'Synced from: ' + (field.syncSource || 'Client node') + '. Change the value on the Client (Users) node.'"></i>
                 </span>
-                <div class="number-control" [class.readonly-input-wrap]="field.readonly" *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
+                <div class="number-control" [class.readonly-input-wrap]="field.readonly"
+                  *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
                   <input type="number" [min]="field.min" [max]="field.max" [step]="1" [ngModel]="
                       node.config[field.key] !== undefined
                         ? node.config[field.key]
                         : field.default
-                    " (ngModelChange)="updateConfig(field.key, $event)"
-                    [class.input-error]="isFieldInvalid(field)"
+                    " (ngModelChange)="updateConfig(field.key, $event)" [class.input-error]="isFieldInvalid(field)"
                     [disabled]="field.readonly" />
                   <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
                 </div>
@@ -587,8 +593,10 @@
                 align-items: center;
               " (click)="costEvaluationExpanded = !costEvaluationExpanded"
               *ngIf="roleMode === 'architect' && costBreakdown && costBreakdown.lines.length > 0">
-              <strong class="cost-section-title"><i class="fas fa-calculator" style="margin-right: 6px; color: #6366f1"></i>
-                Cost Evaluation<small *ngIf="isVariableCostActive(node)" class="cost-title-hint">({{ mode === 'running' ? 'live' : 'avg' }})</small></strong>
+              <strong class="cost-section-title"><i class="fas fa-calculator"
+                  style="margin-right: 6px; color: #6366f1"></i>
+                Cost Evaluation<small *ngIf="isVariableCostActive(node)" class="cost-title-hint">({{ mode === 'running'
+                  ? 'live' : 'avg' }})</small></strong>
               <span class="cost-eval-total">${{ costBreakdown.total | number: "1.2-2" }}/mo</span>
               <i class="fas" [class.fa-chevron-down]="costEvaluationExpanded"
                 [class.fa-chevron-right]="!costEvaluationExpanded"
@@ -649,147 +657,159 @@
           </ng-container>
           <ng-template #noSelection>
             <div class="empty-state">
-              <h2>Key Highlights</h2>
-              <!-- <h2>Key Highlights</h2> -->
+              <app-challenge-panel *ngIf="roleMode === 'developer'" (startChallenge)="onStartChallenge($event)"
+                (resetChallenge)="onResetChallenge($event)"
+                (freePractice)="onFreePractice()" (replayTour)="onReplayTour()"
+                (requestEvaluate)="onEvaluateChallenge()"
+                (showReference)="onShowReference($event)"></app-challenge-panel>
 
-              <div class="highlights-section">
-                <!-- Architecture -->
-                <div class="highlight-item" [class.expanded]="isHighlightExpanded('arch')"
-                  (mousemove)="onMouseMove($event)" (click)="toggleHighlight('arch')">
-                  <span class="highlight-icon"><i class="fas fa-building"></i></span>
-                  <div class="highlight-content">
-                    <strong>Design Architectures <i class="fas fa-chevron-down"></i></strong>
-                    <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('arch')">
-                      <div class="collapsible-content">
-                        <small>Drop services from the palette and visualize your AWS
-                          infrastructure</small>
+              <ng-container *ngIf="roleMode === 'architect'">
+                <h2>Key Highlights</h2>
+
+                <div class="highlights-section">
+                  <!-- Architecture -->
+                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('arch')"
+                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('arch')">
+                    <span class="highlight-icon"><i class="fas fa-building"></i></span>
+                    <div class="highlight-content">
+                      <strong>Design Architectures <i class="fas fa-chevron-down"></i></strong>
+                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('arch')">
+                        <div class="collapsible-content">
+                          <small>Drop services from the palette and visualize your AWS
+                            infrastructure</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Simulation -->
+                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('sim')"
+                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('sim')">
+                    <span class="highlight-icon"><i class="fas fa-bolt"></i></span>
+                    <div class="highlight-content">
+                      <strong>Real-time Simulation <i class="fas fa-chevron-down"></i></strong>
+                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('sim')">
+                        <div class="collapsible-content">
+                          <small>Watch traffic flow through your design and identify
+                            bottlenecks</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Metrics -->
+                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('metrics')"
+                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('metrics')">
+                    <span class="highlight-icon"><i class="fas fa-chart-bar"></i></span>
+                    <div class="highlight-content">
+                      <strong>Performance Metrics <i class="fas fa-chevron-down"></i></strong>
+                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('metrics')">
+                        <div class="collapsible-content">
+                          <small>Monitor latency, throughput, error rates, and
+                            resource utilization</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tuning -->
+                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('tune')"
+                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('tune')">
+                    <span class="highlight-icon"><i class="fas fa-wrench"></i></span>
+                    <div class="highlight-content">
+                      <strong>Tune & Optimize <i class="fas fa-chevron-down"></i></strong>
+                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('tune')">
+                        <div class="collapsible-content">
+                          <small>Adjust capacity, configure services, and run
+                            scenarios</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Cost -->
+                  <div class="highlight-item" [class.expanded]="isHighlightExpanded('cost')"
+                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('cost')">
+                    <span class="highlight-icon"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                    <div class="highlight-content">
+                      <strong>Cost Estimation <i class="fas fa-chevron-down"></i></strong>
+                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('cost')">
+                        <div class="collapsible-content">
+                          <small>Get realistic monthly cost approximations based on
+                            traffic and service configuration.</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- AI Intelligence -->
+                  <div class="highlight-item coming-soon" [class.expanded]="isHighlightExpanded('ai')"
+                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('ai')">
+                    <span class="highlight-icon ai-icon"><i class="fas fa-robot"></i></span>
+                    <div class="highlight-content">
+                      <strong>AI Intelligence <span class="badge">Coming Soon</span>
+                        <i class="fas fa-chevron-down"></i></strong>
+                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('ai')">
+                        <div class="collapsible-content">
+                          <small>AI powered cost and architecture analysis and
+                            suggestions based on your business
+                            requirements.</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Multi-Cloud Support -->
+                  <div class="highlight-item coming-soon" [class.expanded]="isHighlightExpanded('multiCloud')"
+                    (mousemove)="onMouseMove($event)" (click)="toggleHighlight('multiCloud')">
+                    <span class="highlight-icon cloud-icon"><i class="fas fa-globe"></i></span>
+                    <div class="highlight-content">
+                      <strong>Multi-Cloud Support
+                        <span class="badge">Coming Soon</span>
+                        <i class="fas fa-chevron-down"></i></strong>
+                      <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('multiCloud')">
+                        <div class="collapsible-content">
+                          <small>Introducing GCP and Azure services to compare cost of
+                            similar architecture by different service
+                            prodvider</small>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </ng-container>
 
-                <!-- Simulation -->
-                <div class="highlight-item" [class.expanded]="isHighlightExpanded('sim')"
-                  (mousemove)="onMouseMove($event)" (click)="toggleHighlight('sim')">
-                  <span class="highlight-icon"><i class="fas fa-bolt"></i></span>
-                  <div class="highlight-content">
-                    <strong>Real-time Simulation <i class="fas fa-chevron-down"></i></strong>
-                    <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('sim')">
-                      <div class="collapsible-content">
-                        <small>Watch traffic flow through your design and identify
-                          bottlenecks</small>
-                      </div>
+              <div class="feedback-section">
+                <div class="block-header">
+                  <i class="fas fa-comments"></i>
+                  <span>Share Feedback</span>
+                </div>
+                <div class="feedback-options-list">
+                  <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                    <div class="feedback-card-icon testimonial-icon">
+                      <i class="fas fa-star"></i>
                     </div>
-                  </div>
-                </div>
-
-                <!-- Metrics -->
-                <div class="highlight-item" [class.expanded]="isHighlightExpanded('metrics')"
-                  (mousemove)="onMouseMove($event)" (click)="toggleHighlight('metrics')">
-                  <span class="highlight-icon"><i class="fas fa-chart-bar"></i></span>
-                  <div class="highlight-content">
-                    <strong>Performance Metrics <i class="fas fa-chevron-down"></i></strong>
-                    <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('metrics')">
-                      <div class="collapsible-content">
-                        <small>Monitor latency, throughput, error rates, and
-                          resource utilization</small>
+                    <div class="feedback-card-body">
+                      <div class="feedback-card-title">
+                        <span>Submit Testimonial</span>
+                        <i class="fas fa-external-link-alt external-link-icon"></i>
                       </div>
+                      <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be featured!</p>
                     </div>
-                  </div>
-                </div>
+                  </a>
 
-                <!-- Tuning -->
-                <div class="highlight-item" [class.expanded]="isHighlightExpanded('tune')"
-                  (mousemove)="onMouseMove($event)" (click)="toggleHighlight('tune')">
-                  <span class="highlight-icon"><i class="fas fa-wrench"></i></span>
-                  <div class="highlight-content">
-                    <strong>Tune & Optimize <i class="fas fa-chevron-down"></i></strong>
-                    <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('tune')">
-                      <div class="collapsible-content">
-                        <small>Adjust capacity, configure services, and run
-                          scenarios</small>
+                  <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                    <div class="feedback-card-icon support-icon">
+                      <i class="fas fa-bug"></i>
+                    </div>
+                    <div class="feedback-card-body">
+                      <div class="feedback-card-title">
+                        <span>Bugs & Improvements</span>
+                        <i class="fas fa-external-link-alt external-link-icon"></i>
                       </div>
+                      <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the platform.</p>
                     </div>
-                  </div>
-                </div>
-
-                <!-- Cost -->
-                <div class="highlight-item" [class.expanded]="isHighlightExpanded('cost')"
-                  (mousemove)="onMouseMove($event)" (click)="toggleHighlight('cost')">
-                  <span class="highlight-icon"><i class="fa-solid fa-hand-holding-dollar"></i></span>
-                  <div class="highlight-content">
-                    <strong>Cost Estimation <i class="fas fa-chevron-down"></i></strong>
-                    <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('cost')">
-                      <div class="collapsible-content">
-                        <small>Get realistic monthly cost approximations based on
-                          traffic and service configuration.</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- AI Intelligence -->
-                <div class="highlight-item coming-soon" [class.expanded]="isHighlightExpanded('ai')"
-                  (mousemove)="onMouseMove($event)" (click)="toggleHighlight('ai')">
-                  <span class="highlight-icon ai-icon"><i class="fas fa-robot"></i></span>
-                  <div class="highlight-content">
-                    <strong>AI Intelligence <span class="badge">Coming Soon</span>
-                      <i class="fas fa-chevron-down"></i></strong>
-                    <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('ai')">
-                      <div class="collapsible-content">
-                        <small>AI powered cost and architecture analysis and
-                          suggestions based on your business
-                          requirements.</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Multi-Cloud Support -->
-                <div class="highlight-item coming-soon" [class.expanded]="isHighlightExpanded('multiCloud')"
-                  (mousemove)="onMouseMove($event)" (click)="toggleHighlight('multiCloud')">
-                  <span class="highlight-icon cloud-icon"><i class="fas fa-globe"></i></span>
-                  <div class="highlight-content">
-                    <strong>Multi-Cloud Support
-                      <span class="badge">Coming Soon</span>
-                      <i class="fas fa-chevron-down"></i></strong>
-                    <div class="collapsible-wrapper" [class.expanded]="isHighlightExpanded('multiCloud')">
-                      <div class="collapsible-content">
-                        <small>Introducing GCP and Azure services to compare cost of
-                          similar architecture by different service
-                          prodvider</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="feedback-section" (mousemove)="onMouseMove($event)">
-                <div class="feedback-title">
-                  <span><i class="fas fa-comments pulse-feedback"></i> Share Your Feedback</span>
-                </div>
-                <div class="feedback-options">
-                  <div class="feedback-option">
-                    <p class="feedback-text">
-                      <strong>Are you satisfied with this product?</strong><br>
-                      Please fill this quick form so that we can showcase your feedback on the webpage soon.
-                    </p>
-                    <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
-                      class="feedback-btn-pill" (mousemove)="onMouseMove($event)">
-                      <i class="fas fa-star"></i> <span>Submit Testimonial</span>
-                    </a>
-                  </div>
-                  <div class="feedback-divider"></div>
-                  <div class="feedback-option">
-                    <p class="feedback-text">
-                      <strong>Looking for support, bug reporting or improvement suggestion?</strong><br>
-                      Please click below to submit bugs or suggest optimizations.
-                    </p>
-                    <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
-                      class="feedback-btn-pill secondary" (mousemove)="onMouseMove($event)">
-                      <i class="fas fa-bug"></i> <span>Bugs & Improvements</span>
-                    </a>
-                  </div>
+                  </a>
                 </div>
               </div>
             </div>
@@ -974,6 +994,17 @@
           <i class="fas fa-check"></i> Got it
         </button>
       </div>
+    </div>
+  </div>
+
+  <app-onboarding-overlay *ngIf="roleMode === 'developer'"></app-onboarding-overlay>
+
+  <div class="milestone-popup" [class.bonus-unlocked]="milestonePopup.isHidden" *ngIf="milestonePopup" role="status" aria-live="polite">
+    <span class="mp-badge"><i class="fas" [class.fa-trophy]="!milestonePopup.isHidden" [class.fa-star]="milestonePopup.isHidden"></i></span>
+    <div class="mp-text">
+      <strong *ngIf="!milestonePopup.isHidden">Milestone {{ milestonePopup.number }} of {{ milestonePopup.total }} reached</strong>
+      <strong *ngIf="milestonePopup.isHidden" class="gold-text">Secret Milestone Unlocked! 🌟</strong>
+      <span>{{ milestonePopup.label }}</span>
     </div>
   </div>
 </main>

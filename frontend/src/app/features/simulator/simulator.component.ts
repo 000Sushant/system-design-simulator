@@ -43,6 +43,12 @@ import { ValidationRuleService } from "../../core/services/validation-rule.servi
 import { CostService, CostBreakdown } from "../../core/services/cost.service";
 import { Currency } from "../../core/models/architecture.model";
 import serviceCostModelData from "../../core/data/service-cost-model.json";
+import { ChallengeService } from "../../core/services/challenge.service";
+import { OnboardingService } from "../../core/services/onboarding.service";
+import { GraphBuilderService } from "../../core/services/graph-builder.service";
+import { Challenge } from "../../core/models/challenge.model";
+import { ChallengePanelComponent } from "./challenge/challenge-panel.component";
+import { OnboardingOverlayComponent } from "./challenge/onboarding-overlay.component";
 
 interface PortSelection {
   node: ArchitectureNode;
@@ -97,7 +103,7 @@ interface SelectField {
 @Component({
   selector: "app-simulator",
   standalone: true,
-  imports: [CommonModule, FFlowModule, FormsModule],
+  imports: [CommonModule, FFlowModule, FormsModule, ChallengePanelComponent, OnboardingOverlayComponent],
   templateUrl: "./simulator.component.html",
   styleUrls: ["./simulator.component.css"],
 })
@@ -917,7 +923,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly storage: ProjectStorageService,
     public readonly costService: CostService,
     private readonly elementRef: ElementRef,
+    readonly challengeService: ChallengeService,
+    readonly onboarding: OnboardingService,
+    private readonly graphBuilder: GraphBuilderService,
   ) {}
+
+  private challengeSubscription?: Subscription;
+
+  /** Transient "milestone reached" celebration popup. */
+  milestonePopup: { number: number; total: number; label: string; isHidden?: boolean } | null = null;
+  private milestonePopupTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
     if (typeof window !== "undefined" && window.location) {
@@ -946,13 +961,19 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       local.id !== "preset-messaging-realtime"
     ) {
       this.applyProject(local);
+    } else if (this.roleMode === "developer") {
+      // Developer Mode opens to the Challenge hub on a clean canvas; the
+      // onboarding tour runs on first visit. "Free practice" loads the preset.
+      this.applyProject(this.blankDeveloperProject());
+      this.onboarding.start();
     } else {
-      if (this.roleMode === "developer") {
-        this.applyProject(this.presets.ecommercePreset());
-      } else {
-        this.applyProject(this.presets.messagingPreset());
-      }
+      this.applyProject(this.presets.messagingPreset());
     }
+
+    // Toast each milestone the moment it is first reached.
+    this.challengeSubscription = this.challengeService.milestoneReached$.subscribe(
+      ({ milestone, number, total, isHidden }) => this.showMilestonePopup(number, total, milestone.label, isHidden),
+    );
 
     this.snapshotSubscription = this.simulation.snapshot$.subscribe(
       (snapshot) => {
@@ -1030,6 +1051,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectNode(node.id);
     this.revealMinimap();
     this.setMessage(`${node.name} added to the architecture.`, "success");
+    this.onboarding.notify("nodeAdded");
+    this.afterGraphMutated();
   }
 
   selectAnnotation(id: string): void {
@@ -1145,6 +1168,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.snapshotSubscription?.unsubscribe();
     this.unsupportedRegionSubscription?.unsubscribe();
+    this.challengeSubscription?.unsubscribe();
+    if (this.milestonePopupTimer) clearTimeout(this.milestonePopupTimer);
     this.mobileMediaQuery?.removeEventListener(
       "change",
       this.onMobileViewportChange,
@@ -1907,6 +1932,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  @HostListener("window:blur")
+  onWindowBlur(): void {
+    this.ctrlPressed = false;
+  }
+
   onPaletteDragStart(event: DragEvent, type: AwsServiceType): void {
     event.dataTransfer?.setData("application/aws-service", type);
   }
@@ -2199,6 +2229,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     );
     this.connections = [...this.connections, connection];
     this.setMessage(result.message, "success");
+    this.onboarding.notify("edgeCreated");
+    this.afterGraphMutated();
   }
 
   selectNode(id: string): void {
@@ -2300,6 +2332,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       "Simulation started. Real-time traffic is flowing.",
       "success",
     );
+    this.onboarding.notify("simulationStarted");
   }
 
   pauseSimulation(): void {
@@ -2719,6 +2752,109 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   onConfigChange(): void {
     // Sync local changes to the simulation service so they take effect immediately
     this.simulation.updateNodes(this.nodes, this.connections);
+    this.onboarding.notify("configChanged");
+    this.afterGraphMutated();
+  }
+
+  // ── Challenges (Developer Mode) ──────────────────────────────────────────────
+
+  /** Re-evaluates milestones for the active challenge after any canvas change. */
+  private afterGraphMutated(): void {
+    this.challengeService.notifyGraphChanged(this.nodes, this.connections);
+  }
+
+  /** Shows a brief center-screen popup when a milestone is reached. */
+  private showMilestonePopup(number: number, total: number, label: string, isHidden?: boolean): void {
+    this.milestonePopup = { number, total, label, isHidden };
+    if (this.milestonePopupTimer) clearTimeout(this.milestonePopupTimer);
+    this.milestonePopupTimer = setTimeout(() => (this.milestonePopup = null), 3200);
+  }
+
+  /** Empty starting canvas for Developer Mode (the Challenge hub is the focus). */
+  private blankDeveloperProject(): ArchitectureProject {
+    return {
+      id: "dev-blank",
+      name: "Developer Canvas",
+      nodes: [],
+      connections: [],
+      annotations: [],
+      currency: "USD",
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  /** Panel → start a challenge: clears the canvas and seeds a Users node. */
+  onStartChallenge(challenge: Challenge): void {
+    this.simulation.stop();
+    this.challengeService.start(challenge.id);
+    this.pushHistory();
+    const client = this.factory.createNode("client", 80, 220);
+    this.nodes = [client];
+    this.connections = [];
+    this.annotations = [];
+    this.packets = [];
+    this.clearSelection();
+    this.afterGraphMutated();
+    this.setMessage(`Challenge started: ${challenge.title}`, "success");
+  }
+
+  /** Panel → reset/redesign a challenge: clears progress and resets canvas. */
+  onResetChallenge(challenge: Challenge): void {
+    this.simulation.stop();
+    this.pushHistory();
+    const client = this.factory.createNode("client", 80, 220);
+    this.nodes = [client];
+    this.connections = [];
+    this.annotations = [];
+    this.packets = [];
+    this.clearSelection();
+    this.afterGraphMutated();
+    this.setMessage(`Challenge progress reset: ${challenge.title}`, "success");
+  }
+
+  /** Panel → leave the curated sandbox loaded for freeform practice. */
+  onFreePractice(): void {
+    this.simulation.stop();
+    this.challengeService.exit();
+    this.applyProject(this.presets.ecommercePreset());
+    this.setMessage("Free practice — sandbox loaded.", "success");
+  }
+
+  /** Panel → replay the onboarding tour. */
+  onReplayTour(): void {
+    this.onboarding.start(true);
+  }
+
+  /** Panel → score the current architecture against the active challenge. */
+  onEvaluateChallenge(): void {
+    const result = this.challengeService.evaluate(this.nodes, this.connections);
+    if (!result) return;
+    this.setMessage(
+      result.passed
+        ? `Passed! Scored ${result.score}/100.`
+        : `Scored ${result.score}/100 — see suggestions to improve.`,
+      result.passed ? "success" : "neutral",
+    );
+  }
+
+  /** Panel → load the challenge's reference solution onto the canvas. */
+  onShowReference(challenge: Challenge): void {
+    this.simulation.stop();
+    const { nodes, connections } = this.graphBuilder.build(
+      challenge.referenceSolution.nodes,
+      challenge.referenceSolution.edges,
+    );
+    this.applyProject({
+      id: `reference-${challenge.id}`,
+      name: `${challenge.title} — Reference`,
+      nodes,
+      connections,
+      annotations: [],
+      currency: "USD",
+      updatedAt: new Date().toISOString(),
+    });
+    this.afterGraphMutated();
+    this.setMessage("Loaded the reference solution.", "neutral");
   }
 
   // ── Undo / Redo ────────────────────────────────────────────────────────────
