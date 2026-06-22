@@ -43,6 +43,7 @@ import { ValidationRuleService } from "../../core/services/validation-rule.servi
 import { CostService, CostBreakdown } from "../../core/services/cost.service";
 import { Currency } from "../../core/models/architecture.model";
 import serviceCostModelData from "../../core/data/service-cost-model.json";
+import { ThemeService } from "../../core/services/theme.service";
 import serviceDocumentationData from "../../core/data/service-documentation.json";
 import { ChallengeService } from "../../core/services/challenge.service";
 import { OnboardingService } from "../../core/services/onboarding.service";
@@ -879,32 +880,32 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     title: string;
     items: { keys: string[]; label: string }[];
   }[] = [
-    {
-      title: "Editing",
-      items: [
-        { keys: ["Ctrl", "C"], label: "Copy selected service(s)" },
-        { keys: ["Ctrl", "V"], label: "Paste copied service(s)" },
-        { keys: ["Ctrl", "D"], label: "Duplicate selected service(s)" },
-        { keys: ["Del"], label: "Delete selection" },
-      ],
-    },
-    {
-      title: "History",
-      items: [
-        { keys: ["Ctrl", "Z"], label: "Undo" },
-        { keys: ["Ctrl", "Y"], label: "Redo" },
-        { keys: ["Ctrl", "S"], label: "Save to this browser" },
-      ],
-    },
-    {
-      title: "Canvas",
-      items: [
-        { keys: ["Ctrl", "Click"], label: "Add to multi-selection" },
-        { keys: ["?"], label: "Open this shortcuts panel" },
-        { keys: ["Esc"], label: "Close panel / clear selection" },
-      ],
-    },
-  ];
+      {
+        title: "Editing",
+        items: [
+          { keys: ["Ctrl", "C"], label: "Copy selected service(s)" },
+          { keys: ["Ctrl", "V"], label: "Paste copied service(s)" },
+          { keys: ["Ctrl", "D"], label: "Duplicate selected service(s)" },
+          { keys: ["Del"], label: "Delete selection" },
+        ],
+      },
+      {
+        title: "History",
+        items: [
+          { keys: ["Ctrl", "Z"], label: "Undo" },
+          { keys: ["Ctrl", "Y"], label: "Redo" },
+          { keys: ["Ctrl", "S"], label: "Save to this browser" },
+        ],
+      },
+      {
+        title: "Canvas",
+        items: [
+          { keys: ["Ctrl", "Click"], label: "Add to multi-selection" },
+          { keys: ["?"], label: "Open this shortcuts panel" },
+          { keys: ["Esc"], label: "Close panel / clear selection" },
+        ],
+      },
+    ];
 
   // Copy / paste buffer. Holds deep clones so later canvas edits never mutate it.
   private clipboard: {
@@ -971,7 +972,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     readonly challengeService: ChallengeService,
     readonly onboarding: OnboardingService,
     private readonly graphBuilder: GraphBuilderService,
-  ) {}
+    private readonly themeService: ThemeService,
+  ) { }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDark;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   private challengeSubscription?: Subscription;
 
@@ -1178,10 +1188,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.annotations = this.annotations.map((a) =>
         a.id === id
           ? {
-              ...a,
-              width: Math.max(100, startW + dx),
-              height: Math.max(40, startH + dy),
-            }
+            ...a,
+            width: Math.max(100, startW + dx),
+            height: Math.max(40, startH + dy),
+          }
           : a,
       );
     };
@@ -3052,15 +3062,15 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
           this.nodes = this.nodes.map((n) =>
             n.id === selectedId
               ? {
-                  ...n,
-                  config: {
-                    ...n.config,
-                    variableTraffic: true,
-                    variableMinRps: min,
-                    variableMaxRps: max,
-                    requestRate: mid,
-                  },
-                }
+                ...n,
+                config: {
+                  ...n.config,
+                  variableTraffic: true,
+                  variableMinRps: min,
+                  variableMaxRps: max,
+                  requestRate: mid,
+                },
+              }
               : n,
           );
           if (clientNode.config["syncRpsToServices"]) {
@@ -3154,12 +3164,12 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.nodes = this.nodes.map((n) =>
       downstream.has(n.id)
         ? {
-            ...n,
-            // throughput drives the cost panel; _designThroughput is the capacity
-            // the simulation reads, so both must reflect the synced RPS for the
-            // pushed value to actually change latency/utilization.
-            config: { ...n.config, throughput: rounded, _designThroughput: rounded },
-          }
+          ...n,
+          // throughput drives the cost panel; _designThroughput is the capacity
+          // the simulation reads, so both must reflect the synced RPS for the
+          // pushed value to actually change latency/utilization.
+          config: { ...n.config, throughput: rounded, _designThroughput: rounded },
+        }
         : n,
     );
   }

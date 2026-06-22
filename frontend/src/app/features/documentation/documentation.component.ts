@@ -7,6 +7,7 @@ import { AwsServiceDefinition, AwsServiceType } from '../../core/models/architec
 import awsServicesConfig from '../../core/config/aws-services.json';
 import serviceDocsData from '../../core/data/service-documentation.json';
 import serviceBottleneckData from '../../core/data/service-bottleneck.json';
+import { ThemeService } from '../../core/services/theme.service';
 
 interface DocArticle {
   id: string;
@@ -3956,8 +3957,17 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   constructor(
     private el: ElementRef,
     public awsCatalog: AwsCatalogService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private themeService: ThemeService
   ) { }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDark;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   ngOnInit(): void {
     window.scrollTo(0, 0);

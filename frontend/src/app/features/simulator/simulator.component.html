@@ -53,10 +53,14 @@
         <button type="button" class="action-btn outline" (mousemove)="onMouseMove($event)" (click)="resetCanvas()">
           <i class="fas fa-undo"></i> Clear
         </button>
-        <span class="divider" *ngIf="!isMobileViewport"></span>
+        <span class="divider"></span>
         <button type="button" class="hotkeys-btn" *ngIf="!isMobileViewport" (click)="openHotkeys()"
           title="Keyboard shortcuts (?)" aria-label="Open keyboard shortcuts">
           <i class="fas fa-question"></i>
+        </button>
+        <button type="button" class="icon-button theme-toggle-btn" (mousemove)="onMouseMove($event)"
+          [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'" (click)="toggleTheme()">
+          <i class="fas" [class.fa-sun]="isDarkMode" [class.fa-moon]="!isDarkMode"></i>
         </button>
       </div>
     </div>
@@ -153,8 +157,7 @@
     <section #canvas class="canvas" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)"
       (pointerdown)="onCanvasPointerDown($event)" (pointermove)="onCanvasPointerMove($event)"
       (pointerup)="onCanvasPointerUp($event)" (pointercancel)="onCanvasPointerUp($event)"
-      (click)="onCanvasBackgroundClick($event)"
-      (touchstart)="onCanvasTouchStart($event)">
+      (click)="onCanvasBackgroundClick($event)" (touchstart)="onCanvasTouchStart($event)">
       <!-- Canvas-level Browser Tab Bar -->
       <div class="canvas-tab-bar">
         <div class="canvas-tabs-container">
@@ -671,9 +674,8 @@
           <ng-template #noSelection>
             <div class="empty-state">
               <app-challenge-panel *ngIf="roleMode === 'developer'" (startChallenge)="onStartChallenge($event)"
-                (resetChallenge)="onResetChallenge($event)"
-                (freePractice)="onFreePractice()" (replayTour)="onReplayTour()"
-                (requestEvaluate)="onEvaluateChallenge()"
+                (resetChallenge)="onResetChallenge($event)" (freePractice)="onFreePractice()"
+                (replayTour)="onReplayTour()" (requestEvaluate)="onEvaluateChallenge()"
                 (showReference)="onShowReference($event)"></app-challenge-panel>
 
               <ng-container *ngIf="roleMode === 'architect'">
@@ -730,7 +732,8 @@
                       <div class="dashboard-cost-hero">
                         <div class="dch-label">
                           <span class="dch-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                              stroke-linecap="round" stroke-linejoin="round">
                               <circle cx="12" cy="12" r="10"></circle>
                               <path d="M12 6v12M15 9H10.5a2.5 2.5 0 0 0 0 5h3a2.5 2.5 0 0 1 0 5H9"></path>
                             </svg>
@@ -742,10 +745,8 @@
 
                       <div class="svc-dashboard-list" *ngIf="unifiedServices.length; else noCanvasServices">
                         <div class="svc-dashboard-row" *ngFor="let s of unifiedServices; let last = last"
-                          [style.--svc-color]="serviceColor(s.type)"
-                          [class.last-row]="last"
-                          [title]="'Open ' + s.name + ' docs in a new tab'"
-                          (click)="openDocsForService(s.type)">
+                          [style.--svc-color]="serviceColor(s.type)" [class.last-row]="last"
+                          [title]="'Open ' + s.name + ' docs in a new tab'" (click)="openDocsForService(s.type)">
                           <div class="svc-row-main">
                             <div class="svc-row-icon">
                               <img [src]="nodeIconUrl(s.type)" [alt]="s.name + ' icon'" />
@@ -786,7 +787,8 @@
                       </div>
 
                       <div class="feedback-options-list">
-                        <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                        <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
+                          class="feedback-card">
                           <div class="feedback-card-icon testimonial-icon">
                             <i class="fas fa-star"></i>
                           </div>
@@ -795,11 +797,13 @@
                               <span>Submit Testimonial</span>
                               <i class="fas fa-external-link-alt external-link-icon"></i>
                             </div>
-                            <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be featured!</p>
+                            <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to
+                              be featured!</p>
                           </div>
                         </a>
 
-                        <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                        <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
+                          class="feedback-card">
                           <div class="feedback-card-icon support-icon">
                             <i class="fas fa-bug"></i>
                           </div>
@@ -808,7 +812,8 @@
                               <span>Bugs &amp; Improvements</span>
                               <i class="fas fa-external-link-alt external-link-icon"></i>
                             </div>
-                            <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the platform.</p>
+                            <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the
+                              platform.</p>
                           </div>
                         </a>
                       </div>
@@ -825,7 +830,8 @@
                     <span>Share Feedback</span>
                   </div>
                   <div class="feedback-options-list">
-                    <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                    <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
+                      class="feedback-card">
                       <div class="feedback-card-icon testimonial-icon">
                         <i class="fas fa-star"></i>
                       </div>
@@ -834,11 +840,13 @@
                           <span>Submit Testimonial</span>
                           <i class="fas fa-external-link-alt external-link-icon"></i>
                         </div>
-                        <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be featured!</p>
+                        <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be
+                          featured!</p>
                       </div>
                     </a>
 
-                    <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer" class="feedback-card">
+                    <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
+                      class="feedback-card">
                       <div class="feedback-card-icon support-icon">
                         <i class="fas fa-bug"></i>
                       </div>
@@ -847,7 +855,8 @@
                           <span>Bugs &amp; Improvements</span>
                           <i class="fas fa-external-link-alt external-link-icon"></i>
                         </div>
-                        <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the platform.</p>
+                        <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the
+                          platform.</p>
                       </div>
                     </a>
                   </div>
@@ -1081,10 +1090,13 @@
 
   <app-onboarding-overlay *ngIf="roleMode === 'developer'"></app-onboarding-overlay>
 
-  <div class="milestone-popup" [class.bonus-unlocked]="milestonePopup.isHidden" *ngIf="milestonePopup" role="status" aria-live="polite">
-    <span class="mp-badge"><i class="fas" [class.fa-trophy]="!milestonePopup.isHidden" [class.fa-star]="milestonePopup.isHidden"></i></span>
+  <div class="milestone-popup" [class.bonus-unlocked]="milestonePopup.isHidden" *ngIf="milestonePopup" role="status"
+    aria-live="polite">
+    <span class="mp-badge"><i class="fas" [class.fa-trophy]="!milestonePopup.isHidden"
+        [class.fa-star]="milestonePopup.isHidden"></i></span>
     <div class="mp-text">
-      <strong *ngIf="!milestonePopup.isHidden">Milestone {{ milestonePopup.number }} of {{ milestonePopup.total }} reached</strong>
+      <strong *ngIf="!milestonePopup.isHidden">Milestone {{ milestonePopup.number }} of {{ milestonePopup.total }}
+        reached</strong>
       <strong *ngIf="milestonePopup.isHidden" class="gold-text">Secret Milestone Unlocked! 🌟</strong>
       <span>{{ milestonePopup.label }}</span>
     </div>
