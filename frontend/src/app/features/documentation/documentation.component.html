@@ -339,7 +339,7 @@
                 </div>
 
                 <div class="service-doc-grid">
-                  <article *ngFor="let service of group.services" class="service-doc-card glass-panel">
+                  <article *ngFor="let service of group.services" class="service-doc-card glass-panel" [style.--service-color]="serviceColor(service.type)">
                     <div class="service-doc-card-top">
                       <span class="service-mini-icon" [style.--service-color]="serviceColor(service.type)">
                         <img [src]="service.iconUrl" alt="" />
@@ -434,7 +434,7 @@
                       <span>Pro Architect Tip</span>
                     </div>
                     <ul>
-                      <li *ngFor="let tip of art.tips">{{ tip }}</li>
+                      <li *ngFor="let tip of art.tips" [innerHTML]="tip"></li>
                     </ul>
                   </div>
                 </article>

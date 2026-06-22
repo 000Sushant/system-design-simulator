@@ -12,6 +12,7 @@ import {
 import { ChallengeService } from '../../../core/services/challenge.service';
 import { VoteService } from '../../../core/services/vote.service';
 import { AwsCatalogService } from '../../../core/services/aws-catalog.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { AwsServiceType } from '../../../core/models/architecture.model';
 import { ChallengeTagComponent, categoryStyle } from './challenge-tag.component';
 
@@ -55,7 +56,15 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
     readonly challenges: ChallengeService,
     readonly votes: VoteService,
     private readonly catalog: AwsCatalogService,
+    private readonly theme: ThemeService,
   ) {}
+
+  /** Mascot illustration, swapped for a dark-friendly variant in dark mode. */
+  get mascotImage(): string {
+    return this.theme.isDark
+      ? 'assets/mascot/server-metaphor-dark.png'
+      : 'assets/mascot/server-metaphor.png';
+  }
 
   /** Icon URL for a service shown in the solution walkthrough. */
   solutionIcon(type: AwsServiceType): string {

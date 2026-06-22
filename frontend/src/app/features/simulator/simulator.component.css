@@ -1204,6 +1204,178 @@ select {
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
+/* ── Role switcher (Architect ↔ Developer) ──────────────────────────────── */
+.role-switcher {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+}
+
+/* These live inside `.toolbar`, so `.toolbar button` (min-height, padding, glass
+   bg, and a white/purple :hover) applies to them. Selectors are `.toolbar`-scoped
+   and hover uses !important to win over `.toolbar button:hover` in both themes. */
+.toolbar .role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 0.18s ease;
+}
+
+.toolbar .role-badge::after {
+  display: none;
+}
+
+.toolbar .role-badge i {
+  font-size: 7px;
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.toolbar .role-badge:hover {
+  color: #92400e !important;
+  background: rgba(245, 158, 11, 0.24) !important;
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  transform: none !important;
+}
+
+.role-badge.menu-open i {
+  transform: rotate(180deg);
+}
+
+.role-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  z-index: 250;
+  min-width: 140px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: roleMenuIn 0.16s ease-out;
+}
+
+@keyframes roleMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toolbar .role-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: background 0.15s ease;
+}
+
+.toolbar .role-menu-item::after {
+  display: none;
+}
+
+.toolbar .role-menu-item:hover {
+  color: #92400e !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: transparent !important;
+  transform: none !important;
+}
+
+.toolbar .role-menu-item.active {
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.role-menu-item > i:first-child {
+  width: 13px;
+  font-size: 11px;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.role-menu-item > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.role-check {
+  font-size: 9px;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+/* Dark mode — keep the orange identity, brighten the ink. */
+:host-context(.dark) .toolbar .role-badge {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+:host-context(.dark) .toolbar .role-badge:hover {
+  color: #fcd34d !important;
+  background: rgba(245, 158, 11, 0.26) !important;
+  border-color: rgba(245, 158, 11, 0.65) !important;
+}
+
+:host-context(.dark) .role-menu {
+  background: rgba(20, 26, 40, 0.97);
+  border-color: rgba(245, 158, 11, 0.22);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+}
+
+:host-context(.dark) .toolbar .role-menu-item {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .toolbar .role-menu-item:hover {
+  color: #fcd34d !important;
+  background: rgba(245, 158, 11, 0.16) !important;
+}
+
+:host-context(.dark) .toolbar .role-menu-item.active {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+:host-context(.dark) .role-menu-item > i:first-child,
+:host-context(.dark) .role-check {
+  color: #fbbf24;
+}
+
 .brand input {
   width: 100%;
   max-width: 220px;
@@ -1626,6 +1798,18 @@ select {
   display: inline-block;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* Service heading title + category tag use neutral ink (black on light, white on
+   dark) so they read consistently regardless of the per-service accent color. */
+.panel-heading-text span {
+  color: #111827;
+}
+
+.panel-heading-text small {
+  color: #475569;
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .app-shell.left-collapsed .left-toggle,
@@ -5598,24 +5782,9 @@ small {
 }
 
 /* ───── Keyboard Shortcuts: toolbar trigger ───── */
+/* Matches the theme-toggle button: square icon-button shell, neutral ink + hover. */
 .hotkeys-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.32);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #475569;
-  cursor: pointer;
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.04),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-app);
 }
 
 .hotkeys-btn i {
@@ -5624,13 +5793,7 @@ small {
 }
 
 .hotkeys-btn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(124, 58, 237, 0.6);
-  color: #7c3aed;
-  background: rgba(255, 255, 255, 0.55);
-  box-shadow:
-    0 4px 12px rgba(124, 58, 237, 0.14),
-    inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  background: var(--button-hover) !important;
 }
 
 /* ───── Keyboard Shortcuts: overlay + card ───── */
@@ -5827,6 +5990,60 @@ small {
   background: var(--button-hover) !important;
 }
 
+/* Animated sun/moon toggle — mirrors the landing-page button. */
+/* `.toolbar button` forces `padding: 0 11px`, which (with border-box) shrinks
+   the 28px icon-button's content box to a few px and squashes a sized flex
+   child. Reset it so the SVG can render at full size. */
+.toolbar .icon-button {
+  padding: 0;
+}
+
+.theme-toggle-btn .sun-moon-svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  transform: rotate(40deg);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn .sun-moon-svg circle {
+  transition: r 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#sim-moon-mask circle {
+  cx: -10;
+  cy: 34;
+  transition:
+    cx 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    cy 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn .sun-rays {
+  transition:
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+/* show-moon = light mode active (click switches to dark) */
+.theme-toggle-btn.show-moon .sun-moon-svg {
+  transform: rotate(90deg);
+}
+
+.theme-toggle-btn.show-moon #sim-moon-mask circle {
+  cx: 6;
+  cy: 18;
+}
+
+.theme-toggle-btn.show-moon .sun-moon-svg circle {
+  r: 9;
+}
+
+.theme-toggle-btn.show-moon .sun-rays {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.6);
+}
+
 /* Dark Mode Overrides for Simulator Workspace */
 :host-context(.dark) .app-shell {
   background: #080b11;
@@ -5839,6 +6056,19 @@ small {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
+:host-context(.dark) .toolbar button {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Higher specificity than the light base `.toolbar button:hover:not(:disabled)`
+   so dark hover doesn't flash a bright white fill. */
+:host-context(.dark) .toolbar button:hover:not(:disabled) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(167, 139, 250, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
 :host-context(.dark) .toolbar .brand-mark span {
   color: #f1f5f9;
 }
@@ -5847,6 +6077,7 @@ small {
   background: rgba(255, 255, 255, 0.06);
   color: #fbbf24;
   border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: none !important;
 }
 
 :host-context(.dark) .action-btn {
@@ -5855,22 +6086,10 @@ small {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-:host-context(.dark) .action-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
 :host-context(.dark) .icon-button {
   color: #cbd5e1;
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.08);
-}
-
-:host-context(.dark) .icon-button:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 :host-context(.dark) .zoom {
@@ -5881,10 +6100,74 @@ small {
   background: rgba(255, 255, 255, 0.12);
 }
 
+/* The pill's near-black fill blends into the dark canvas — lift it and add a
+   visible ring + glow so it reads as a floating widget. */
+:host-context(.dark) .run-stats {
+  background: rgba(28, 32, 44, 0.88);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+:host-context(.dark) .run-stats:hover,
+:host-context(.dark) .run-stats.run-stats--open {
+  background: rgba(28, 32, 44, 0.95);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Architecture alerts (error / warning / healthy pills) ───────────────── */
+:host-context(.dark) .error-pill {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(.dark) .error-pill:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+:host-context(.dark) .error-pill .pill-name {
+  color: #fca5a5;
+}
+
+:host-context(.dark) .error-pill .pill-msg {
+  color: #f87171;
+}
+
+:host-context(.dark) .error-pill.warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(.dark) .error-pill.warning:hover {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+:host-context(.dark) .error-pill.warning .pill-name {
+  color: #fcd34d;
+}
+
+:host-context(.dark) .error-pill.warning .pill-msg {
+  color: #fbbf24;
+}
+
+:host-context(.dark) .status-pill.success {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
 /* Palette Side */
 :host-context(.dark) .palette {
   background: rgba(13, 17, 30, 0.9);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 :host-context(.dark) .palette .panel-heading {
@@ -5911,10 +6194,14 @@ small {
   background: rgba(15, 23, 42, 0.4);
   border-color: rgba(255, 255, 255, 0.05);
   color: #e2e8f0;
+  box-shadow: none;
 }
 
 :host-context(.dark) .category-header:hover {
   background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: #a78bfa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 :host-context(.dark) .category-name {
@@ -5925,12 +6212,14 @@ small {
   background: rgba(15, 23, 42, 0.35);
   border-color: rgba(255, 255, 255, 0.06);
   color: #cbd5e1;
+  box-shadow: none;
 }
 
 :host-context(.dark) .service-tile:hover {
   background: rgba(15, 23, 42, 0.6);
   border-color: rgba(255, 255, 255, 0.15);
   color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 :host-context(.dark) .service-tile strong {
@@ -5948,6 +6237,13 @@ small {
   background-size: 24px 24px;
 }
 
+/* Swap the light-theme white edge glow for a subtle dark vignette */
+:host-context(.dark) .canvas-surface::after {
+  background: radial-gradient(circle at 50% 50%,
+      transparent 0%,
+      rgba(0, 0, 0, 0.35) 100%);
+}
+
 :host-context(.dark) .canvas-tab-bar {
   background: rgba(13, 17, 30, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -5957,12 +6253,21 @@ small {
   background: rgba(15, 23, 42, 0.6);
   border-color: rgba(255, 255, 255, 0.08);
   color: #94a3b8;
+  box-shadow: none;
+}
+
+:host-context(.dark) .canvas-tab:hover {
+  background: rgba(15, 23, 42, 0.85);
+  color: #cbd5e1;
+  border-color: rgba(124, 58, 237, 0.4);
+  box-shadow: none;
 }
 
 :host-context(.dark) .canvas-tab.active {
   background: #090c15;
   color: #f1f5f9;
   border-bottom-color: #090c15;
+  box-shadow: none;
 }
 
 :host-context(.dark) .add-tab-btn {
@@ -5978,7 +6283,19 @@ small {
 :host-context(.dark) .node-card {
   background: rgba(15, 23, 42, 0.85) !important;
   color: #f1f5f9;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+:host-context(.dark) .node-card:hover {
+  background: rgba(20, 30, 54, 0.92) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+}
+
+:host-context(.dark) .node-card.selected {
+  border-color: var(--service-color) !important;
+  box-shadow:
+    0 0 0 2px rgba(124, 58, 237, 0.4),
+    0 16px 36px rgba(0, 0, 0, 0.6) !important;
 }
 
 :host-context(.dark) .node-card:not(.selected) {
@@ -6013,19 +6330,337 @@ small {
   transform: scale(1.3);
 }
 
+/* Note / annotation labels: the base styles use white hover/selected fills and
+   a transparent idle bg, which on the dark canvas give white-on-white text (can't
+   see while typing) or an invisible black-on-black note. Give every state a dark
+   surface with light text. */
+:host-context(.dark) .annotation-node {
+  background: rgba(30, 41, 59, 0.55);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.dark) .annotation-node:hover {
+  background: rgba(30, 41, 59, 0.75);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+:host-context(.dark) .annotation-node.selected {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: #3b82f6;
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(59, 130, 246, 0.4);
+}
+
 :host-context(.dark) .annotation-node .annotation-text {
   color: #e2e8f0;
+}
+
+/* ════════ Overlays, popups & loaders ════════════════════════════════════ */
+
+/* Shared overlay scrims — darken instead of the light frost */
+:host-context(.dark) .mobile-warning-overlay,
+:host-context(.dark) .unsupported-region-overlay {
+  background: rgba(3, 6, 15, 0.6);
+}
+
+/* Glass cards (Optimize Your Experience + Region Not Available) */
+:host-context(.dark) .warning-glass-card,
+:host-context(.dark) .unsupported-region-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  /* Landing-page style: colored radial glows over a dark glass base */
+  background:
+    radial-gradient(circle at 16% 6%, rgba(124, 58, 237, 0.28), transparent 46%),
+    radial-gradient(circle at 88% 12%, rgba(6, 182, 212, 0.2), transparent 46%),
+    radial-gradient(circle at 60% 92%, rgba(59, 130, 246, 0.18), transparent 52%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(13, 17, 29, 0.92);
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .warning-glass-card h2,
+:host-context(.dark) .unsupported-region-card h3 {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .warning-glass-card p,
+:host-context(.dark) .unsupported-desc {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .unsupported-region-code {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: none;
+}
+
+:host-context(.dark) .unsupported-reverted {
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+:host-context(.dark) .unsupported-reverted strong {
+  color: #e2e8f0;
+}
+
+/* CTA buttons keep their base liquid-glass look (matches the landing
+   "Launch Simulator" button) in both themes — no dark override. */
+
+/* Save loader card */
+:host-context(.dark) .glass-loader-card {
+  background: rgba(20, 26, 40, 0.92);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Save success toast */
+:host-context(.dark) .save-toast {
+  background: rgba(20, 26, 40, 0.95);
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+}
+
+:host-context(.dark) .toast-text strong {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .toast-text small {
+  color: #94a3b8;
+}
+
+/* Panel loader (region pricing fetch) */
+:host-context(.dark) .region-cost-loader {
+  background: rgba(9, 12, 21, 0.78);
+  color: #cbd5e1;
+}
+
+/* Mascots blend into the dark cards (their drop-shadow is dark). Add a soft
+   light radial glow behind + a white edge halo so the cat reads clearly. */
+:host-context(.dark) .warning-mascot,
+:host-context(.dark) .unsupported-mascot,
+:host-context(.dark) .hotkeys-mascot {
+  position: relative;
+}
+
+:host-context(.dark) .warning-mascot::before,
+:host-context(.dark) .unsupported-mascot::before,
+:host-context(.dark) .hotkeys-mascot::before {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+      rgba(245, 158, 11, 0.35) 0%,
+      rgba(245, 158, 11, 0.12) 42%,
+      transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+:host-context(.dark) .warning-mascot img,
+:host-context(.dark) .unsupported-mascot img,
+:host-context(.dark) .hotkeys-mascot img {
+  position: relative;
+  z-index: 1;
+  filter:
+    drop-shadow(0 0 9px rgba(245, 158, 11, 0.4))
+    drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+}
+
+/* ════════ Keyboard Shortcuts panel ══════════════════════════════════════ */
+:host-context(.dark) .hotkeys-overlay {
+  background: rgba(3, 6, 15, 0.6);
+}
+
+:host-context(.dark) .hotkeys-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  /* Landing-page style: colored radial glows over a dark glass base */
+  background:
+    radial-gradient(circle at 16% 6%, rgba(124, 58, 237, 0.28), transparent 46%),
+    radial-gradient(circle at 88% 12%, rgba(6, 182, 212, 0.2), transparent 46%),
+    radial-gradient(circle at 60% 92%, rgba(59, 130, 246, 0.18), transparent 52%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(13, 17, 29, 0.92);
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .hotkeys-close {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .hotkeys-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .hotkeys-heading h3 {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .hotkeys-heading p {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .hotkeys-group h4 {
+  color: #a78bfa;
+}
+
+:host-context(.dark) .hotkeys-label {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .hotkeys-plus {
+  color: #64748b;
+}
+
+:host-context(.dark) .hotkeys-card kbd {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.15);
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 1.5px 0 rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+
+/* Inverted pill so it stays visible on the dark card */
+:host-context(.dark) .hotkeys-got-it {
+  background: #f1f5f9;
+  color: #111827;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+:host-context(.dark) .hotkeys-got-it:hover {
+  background: #ffffff;
 }
 
 /* Inspector Side */
 :host-context(.dark) .inspector {
   background: rgba(13, 17, 30, 0.9);
   border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 :host-context(.dark) .inspector .panel-heading {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   color: #f1f5f9;
+}
+
+:host-context(.dark) .panel-heading-text span {
+  color: #ffffff;
+}
+
+/* All heading tags (inspector category, palette count, connection type) get a
+   readable chip on dark — the base style is a light pill that mixes into the
+   dark panel. */
+:host-context(.dark) .panel-heading small {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.14);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+/* ── Architecture Dashboard ──────────────────────────────────────────────── */
+:host-context(.dark) .dashboard-card-wrapper {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(.dark) .arch-panel-head,
+:host-context(.dark) .subsection-header,
+:host-context(.dark) .dashboard-services-head {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .dashboard-cost-hero {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.04) 100%);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+:host-context(.dark) .svc-dashboard-row {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+:host-context(.dark) .svc-dashboard-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:host-context(.dark) .svc-row-icon {
+  border-color: color-mix(in srgb, var(--svc-color, #7c3aed) 22%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--svc-color, #7c3aed) 14%, #0f172a);
+}
+
+:host-context(.dark) .svc-dashboard-row:hover .svc-row-icon {
+  background: color-mix(in srgb, var(--svc-color, #7c3aed) 24%, #0f172a);
+}
+
+:host-context(.dark) .svc-row-name {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .svc-row-badge {
+  background: color-mix(in srgb, var(--svc-color, #7c3aed) 22%, #0f172a);
+  border-color: color-mix(in srgb, var(--svc-color, #7c3aed) 35%, rgba(255, 255, 255, 0.08));
+}
+
+:host-context(.dark) .svc-row-desc {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .svc-row-progress-bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark) .dashboard-services-head small {
+  background: rgba(124, 58, 237, 0.2);
+  color: #c4b5fd;
+}
+
+:host-context(.dark) .dashboard-empty-text {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+/* ── Share Feedback section ──────────────────────────────────────────────── */
+:host-context(.dark) .feedback-section {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark) .feedback-section .block-header {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .feedback-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .feedback-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+:host-context(.dark) .feedback-card-icon {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark) .feedback-card-title {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .feedback-card-desc {
+  color: #94a3b8;
 }
 
 :host-context(.dark) .empty-state h2 {
@@ -6050,20 +6685,56 @@ small {
   color: #94a3b8;
 }
 
+:host-context(.dark) .name-field,
 :host-context(.dark) .field-list label {
   color: #cbd5e1;
+  /* Swap the light white-glass row for a dark translucent card */
+  background: linear-gradient(135deg,
+      rgba(30, 41, 59, 0.55),
+      rgba(30, 41, 59, 0.3));
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.04);
 }
 
 :host-context(.dark) .field-list input,
-:host-context(.dark) .field-list select {
+:host-context(.dark) .field-list select,
+:host-context(.dark) .name-field input {
   background: #111827 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #f1f5f9 !important;
 }
 
 :host-context(.dark) .field-list input:focus,
-:host-context(.dark) .field-list select:focus {
+:host-context(.dark) .field-list select:focus,
+:host-context(.dark) .name-field input:focus {
   border-color: #6366f1 !important;
+}
+
+/* Field labels with cost/sim badges — keep label text readable on dark */
+:host-context(.dark) .cost-field {
+  color: #cbd5e1;
+}
+
+/* Service info box */
+:host-context(.dark) .client-info-msg {
+  background: rgba(30, 41, 59, 0.45);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #cbd5e1;
+}
+
+/* Read-only / auto-synced rows */
+:host-context(.dark) .readonly-row {
+  background: linear-gradient(135deg,
+      rgba(148, 163, 184, 0.08) 0%,
+      rgba(148, 163, 184, 0.04) 100%) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
+:host-context(.dark) .config-note {
+  background: rgba(30, 41, 59, 0.5);
+  color: #cbd5e1;
 }
 
 :host-context(.dark) .readonly-row input:disabled,
@@ -6139,6 +6810,67 @@ small {
 :host-context(.dark) .sidebar-toggle:hover {
   background: #1f2937;
   color: #ffffff;
+}
+
+:host-context(.dark) .validation-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+:host-context(.dark) .validation-card.success {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.3) 0%, rgba(6, 95, 70, 0.15) 100%) !important;
+  border-color: rgba(52, 211, 153, 0.15) !important;
+}
+
+:host-context(.dark) .validation-card.success .validation-icon {
+  background: rgba(6, 78, 59, 0.6) !important;
+  color: #34d399 !important;
+  border-color: rgba(52, 211, 153, 0.25) !important;
+}
+
+:host-context(.dark) .validation-card.success .validation-body strong {
+  color: #a7f3d0 !important;
+}
+
+:host-context(.dark) .validation-card.success .validation-body p {
+  color: #cbd5e1 !important;
+}
+
+:host-context(.dark) .validation-card.error {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.3) 0%, rgba(153, 27, 27, 0.15) 100%) !important;
+  border-color: rgba(248, 113, 113, 0.15) !important;
+}
+
+:host-context(.dark) .validation-card.error .validation-icon {
+  background: rgba(127, 29, 29, 0.6) !important;
+  color: #f87171 !important;
+  border-color: rgba(248, 113, 113, 0.25) !important;
+}
+
+:host-context(.dark) .validation-card.error .validation-body strong {
+  color: #fca5a5 !important;
+}
+
+:host-context(.dark) .validation-card.error .validation-body p {
+  color: #cbd5e1 !important;
+}
+
+:host-context(.dark) .validation-card.warning {
+  background: linear-gradient(135deg, rgba(120, 53, 4, 0.3) 0%, rgba(146, 64, 14, 0.15) 100%) !important;
+  border-color: rgba(251, 191, 36, 0.15) !important;
+}
+
+:host-context(.dark) .validation-card.warning .validation-icon {
+  background: rgba(120, 53, 4, 0.6) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+}
+
+:host-context(.dark) .validation-card.warning .validation-body strong {
+  color: #fde68a !important;
+}
+
+:host-context(.dark) .validation-card.warning .validation-body p {
+  color: #cbd5e1 !important;
 }
 
 :host-context(.dark) .validation-card.neutral {

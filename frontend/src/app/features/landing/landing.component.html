@@ -30,12 +30,29 @@
       <button
         type="button"
         class="theme-toggle-btn"
+        [class.show-moon]="!isDarkMode"
         (click)="toggleTheme()"
         [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
         (mousemove)="onButtonMouseMove($event)"
         (mouseleave)="onButtonMouseLeave($event)"
       >
-        <i class="fas" [class.fa-sun]="isDarkMode" [class.fa-moon]="!isDarkMode"></i>
+        <svg class="sun-moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <mask id="moon-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            <circle cx="-10" cy="34" r="7" fill="black" />
+          </mask>
+          <circle cx="12" cy="12" r="5" mask="url(#moon-mask)" fill="currentColor" />
+          <g class="sun-rays" stroke="currentColor">
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </g>
+        </svg>
       </button>
       <button
         type="button"
@@ -200,7 +217,7 @@
     <div class="section-heading">
       <span class="section-kicker">Know your Arsenal</span>
       <h2>
-        Know What can you do with<br /><span class="brand-name-header"
+        Know what can you do with<br /><span class="brand-name-header"
           >Sr<span class="brand-dot">.</span> Architect</span
         >
       </h2>
@@ -320,7 +337,7 @@
         <span>Launch Sr. Architect</span>
       </button>
       <a
-        class="cta-button secondary"
+        class="cta-button primary github-btn"
         href="https://github.com/000Sushant/system-design-simulator/"
         target="_blank"
         rel="noopener noreferrer"
@@ -329,7 +346,7 @@
         ><span>Explore GitHub</span></a
       >
       <a
-        class="cta-button ghost"
+        class="cta-button primary contribute-btn"
         href="https://github.com/000Sushant/system-design-simulator/"
         target="_blank"
         rel="noopener noreferrer"

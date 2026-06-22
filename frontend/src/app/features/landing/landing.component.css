@@ -162,7 +162,7 @@
 .landing-nav.nav-scrolled {
   top: 14px;
   width: max-content;
-  max-width: 360px;
+  max-width: 440px;
   min-width: 180px;
   border-radius: 999px;
   padding: 7px 10px 7px 14px;
@@ -272,13 +272,13 @@
   color: rgba(241, 245, 249, 0.9);
   border-color: rgba(255, 255, 255, 0.12);
   /* Dark glass chip: only the button area gets a soft dark translucent fill */
-  background: rgba(8, 11, 22, 0.55);
+  background: rgba(8, 11, 22, 0.9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .landing-nav.nav-scrolled .nav-actions a:hover {
   color: #ffffff;
-  background: rgba(8, 11, 22, 0.72);
+  background: rgba(8, 11, 22, 0.98);
 }
 
 /* Hide brand text in island mode */
@@ -1639,33 +1639,6 @@
     filter 0.25s ease;
 }
 
-/* Premium radial cursor spotlight glow overlay */
-.cta-button::before,
-.mode-button::before,
-.mini-launch::before,
-.nav-actions a::before,
-.social-links a::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(100px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
-      rgba(255, 255, 255, 0.25) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.cta-button:hover::before,
-.mode-button:hover::before,
-.mini-launch:hover::before,
-.nav-actions a:hover::before,
-.social-links a:hover::before {
-  opacity: 1;
-}
 
 /* Individual layout adjustments */
 .cta-button {
@@ -1723,7 +1696,7 @@
   border-color: rgba(255, 255, 255, 0.95);
   background-color: rgba(255, 255, 255, 0.36);
   box-shadow:
-    var(--shadow-x, 0px) var(--shadow-y, 8px) 24px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.12),
     inset 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
@@ -1788,9 +1761,9 @@
       rgba(167, 139, 250, 0.46) 100%),
     rgba(255, 255, 255, 0.38);
   box-shadow:
-    var(--shadow-x, 0px) var(--shadow-y, 15px) 35px rgba(124, 58, 237, 0.12),
+    0 12px 30px rgba(124, 58, 237, 0.12),
     0 0 0 4px rgba(167, 139, 250, 0.24),
-    /* Sleek node focus aura outline! */
+    inset 0 0 12px rgba(236, 72, 153, 0.2),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
 }
 
@@ -1859,9 +1832,9 @@
       rgba(192, 132, 252, 0.4) 100%),
     rgba(255, 255, 255, 0.36);
   box-shadow:
-    var(--shadow-x, 0px) var(--shadow-y, 15px) 35px rgba(59, 130, 246, 0.08),
+    0 12px 30px rgba(59, 130, 246, 0.08),
     0 0 0 4px rgba(147, 197, 253, 0.24),
-    /* Outer focus outline aura */
+    inset 0 0 12px rgba(192, 132, 252, 0.2),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
 }
 
@@ -2066,33 +2039,112 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: transparent;
-  color: #374151;
+  border: 1px solid rgba(147, 197, 253, 0.45);
+  color: #1e1b4b;
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%),
+    linear-gradient(135deg,
+      rgba(192, 132, 252, 0.32) 0%,
+      rgba(59, 130, 246, 0.24) 45%,
+      rgba(129, 140, 248, 0.22) 80%,
+      rgba(192, 132, 252, 0.32) 100%),
+    rgba(255, 255, 255, 0.26);
+  box-shadow:
+    0 10px 25px rgba(59, 130, 246, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92),
+    inset 0 -2px 4px rgba(99, 102, 241, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .theme-toggle-btn:hover {
   color: #111827;
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.25);
+  border-color: rgba(139, 92, 246, 0.85);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 100%),
+    linear-gradient(135deg,
+      rgba(192, 132, 252, 0.4) 0%,
+      rgba(59, 130, 246, 0.32) 45%,
+      rgba(129, 140, 248, 0.3) 80%,
+      rgba(192, 132, 252, 0.4) 100%),
+    rgba(255, 255, 255, 0.36);
+  box-shadow:
+    0 12px 30px rgba(59, 130, 246, 0.08),
+    0 0 0 4px rgba(147, 197, 253, 0.24),
+    inset 0 0 12px rgba(192, 132, 252, 0.2),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
   transform: scale(1.05);
 }
 
+.sun-moon-svg {
+  width: 20px;
+  height: 20px;
+  transform: rotate(40deg);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Center circle */
+.sun-moon-svg circle {
+  transition: r 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mask circle for the moon bite */
+#moon-mask circle {
+  cx: -10;
+  cy: 34;
+  transition: cx 0.5s cubic-bezier(0.4, 0, 0.2, 1), cy 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sun rays */
+.sun-rays {
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+/* When showing the moon (light mode active, click to toggle to dark) */
+.theme-toggle-btn.show-moon .sun-moon-svg {
+  transform: rotate(90deg);
+}
+
+.theme-toggle-btn.show-moon #moon-mask circle {
+  cx: 6;
+  cy: 18;
+}
+
+.theme-toggle-btn.show-moon .sun-moon-svg circle {
+  r: 9;
+}
+
+.theme-toggle-btn.show-moon .sun-rays {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.6);
+}
+
 .landing-nav.nav-scrolled .theme-toggle-btn {
-  color: rgba(241, 245, 249, 0.75);
-  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(241, 245, 249, 0.9);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(8, 11, 22, 0.9);
+  background-image: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .landing-nav.nav-scrolled .theme-toggle-btn:hover {
-  color: #f1f5f9;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  background: rgba(8, 11, 22, 0.98);
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Dark Mode Overrides */
@@ -2147,6 +2199,7 @@
   background: rgba(255, 255, 255, 0.06);
   color: #fbbf24;
   border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: none !important;
 }
 
 :host-context(.dark) .landing-nav .nav-actions a {
@@ -2160,14 +2213,24 @@
 }
 
 :host-context(.dark) .theme-toggle-btn {
-  color: rgba(241, 245, 249, 0.8);
-  border-color: rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.14);
+  /* `background` shorthand fully clears the light glass gradient + white base */
+  background: rgba(255, 255, 255, 0.05);
+  background-image: none;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.06);
 }
 
 :host-context(.dark) .theme-toggle-btn:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  background-image: none;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.1);
 }
 
 :host-context(.dark) .hero-copy h1 {
@@ -2190,6 +2253,8 @@
 :host-context(.dark) .section-heading h2,
 :host-context(.dark) .final-cta h2,
 :host-context(.dark) .creator-copy h2,
+:host-context(.dark) .contributors-card h2,
+:host-context(.dark) .sponsor-card h2,
 :host-context(.dark) .mode-card h3,
 :host-context(.dark) .feature-card h3 {
   color: #f1f5f9;
@@ -2230,14 +2295,6 @@
     inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-:host-context(.dark) .mode-card:hover {
-  border-color: rgba(168, 85, 247, 0.35);
-  box-shadow:
-    var(--shadow-x, 0px) var(--shadow-y, 25px) 50px rgba(0, 0, 0, 0.45),
-    0 8px 18px rgba(0, 0, 0, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
 :host-context(.dark) .mode-card li {
   color: #cbd5e1;
 }
@@ -2253,3 +2310,302 @@
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.2);
 }
+
+/* Dark Mode Button Overrides (Subtle Tint Gradients) */
+
+/* 1. Primary Buttons in Dark Mode (Subtle slate tint) */
+:host-context(.dark) .cta-button.primary,
+:host-context(.dark) .architect .mode-button,
+:host-context(.dark) .developer .mode-button,
+:host-context(.dark) .mini-launch {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.15);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      #1e293b 0%,
+      #0f172a 100%
+    );
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .cta-button.primary:hover,
+:host-context(.dark) .architect .mode-button:hover,
+:host-context(.dark) .mini-launch:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      #2e1f4d 0%,
+      #130f1f 100%
+    );
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.dark) .cta-button.primary:active,
+:host-context(.dark) .architect .mode-button:active,
+:host-context(.dark) .mini-launch:active {
+  border-color: rgba(168, 85, 247, 0.55);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      #171224 0%,
+      #090a0d 100%
+    );
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Developer Mode Button Dark Mode Custom Hover/Active Accents */
+:host-context(.dark) .developer .mode-button:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      #132b35 0%,
+      #0d161d 100%
+    );
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.dark) .developer .mode-button:active {
+  border-color: rgba(6, 182, 212, 0.55);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      #0a1b20 0%,
+      #050d10 100%
+    );
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* 2. Ghost/Developer Buttons in Dark Mode (Clean Glass/No Color tint) */
+:host-context(.dark) .cta-button.ghost,
+:host-context(.dark) .nav-actions a {
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.12);
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.01) 100%
+    );
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(.dark) .cta-button.ghost:hover,
+:host-context(.dark) .nav-actions a:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.1);
+}
+
+/* 3. Secondary Buttons in Dark Mode (Clean Glass/No Color tint) */
+:host-context(.dark) .cta-button.secondary {
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.08);
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(255, 255, 255, 0.01) 100%
+    );
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(.dark) .cta-button.secondary:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   THEMED NIGHT MODE CARD & COMPONENT COLORS
+   ========================================================================== */
+
+/* ── 1. Mode Cards (Developer & Architect) ────────────────────────────────── */
+
+/* Uniform mode badge override in dark mode */
+:host-context(.dark) .mode-badge {
+  color: #a78bfa;
+  background: rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Developer Mode Icon - Soft Cyan */
+:host-context(.dark) .developer .mode-icon {
+  color: #22d3ee;
+}
+
+/* Architect Mode Icon - Soft Purple */
+:host-context(.dark) .architect .mode-icon {
+  color: #a78bfa;
+}
+
+/* Uniform Mode Card Hover Border and Shadow (No Neon Glows) */
+:host-context(.dark) .mode-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+
+/* ── 2. Feature Cards (Arsenal Cards) themed overrides ────────────────────────── */
+
+/* Base Dark Icon styling */
+:host-context(.dark) .mode-icon,
+:host-context(.dark) .feature-icon {
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.01)),
+    rgba(15, 23, 42, 0.45);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Feature Badge/Small in Dark Mode */
+:host-context(.dark) .feature-title small {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Uniform feature card hover border and shadow (No Neon Glows) */
+:host-context(.dark) .feature-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* 7n + 1 (Blue Theme) overrides */
+:host-context(.dark) .feature-card:nth-child(7n + 1) .feature-icon {
+  color: #60a5fa;
+}
+
+/* 7n + 2 (Cyan Theme) overrides */
+:host-context(.dark) .feature-card:nth-child(7n + 2) .feature-icon {
+  color: #22d3ee;
+}
+
+/* 7n + 3 (Green Theme) overrides */
+:host-context(.dark) .feature-card:nth-child(7n + 3) .feature-icon {
+  color: #34d399;
+}
+
+/* 7n + 4 (Orange/Yellow Theme) overrides */
+:host-context(.dark) .feature-card:nth-child(7n + 4) .feature-icon {
+  color: #fbbf24;
+}
+
+/* 7n + 5 (Pink Theme) overrides */
+:host-context(.dark) .feature-card:nth-child(7n + 5) .feature-icon {
+  color: #f472b6;
+}
+
+/* 7n + 6 (Purple Theme) overrides */
+:host-context(.dark) .feature-card:nth-child(7n + 6) .feature-icon {
+  color: #c084fc;
+}
+
+/* 7n + 7 (Orange Theme) overrides */
+:host-context(.dark) .feature-card:nth-child(7n + 7) .feature-icon {
+  color: #fb923c;
+}
+
+
+/* ── 3. Top Contributors Section themed night-mode overrides ────────────────────────── */
+
+:host-context(.dark) .ghost-avatar {
+  color: #a78bfa;
+  border-color: rgba(168, 85, 247, 0.45);
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.01)),
+    rgba(124, 58, 237, 0.08);
+  box-shadow:
+    0 6px 14px rgba(124, 58, 237, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .contributors-soon-pill {
+  color: #a78bfa;
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(168, 85, 247, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+:host-context(.dark) .contributors-soon-pill i {
+  color: #22d3ee;
+}
+
+:host-context(.dark) .contributors-note {
+  color: #94a3b8;
+}
+
+

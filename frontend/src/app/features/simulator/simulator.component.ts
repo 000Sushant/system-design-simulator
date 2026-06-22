@@ -854,6 +854,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   showSaveLoader = false;
   showSaveSuccess = false;
   roleMode: "developer" | "architect" = "architect";
+  /** Whether the navbar role-switcher dropdown is open. */
+  roleMenuOpen = false;
 
   projectName = "Untitled AWS Architecture";
   globalCurrency: Currency = "USD";
@@ -2096,6 +2098,31 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   goHome(): void {
     window.history.pushState(null, "", "/");
     window.dispatchEvent(new Event("popstate"));
+  }
+
+  /** Toggles the navbar role-switcher dropdown. */
+  toggleRoleMenu(event: Event): void {
+    event.stopPropagation();
+    this.roleMenuOpen = !this.roleMenuOpen;
+  }
+
+  /** Switches the playground role (architect ↔ developer) in place, keeping the
+   *  current canvas. Persists the choice in the URL so a reload stays put. */
+  switchRole(mode: "developer" | "architect"): void {
+    this.roleMenuOpen = false;
+    if (this.roleMode === mode) return;
+    this.roleMode = mode;
+    if (typeof window !== "undefined" && window.history) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("mode", mode);
+      window.history.replaceState(null, "", url.toString());
+    }
+  }
+
+  /** Closes the role-switcher dropdown when clicking anywhere else. */
+  @HostListener("document:click")
+  closeRoleMenu(): void {
+    if (this.roleMenuOpen) this.roleMenuOpen = false;
   }
 
   goDocs(): void {
@@ -3521,7 +3548,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (connection.traffic.intensity > 0.7) {
       return "#eab308"; // yellow when busy
     }
-    return "#111827"; // default
+    // Default idle edge: dark ink on light, light slate on dark so it stays visible.
+    return this.themeService.isDark ? "#64748b" : "#111827";
   }
 
   trackById(_: number, item: { id: string }): string {

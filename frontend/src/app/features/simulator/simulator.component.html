@@ -7,8 +7,29 @@
       <a class="brand-mark" (click)="goHome()" style="cursor: pointer;" aria-label="Sr. Architect home">
         <img src="favicon.svg" alt="" />
         <span>Sr<span class="brand-dot">.</span> Architect</span>
-        <small>{{ roleMode | titlecase }}</small>
       </a>
+      <div class="role-switcher">
+        <button type="button" class="role-badge" (click)="toggleRoleMenu($event)"
+          [class.menu-open]="roleMenuOpen" aria-haspopup="true" [attr.aria-expanded]="roleMenuOpen"
+          title="Switch mode">
+          {{ roleMode | titlecase }}
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="role-menu" *ngIf="roleMenuOpen" (click)="$event.stopPropagation()">
+          <button type="button" class="role-menu-item" [class.active]="roleMode === 'architect'"
+            (click)="switchRole('architect')">
+            <i class="fas fa-drafting-compass"></i>
+            <span>Architect</span>
+            <i class="fas fa-check role-check" *ngIf="roleMode === 'architect'"></i>
+          </button>
+          <button type="button" class="role-menu-item" [class.active]="roleMode === 'developer'"
+            (click)="switchRole('developer')">
+            <i class="fas fa-code"></i>
+            <span>Developer</span>
+            <i class="fas fa-check role-check" *ngIf="roleMode === 'developer'"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="toolbar-actions">
@@ -54,13 +75,31 @@
           <i class="fas fa-undo"></i> Clear
         </button>
         <span class="divider"></span>
-        <button type="button" class="hotkeys-btn" *ngIf="!isMobileViewport" (click)="openHotkeys()"
+        <button type="button" class="icon-button hotkeys-btn" *ngIf="!isMobileViewport" (click)="openHotkeys()"
           title="Keyboard shortcuts (?)" aria-label="Open keyboard shortcuts">
           <i class="fas fa-question"></i>
         </button>
         <button type="button" class="icon-button theme-toggle-btn" (mousemove)="onMouseMove($event)"
+          [class.show-moon]="!isDarkMode"
           [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'" (click)="toggleTheme()">
-          <i class="fas" [class.fa-sun]="isDarkMode" [class.fa-moon]="!isDarkMode"></i>
+          <svg class="sun-moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <mask id="sim-moon-mask">
+              <rect x="0" y="0" width="100%" height="100%" fill="white" />
+              <circle cx="-10" cy="34" r="7" fill="black" />
+            </mask>
+            <circle cx="12" cy="12" r="5" mask="url(#sim-moon-mask)" fill="currentColor" />
+            <g class="sun-rays" stroke="currentColor">
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </g>
+          </svg>
         </button>
       </div>
     </div>
