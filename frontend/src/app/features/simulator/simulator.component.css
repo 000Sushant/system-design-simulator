@@ -3079,15 +3079,18 @@ small {
 }
 
 .errors-subsection .subsection-header i {
-  color: #ef4444; /* red */
+  color: #ef4444;
+  /* red */
 }
 
 .cost-subsection .subsection-header i {
-  color: #10b981; /* green */
+  color: #10b981;
+  /* green */
 }
 
 .feedback-subsection-new .subsection-header i {
-  color: #7c3aed; /* purple */
+  color: #7c3aed;
+  /* purple */
 }
 
 .error-pills-container {
@@ -3365,6 +3368,7 @@ small {
   0% {
     transform: rotateY(0deg);
   }
+
   100% {
     transform: rotateY(360deg);
   }
@@ -5818,6 +5822,7 @@ small {
 .theme-toggle-btn {
   color: var(--text-app);
 }
+
 .theme-toggle-btn:hover {
   background: var(--button-hover) !important;
 }
