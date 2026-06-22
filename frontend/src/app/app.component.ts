@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { SimulatorComponent } from "./features/simulator/simulator.component";
 import { LandingComponent } from "./features/landing/landing.component";
 import { DocumentationComponent } from "./features/documentation/documentation.component";
+import { ThemeService } from "./core/services/theme.service";
 
 @Component({
   selector: "app-root",
@@ -20,6 +21,8 @@ import { DocumentationComponent } from "./features/documentation/documentation.c
 export class AppComponent implements OnInit, OnDestroy {
   simulatorOpen = false;
   docsOpen = false;
+
+  constructor(private themeService: ThemeService) {}
 
   private onPop = () => {
     this.simulatorOpen = window.location.pathname.startsWith("/playground");

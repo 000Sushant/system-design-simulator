@@ -23,6 +23,14 @@
       <input type="text" [(ngModel)]="searchQuery" placeholder="Search guides, AWS rules, billing..." />
       <button *ngIf="searchQuery" class="clear-search" (click)="searchQuery = ''">&times;</button>
     </div>
+    <button
+      type="button"
+      class="theme-toggle-btn"
+      (click)="toggleTheme()"
+      [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+    >
+      <i class="fas" [class.fa-sun]="isDarkMode" [class.fa-moon]="!isDarkMode"></i>
+    </button>
   </nav>
 
   <!-- Split Docs Workspace Layout -->

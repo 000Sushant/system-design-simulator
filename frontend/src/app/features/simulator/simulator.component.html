@@ -53,6 +53,11 @@
         <button type="button" class="action-btn outline" (mousemove)="onMouseMove($event)" (click)="resetCanvas()">
           <i class="fas fa-undo"></i> Clear
         </button>
+        <span class="divider"></span>
+        <button type="button" class="icon-button theme-toggle-btn" (mousemove)="onMouseMove($event)"
+          [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'" (click)="toggleTheme()">
+          <i class="fas" [class.fa-sun]="isDarkMode" [class.fa-moon]="!isDarkMode"></i>
+        </button>
       </div>
     </div>
   </header>

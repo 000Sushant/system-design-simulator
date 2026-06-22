@@ -43,6 +43,7 @@ import { ValidationRuleService } from "../../core/services/validation-rule.servi
 import { CostService, CostBreakdown } from "../../core/services/cost.service";
 import { Currency } from "../../core/models/architecture.model";
 import serviceCostModelData from "../../core/data/service-cost-model.json";
+import { ThemeService } from "../../core/services/theme.service";
 
 interface PortSelection {
   node: ArchitectureNode;
@@ -917,7 +918,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly storage: ProjectStorageService,
     public readonly costService: CostService,
     private readonly elementRef: ElementRef,
+    private readonly themeService: ThemeService,
   ) {}
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDark;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   ngOnInit(): void {
     if (typeof window !== "undefined" && window.location) {
