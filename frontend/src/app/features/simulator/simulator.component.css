@@ -6233,8 +6233,8 @@ small {
 
 :host-context(.dark) .canvas-surface {
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px);
-  background-size: 24px 24px;
+    radial-gradient(rgba(255, 255, 255, 0.18) 1.4px, transparent 1.4px);
+  background-size: 22px 22px;
 }
 
 /* Swap the light-theme white edge glow for a subtle dark vignette */
