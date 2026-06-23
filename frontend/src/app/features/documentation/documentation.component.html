@@ -23,6 +23,31 @@
       <input type="text" [(ngModel)]="searchQuery" placeholder="Search guides, AWS rules, billing..." />
       <button *ngIf="searchQuery" class="clear-search" (click)="searchQuery = ''">&times;</button>
     </div>
+    <button
+      type="button"
+      class="theme-toggle-btn"
+      [class.show-moon]="!isDarkMode"
+      (click)="toggleTheme()"
+      [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+    >
+      <svg class="sun-moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <mask id="doc-moon-mask">
+          <rect x="0" y="0" width="100%" height="100%" fill="white" />
+          <circle cx="-10" cy="34" r="7" fill="black" />
+        </mask>
+        <circle cx="12" cy="12" r="5" mask="url(#doc-moon-mask)" fill="currentColor" />
+        <g class="sun-rays" stroke="currentColor">
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </g>
+      </svg>
+    </button>
   </nav>
 
   <!-- Liquid-glass distortion filter (referenced by .docs-nav.nav-scrolled backdrop-filter) -->
@@ -331,7 +356,7 @@
                 </div>
 
                 <div class="service-doc-grid">
-                  <article *ngFor="let service of group.services" class="service-doc-card glass-panel">
+                  <article *ngFor="let service of group.services" class="service-doc-card glass-panel" [style.--service-color]="serviceColor(service.type)">
                     <div class="service-doc-card-top">
                       <span class="service-mini-icon" [style.--service-color]="serviceColor(service.type)">
                         <img [src]="service.iconUrl" alt="" />
@@ -426,7 +451,7 @@
                       <span>Pro Architect Tip</span>
                     </div>
                     <ul>
-                      <li *ngFor="let tip of art.tips">{{ tip }}</li>
+                      <li *ngFor="let tip of art.tips" [innerHTML]="tip"></li>
                     </ul>
                   </div>
                 </article>

@@ -7,6 +7,7 @@ import {
   ViewChild,
 } from "@angular/core";
 import { SimulationCanvasComponent } from "../canvas animation/simulation-canvas.component";
+import { ThemeService } from "../../core/services/theme.service";
 
 @Component({
   selector: "app-landing",
@@ -18,6 +19,16 @@ import { SimulationCanvasComponent } from "../canvas animation/simulation-canvas
 export class LandingComponent {
   @Output() launch = new EventEmitter<"developer" | "architect" | undefined>();
   @ViewChild("shell", { static: true }) shellRef!: ElementRef<HTMLElement>;
+
+  constructor(private themeService: ThemeService) {}
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDark;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   navScrolled = false;
   showBackToTop = false;
