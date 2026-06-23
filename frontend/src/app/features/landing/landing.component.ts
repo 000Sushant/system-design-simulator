@@ -90,17 +90,24 @@ export class LandingComponent {
   readonly trustPills = [
     "Open Source",
     "MIT Licensed",
-    "v1.2",
+    "10+ System Design Challenges",
+    "Live Cost Analytics",
     "Real-time Simulation",
-    "AWS Focused",
   ];
 
   readonly features = [
     {
+      icon: "fas fa-graduation-cap",
+      title: "System Design Challenges",
+      badge: "New",
+      description:
+        "Learn system design by solving real world problems. Guided hints, live scoring, and reference solutions that explain the why behind every decision.",
+    },
+    {
       icon: "fas fa-diagram-project",
       title: "Design Architectures",
       description:
-        "Shape real AWS architectures on a visual canvas — every service, connection, and parameter at your fingertips.",
+        "Shape real AWS architectures on a visual canvas. Every service, connection, and parameter at your fingertips.",
     },
     {
       icon: "fas fa-bolt",
@@ -112,20 +119,19 @@ export class LandingComponent {
       icon: "fas fa-chart-line",
       title: "Performance Metrics",
       description:
-        "Per-node RPS, latency, utilization, and failures — streamed live while your system runs.",
+        "Per-node RPS, latency, utilization, and failures, all streamed live while your system runs.",
     },
     {
       icon: "fas fa-sliders",
       title: "Tune & Optimize",
       description:
-        "Explore scaling, caching, retries, and capacity freely — every adjustment reflected in real time.",
+        "Explore scaling, caching, retries, and capacity freely, with every adjustment reflected in real time.",
     },
     {
       icon: "fas fa-coins",
-      title: "Cost Estimation",
-      badge: "Beta",
+      title: "Cost Analytics",
       description:
-        "Real AWS pricing formulas behind every node. Your monthly bill, recalculated as you design.",
+        "A live cost dashboard with real AWS pricing behind every node. Your whole architecture priced as you design, so you can defend every dollar.",
     },
     {
       icon: "fas fa-cubes",
@@ -146,7 +152,7 @@ export class LandingComponent {
       title: "Multi-Cloud Support",
       badge: "Coming Soon",
       description:
-        "One canvas for AWS, Azure, and GCP — compare the same architecture across clouds.",
+        "One canvas for AWS, Azure, and GCP to compare the same architecture across clouds.",
     },
   ];
 
@@ -183,35 +189,35 @@ export class LandingComponent {
   readonly modes = [
     {
       id: "developer" as const,
-      badge: "Learning Mode",
+      badge: "Learn System Design",
       title: "Developer",
       description:
-        "Learn system design the way it actually behaves — by watching real traffic move through core architectures.",
+        "Learn system design by doing. Take on real world challenges, follow guided hints, and watch your architecture come alive as you build it.",
       button: "Start Learning",
       icon: "fas fa-graduation-cap",
       visual: "developer-visual",
       features: [
-        "Learning-oriented playground",
-        "Learn to use core AWS services",
-        "Explore integrated documentation",
-        "Focused on design simplicity",
-        "Visualize user traffic and bottlenecks",
+        "Guided system design challenges",
+        "Real interview style problems",
+        "Step by step hints and milestones",
+        "Instant scoring and feedback",
+        "Reference solutions that explain every choice",
       ],
     },
     {
       id: "architect" as const,
-      badge: "Professional Mode",
+      badge: "Design + Cost Analytics",
       title: "Architect",
       description:
-        "Model production-grade systems with 60+ AWS services, faithful traffic behavior, and cost estimates you can defend.",
+        "Model production grade systems with 60+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.",
       button: "Design Infrastructure",
       icon: "fas fa-building-columns",
       visual: "architect-visual",
       features: [
-        "Use 60+ AWS services",
-        "In-depth cost estimation",
-        "Build bigger and complex architectures",
-        "Stress-test production workloads",
+        "60+ real AWS services",
+        "Live cost analytics dashboard",
+        "Accurate per service monthly estimates",
+        "Stress test production workloads",
         "Granular performance tuning",
       ],
     },
