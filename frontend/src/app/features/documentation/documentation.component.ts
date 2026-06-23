@@ -7,6 +7,7 @@ import { AwsServiceDefinition, AwsServiceType } from '../../core/models/architec
 import awsServicesConfig from '../../core/config/aws-services.json';
 import serviceDocsData from '../../core/data/service-documentation.json';
 import serviceBottleneckData from '../../core/data/service-bottleneck.json';
+import { ThemeService } from '../../core/services/theme.service';
 
 interface DocArticle {
   id: string;
@@ -60,12 +61,10 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   readonly categories = [
     { id: 'overview', name: 'Overview', icon: 'fas fa-eye' },
     { id: 'start', name: 'Getting Started', icon: 'fas fa-play' },
+    { id: 'engines', name: 'Simulation Engines', icon: 'fas fa-microchip' },
     { id: 'services', name: 'Services', icon: 'fas fa-layer-group' },
     { id: 'sim', name: 'Simulator Core', icon: 'fas fa-bolt' },
     { id: 'formulas', name: 'Formulas & Calculations', icon: 'fas fa-square-root-variable' },
-    { id: 'compute', name: 'Compute', icon: 'fas fa-server' },
-    { id: 'storage', name: 'Storage & DB', icon: 'fas fa-database' },
-    { id: 'integration', name: 'Integration', icon: 'fas fa-network-wired' },
     { id: 'cost', name: 'Cost Dynamics', icon: 'fas fa-coins' },
     { id: 'release-notes', name: 'Release Notes', icon: 'fas fa-rocket' },
     { id: 'contribute', name: 'Ways to Contribute', icon: 'fas fa-hands-helping' }
@@ -180,6 +179,138 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       ],
       tips: [
         'Tap the play button to start generating real-time traffic, and watch the Sandbox Console for transaction logs.'
+      ]
+    },
+    {
+      id: 'ov-pulseflow',
+      title: 'PulseFlow: Reactive Traffic Simulation Engine',
+      category: 'engines',
+      icon: 'fas fa-heart-pulse',
+      summary: 'The deterministic heartbeat of Sr. Architect that powers real-time traffic flow, queues, and latency degradation.',
+      content: [
+        'At the core of the simulator is <span class="text-purple"><strong>PulseFlow</strong></span>, our custom-built, reactive simulation engine. PulseFlow resolves the entire system state about five times a second, translating simple diagram lines into live, dynamic networks.',
+        '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
+        '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
+        '    <defs>' +
+        '      <linearGradient id="pulseflowGrad" x1="0%" y1="0%" x2="100%" y2="0%">' +
+        '        <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.8" />' +
+        '        <stop offset="100%" stop-color="#ec4899" stop-opacity="0.8" />' +
+        '      </linearGradient>' +
+        '      <filter id="glow-pf" x="-20%" y="-20%" width="140%" height="140%">' +
+        '        <feGaussianBlur stdDeviation="3" result="blur" />' +
+        '        <feMerge>' +
+        '          <feMergeNode in="blur" />' +
+        '          <feMergeNode in="SourceGraphic" />' +
+        '        </feMerge>' +
+        '      </filter>' +
+        '    </defs>' +
+        '    <path d="M 60 90 L 220 50" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
+        '    <path d="M 60 90 L 220 130" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
+        '    <path d="M 280 50 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
+        '    <path d="M 280 130 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
+        '    <circle r="4.5" fill="#ec4899" filter="url(#glow-pf)">' +
+        '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 60 90 L 220 50" />' +
+        '    </circle>' +
+        '    <circle r="4.5" fill="#a78bfa" filter="url(#glow-pf)">' +
+        '      <animateMotion dur="2.8s" repeatCount="indefinite" path="M 60 90 L 220 130" />' +
+        '    </circle>' +
+        '    <circle r="3.5" fill="#94a3b8" opacity="0.6">' +
+        '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 280 50 L 440 90" />' +
+        '    </circle>' +
+        '    <g transform="translate(60, 90)">' +
+        '      <circle r="22" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.5" />' +
+        '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#a78bfa" font-family="monospace">USERS</text>' +
+        '    </g>' +
+        '    <g transform="translate(250, 50)">' +
+        '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" />' +
+        '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#22c55e" font-family="monospace">EC2: OK</text>' +
+        '    </g>' +
+        '    <g transform="translate(250, 130)">' +
+        '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" />' +
+        '      <circle cx="-20" cy="-10" r="3" fill="#ef4444">' +
+        '        <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite" />' +
+        '      </circle>' +
+        '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#ef4444" font-family="monospace">EC2: 150%</text>' +
+        '      <rect x="-24" y="8" width="48" height="4" rx="2" fill="#ef4444" />' +
+        '    </g>' +
+        '    <g transform="translate(470, 90)">' +
+        '      <circle r="22" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" />' +
+        '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#3b82f6" font-family="monospace">RDS</text>' +
+        '    </g>' +
+        '  </svg>' +
+        '</div>',
+        '<ul>' +
+        '<li><span class="text-purple"><strong>Reactive 180ms Tick Loop:</strong></span> Driven by RxJS stream flows, PulseFlow traverses your canvas topology in logical flow order, ensuring that upstream request loads and bottleneck pressures cascade accurately down to child nodes.</li>' +
+        '<li><span class="text-blue"><strong>Compounding Latency & Backlogs:</strong></span> Rather than simple static averages, PulseFlow calculates request queues over time. If a service experiences traffic past its capacity, latency compounds exponentially tick-by-tick, simulating realistic system degradation.</li>' +
+        '<li><span class="text-red"><strong>Hard Server Collapses:</strong></span> Models physical compute failure thresholds (EC2, ECS, RDS). If load exceeds 150% of capacity for over 1 second, PulseFlow shuts down the server into a terminal offline state, forcing user intervention.</li>' +
+        '<li><span class="text-emerald"><strong>Visual Flow Telemetry:</strong></span> Translates mathematical saturation rates into color-coded SVG packets that represent data throughput on the canvas.</li>' +
+        '</ul>'
+      ],
+      tips: [
+        'Toggle the Pause button on the canvas toolbar to freeze PulseFlow mid-tick and trace precise bottlenecks.'
+      ]
+    },
+    {
+      id: 'ov-rubix',
+      title: 'Rubix: Automated Architecture Rubric Engine',
+      category: 'engines',
+      icon: 'fas fa-cubes',
+      summary: 'The declarative verification engine that grades system designs, checks connection legality, and tracks milestone progress.',
+      content: [
+        '<span class="text-orange"><strong>Rubix</strong></span> is our custom-designed, declarative validation and grading engine. It reads your visual canvas and evaluates the architectural structural design against complex engineering constraints.',
+        '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
+        '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
+        '    <defs>' +
+        '      <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">' +
+        '        <feGaussianBlur stdDeviation="3" result="blur" />' +
+        '        <feMerge>' +
+        '          <feMergeNode in="blur" />' +
+        '          <feMergeNode in="SourceGraphic" />' +
+        '        </feMerge>' +
+        '      </filter>' +
+        '    </defs>' +
+        '    <line x1="280" y1="90" x2="100" y2="40" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+        '    <line x1="280" y1="90" x2="100" y2="90" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+        '    <line x1="280" y1="90" x2="100" y2="140" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+        '    <line x1="280" y1="90" x2="460" y2="90" stroke="#3b82f6" stroke-width="2" />' +
+        '    <g transform="translate(280, 90)">' +
+        '      <circle r="30" fill="#1e1e38" stroke="#a78bfa" stroke-width="2" />' +
+        '      <polygon points="0,-18 16,-6 10,12 -10,12 -16,-6" fill="none" stroke="#a78bfa" stroke-width="1.5">' +
+        '        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite" />' +
+        '      </polygon>' +
+        '      <text y="4" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" font-family="monospace">RUBIX</text>' +
+        '    </g>' +
+        '    <g transform="translate(100, 40)">' +
+        '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" />' +
+        '      <path d="M -45 -3 L -39 3 M -39 -3 L -45 3" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />' +
+        '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#ef4444" font-family="monospace">hasService (APIGW)</text>' +
+        '    </g>' +
+        '    <g transform="translate(100, 90)">' +
+        '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
+        '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
+        '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">hasEdge (ELB->EC2)</text>' +
+        '    </g>' +
+        '    <g transform="translate(100, 140)">' +
+        '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
+        '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
+        '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">countAtLeast (EC2>=2)</text>' +
+        '    </g>' +
+        '    <g transform="translate(460, 90)">' +
+        '      <rect x="-40" y="-25" width="80" height="50" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />' +
+        '      <text y="-8" text-anchor="middle" font-size="8" font-weight="800" fill="#94a3b8" font-family="sans-serif">GRADE REPORT</text>' +
+        '      <text y="15" text-anchor="middle" font-size="20" font-weight="950" fill="#3b82f6" font-family="monospace" filter="url(#glow-orange)">85/100</text>' +
+        '    </g>' +
+        '  </svg>' +
+        '</div>',
+        '<ul>' +
+        '<li><span class="text-orange"><strong>Declarative Rule Grammar:</strong></span> Rubix parses a custom JSON rule language (supporting <code>hasService</code>, <code>hasEdge</code>, <code>configAtLeast</code>, <code>countAtLeast</code>, and <code>noOverload</code>) to validate designs without any procedural code modifications.</li>' +
+        '<li><span class="text-purple"><strong>Automated Live Grading:</strong></span> Instantly computes a 0-100 score based on weighted check criteria, automatically isolating bonus points (such as configuring read replicas) and applying score penalties for overloaded components.</li>' +
+        '<li><span class="text-blue"><strong>Milestone Tracking:</strong></span> Evaluates progress against ordered checkpoints in real time as you draw, providing immediate hints and guidance to lead the user toward optimal design goals.</li>' +
+        '<li><span class="text-emerald"><strong>Connection Legality Checker:</strong></span> Rubix scans your active connections against AWS service specifications (defined in <code>aws-services.json</code>) to immediately flag illegal port connections (like wiring a public client directly to an internal DB).</li>' +
+        '</ul>'
+      ],
+      tips: [
+        'Run `npm run validate:challenges` in the frontend directory to run the Rubix engine locally and verify all design challenges.'
       ]
     },
     {
@@ -448,133 +579,6 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         '<li><span class="text-emerald"><strong>Storage:</strong></span> <code>GB × $/GB-month</code>, by storage class.</li>' +
         '</ul>',
         'Free-tier allowances are subtracted and shown as a separate green badge, so you can see exactly what you are saving. Switch on <strong>Variable Traffic</strong> and the panel reports both the <em>average</em> and the <em>peak</em> monthly cost.'
-      ]
-    },
-
-    // --- COMPUTE ---
-    {
-      id: 'comp-ec2',
-      title: 'EC2 Virtual Servers',
-      category: 'compute',
-      icon: 'fas fa-cubes',
-      summary: 'Scale compute capacity with virtual machine instance tiers.',
-      content: [
-        'EC2 nodes simulate standard virtual machine instances running in an AWS Region.',
-        '<ul>' +
-        '<li><strong>Instance Sizing:</strong> Configure instance size starting from <code>nano</code> (~$4/mo) up to <code>4xlarge</code> (~$544/mo). Higher tiers dramatically increase the node capacity (throughput limit).</li>' +
-        '<li><strong>CPU & Memory:</strong> Slide baseline utilization scales. High baseline workloads reduce the head-room for sudden traffic spikes, triggering error rates earlier.</li>' +
-        '<li><strong>Replication:</strong> Bumps the instance count directly, scaling the compute throughput limit multiplicatively.</li>' +
-        '</ul>'
-      ]
-    },
-    {
-      id: 'comp-lambda',
-      title: 'Lambda Serverless',
-      category: 'compute',
-      icon: 'fas fa-bolt-lightning',
-      summary: 'Execute lightweight, pay-per-request serverless functions.',
-      content: [
-        'Lambda nodes simulate event-driven, serverless execution scales.',
-        '<ul>' +
-        '<li><strong>Memory Allocation:</strong> Memory settings (128MB to 10GB) directly determine the proportional CPU scale and runtime speed.</li>' +
-        '<li><strong>Cold Starts:</strong> If Lambda isn\'t warmed or active, the first few packets will experience higher base latency.</li>' +
-        '<li><strong>Reserved Concurrency:</strong> Caps the simultaneous executions. If traffic spikes exceed the reserved limit, Lambda will throttle requests, throwing <code>HTTP 429</code> warnings.</li>' +
-        '</ul>'
-      ],
-      tips: [
-        'Lambda billing is calculated using (Invocations × $0.20/M) + (GB-Seconds executed). Keep latency low to minimize serverless costs!'
-      ]
-    },
-    {
-      id: 'comp-ecs',
-      title: 'ECS Container Clusters',
-      category: 'compute',
-      icon: 'fas fa-box-archive',
-      summary: 'Deploy highly scalable microservices on AWS Fargate container tasks.',
-      content: [
-        'Elastic Container Service (ECS) Fargate nodes run container tasks without provisioning servers.',
-        '<ul>' +
-        '<li><strong>Task Configuration:</strong> Configure the task CPU and memory parameters directly. Cost scales linearly with Fargate allocation rates.</li>' +
-        '<li><strong>Desired Tasks:</strong> Replicates the active containers. ELB connects to ECS tasks to balance incoming HTTP requests.</li>' +
-        '</ul>'
-      ]
-    },
-
-    // --- STORAGE & DB ---
-    {
-      id: 'store-s3',
-      title: 'S3 Object Storage',
-      category: 'storage',
-      icon: 'fas fa-folder-open',
-      summary: 'Store files in durable buckets with variable storage tiers.',
-      content: [
-        'Simple Storage Service (S3) stores static files, website assets, and backups.',
-        '<ul>' +
-        '<li><strong>Storage Classes:</strong> Choose from <code>Standard</code> ($0.023/GB), <code>Infrequent Access</code> ($0.0125/GB), or <code>Glacier</code> ($0.004/GB) depending on retrieval needs.</li>' +
-        '<li><strong>Read/Write Rates:</strong> Billed per GET/PUT API calls. Keep frequent cacheable hits fronted by <code>CloudFront CDN</code> to save significant S3 API costs.</li>' +
-        '</ul>'
-      ]
-    },
-    {
-      id: 'db-rds',
-      title: 'RDS / Aurora Databases',
-      category: 'storage',
-      icon: 'fas fa-database',
-      summary: 'Deploy transactional relational database clusters.',
-      content: [
-        'Relational Database Service (RDS) simulates PostgreSQL/MySQL storage nodes.',
-        '<ul>' +
-        '<li><strong>Instances:</strong> Configure cluster replica count. Replicas act as read-targets, increasing overall query throughput.</li>' +
-        '<li><strong>EBS Storage:</strong> Slide <code>gp3</code> or <code>io1</code> storage volume gigabytes. gp3 storage baseline provides balanced performance, while io1 scales up IOPS capacity for database bottlenecks.</li>' +
-        '</ul>'
-      ]
-    },
-    {
-      id: 'db-dynamo',
-      title: 'DynamoDB NoSQL',
-      category: 'storage',
-      icon: 'fas fa-table',
-      summary: 'Deploy ultra-fast, single-digit millisecond key-value databases.',
-      content: [
-        'DynamoDB simulates serverless, globally distributed NoSQL database scales.',
-        '<ul>' +
-        '<li><strong>Read/Write Capacity Units (RCUs & WCUs):</strong> Set capacity limits. High WCUs and RCUs support massive concurrent querying.</li>' +
-        '<li><strong>Auto-scaling Target:</strong> Sliders trigger database throughput expansions when concurrent requests exceed baseline scales.</li>' +
-        '</ul>'
-      ]
-    },
-
-    // --- INTEGRATION ---
-    {
-      id: 'int-apigw',
-      title: 'API Gateway Triggers',
-      category: 'integration',
-      icon: 'fas fa-route',
-      summary: 'Expose secure REST APIs and balance requests downstream.',
-      content: [
-        'API Gateway acts as the entry door for backend cloud services.',
-        '<ul>' +
-        '<li><strong>Timeout Limits:</strong> Configure integration timeouts (default 29s). If backend Lambda or EC2 nodes take longer, the API Gateway returns <code>HTTP 504 Gateway Timeouts</code>.</li>' +
-        '<li><strong>Retries:</strong> Auto-triggers failed user queries to retry upstream, helping resolve transient backend server failures.</li>' +
-        '<li><strong>Tiered Request Cost Segregation:</strong> Billing is evaluated dynamically based on capacity RPS, converting to Millions of Requests/Month (using a standard 2.628 multiplier) and applying cumulative tiered rates by API type:<br>' +
-        '- <strong>HTTP API:</strong> First 300 million at $1.00/M, 300M+ at $0.90/M.<br>' +
-        '- <strong>REST API:</strong> First 333 million at $3.50/M, next 667 million at $2.80/M, next 19 billion at $2.38/M, over 20 billion at $1.51/M.<br>' +
-        '- <strong>WebSocket API:</strong> First 1 billion messages at $1.00/M, over 1 billion at $0.80/M.</li>' +
-        '</ul>'
-      ]
-    },
-    {
-      id: 'int-sqs',
-      title: 'SQS Message Queues',
-      category: 'integration',
-      icon: 'fas fa-list-ol',
-      summary: 'Decouple services using durable, asynchronous message queues.',
-      content: [
-        'Simple Queue Service (SQS) decouples backend components by buffering spikes in traffic.',
-        '<ul>' +
-        '<li><strong>Queue Depth:</strong> Message backlogs pile up during server overloads. Once capacity is restored, consumers (like Lambda or EC2) poll and empty the queue.</li>' +
-        '<li><strong>Batch Size:</strong> Configure how many messages consumer queries grab per poll. High batch sizes reduce the number of invocations, saving serverless bills.</li>' +
-        '</ul>'
       ]
     },
 
@@ -3956,8 +3960,17 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   constructor(
     private el: ElementRef,
     public awsCatalog: AwsCatalogService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private themeService: ThemeService
   ) { }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDark;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   ngOnInit(): void {
     window.scrollTo(0, 0);

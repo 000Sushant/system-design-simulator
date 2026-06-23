@@ -29,7 +29,51 @@ body {
   }
 }
 
-body {
-  background: #f8fafc;
-  color: #0f172a;
+:root {
+  --bg-app: #f8fafc;
+  --text-app: #0f172a;
+  --text-muted: #64748b;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.82);
+  --card-bg: rgba(255, 255, 255, 0.46);
+  --input-bg: #ffffff;
+  --input-text: #1e293b;
+  --button-hover: rgba(0, 0, 0, 0.05);
 }
+
+:root.dark {
+  --bg-app: #080b11;
+  --text-app: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.09);
+  --glass-bg: rgba(13, 17, 30, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --card-bg: rgba(15, 23, 42, 0.45);
+  --input-bg: #111827;
+  --input-text: #f1f5f9;
+  --button-hover: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text-app);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Premium global scrollbars for dark mode */
+.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #0d111d;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 5px;
+  border: 2px solid #0d111d;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

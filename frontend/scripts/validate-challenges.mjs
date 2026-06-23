@@ -27,7 +27,7 @@ const DEV_PALETTE = new Set([
   'client', 'route53', 'cloudfront', 'apiGateway', 'elb', 'lambda', 'ec2', 'ecs',
   'eks', 'appRunner', 's3', 'efs', 'rds', 'aurora', 'dynamoDb', 'elastiCache',
   'sqs', 'sns', 'eventBridge', 'stepFunctions', 'cloudWatch', 'xray', 'cognito',
-  'appSync', 'bedrock',
+  'appSync', 'bedrock', 'kinesis', 'kinesisFirehose',
 ]);
 
 const RULE_KINDS = new Set(['hasService', 'hasEdge', 'configAtLeast', 'countAtLeast', 'noOverload', 'allOf']);
@@ -157,8 +157,40 @@ for (const ch of data.challenges) {
 
   const hints = ch.hints || [];
   const milestones = ch.milestones || [];
-  if (hints.length !== milestones.length) {
-    fail(id, `expected one hint per milestone: ${hints.length} hints vs ${milestones.length} milestones`);
+  if (hints.length < milestones.length) {
+    fail(id, `expected at least one hint per milestone: ${hints.length} hints vs ${milestones.length} milestones`);
+  }
+
+  const seenOrders = new Set();
+  const seenHintIds = new Set();
+  for (const h of hints) {
+    if (typeof h.order !== 'number' || h.order < 1) {
+      fail(id, `hint "${h.id || '(missing id)'}" has invalid order "${h.order}"`);
+    }
+    if (seenOrders.has(h.order)) {
+      fail(id, `duplicate hint order "${h.order}"`);
+    }
+    seenOrders.add(h.order);
+    if (h.id) {
+      if (seenHintIds.has(h.id)) {
+        fail(id, `duplicate hint id "${h.id}"`);
+      }
+      seenHintIds.add(h.id);
+    }
+  }
+
+  // Verify hints cover 1..hints.length contiguously
+  for (let o = 1; o <= hints.length; o++) {
+    if (!seenOrders.has(o)) {
+      fail(id, `missing hint with order ${o}`);
+    }
+  }
+
+  // Verify each milestone has a corresponding hint mapped by 1-based order index
+  for (let i = 0; i < milestones.length; i++) {
+    if (!seenOrders.has(i + 1)) {
+      fail(id, `milestone at index ${i} ("${milestones[i].label || milestones[i].id}") has no corresponding hint with order ${i + 1}`);
+    }
   }
 
   milestones.forEach((m, i) => checkRuleShape(id, m.rule, `milestone[${i}] "${m.label || m.id}"`));

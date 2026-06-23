@@ -36,3 +36,7 @@ backend/.dev.vars
 # Claude Code (local AI assistant files, not for the repo)
 .claude/
 CLAUDE.md
+
+# Local AI Assistant & Graphify metadata/workflows
+.agents/
+graphify-out/

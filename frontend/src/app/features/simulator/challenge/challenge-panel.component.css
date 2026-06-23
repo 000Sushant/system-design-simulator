@@ -1580,4 +1580,289 @@
   opacity: 0.8;
 }
 
+/* ===================== DARK MODE ===================== */
+/* Re-point the theme tokens, then override the spots that hardcode light
+   surfaces / dark ink. Saturated accent colors (green/amber/rose/blue) are
+   left as-is — they read fine on the dark panel. */
+:host-context(.dark) {
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --muted: #94a3b8;
+  --faint: #64748b;
+  --surface: rgba(15, 23, 42, 0.5);
+  color: #e2e8f0;
+}
+
+/* Hub header */
+:host-context(.dark) .hub-badge {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .hub-head h2 {
+  color: #f1f5f9;
+}
+
+/* Segmented difficulty tabs */
+:host-context(.dark) .diff-tabs {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+:host-context(.dark) .active-indicator {
+  background:
+    linear-gradient(145deg,
+      rgba(51, 65, 85, 0.9),
+      rgba(30, 41, 59, 0.75)),
+    rgba(30, 41, 59, 0.7);
+  box-shadow:
+    0 8px 22px var(--indicator-shadow, rgba(124, 58, 237, 0.25)),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark) .tab-btn:hover,
+:host-context(.dark) .tab-btn.active {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .tab-count {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Challenge cards */
+:host-context(.dark) .card-icon {
+  background: color-mix(in srgb, var(--dot, #475569) 18%, #0f172a);
+  border-color: color-mix(in srgb, var(--dot, #475569) 30%, var(--line));
+}
+
+:host-context(.dark) .card-title {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .challenge-card:not(.locked):hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:host-context(.dark) .vote-btn {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:host-context(.dark) .vote-btn.up.on {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+:host-context(.dark) .vote-btn.down.on {
+  background: rgba(244, 63, 94, 0.14);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+:host-context(.dark) .btn-ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Active challenge view */
+:host-context(.dark) .btn-back {
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .active-title {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .difficulty-tag {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .difficulty-tag.diff-easy {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+:host-context(.dark) .difficulty-tag.diff-medium {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+:host-context(.dark) .difficulty-tag.diff-hard {
+  background: rgba(244, 63, 94, 0.14);
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+:host-context(.dark) .problem-card {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+:host-context(.dark) .challenge-problem,
+:host-context(.dark) .scale-row strong,
+:host-context(.dark) .spec-item,
+:host-context(.dark) .limit-item,
+:host-context(.dark) .ms-label,
+:host-context(.dark) .finding-msg,
+:host-context(.dark) .cta-note {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .info-block {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+:host-context(.dark) .block-header,
+:host-context(.dark) .block-header-row {
+  color: #94a3b8;
+}
+
+/* Milestones */
+:host-context(.dark) .progress-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark) .milestone-row {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Hints */
+:host-context(.dark) .hint-card,
+:host-context(.dark) .btn-hint {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+:host-context(.dark) .btn-hint:hover {
+  background: rgba(217, 119, 6, 0.16);
+}
+
+:host-context(.dark) .hint-body {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .hint-pill {
+  background: rgba(217, 119, 6, 0.22);
+}
+
+/* Action buttons */
+:host-context(.dark) .btn-reference {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:host-context(.dark) .btn-reference:hover {
+  background: rgba(79, 70, 229, 0.16);
+}
+
+/* Review / score */
+:host-context(.dark) .review-panel {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+:host-context(.dark) .review-panel.passed {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+:host-context(.dark) .score-ring {
+  background: conic-gradient(var(--ring) var(--pct, 0deg), rgba(255, 255, 255, 0.1) 0);
+}
+
+:host-context(.dark) .score-inner {
+  background: #0f172a;
+}
+
+:host-context(.dark) .score-status strong {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .finding-card.sev-pass {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+:host-context(.dark) .finding-card.sev-warn {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.28);
+}
+
+:host-context(.dark) .finding-card.sev-fail {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+:host-context(.dark) .finding-fix {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Completion feedback / voting */
+:host-context(.dark) .feedback-vote-container {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark) .completion-vote-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .completion-vote-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:host-context(.dark) .cta-btn.bug-link:hover,
+:host-context(.dark) .cta-btn.testimonial-link:hover {
+  color: #f1f5f9;
+}
+
+/* Bonus / hidden milestones */
+:host-context(.dark) .hidden-ms-row {
+  border-bottom-color: rgba(245, 158, 11, 0.25) !important;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+:host-context(.dark) .hidden-ms-row .ms-label {
+  color: #fcd34d !important;
+}
+
+:host-context(.dark) .review-panel.gold-bonus {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* Solution walkthrough */
+:host-context(.dark) .solution-explainer {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+:host-context(.dark) .solution-toggle {
+  color: #a78bfa;
+}
+
+:host-context(.dark) .solution-summary,
+:host-context(.dark) .svc-role {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .req-row strong,
+:host-context(.dark) .svc-text strong {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .svc-icon {
+  background: color-mix(in srgb, var(--svc-color, #7c3aed) 18%, #0f172a);
+}
+
+:host-context(.dark) .svc-row {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+:host-context(.dark) .svc-why {
+  color: #a78bfa;
+}
+
 
