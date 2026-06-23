@@ -1804,6 +1804,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       "cognito",
       "appSync",
       "bedrock",
+      "kinesis",
+      "kinesisFirehose",
     ]);
 
     if (this.roleMode === "developer") {

@@ -27,7 +27,7 @@ const DEV_PALETTE = new Set([
   'client', 'route53', 'cloudfront', 'apiGateway', 'elb', 'lambda', 'ec2', 'ecs',
   'eks', 'appRunner', 's3', 'efs', 'rds', 'aurora', 'dynamoDb', 'elastiCache',
   'sqs', 'sns', 'eventBridge', 'stepFunctions', 'cloudWatch', 'xray', 'cognito',
-  'appSync', 'bedrock',
+  'appSync', 'bedrock', 'kinesis', 'kinesisFirehose',
 ]);
 
 const RULE_KINDS = new Set(['hasService', 'hasEdge', 'configAtLeast', 'countAtLeast', 'noOverload', 'allOf']);
