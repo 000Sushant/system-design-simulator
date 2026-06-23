@@ -243,6 +243,12 @@
           "order": 6,
           "title": "Enable Observability",
           "body": "Add a CloudWatch node to monitor workers queue performance and track fan-out lag statistics."
+        },
+        {
+          "id": "h7",
+          "order": 7,
+          "title": "Serve media through the CDN",
+          "body": "Point CloudFront at your S3 photo bucket so a popular image loads from a nearby edge instead of hitting storage on every view."
         }
       ],
       "milestones": [
@@ -1010,6 +1016,12 @@
           "order": 7,
           "title": "Enable observability",
           "body": "Add CloudWatch to watch transcode backlog and playback errors."
+        },
+        {
+          "id": "h8",
+          "order": 8,
+          "title": "Serve segments through the CDN",
+          "body": "Point CloudFront at your S3 bucket so video segments stream from a nearby edge, keeping playback smooth and load off storage."
         }
       ],
       "milestones": [
@@ -1412,6 +1424,12 @@
           "order": 5,
           "title": "Enable observability",
           "body": "Add a CloudWatch node to track query latency and update throughput."
+        },
+        {
+          "id": "h6",
+          "order": 6,
+          "title": "Rank through the cache",
+          "body": "Have compute read and update ranks directly in the in-memory store (ElastiCache/Redis) so top-N and a single player's rank come back in about a millisecond."
         }
       ],
       "milestones": [
@@ -1578,6 +1596,12 @@
           "order": 5,
           "title": "Enable observability",
           "body": "Add a CloudWatch node to watch upload latency and cache hit rates."
+        },
+        {
+          "id": "h6",
+          "order": 6,
+          "title": "Serve images through the CDN",
+          "body": "Point CloudFront at your S3 bucket so images load from a nearby edge, not from storage on every request."
         }
       ],
       "milestones": [
@@ -1757,6 +1781,12 @@
           "order": 6,
           "title": "Enable observability",
           "body": "Add CloudWatch to watch ingestion lag and the cache hit rate."
+        },
+        {
+          "id": "h7",
+          "order": 7,
+          "title": "Log every query",
+          "body": "Write each search the lookup path receives onto the stream (Kinesis) so the background aggregator can rebuild rankings from real query frequency."
         }
       ],
       "milestones": [

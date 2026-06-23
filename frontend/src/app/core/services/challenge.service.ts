@@ -30,7 +30,7 @@ export class ChallengeService {
   private readonly lastReviewSubject = new BehaviorSubject<ReviewResult | null>(null);
   readonly lastReview$ = this.lastReviewSubject.asObservable();
 
-  constructor(private readonly reviewer: RubricReviewer) {}
+  constructor(private readonly reviewer: RubricReviewer) { }
 
   getById(id: string): Challenge | undefined {
     return this.challenges.find((challenge) => challenge.id === id);
@@ -51,7 +51,7 @@ export class ChallengeService {
     };
     this.activeChallengeSubject.next(challenge);
     this.progressSubject.next(progress);
-    
+
     if (progress.completed) {
       const score = progress.lastScore ?? 100;
       this.lastReviewSubject.next({
@@ -108,7 +108,12 @@ export class ChallengeService {
     const firstMissingIndex = challenge.milestones.findIndex(
       (m) => !progress.reachedMilestoneIds.includes(m.id)
     );
-    if (firstMissingIndex === -1) return null;
+    if (firstMissingIndex === -1) {
+      const unrevealedAdditionalHints = challenge.hints
+        .filter((h) => h.order > challenge.milestones.length && !progress.revealedHintIds.includes(h.id))
+        .sort((a, b) => a.order - b.order);
+      return unrevealedAdditionalHints[0] || null;
+    }
 
     // The corresponding hint has order = firstMissingIndex + 1
     const targetOrder = firstMissingIndex + 1;
@@ -143,8 +148,20 @@ export class ChallengeService {
     const standardMilestones = challenge.milestones.filter(m => !m.hidden);
     const reachedCount = standardMilestones.filter((m) => progress.reachedMilestoneIds.includes(m.id)).length;
 
+    const allReached = challenge.milestones.every(
+      (m) => progress.reachedMilestoneIds.includes(m.id)
+    );
+
     return challenge.hints
-      .filter((hint) => hint.order <= reachedCount + 1 && progress.revealedHintIds.includes(hint.id))
+      .filter((hint) => {
+        if (!progress.revealedHintIds.includes(hint.id)) return false;
+
+        if (hint.order > challenge.milestones.length) {
+          return allReached;
+        }
+
+        return hint.order <= reachedCount + 1;
+      })
       .sort((a, b) => a.order - b.order);
   }
 
