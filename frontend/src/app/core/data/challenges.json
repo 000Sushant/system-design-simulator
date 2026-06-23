@@ -96,6 +96,14 @@
             "failHint": "Add a Users (client) node so traffic has a source."
           },
           {
+            "id": "c-dns",
+            "label": "Domain routed through DNS",
+            "rule": { "kind": "hasService", "anyOf": ["route53"], "mustBeConnected": true },
+            "weight": 1,
+            "failHint": "Optional: add Route 53 and route the client through it to point a domain at the entry point.",
+            "optional": true
+          },
+          {
             "id": "c-api",
             "label": "API Gateway is connected",
             "weight": 2,
@@ -288,6 +296,12 @@
           "detail": "Add CloudWatch to monitor queue sizes and processing latencies.",
           "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
           "hidden": true
+        },
+        {
+          "id": "m7",
+          "label": "Media served via CDN",
+          "detail": "CloudFront serves photos from the S3 bucket.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["cloudfront"], "toAnyOf": ["s3"] }
         }
       ],
       "rubric": {
@@ -299,6 +313,14 @@
             "weight": 1,
             "rule": { "kind": "hasService", "anyOf": ["client"] },
             "failHint": "Add a Users (client) node as the traffic source."
+          },
+          {
+            "id": "c-dns",
+            "label": "Domain routed through DNS",
+            "rule": { "kind": "hasService", "anyOf": ["route53"], "mustBeConnected": true },
+            "weight": 1,
+            "failHint": "Optional: add Route 53 and route the client through it to point a domain at the entry point.",
+            "optional": true
           },
           {
             "id": "c-compute",
@@ -399,6 +421,28 @@
           ["workers", "feeds"],
           ["workers", "mon"]
         ]
+      },
+      "solution": {
+        "summary": "Reading a feed must feel instant, but one celebrity post has to reach millions of feeds. The trick is to split the work: store the post and reply right away, then fan it out to followers in the background so nobody waits on the slow part.",
+        "requirementsMet": [
+          { "requirement": "Upload and store a photo", "satisfiedBy": "The image is saved as a file in object storage (S3) and served from nearby edge locations (CloudFront), so the upload is one write and every later view is fast." },
+          { "requirement": "Record the post and fan it out to followers' feeds", "satisfiedBy": "The post is written once to a database (DynamoDB), then a single announcement goes onto a topic and queue (SNS to SQS). Background workers copy it into each follower's feed without holding up the poster." },
+          { "requirement": "Serve follower feeds quickly, even for celebrity-scale fan-out", "satisfiedBy": "Each follower's feed is built ahead of time and stored (DynamoDB), and the hottest feeds are kept in memory (ElastiCache), so opening a feed is a simple, instant read." }
+        ],
+        "services": [
+          { "type": "route53", "name": "DNS", "role": "Points your domain to an entry point.", "why": "It is the internet's address book (Route 53). It reliably sends each visitor to the closest entry point, with nothing for you to run." },
+          { "type": "cloudfront", "name": "Media CDN", "role": "Serves photos from nearby.", "why": "A photo looks the same to everyone, so it can be cached close to users (CloudFront). That makes images load fast and keeps heavy media traffic off your servers and storage." },
+          { "type": "apiGateway", "name": "Post API", "role": "The single front door for requests.", "why": "It gives you one secure entry point (API Gateway) that grows with traffic on its own, so you never run web servers." },
+          { "type": "lambda", "name": "Post Handler", "role": "Saves the post and kicks off fan-out.", "why": "The post path does a little work in bursts, so code that runs only when needed (Lambda) scales instantly and you pay per request." },
+          { "type": "s3", "name": "Photo Store", "role": "Holds the actual image files.", "why": "Object storage (S3) is built to keep huge numbers of files cheaply and safely, and hand them straight to the CDN." },
+          { "type": "dynamoDb", "name": "Post Metadata", "role": "Stores each post's details.", "why": "Looking up a post by its id is a simple key lookup, which this kind of database (DynamoDB) does fast at any size with little upkeep." },
+          { "type": "sns", "name": "Fan-out Topic", "role": "Announces 'new post' to the delivery side.", "why": "A topic (SNS) lets the post path say 'this happened' once and move on, without waiting for whoever handles it next. That is what keeps posting fast." },
+          { "type": "sqs", "name": "Fan-out Queue", "role": "Holds the fan-out work to do.", "why": "A queue (SQS) absorbs a sudden flood of fan-out work and hands it out at a steady pace, so a celebrity post can't overwhelm the workers." },
+          { "type": "ecs", "name": "Fan-out Workers", "role": "Copies the post into each follower's feed.", "why": "Fanning out to millions of feeds is steady, long-running work, which suits always-on workers (ECS) better than short functions, and they scale out when the queue grows." },
+          { "type": "dynamoDb", "name": "Follower Feeds", "role": "Stores each user's ready-to-read feed.", "why": "Because feeds are built ahead of time, opening one is a single quick read (DynamoDB) instead of assembling it on the spot." },
+          { "type": "elastiCache", "name": "Feed Cache", "role": "Keeps the hottest feeds in memory.", "why": "Active users open their feed constantly, so holding those in memory (ElastiCache) answers most reads in about a millisecond, while the database stays the source of truth." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks delivery speed and backlog.", "why": "If fan-out falls behind or feeds load slowly, you can see it here (CloudWatch) before users notice." }
+        ]
       }
     },
     {
@@ -497,6 +541,14 @@
             "failHint": "Add a Users (client) node so traffic has a source."
           },
           {
+            "id": "c-dns",
+            "label": "Domain routed through DNS",
+            "rule": { "kind": "hasService", "anyOf": ["route53"], "mustBeConnected": true },
+            "weight": 1,
+            "failHint": "Optional: add Route 53 and route the client through it to point a domain at the entry point.",
+            "optional": true
+          },
+          {
             "id": "c-api",
             "label": "API Gateway is connected",
             "weight": 2,
@@ -577,6 +629,23 @@
           ["fn", "blob"],
           ["cdn", "blob"],
           ["fn", "mon"]
+        ]
+      },
+      "solution": {
+        "summary": "A paste is written once and read many times, so the design keeps writing simple and makes reading cheap and global. Small pastes live in a fast database, big ones go to file storage, and expiry is handled automatically.",
+        "requirementsMet": [
+          { "requirement": "Save a paste and return a shareable link", "satisfiedBy": "The logic layer (Lambda) writes the paste under a new id and returns a link built from it. One small write per paste keeps creating cheap." },
+          { "requirement": "Fetch a paste by its id", "satisfiedBy": "Reading is a direct lookup by id (DynamoDB), and popular pastes are also cached at the edge (CloudFront), so views are fast anywhere." },
+          { "requirement": "Support optional expiry (TTL) on pastes", "satisfiedBy": "Each paste can carry an expiry time, and the database removes it automatically when that time passes (DynamoDB TTL), with no cleanup job to run." }
+        ],
+        "services": [
+          { "type": "route53", "name": "DNS", "role": "Points your domain to an entry point.", "why": "The internet's address book (Route 53) sends each visitor to the nearest entry point, with nothing for you to run." },
+          { "type": "cloudfront", "name": "CDN", "role": "Serves popular pastes from nearby.", "why": "A paste reads the same for everyone, so it can be cached close to users (CloudFront) for instant loads and less work behind it." },
+          { "type": "apiGateway", "name": "Paste API", "role": "The single front door for requests.", "why": "One secure entry point that scales on its own (API Gateway) means no web servers to manage." },
+          { "type": "lambda", "name": "Paste Fn", "role": "Creates and fetches pastes.", "why": "The work per request is tiny and bursty, so code that runs only when needed (Lambda) scales instantly and you pay per request." },
+          { "type": "dynamoDb", "name": "Paste Store", "role": "Stores pastes and their details.", "why": "Fetching by id is a simple key lookup that this database (DynamoDB) does fast at any size, and its built-in expiry (TTL) handles cleanup for free." },
+          { "type": "s3", "name": "Large Pastes", "role": "Holds oversized paste contents.", "why": "Very large text is cheaper and simpler to keep as a file in object storage (S3); the database just points to it, keeping lookups small and fast." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks speed and errors.", "why": "If reads slow down or writes fail, you can see it here (CloudWatch) before users do." }
         ]
       }
     },
@@ -745,6 +814,21 @@
           ["fn", "policies"],
           ["fn", "mon"]
         ]
+      },
+      "solution": {
+        "summary": "Every request must be checked in well under a millisecond, and the count has to be the same no matter which server handles it. So the counters live in one shared in-memory store that every instance reads and updates, not in any single server's memory.",
+        "requirementsMet": [
+          { "requirement": "Count requests per client per time window", "satisfiedBy": "Each client's count lives in a shared in-memory store (ElastiCache). Bumping a counter there is a single fast step, and the window resets on its own with an expiry." },
+          { "requirement": "Allow or reject a request based on its limit", "satisfiedBy": "The check logic (Lambda) increases the client's counter and compares it to that client's limit, allowing or rejecting instantly." },
+          { "requirement": "Share counts consistently across all API instances", "satisfiedBy": "Because the counter lives in one central store (ElastiCache) instead of any server's memory, every API instance sees the same number, so the limit holds across the whole fleet." }
+        ],
+        "services": [
+          { "type": "apiGateway", "name": "API Gateway", "role": "The entry point every request passes through.", "why": "One front door that scales on its own (API Gateway) gives a single place to apply the check to all traffic." },
+          { "type": "lambda", "name": "Limiter Fn", "role": "Decides allow or reject per request.", "why": "The decision is tiny and runs once per request, so code that runs only when needed (Lambda) scales instantly with traffic and costs nothing when idle." },
+          { "type": "elastiCache", "name": "Counter Cache", "role": "Holds each client's live request count.", "why": "Counting has to be fast and shared, and an in-memory store (ElastiCache) bumps counters in about a millisecond with automatic window expiry, which a disk database can't match at this rate." },
+          { "type": "dynamoDb", "name": "Limit Policies", "role": "Stores each client's configured limits.", "why": "Limits change rarely and are read by key, so a simple, durable database (DynamoDB) holds them while the cache stays focused on fast counting." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks allow/reject rates and latency.", "why": "Spikes in rejections or slow checks show up here (CloudWatch) so you can spot abuse or trouble early." }
+        ]
       }
     },
     {
@@ -856,6 +940,14 @@
             "failHint": "Add a Users (client) node as the traffic source."
           },
           {
+            "id": "c-dns",
+            "label": "Domain routed through DNS",
+            "rule": { "kind": "hasService", "anyOf": ["route53"], "mustBeConnected": true },
+            "weight": 1,
+            "failHint": "Optional: add Route 53 and route the client through it to point a domain at the entry point.",
+            "optional": true
+          },
+          {
             "id": "c-auth",
             "label": "Users are authenticated",
             "weight": 2,
@@ -944,6 +1036,27 @@
           ["workers", "registry"],
           ["conn", "mon"],
           ["workers", "mon"]
+        ]
+      },
+      "solution": {
+        "summary": "The goal is to reach millions of connected devices the instant something happens, without making the sender wait. Events are published once and handed to background workers, while a registry tracks who is online and where to send each message.",
+        "requirementsMet": [
+          { "requirement": "Authenticate connected users", "satisfiedBy": "Sign-in and tokens are handled by a managed identity service (Cognito), so only verified users open a connection and you don't build auth yourself." },
+          { "requirement": "Track which users and devices are currently online", "satisfiedBy": "Each open connection is recorded (DynamoDB) and the live online state is kept in memory (ElastiCache), so delivery always knows where to send a message right now." },
+          { "requirement": "Deliver notifications to recipients in near real-time", "satisfiedBy": "An event is published to a topic (SNS) and picked up by always-on workers (ECS) that push it to each recipient's open connection within moments." },
+          { "requirement": "Decouple event producers from delivery workers", "satisfiedBy": "Producers just publish to the topic and queue (SNS to SQS) and move on; workers consume at their own pace, so a burst of events never blocks whoever created them." }
+        ],
+        "services": [
+          { "type": "route53", "name": "DNS", "role": "Points clients to an entry point.", "why": "A managed address book (Route 53) reliably routes each device to the nearest entry point." },
+          { "type": "cognito", "name": "Auth", "role": "Verifies who is connecting.", "why": "A managed identity service (Cognito) handles sign-in, tokens, and security so only real users connect, with nothing for you to build or run." },
+          { "type": "apiGateway", "name": "Realtime API", "role": "Holds the live client connections.", "why": "A managed real-time entry point (API Gateway) keeps huge numbers of connections open and scales on its own, so there are no socket servers to babysit." },
+          { "type": "lambda", "name": "Connection Manager", "role": "Records connect and disconnect events.", "why": "Connections open and close constantly in small bursts, which suits code that runs only on each event (Lambda)." },
+          { "type": "dynamoDb", "name": "Connection Registry", "role": "Stores every active connection.", "why": "Finding where a user is connected is a key lookup that a fast database (DynamoDB) handles at any scale." },
+          { "type": "elastiCache", "name": "Presence Cache", "role": "Tracks who's online right now.", "why": "Presence changes constantly and is read on every send, so keeping it in memory (ElastiCache) makes those checks instant." },
+          { "type": "sns", "name": "Notification Topic", "role": "Announces an event once.", "why": "A topic (SNS) lets a producer say 'this happened' a single time and move on, fanning it out to the delivery side without waiting." },
+          { "type": "sqs", "name": "Delivery Queue", "role": "Buffers messages waiting to be delivered.", "why": "A queue (SQS) absorbs sudden spikes and feeds workers steadily, so a flood of notifications never overwhelms delivery." },
+          { "type": "ecs", "name": "Delivery Workers", "role": "Push messages to connected devices.", "why": "Delivery is steady, long-running work that suits always-on workers (ECS), which scale out as the queue grows." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks delivery latency and backlog.", "why": "If messages lag or the queue builds up, you can see it here (CloudWatch) before users feel it." }
         ]
       }
     },
@@ -1055,6 +1168,12 @@
           "detail": "Wire CloudWatch in to watch transcode backlog.",
           "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
           "hidden": true
+        },
+        {
+          "id": "m8",
+          "label": "CDN serves segments from storage",
+          "detail": "CloudFront delivers video segments from the S3 bucket.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["cloudfront"], "toAnyOf": ["s3"] }
         }
       ],
       "rubric": {
@@ -1066,6 +1185,14 @@
             "weight": 1,
             "rule": { "kind": "hasService", "anyOf": ["client"] },
             "failHint": "Add a Users (client) node as the traffic source."
+          },
+          {
+            "id": "c-dns",
+            "label": "Domain routed through DNS",
+            "rule": { "kind": "hasService", "anyOf": ["route53"], "mustBeConnected": true },
+            "weight": 1,
+            "failHint": "Optional: add Route 53 and route the client through it to point a domain at the entry point.",
+            "optional": true
           },
           {
             "id": "c-cdn",
@@ -1161,6 +1288,26 @@
           ["workers", "catalog"],
           ["uploadFn", "mon"],
           ["workers", "mon"]
+        ]
+      },
+      "solution": {
+        "summary": "Uploading and transcoding are slow and heavy, but watching must be smooth everywhere. So uploads land in storage immediately, transcoding happens in the background, and finished segments are delivered from edge locations close to viewers.",
+        "requirementsMet": [
+          { "requirement": "Accept large video uploads", "satisfiedBy": "The raw file goes straight into object storage (S3), so even huge uploads are just a file write and the API stays responsive." },
+          { "requirement": "Transcode uploads into multiple bitrates asynchronously", "satisfiedBy": "A new upload drops a job on a queue (SQS) that worker machines (ECS) pick up to convert into several resolutions, all in the background so no one waits." },
+          { "requirement": "Store and globally deliver video segments", "satisfiedBy": "Finished segments live in object storage (S3) and stream through a global CDN (CloudFront), so playback is smooth wherever the viewer is." },
+          { "requirement": "Track a catalog of videos and their processing status", "satisfiedBy": "Each video's details and status (uploaded, processing, ready) are kept in a database (DynamoDB) the app can query instantly." }
+        ],
+        "services": [
+          { "type": "route53", "name": "DNS", "role": "Points viewers to an entry point.", "why": "A managed address book (Route 53) routes each viewer to the nearest entry point." },
+          { "type": "cloudfront", "name": "Video CDN", "role": "Streams video segments from nearby.", "why": "Video segments are the same for every viewer, so caching them at the edge (CloudFront) is what makes playback smooth globally and keeps load off storage." },
+          { "type": "apiGateway", "name": "Upload API", "role": "The front door for uploads and the catalog.", "why": "One secure entry point that scales on its own (API Gateway) means no web servers to manage." },
+          { "type": "lambda", "name": "Upload Handler", "role": "Registers uploads and queues transcoding.", "why": "This step is light and bursty, so code that runs only when needed (Lambda) scales instantly and runs only when someone uploads." },
+          { "type": "s3", "name": "Video Storage", "role": "Holds raw uploads and finished segments.", "why": "Object storage (S3) keeps very large files cheaply and safely and feeds them straight to the CDN." },
+          { "type": "dynamoDb", "name": "Video Catalog", "role": "Tracks each video and its status.", "why": "Looking up a video or its processing state is a simple key query that a fast database (DynamoDB) handles at any size." },
+          { "type": "sqs", "name": "Transcode Queue", "role": "Holds transcoding jobs waiting to run.", "why": "A queue (SQS) smooths out upload spikes and feeds workers steadily, so a rush of uploads never overwhelms transcoding." },
+          { "type": "ecs", "name": "Transcode Workers", "role": "Convert videos into multiple bitrates.", "why": "Transcoding is heavy, long-running work that suits always-on worker machines (ECS), which scale out when the queue grows, not short functions." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks the transcode backlog and errors.", "why": "If transcoding falls behind or fails, you can see it here (CloudWatch) before viewers hit missing videos." }
         ]
       }
     },
@@ -1360,6 +1507,26 @@
           ["submitFn", "mon"],
           ["workers", "mon"]
         ]
+      },
+      "solution": {
+        "summary": "A scheduler must fire jobs at exactly the right time and never lose one, even at millions of jobs. So schedules are stored durably, a time-based trigger wakes due jobs, and running is kept separate from scheduling so retries don't hold anything up.",
+        "requirementsMet": [
+          { "requirement": "Accept and store job definitions and their schedules", "satisfiedBy": "Submitted jobs are written to a durable database (DynamoDB), so a job is safe the moment it's accepted." },
+          { "requirement": "Trigger jobs at the right time (delayed and recurring)", "satisfiedBy": "A managed time-based trigger (EventBridge) wakes on schedule and a dispatcher (Lambda) finds the jobs that are now due, handling both one-off delays and repeats." },
+          { "requirement": "Execute jobs reliably with retries", "satisfiedBy": "Due jobs go onto a queue (SQS) and are run by workers (ECS); multi-step jobs use a workflow (Step Functions) that retries failed steps, and a job stays on the queue until it succeeds, so nothing is lost." },
+          { "requirement": "Decouple scheduling from execution", "satisfiedBy": "Scheduling just drops due jobs on the queue; workers consume them separately, so slow or failing jobs never block the scheduler from firing the next ones." }
+        ],
+        "services": [
+          { "type": "apiGateway", "name": "Submit API", "role": "The front door for submitting jobs.", "why": "One secure entry point that scales on its own (API Gateway) takes job submissions with no servers to run." },
+          { "type": "lambda", "name": "Submit Handler", "role": "Validates and stores new jobs.", "why": "Submitting is light, occasional work, so code that runs only when needed (Lambda) fits and costs nothing when idle." },
+          { "type": "dynamoDb", "name": "Job Store", "role": "Stores every job and its schedule.", "why": "Jobs must never be lost and are looked up by key and time, which a durable, fast database (DynamoDB) handles at huge scale." },
+          { "type": "eventBridge", "name": "Scheduler", "role": "Wakes up on a schedule to find due jobs.", "why": "A managed scheduler (EventBridge) reliably ticks on time without you running a cron server, which is the heart of firing at the right moment." },
+          { "type": "lambda", "name": "Dispatcher", "role": "Finds due jobs and queues them.", "why": "Each tick does a quick find-and-enqueue, a perfect fit for short code that runs only when needed (Lambda)." },
+          { "type": "sqs", "name": "Due Jobs Queue", "role": "Holds jobs that are ready to run.", "why": "A queue (SQS) buffers bursts of due jobs and keeps each one until a worker confirms success, giving a reliable, retryable hand-off." },
+          { "type": "ecs", "name": "Job Executors", "role": "Actually run the jobs.", "why": "Job execution can be heavy and long-running, which suits always-on workers (ECS) that scale out with the backlog." },
+          { "type": "stepFunctions", "name": "Workflow", "role": "Coordinates multi-step jobs with retries.", "why": "For jobs with several stages, a workflow engine (Step Functions) tracks progress and retries failed steps on its own, so you don't hand-code retry logic." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks misfires, failures, and backlog.", "why": "If jobs run late or fail repeatedly, you can see it here (CloudWatch) before they pile up." }
+        ]
       }
     },
     {
@@ -1445,6 +1612,12 @@
           "detail": "Wire CloudWatch in for health and metrics monitoring.",
           "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
           "hidden": true
+        },
+        {
+          "id": "m6",
+          "label": "Scores persisted durably",
+          "detail": "A durable database keeps the official scores.",
+          "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true }
         }
       ],
       "rubric": {
@@ -1525,6 +1698,21 @@
           ["fn", "ranks"],
           ["fn", "scores"],
           ["fn", "mon"]
+        ]
+      },
+      "solution": {
+        "summary": "Ranking millions of constantly-changing scores and answering 'top N' or 'my rank' instantly is hard for a normal database. So ranking lives in an in-memory structure built for exactly this, while a durable database keeps the official scores.",
+        "requirementsMet": [
+          { "requirement": "Update a player's score after each match", "satisfiedBy": "Each result updates the player's entry in an in-memory ranked structure (ElastiCache/Redis), which re-ranks them instantly, and the official score is saved to a database (DynamoDB)." },
+          { "requirement": "Return the global top N players instantly", "satisfiedBy": "An in-memory sorted set (Redis) keeps everyone in rank order, so reading the top N is a direct, sub-millisecond operation no matter how many players there are." },
+          { "requirement": "Return a single player's current rank and nearby players", "satisfiedBy": "The same ranked structure can return a player's exact rank and the entries just above and below in one fast step, which a row-based database can't do cheaply at this scale." }
+        ],
+        "services": [
+          { "type": "apiGateway", "name": "Leaderboard API", "role": "The front door for score and rank requests.", "why": "One secure entry point that scales on its own (API Gateway), with no servers to run." },
+          { "type": "lambda", "name": "Leaderboard Fn", "role": "Handles score updates and rank queries.", "why": "The work per call is tiny and very bursty around matches, so code that runs only when needed (Lambda) scales instantly with players." },
+          { "type": "elastiCache", "name": "Rank Store (Redis)", "role": "Keeps everyone ranked in memory.", "why": "A sorted set in memory (Redis/ElastiCache) is purpose-built to update a score and read top-N or a player's rank in about a millisecond, which a normal database would struggle to do live." },
+          { "type": "dynamoDb", "name": "Score Store", "role": "Holds the official, durable scores.", "why": "The in-memory ranking is fast, but the database (DynamoDB) is the safe source of truth, so scores survive restarts and the rank store can be rebuilt." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks query speed and update rates.", "why": "If ranking slows or updates spike, you can see it here (CloudWatch) before players notice lag." }
         ]
       }
     },
@@ -1611,6 +1799,12 @@
           "detail": "Wire CloudWatch in for health and metrics monitoring.",
           "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
           "hidden": true
+        },
+        {
+          "id": "m6",
+          "label": "Image metadata stored",
+          "detail": "A database stores each image's details (owner, title, timestamps).",
+          "rule": { "kind": "hasService", "anyOf": ["dynamoDb", "rds", "aurora"], "mustBeConnected": true }
         }
       ],
       "rubric": {
@@ -1622,6 +1816,14 @@
             "weight": 1,
             "rule": { "kind": "hasService", "anyOf": ["client"] },
             "failHint": "Add a Users (client) node so traffic has a source."
+          },
+          {
+            "id": "c-dns",
+            "label": "Domain routed through DNS",
+            "rule": { "kind": "hasService", "anyOf": ["route53"], "mustBeConnected": true },
+            "weight": 1,
+            "failHint": "Optional: add Route 53 and route the client through it to point a domain at the entry point.",
+            "optional": true
           },
           {
             "id": "c-cdn",
@@ -1696,6 +1898,23 @@
           ["fn", "store"],
           ["fn", "meta"],
           ["fn", "mon"]
+        ]
+      },
+      "solution": {
+        "summary": "An image is uploaded once and then viewed constantly by a global audience, so the design keeps uploads simple and makes every view fast and nearby. Files live in object storage and are served from the edge; only small metadata touches the database.",
+        "requirementsMet": [
+          { "requirement": "Upload an image and return a shareable link", "satisfiedBy": "The file is written straight to object storage (S3) and a link is returned. One write per image keeps uploads simple and cheap." },
+          { "requirement": "Serve images quickly to a global audience", "satisfiedBy": "Images are cached at edge locations close to viewers (CloudFront), so they load instantly worldwide and barely touch your storage after the first fetch." },
+          { "requirement": "Store image metadata (owner, title, timestamps)", "satisfiedBy": "Details like owner and title are kept in a fast database (DynamoDB), separate from the file itself, so listing and lookups stay quick." }
+        ],
+        "services": [
+          { "type": "route53", "name": "DNS", "role": "Points viewers to an entry point.", "why": "A managed address book (Route 53) routes each visitor to the nearest entry point." },
+          { "type": "cloudfront", "name": "Image CDN", "role": "Serves images from nearby.", "why": "An image is identical for everyone, so caching it at the edge (CloudFront) makes it load instantly anywhere and keeps traffic off your storage." },
+          { "type": "apiGateway", "name": "Upload API", "role": "The front door for uploads.", "why": "One secure entry point that scales on its own (API Gateway), with no web servers to manage." },
+          { "type": "lambda", "name": "Upload Handler", "role": "Stores the file and records its metadata.", "why": "Uploading is light, bursty work, so code that runs only when needed (Lambda) scales instantly and runs only when needed." },
+          { "type": "s3", "name": "Image Store", "role": "Holds the image files.", "why": "Object storage (S3) keeps huge numbers of files cheaply and safely and hands them straight to the CDN." },
+          { "type": "dynamoDb", "name": "Image Metadata", "role": "Stores each image's details.", "why": "Looking up by id or owner is a simple key query that a fast database (DynamoDB) handles at any size." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks load speed and errors.", "why": "If images load slowly or uploads fail, you can see it here (CloudWatch) first." }
         ]
       }
     },
@@ -1802,6 +2021,12 @@
           "detail": "Wire CloudWatch in to watch ingestion lag and cache hits.",
           "rule": { "kind": "hasService", "anyOf": ["cloudWatch"] },
           "hidden": true
+        },
+        {
+          "id": "m7",
+          "label": "Queries logged to the stream",
+          "detail": "Searches are written to the stream for later aggregation.",
+          "rule": { "kind": "hasEdge", "fromAnyOf": ["lambda", "ecs", "ec2", "apiGateway"], "toAnyOf": ["kinesis", "sqs", "kinesisFirehose"] }
         }
       ],
       "rubric": {
@@ -1902,6 +2127,24 @@
           ["aggFn", "cache"],
           ["lookupFn", "mon"],
           ["aggFn", "mon"]
+        ]
+      },
+      "solution": {
+        "summary": "Every keystroke needs an answer in a few milliseconds, while suggestions stay fresh as trends shift. So the read path just looks up pre-computed results in memory, and a separate background pipeline rebuilds the rankings, keeping the two from slowing each other down.",
+        "requirementsMet": [
+          { "requirement": "Return the top suggestions for a given prefix with very low latency", "satisfiedBy": "Pre-computed suggestions for each prefix are held in memory (ElastiCache), so a keystroke is answered in about a millisecond with no heavy computation." },
+          { "requirement": "Log every executed search query", "satisfiedBy": "Each search is written to a streaming pipeline (Kinesis) that can absorb a firehose of events without slowing the user's request." },
+          { "requirement": "Rebuild ranked suggestions from query frequency over time", "satisfiedBy": "A background job (Lambda) reads the stream, tallies how often queries appear, and rewrites the ranked suggestions (DynamoDB), refreshing the in-memory cache as trends change." },
+          { "requirement": "Keep the fast read path independent from the heavy rebuild path", "satisfiedBy": "Typing only ever reads the cache, while counting and re-ranking happen entirely on the streaming side, so the expensive rebuild never slows down live suggestions." }
+        ],
+        "services": [
+          { "type": "apiGateway", "name": "Suggest API", "role": "The front door for typeahead requests.", "why": "One secure entry point that scales on its own (API Gateway) handles a high rate of keystroke requests with no servers to run." },
+          { "type": "lambda", "name": "Suggest Handler", "role": "Looks up suggestions for a prefix.", "why": "Each call is tiny and extremely frequent, so code that runs only when needed (Lambda) scales instantly with typing volume." },
+          { "type": "elastiCache", "name": "Prefix Cache", "role": "Holds ready answers for each prefix in memory.", "why": "Typeahead must feel instant, and an in-memory store (ElastiCache) returns pre-computed suggestions in about a millisecond, which the database can't match per keystroke." },
+          { "type": "kinesis", "name": "Query Stream", "role": "Captures every search as it happens.", "why": "A streaming pipeline (Kinesis) swallows a huge, continuous flow of query events without backing up the read path, feeding the background counting." },
+          { "type": "lambda", "name": "Aggregator", "role": "Counts queries and rebuilds rankings.", "why": "Tallying frequencies and re-ranking is periodic batch work that fits code that runs only when needed (Lambda), kept well away from the live read path." },
+          { "type": "dynamoDb", "name": "Suggestions Store", "role": "Stores the durable ranked suggestions.", "why": "The computed rankings live in a durable database (DynamoDB) so they survive restarts and can refill the cache." },
+          { "type": "cloudWatch", "name": "Monitoring", "role": "Tracks suggestion latency and freshness.", "why": "If lookups slow down or the rebuild stalls, you can see it here (CloudWatch) before users get stale or sluggish suggestions." }
         ]
       }
     }

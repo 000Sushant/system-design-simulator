@@ -1100,8 +1100,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
         rect.left + rect.width / 2,
         rect.top + rect.height / 2,
       );
-      x = point.x - 82;
-      y = point.y - 42;
+      x = point.x - 74;
+      y = point.y - 47;
     }
     this.pushHistory();
     const node = this.factory.createNode(type, x, y);
@@ -2274,7 +2274,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       "application/aws-service",
     ) as AwsServiceType;
     if (type) {
-      this.addService(type, point.x - 82, point.y - 42);
+      // Center the node card (148×94) on the drop point.
+      this.addService(type, point.x - 74, point.y - 47);
       return;
     }
 
@@ -2370,7 +2371,9 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onFoblexCanvasChange(event: FCanvasChangeEvent): void {
     this.pan = { x: event.position.x, y: event.position.y };
-    this.zoom = Number(event.scale.toFixed(2));
+    // Keep the exact scale — toCanvasPoint() divides by this, so rounding here
+    // makes dropped nodes drift from the cursor once zoomed. Display rounds via pipe.
+    this.zoom = event.scale;
     this.revealMinimap();
   }
 
