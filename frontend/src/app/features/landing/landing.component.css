@@ -148,7 +148,7 @@
   transition:
     width 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
     max-width 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
-    border-radius 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-radius 0.5s cubic-bezier(0.25, 1, 0.5, 1),
     padding 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
     top 0.45s ease,
     background 0.45s ease,
@@ -2321,16 +2321,12 @@
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.15);
   background-image:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(255, 255, 255, 0.05) 0%,
-      transparent 50%
-    ),
-    linear-gradient(
-      135deg,
+      transparent 50%),
+    linear-gradient(135deg,
       #1e293b 0%,
-      #0f172a 100%
-    );
+      #0f172a 100%);
   box-shadow:
     0 10px 25px rgba(0, 0, 0, 0.35),
     inset 0 1px 1px rgba(255, 255, 255, 0.1),
@@ -2343,16 +2339,12 @@
 :host-context(.dark) .mini-launch:hover {
   border-color: rgba(168, 85, 247, 0.4);
   background-image:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(255, 255, 255, 0.08) 0%,
-      transparent 50%
-    ),
-    linear-gradient(
-      135deg,
+      transparent 50%),
+    linear-gradient(135deg,
       #2e1f4d 0%,
-      #130f1f 100%
-    );
+      #130f1f 100%);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.45),
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -2363,16 +2355,12 @@
 :host-context(.dark) .mini-launch:active {
   border-color: rgba(168, 85, 247, 0.55);
   background-image:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(255, 255, 255, 0.04) 0%,
-      transparent 50%
-    ),
-    linear-gradient(
-      135deg,
+      transparent 50%),
+    linear-gradient(135deg,
       #171224 0%,
-      #090a0d 100%
-    );
+      #090a0d 100%);
   box-shadow:
     0 4px 10px rgba(0, 0, 0, 0.3),
     inset 0 1px 1px rgba(255, 255, 255, 0.05);
@@ -2382,16 +2370,12 @@
 :host-context(.dark) .developer .mode-button:hover {
   border-color: rgba(6, 182, 212, 0.4);
   background-image:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(255, 255, 255, 0.08) 0%,
-      transparent 50%
-    ),
-    linear-gradient(
-      135deg,
+      transparent 50%),
+    linear-gradient(135deg,
       #132b35 0%,
-      #0d161d 100%
-    );
+      #0d161d 100%);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.45),
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -2400,16 +2384,12 @@
 :host-context(.dark) .developer .mode-button:active {
   border-color: rgba(6, 182, 212, 0.55);
   background-image:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(255, 255, 255, 0.04) 0%,
-      transparent 50%
-    ),
-    linear-gradient(
-      135deg,
+      transparent 50%),
+    linear-gradient(135deg,
       #0a1b20 0%,
-      #050d10 100%
-    );
+      #050d10 100%);
   box-shadow:
     0 4px 10px rgba(0, 0, 0, 0.3),
     inset 0 1px 1px rgba(255, 255, 255, 0.05);
@@ -2421,11 +2401,9 @@
   color: #cbd5e1;
   border-color: rgba(255, 255, 255, 0.12);
   background-image:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       rgba(255, 255, 255, 0.03) 0%,
-      rgba(255, 255, 255, 0.01) 100%
-    );
+      rgba(255, 255, 255, 0.01) 100%);
   box-shadow:
     0 10px 25px rgba(0, 0, 0, 0.25),
     inset 0 1px 1px rgba(255, 255, 255, 0.05),
@@ -2437,11 +2415,9 @@
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.25);
   background-image:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       rgba(255, 255, 255, 0.06) 0%,
-      rgba(255, 255, 255, 0.02) 100%
-    );
+      rgba(255, 255, 255, 0.02) 100%);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.35),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.1);
@@ -2452,11 +2428,9 @@
   color: #cbd5e1;
   border-color: rgba(255, 255, 255, 0.08);
   background-image:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       rgba(255, 255, 255, 0.02) 0%,
-      rgba(255, 255, 255, 0.01) 100%
-    );
+      rgba(255, 255, 255, 0.01) 100%);
   box-shadow:
     0 10px 25px rgba(0, 0, 0, 0.25),
     inset 0 1px 1px rgba(255, 255, 255, 0.05),
@@ -2467,11 +2441,9 @@
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.18);
   background-image:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0.02) 100%
-    );
+      rgba(255, 255, 255, 0.02) 100%);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.35),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.08);
@@ -2608,4 +2580,103 @@
   color: #94a3b8;
 }
 
-
+/* ── Footer ─────────────────────────────────────────────── */
+.landing-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  max-width: 1100px;
+  margin: 64px auto 0;
+  padding: 28px 24px 40px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-logo {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.footer-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footer-name {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+  color: #111827;
+}
+
+.footer-tag {
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.footer-links a {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #ff9900;
+}
+
+.footer-copy {
+  width: 100%;
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+@media (max-width: 640px) {
+  .landing-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+}
+
+:host-context(.dark) .landing-footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark) .footer-name {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .footer-tag {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .footer-links a {
+  color: rgba(241, 245, 249, 0.8);
+}
+
+:host-context(.dark) .footer-links a:hover {
+  color: #ff9900;
+}
+
+:host-context(.dark) .footer-copy {
+  color: #64748b;
+}

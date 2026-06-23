@@ -1153,12 +1153,31 @@
   .docs-nav {
     top: 8px;
     width: calc(100% - 20px);
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .docs-nav.nav-scrolled {
+    width: calc(100% - 20px);
+    max-width: none;
+    border-radius: 16px;
+    top: 8px;
+    padding: 0 10px;
+  }
+
+  .back-btn {
+    padding: 0 12px;
+    min-height: 34px;
   }
 
   .back-btn span,
-  .brand-mark span,
-  .brand-mark small {
+  .brand-mark {
     display: none;
+  }
+
+  .nav-search {
+    height: 34px;
+    padding: 0 10px;
   }
 
   .services-directory-header {
@@ -2130,6 +2149,52 @@
   transform: scale(1.05);
 }
 
+.theme-toggle-btn .sun-moon-svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  transform: rotate(40deg);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn .sun-moon-svg circle {
+  transition: r 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#doc-moon-mask circle {
+  cx: -10;
+  cy: 34;
+  transition:
+    cx 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    cy 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn .sun-rays {
+  transition:
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+/* show-moon = light mode active (click switches to dark) */
+.theme-toggle-btn.show-moon .sun-moon-svg {
+  transform: rotate(90deg);
+}
+
+.theme-toggle-btn.show-moon #doc-moon-mask circle {
+  cx: 6;
+  cy: 18;
+}
+
+.theme-toggle-btn.show-moon .sun-moon-svg circle {
+  r: 9;
+}
+
+.theme-toggle-btn.show-moon .sun-rays {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.6);
+}
+
 .docs-nav.nav-scrolled .theme-toggle-btn {
   background: rgba(8, 11, 22, 0.9);
   border-color: rgba(255, 255, 255, 0.12);
@@ -2156,6 +2221,14 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .docs-nav.nav-scrolled {
+  background: rgba(13, 17, 30, 0.85);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
@@ -2330,20 +2403,22 @@
 }
 
 :host-context(.dark) .service-mini-icon {
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  background: color-mix(in srgb, var(--service-color, #7c3aed) 12%, rgba(15, 23, 42, 0.65));
+  border-color: color-mix(in srgb, var(--service-color, #7c3aed) 30%, rgba(255, 255, 255, 0.08));
+  box-shadow: none;
 }
 
 :host-context(.dark) .read-guide-btn {
-  border-color: color-mix(in srgb, var(--service-color, #7c3aed) 28%, transparent);
-  background: color-mix(in srgb, var(--service-color, #7c3aed) 10%, transparent);
-  color: color-mix(in srgb, var(--service-color, #7c3aed) 80%, #fff);
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid color-mix(in srgb, var(--service-color, #7c3aed) 25%, rgba(255, 255, 255, 0.08));
+  color: color-mix(in srgb, var(--service-color, #7c3aed) 85%, #e2e8f0);
+  box-shadow: none;
 }
 
 :host-context(.dark) .read-guide-btn:hover {
-  background: color-mix(in srgb, var(--service-color, #7c3aed) 18%, transparent);
-  border-color: color-mix(in srgb, var(--service-color, #7c3aed) 45%, transparent);
+  background: color-mix(in srgb, var(--service-color, #7c3aed) 12%, rgba(15, 23, 42, 0.8));
+  border-color: color-mix(in srgb, var(--service-color, #7c3aed) 40%, rgba(255, 255, 255, 0.15));
+  color: #fff;
 }
 
 /* Articles and Details */
@@ -2364,9 +2439,25 @@
 }
 
 :host-context(.dark) .doc-tips {
-  background: rgba(15, 23, 42, 0.4);
-  border-left-color: #eab308;
+  background: rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #cbd5e1;
+  box-shadow: none;
+}
+
+:host-context(.dark) .tips-header {
+  color: #a78bfa;
+}
+
+:host-context(.dark) .doc-tips li::before {
+  color: #a78bfa;
+}
+
+:host-context(.dark) .doc-badge {
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  box-shadow: none;
 }
 
 :host-context(.dark) .doc-tips li {
@@ -2417,7 +2508,20 @@
 
 /* Service Deep Dive */
 :host-context(.dark) .service-deep-dive-header .back-to-services-btn {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(168, 85, 247, 0.3);
   color: #a78bfa;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .service-deep-dive-header .back-to-services-btn:hover {
+  background: rgba(124, 58, 237, 0.2);
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 :host-context(.dark) .service-switcher strong {
