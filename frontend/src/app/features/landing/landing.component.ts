@@ -20,6 +20,19 @@ export class LandingComponent {
   @Output() launch = new EventEmitter<"developer" | "architect" | undefined>();
   @ViewChild("shell", { static: true }) shellRef!: ElementRef<HTMLElement>;
 
+  readonly contributors = [
+    {
+      login: "000Sushant",
+      avatar_url: "https://github.com/000Sushant.png",
+      html_url: "https://github.com/000Sushant"
+    },
+    {
+      login: "harsh-dwivedi",
+      avatar_url: "https://github.com/harsh-dwivedi.png",
+      html_url: "https://github.com/harsh-dwivedi"
+    }
+  ];
+
   constructor(private themeService: ThemeService) {}
 
   get isDarkMode(): boolean {

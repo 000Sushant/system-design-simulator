@@ -1,0 +1,100 @@
+name: Security scan
+
+# Open-source dependency, secret, and misconfiguration scanning.
+# Results land in the repo's Security tab (Code scanning alerts) plus the
+# Actions run summary. Runs on push, PRs, and a weekly schedule.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Mondays 06:00 UTC — catches newly disclosed CVEs in unchanged code.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Trivy: dependencies + leaked secrets + IaC/config misconfigurations in one pass.
+  trivy:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          trivy-config: trivy.yaml
+          format: sarif
+          output: trivy-results.sarif
+          # Never fail the job on findings — we always want the SARIF uploaded.
+          exit-code: '0'
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy
+
+  # OSV-Scanner: precise lockfile-based vulnerability matching (Google OSV database).
+  osv-scanner:
+    name: OSV-Scanner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v1.9.2
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --recursive
+            --format=sarif
+            --output=osv-results.sarif
+            ./
+
+      - name: Upload OSV SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: osv-results.sarif
+          category: osv-scanner
+
+  # npm audit: detailed, npm-native advisory report for each package directory.
+  npm-audit:
+    name: npm audit (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: [frontend, worker]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Audit ${{ matrix.dir }}
+        working-directory: ${{ matrix.dir }}
+        # Report only — does not fail the build. Tighten with --audit-level later.
+        continue-on-error: true
+        run: |
+          echo "## npm audit — ${{ matrix.dir }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          npm audit --audit-level=moderate >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
