@@ -1086,6 +1086,51 @@
     </div>
   </div>
 
+  <!-- ───── Unsaved-work Guard Popup ───── -->
+  <div class="leave-guard-overlay" *ngIf="leaveGuard" (click)="resolveLeaveGuard('cancel')">
+    <div class="leave-guard-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <!-- Glow ring -->
+      <div class="leave-guard-glow"></div>
+
+      <!-- Close Button -->
+      <button type="button" class="leave-guard-close" aria-label="Cancel" (click)="resolveLeaveGuard('cancel')">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <!-- Mascot -->
+      <div class="leave-guard-mascot" aria-hidden="true">
+        <img src="assets/mascot/cat-think.svg" alt="Think Mascot" />
+      </div>
+
+      <!-- Content -->
+      <h3>{{ leaveGuard.title }}</h3>
+      <p class="leave-guard-msg">{{ leaveGuard.message }}</p>
+
+      <!-- Actions -->
+      <div class="leave-guard-actions">
+        <ng-container *ngIf="leaveGuard.action === 'switch'">
+          <button type="button" class="lg-btn lg-primary" (click)="resolveLeaveGuard('keep')">
+            <i class="fas fa-arrow-right-arrow-left"></i> Bring my canvas
+          </button>
+          <button type="button" class="lg-btn" (click)="resolveLeaveGuard('saveFresh')">
+            <i class="fas fa-floppy-disk"></i> Save &amp; start fresh
+          </button>
+          <button type="button" class="lg-btn lg-ghost" (click)="resolveLeaveGuard('fresh')">
+            <i class="fas fa-eraser"></i> Start fresh
+          </button>
+        </ng-container>
+        <ng-container *ngIf="leaveGuard.action !== 'switch'">
+          <button type="button" class="lg-btn lg-primary" (click)="resolveLeaveGuard('save')">
+            <i class="fas fa-floppy-disk"></i> Save
+          </button>
+          <button type="button" class="lg-btn lg-danger" (click)="resolveLeaveGuard('discard')">
+            <i class="fas fa-trash-can"></i> Discard
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
   <!-- ───── Keyboard Shortcuts Panel ───── -->
   <div class="hotkeys-overlay" *ngIf="showHotkeys" (click)="closeHotkeys()">
     <div class="hotkeys-card" (click)="$event.stopPropagation()">

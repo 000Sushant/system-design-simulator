@@ -9,7 +9,7 @@
     <a class="brand-mark" href="#" aria-label="Sr. Architect home">
       <img class="brand-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="32" height="32" />
       <span>Sr<span class="brand-dot">.</span> Architect</span>
-      <small>v1.2.1</small>
+      <small>v1.3.0</small>
     </a>
     <div class="nav-actions">
       <a href="/docs" (click)="openDocs($event)" (mousemove)="onButtonMouseMove($event)"
@@ -197,17 +197,12 @@
   <section class="contributors-card glass-panel" aria-label="Top contributors">
     <span class="section-kicker">Community</span>
     <h2>Top Contributors</h2>
-    
+
     <!-- Live contributors list -->
     <div class="contributors-list">
-      <a *ngFor="let contributor of contributors" 
-         [href]="contributor.html_url" 
-         target="_blank" 
-         rel="noopener noreferrer" 
-         class="contributor-link"
-         [title]="contributor.login"
-         (mousemove)="onButtonMouseMove($event)" 
-         (mouseleave)="onButtonMouseLeave($event)">
+      <a *ngFor="let contributor of contributors" [href]="contributor.html_url" target="_blank"
+        rel="noopener noreferrer" class="contributor-link" [title]="contributor.login"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
         <img [src]="contributor.avatar_url" [alt]="contributor.login" class="contributor-avatar" />
         <span class="contributor-name">{{ contributor.login }}</span>
       </a>
