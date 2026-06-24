@@ -175,6 +175,13 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
     return this.active.milestones.filter(m => !m.hidden);
   }
 
+  /** Only the completed standard milestones, so the list can number them 1..N
+   *  by how many are done (not by their fixed position in the full list). */
+  reachedStandardMilestones(): Milestone[] {
+    if (!this.progress) return [];
+    return this.standardMilestones().filter(m => this.progress!.reachedMilestoneIds.includes(m.id));
+  }
+
   reachedHiddenMilestones(): Milestone[] {
     if (!this.active || !this.progress) return [];
     return this.active.milestones.filter(m => m.hidden && this.progress!.reachedMilestoneIds.includes(m.id));

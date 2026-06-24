@@ -55,8 +55,8 @@
     <div class="progress-track">
       <div class="progress-fill" [style.width.%]="milestonePercent()"></div>
     </div>
-    <ng-container *ngFor="let m of standardMilestones(); let i = index">
-      <div class="milestone-row done" *ngIf="isMilestoneReached(m.id)">
+    <ng-container *ngFor="let m of reachedStandardMilestones(); let i = index">
+      <div class="milestone-row done">
         <span class="ms-check"><i class="fas fa-circle-check"></i></span>
         <div class="ms-content">
           <span class="ms-label">{{ i + 1 }}. {{ m.label }}</span>
