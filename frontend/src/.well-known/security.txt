@@ -1,0 +1,7 @@
+# Security policy for srarchitect.qzz.io
+# Format defined by RFC 9116 — https://www.rfc-editor.org/rfc/rfc9116
+
+Contact: mailto:000sushantkumar@gmail.com
+Expires: 2027-06-23T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://srarchitect.qzz.io/.well-known/security.txt

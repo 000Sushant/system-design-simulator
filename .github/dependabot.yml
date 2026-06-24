@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Frontend (Angular app)
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - frontend
+    groups:
+      # Batch the Angular packages so version-locked deps upgrade together.
+      angular:
+        patterns:
+          - '@angular*'
+          - '@angular-devkit*'
+          - '@ngtools*'
+          - 'ng-*'
+
+  # Cloudflare Worker
+  - package-ecosystem: npm
+    directory: /worker
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - worker
+
+  # GitHub Actions used by the workflows (keeps the scanner pins fresh)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - ci

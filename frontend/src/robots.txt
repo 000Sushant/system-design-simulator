@@ -1,0 +1,72 @@
+# robots.txt for srarchitect.qzz.io
+# Posture: "cite me, don't train me" — allow AI answer/search engines so the
+# site can be surfaced and cited in AI answers, while blocking training-only
+# crawlers so content is not absorbed into foundation-model training sets.
+
+# ---- Default: everyone (incl. Google, Bing) may crawl everything ----
+User-agent: *
+Allow: /
+
+# ---- AI answer / search engines: ALLOWED (drive citations + referrals) ----
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# ---- Training-only crawlers: BLOCKED (no model-training ingestion) ----
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+Sitemap: https://srarchitect.qzz.io/sitemap.xml

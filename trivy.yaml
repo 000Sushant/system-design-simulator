@@ -1,0 +1,18 @@
+# Trivy config — auto-loaded when running `trivy` from the repo root,
+# and referenced by the CI workflow. Keeps sensitive / generated files
+# out of every scan (vuln, secret, misconfig).
+scan:
+  skip-dirs:
+    - '**/node_modules'
+    - '**/dist'
+    - .angular
+    - .git
+    - graphify-out
+  skip-files:
+    - '**/.env'
+    - '**/.env.*'
+    - '**/*.pem'
+    - '**/*.key'
+    - '**/*.p12'
+    - '**/secrets.json'
+    - '**/.dev.vars'

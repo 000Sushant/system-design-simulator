@@ -197,16 +197,24 @@
   <section class="contributors-card glass-panel" aria-label="Top contributors">
     <span class="section-kicker">Community</span>
     <h2>Top Contributors</h2>
-    <div class="contributor-ghosts" aria-hidden="true">
-      <span class="ghost-avatar">?</span>
-      <span class="ghost-avatar">?</span>
-      <span class="ghost-avatar">?</span>
-      <span class="ghost-avatar">?</span>
-      <span class="ghost-avatar">?</span>
+    
+    <!-- Live contributors list -->
+    <div class="contributors-list">
+      <a *ngFor="let contributor of contributors" 
+         [href]="contributor.html_url" 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         class="contributor-link"
+         [title]="contributor.login"
+         (mousemove)="onButtonMouseMove($event)" 
+         (mouseleave)="onButtonMouseLeave($event)">
+        <img [src]="contributor.avatar_url" [alt]="contributor.login" class="contributor-avatar" />
+        <span class="contributor-name">{{ contributor.login }}</span>
+      </a>
     </div>
-    <span class="contributors-soon-pill"><i class="fas fa-circle"></i> Coming Soon</span>
+
     <p class="contributors-note">
-      Contributor spotlights will appear here. Open a PR and claim a spot.
+      Thanks to all the amazing developers helping shape Sr. Architect! Open a PR and claim your spot.
     </p>
   </section>
 
