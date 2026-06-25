@@ -52,7 +52,7 @@ interface ServiceDoc {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './documentation.component.html',
-  styleUrls: ['./documentation.component.css']
+  styleUrls: ['./documentation.component.css'],
 })
 export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestroy {
   searchQuery = '';
@@ -67,29 +67,107 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     { id: 'formulas', name: 'Formulas & Calculations', icon: 'fas fa-square-root-variable' },
     { id: 'cost', name: 'Cost Dynamics', icon: 'fas fa-coins' },
     { id: 'release-notes', name: 'Release Notes', icon: 'fas fa-rocket' },
-    { id: 'contribute', name: 'Ways to Contribute', icon: 'fas fa-hands-helping' }
+    { id: 'contribute', name: 'Ways to Contribute', icon: 'fas fa-hands-helping' },
   ];
 
   // Version history. v1.1 / v1.2 mirror the README changelog; v1.0 is the
   // foundational release derived from the README's core "Key Highlights".
   readonly releaseNotes: ReleaseNote[] = [
     {
-      version: '1.2',
+      version: '1.3.0',
       current: true,
-      title: 'Playground & Real-Time Cost',
-      summary: 'A developer- and architect-focused playground with 60+ services and live AWS pricing.',
+      title: 'Themes, Dashboards & System Design Challenges',
+      summary:
+        'Light and dark themes, an Architect dashboard, refined challenges, and polish throughout.',
       items: [
-        { icon: 'fas fa-layer-group', text: 'Expanded AWS Service Catalog: Model architectures with 60+ hand-crafted AWS services, each with custom properties, input/output port definitions, and visual flow mappings' },
-        { icon: 'fas fa-gamepad', text: 'Dual-Mode Workspace: Transition seamlessly between Developer Mode (simplified sandbox for learning cloud concepts) and Architect Mode (professional designer with detailed hardware classes and pricing options)' },
-        { icon: 'fas fa-book-open', text: 'Interactive Documentation: Comprehensive, in-app guides for all 64 services detailing Conceptual Models, animated Architectural Workings, Recommended Practices, and common Failure Modes' },
-        { icon: 'fas fa-sack-dollar', text: 'Live AWS Cost Estimation: Accurate monthly cost updates driven by real AWS pricing rates fetched weekly from the live AWS Pricing API and updated on the fly' },
-        { icon: 'fas fa-clone', text: 'Multi-Canvas Configuration Support: Create, manage, and design multiple independent cloud architectures side-by-side using tabs' },
-        { icon: 'fas fa-wave-square', text: 'Variable Traffic Modeling: Model realistic user traffic behavior by configuring minimum/maximum traffic bounds with live, randomized fluctuations' },
-        { icon: 'fas fa-code-branch', text: 'Traffic Distribution Manager: Route and manage traffic flows between multiple downstream nodes with custom routing weights or percentages' },
-        { icon: 'fas fa-keyboard', text: 'Canvas Keyboard Hotkeys: Accelerate design iterations with shortcuts (e.g., Ctrl+Z/Ctrl+Y for Undo/Redo, Ctrl+S to save, and Delete/Backspace to remove elements)' },
-        { icon: 'fas fa-triangle-exclamation', text: 'Realistic Bottleneck Modeling: Advanced multi-factor resource-bound modeling (evaluating queue depths, CPU pressure, and concurrent execution limits) featuring load-shedding and server collapse' },
-        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' }
-      ]
+        {
+          icon: 'fas fa-circle-half-stroke',
+          text: 'Light & Dark Themes: a polished theme toggle across the whole app',
+        },
+        {
+          icon: 'fas fa-gauge-high',
+          text: 'Architect Dashboard: your whole design cost summarized at a glance',
+        },
+        {
+          icon: 'fas fa-graduation-cap',
+          text: 'System Design Challenges: Introduced common interview challanges for practice',
+        },
+        {
+          icon: 'fas fa-ranking-star',
+          text: 'Rubix Engine: evaluates and scores your system design against best practices',
+        },
+        {
+          icon: 'fas fa-arrows-left-right',
+          text: 'Quick Mode Switch: a dropdown to jump between Developer and Architect modes',
+        },
+        {
+          icon: 'fas fa-keyboard',
+          text: 'Keyboard Shortcuts: a dedicated panel plus new canvas hotkeys',
+        },
+        {
+          icon: 'fas fa-shield-halved',
+          text: 'Exit Warning: never lose an unsaved architecture by accident',
+        },
+        {
+          icon: 'fas fa-users',
+          text: 'Top Contributors: recognition for the people shaping the project',
+        },
+        {
+          icon: 'fas fa-magnifying-glass-chart',
+          text: 'SEO & GEO: better discoverability across search and AI engines',
+        },
+        {
+          icon: 'fas fa-lock',
+          text: 'Security & Community Standards: hardened security and full open source docs',
+        },
+        { icon: 'fas fa-bug-slash', text: 'Bug fixes and code quality improvements' },
+      ],
+    },
+    {
+      version: '1.2',
+      title: 'Playground & Real-Time Cost',
+      date: '2026-06-15',
+      summary:
+        'A developer- and architect-focused playground with 60+ services and live AWS pricing.',
+      items: [
+        {
+          icon: 'fas fa-layer-group',
+          text: 'Expanded AWS Service Catalog: Model architectures with 60+ hand-crafted AWS services, each with custom properties, input/output port definitions, and visual flow mappings',
+        },
+        {
+          icon: 'fas fa-gamepad',
+          text: 'Dual-Mode Workspace: Transition seamlessly between Developer Mode (simplified sandbox for learning cloud concepts) and Architect Mode (professional designer with detailed hardware classes and pricing options)',
+        },
+        {
+          icon: 'fas fa-book-open',
+          text: 'Interactive Documentation: Comprehensive, in-app guides for all 64 services detailing Conceptual Models, animated Architectural Workings, Recommended Practices, and common Failure Modes',
+        },
+        {
+          icon: 'fas fa-sack-dollar',
+          text: 'Live AWS Cost Estimation: Accurate monthly cost updates driven by real AWS pricing rates fetched weekly from the live AWS Pricing API and updated on the fly',
+        },
+        {
+          icon: 'fas fa-clone',
+          text: 'Multi-Canvas Configuration Support: Create, manage, and design multiple independent cloud architectures side-by-side using tabs',
+        },
+        {
+          icon: 'fas fa-wave-square',
+          text: 'Variable Traffic Modeling: Model realistic user traffic behavior by configuring minimum/maximum traffic bounds with live, randomized fluctuations',
+        },
+        {
+          icon: 'fas fa-code-branch',
+          text: 'Traffic Distribution Manager: Route and manage traffic flows between multiple downstream nodes with custom routing weights or percentages',
+        },
+        {
+          icon: 'fas fa-keyboard',
+          text: 'Canvas Keyboard Hotkeys: Accelerate design iterations with shortcuts (e.g., Ctrl+Z/Ctrl+Y for Undo/Redo, Ctrl+S to save, and Delete/Backspace to remove elements)',
+        },
+        {
+          icon: 'fas fa-triangle-exclamation',
+          text: 'Realistic Bottleneck Modeling: Advanced multi-factor resource-bound modeling (evaluating queue depths, CPU pressure, and concurrent execution limits) featuring load-shedding and server collapse',
+        },
+        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' },
+      ],
     },
     {
       version: '1.1',
@@ -99,24 +177,34 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       items: [
         { icon: 'fas fa-sliders', text: 'Added in-depth cost calculation parameters' },
         { icon: 'fas fa-magnifying-glass-dollar', text: 'Added cost calculation transparency' },
-        { icon: 'fas fa-mobile-screen', text: 'Compact, responsive run stats for all screen sizes' },
+        {
+          icon: 'fas fa-mobile-screen',
+          text: 'Compact, responsive run stats for all screen sizes',
+        },
         { icon: 'fas fa-circle-info', text: 'Restructured and expanded the About section' },
-        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' }
-      ]
+        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' },
+      ],
     },
     {
       version: '1.0',
       date: 'Initial release',
       title: 'Foundation',
-      summary: 'The first release: drag-and-drop design backed by a deterministic traffic & cost engine.',
+      summary:
+        'The first release: drag-and-drop design backed by a deterministic traffic & cost engine.',
       items: [
-        { icon: 'fas fa-diagram-project', text: 'Drag-and-drop AWS architecture design on a live canvas' },
+        {
+          icon: 'fas fa-diagram-project',
+          text: 'Drag-and-drop AWS architecture design on a live canvas',
+        },
         { icon: 'fas fa-bolt', text: 'Real-time deterministic traffic simulation' },
-        { icon: 'fas fa-gauge-high', text: 'Per-node latency, throughput, error-rate & utilization metrics' },
+        {
+          icon: 'fas fa-gauge-high',
+          text: 'Per-node latency, throughput, error-rate & utilization metrics',
+        },
         { icon: 'fas fa-coins', text: 'Monthly cost estimation from simulated load' },
-        { icon: 'fas fa-circle-check', text: 'Built-in AWS connectivity validation' }
-      ]
-    }
+        { icon: 'fas fa-circle-check', text: 'Built-in AWS connectivity validation' },
+      ],
+    },
   ];
 
   // Rendered at the foot of the Release Notes view. Sr. Architect is open
@@ -128,7 +216,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       title: 'Take on the open challenge',
       text: 'A focused, well-scoped challenge is always waiting to be claimed: a tricky simulation edge case, a pricing-accuracy tweak, or a new canvas interaction. A great place for a meaningful first contribution.',
       cta: 'Browse open challenges',
-      href: 'https://github.com/000Sushant/system-design-simulator/issues'
+      href: 'https://github.com/000Sushant/system-design-simulator/issues',
     },
     {
       icon: 'fas fa-layer-group',
@@ -136,7 +224,15 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       title: 'Add a meaningful service',
       text: 'The catalog is fully data-driven, so adding an AWS service is approachable. Describe its real traffic and cost behavior in JSON, give it a custom illustration, and open a PR.',
       cta: 'Contribute on GitHub',
-      href: 'https://github.com/000Sushant/system-design-simulator/'
+      href: 'https://github.com/000Sushant/system-design-simulator/',
+    },
+    {
+      icon: 'fas fa-graduation-cap',
+      accent: 'challenge',
+      title: 'Add a new system design challenge',
+      text: 'Have a real world problem worth solving? Turn it into a guided challenge with hints, a scoring rubric, and a reference solution. Challenges are defined in JSON, so you can shape the whole learning experience and open a PR.',
+      cta: 'Contribute on GitHub',
+      href: 'https://github.com/000Sushant/system-design-simulator/',
     },
     {
       icon: 'fas fa-comment-dots',
@@ -144,7 +240,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       title: 'Share your feedback',
       text: 'No code required. Send improvement suggestions or tell us about your experience: what clicked and what felt confusing. Every bit shapes where this goes next.',
       cta: 'Share feedback',
-      href: 'https://forms.gle/2Kh6TKqcwYUSnYnHA'
+      href: 'https://forms.gle/2Kh6TKqcwYUSnYnHA',
     },
     {
       icon: 'fas fa-bug',
@@ -152,7 +248,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       title: 'Report a bug',
       text: 'Spotted something behaving oddly? Tell us what you did, what you expected, and what happened. A clear report helps enormously and gets fixes shipped faster.',
       cta: 'Report a bug',
-      href: 'https://forms.gle/RJwRybjgRPPi11jg7'
+      href: 'https://forms.gle/RJwRybjgRPPi11jg7',
     },
     {
       icon: 'fas fa-heart',
@@ -160,8 +256,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       title: 'Sponsor the project',
       text: '100% of every sponsorship goes straight into building Sr. Architect, keeping the pricing pipeline running and shipping new features. Even $1 matters and helps keep things running.',
       cta: 'Become a sponsor',
-      href: 'https://github.com/sponsors/000Sushant'
-    }
+      href: 'https://github.com/sponsors/000Sushant',
+    },
   ];
 
   readonly articles: DocArticle[] = [
@@ -171,164 +267,168 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       title: 'What is Sr. Architect?',
       category: 'overview',
       icon: 'fas fa-info-circle',
-      summary: 'A high-fidelity system design simulator that brings static cloud architecture diagrams to life.',
+      summary:
+        'A high-fidelity system design simulator that brings static cloud architecture diagrams to life.',
       content: [
         'Sr. Architect is an interactive, visual system design sandbox that lets you <span class="text-purple">model and simulate AWS cloud architectures</span> in real time without provisioning resources.',
         'Simply drag-and-drop components (like servers, queues, databases, API gateways), connect them, and watch simulated traffic flow through your conduits like glowing packets.',
-        'It translates abstract architectural principles into interactive visuals, letting you adjust sliders for traffic load, instance configurations, and replica rates to instantly observe how your topology responds to stress.'
+        'It translates abstract architectural principles into interactive visuals, letting you adjust sliders for traffic load, instance configurations, and replica rates to instantly observe how your topology responds to stress.',
       ],
       tips: [
-        'Tap the play button to start generating real-time traffic, and watch the Sandbox Console for transaction logs.'
-      ]
+        'Tap the play button to start generating real-time traffic, and watch the Sandbox Console for transaction logs.',
+      ],
     },
     {
       id: 'ov-pulseflow',
       title: 'PulseFlow: Reactive Traffic Simulation Engine',
       category: 'engines',
       icon: 'fas fa-heart-pulse',
-      summary: 'The deterministic heartbeat of Sr. Architect that powers real-time traffic flow, queues, and latency degradation.',
+      summary:
+        'The deterministic heartbeat of Sr. Architect that powers real-time traffic flow, queues, and latency degradation.',
       content: [
         'At the core of the simulator is <span class="text-purple"><strong>PulseFlow</strong></span>, our custom-built, reactive simulation engine. PulseFlow resolves the entire system state about five times a second, translating simple diagram lines into live, dynamic networks.',
         '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
-        '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
-        '    <defs>' +
-        '      <linearGradient id="pulseflowGrad" x1="0%" y1="0%" x2="100%" y2="0%">' +
-        '        <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.8" />' +
-        '        <stop offset="100%" stop-color="#ec4899" stop-opacity="0.8" />' +
-        '      </linearGradient>' +
-        '      <filter id="glow-pf" x="-20%" y="-20%" width="140%" height="140%">' +
-        '        <feGaussianBlur stdDeviation="3" result="blur" />' +
-        '        <feMerge>' +
-        '          <feMergeNode in="blur" />' +
-        '          <feMergeNode in="SourceGraphic" />' +
-        '        </feMerge>' +
-        '      </filter>' +
-        '    </defs>' +
-        '    <path d="M 60 90 L 220 50" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
-        '    <path d="M 60 90 L 220 130" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
-        '    <path d="M 280 50 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
-        '    <path d="M 280 130 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
-        '    <circle r="4.5" fill="#ec4899" filter="url(#glow-pf)">' +
-        '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 60 90 L 220 50" />' +
-        '    </circle>' +
-        '    <circle r="4.5" fill="#a78bfa" filter="url(#glow-pf)">' +
-        '      <animateMotion dur="2.8s" repeatCount="indefinite" path="M 60 90 L 220 130" />' +
-        '    </circle>' +
-        '    <circle r="3.5" fill="#94a3b8" opacity="0.6">' +
-        '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 280 50 L 440 90" />' +
-        '    </circle>' +
-        '    <g transform="translate(60, 90)">' +
-        '      <circle r="22" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.5" />' +
-        '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#a78bfa" font-family="monospace">USERS</text>' +
-        '    </g>' +
-        '    <g transform="translate(250, 50)">' +
-        '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" />' +
-        '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#22c55e" font-family="monospace">EC2: OK</text>' +
-        '    </g>' +
-        '    <g transform="translate(250, 130)">' +
-        '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" />' +
-        '      <circle cx="-20" cy="-10" r="3" fill="#ef4444">' +
-        '        <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite" />' +
-        '      </circle>' +
-        '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#ef4444" font-family="monospace">EC2: 150%</text>' +
-        '      <rect x="-24" y="8" width="48" height="4" rx="2" fill="#ef4444" />' +
-        '    </g>' +
-        '    <g transform="translate(470, 90)">' +
-        '      <circle r="22" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" />' +
-        '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#3b82f6" font-family="monospace">RDS</text>' +
-        '    </g>' +
-        '  </svg>' +
-        '</div>',
+          '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
+          '    <defs>' +
+          '      <linearGradient id="pulseflowGrad" x1="0%" y1="0%" x2="100%" y2="0%">' +
+          '        <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.8" />' +
+          '        <stop offset="100%" stop-color="#ec4899" stop-opacity="0.8" />' +
+          '      </linearGradient>' +
+          '      <filter id="glow-pf" x="-20%" y="-20%" width="140%" height="140%">' +
+          '        <feGaussianBlur stdDeviation="3" result="blur" />' +
+          '        <feMerge>' +
+          '          <feMergeNode in="blur" />' +
+          '          <feMergeNode in="SourceGraphic" />' +
+          '        </feMerge>' +
+          '      </filter>' +
+          '    </defs>' +
+          '    <path d="M 60 90 L 220 50" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
+          '    <path d="M 60 90 L 220 130" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
+          '    <path d="M 280 50 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
+          '    <path d="M 280 130 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
+          '    <circle r="4.5" fill="#ec4899" filter="url(#glow-pf)">' +
+          '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 60 90 L 220 50" />' +
+          '    </circle>' +
+          '    <circle r="4.5" fill="#a78bfa" filter="url(#glow-pf)">' +
+          '      <animateMotion dur="2.8s" repeatCount="indefinite" path="M 60 90 L 220 130" />' +
+          '    </circle>' +
+          '    <circle r="3.5" fill="#94a3b8" opacity="0.6">' +
+          '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 280 50 L 440 90" />' +
+          '    </circle>' +
+          '    <g transform="translate(60, 90)">' +
+          '      <circle r="22" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.5" />' +
+          '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#a78bfa" font-family="monospace">USERS</text>' +
+          '    </g>' +
+          '    <g transform="translate(250, 50)">' +
+          '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" />' +
+          '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#22c55e" font-family="monospace">EC2: OK</text>' +
+          '    </g>' +
+          '    <g transform="translate(250, 130)">' +
+          '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" />' +
+          '      <circle cx="-20" cy="-10" r="3" fill="#ef4444">' +
+          '        <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite" />' +
+          '      </circle>' +
+          '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#ef4444" font-family="monospace">EC2: 150%</text>' +
+          '      <rect x="-24" y="8" width="48" height="4" rx="2" fill="#ef4444" />' +
+          '    </g>' +
+          '    <g transform="translate(470, 90)">' +
+          '      <circle r="22" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" />' +
+          '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#3b82f6" font-family="monospace">RDS</text>' +
+          '    </g>' +
+          '  </svg>' +
+          '</div>',
         '<ul>' +
-        '<li><span class="text-purple"><strong>Reactive 180ms Tick Loop:</strong></span> Driven by RxJS stream flows, PulseFlow traverses your canvas topology in logical flow order, ensuring that upstream request loads and bottleneck pressures cascade accurately down to child nodes.</li>' +
-        '<li><span class="text-blue"><strong>Compounding Latency & Backlogs:</strong></span> Rather than simple static averages, PulseFlow calculates request queues over time. If a service experiences traffic past its capacity, latency compounds exponentially tick-by-tick, simulating realistic system degradation.</li>' +
-        '<li><span class="text-red"><strong>Hard Server Collapses:</strong></span> Models physical compute failure thresholds (EC2, ECS, RDS). If load exceeds 150% of capacity for over 1 second, PulseFlow shuts down the server into a terminal offline state, forcing user intervention.</li>' +
-        '<li><span class="text-emerald"><strong>Visual Flow Telemetry:</strong></span> Translates mathematical saturation rates into color-coded SVG packets that represent data throughput on the canvas.</li>' +
-        '</ul>'
+          '<li><span class="text-purple"><strong>Reactive 180ms Tick Loop:</strong></span> Driven by RxJS stream flows, PulseFlow traverses your canvas topology in logical flow order, ensuring that upstream request loads and bottleneck pressures cascade accurately down to child nodes.</li>' +
+          '<li><span class="text-blue"><strong>Compounding Latency & Backlogs:</strong></span> Rather than simple static averages, PulseFlow calculates request queues over time. If a service experiences traffic past its capacity, latency compounds exponentially tick-by-tick, simulating realistic system degradation.</li>' +
+          '<li><span class="text-red"><strong>Hard Server Collapses:</strong></span> Models physical compute failure thresholds (EC2, ECS, RDS). If load exceeds 150% of capacity for over 1 second, PulseFlow shuts down the server into a terminal offline state, forcing user intervention.</li>' +
+          '<li><span class="text-emerald"><strong>Visual Flow Telemetry:</strong></span> Translates mathematical saturation rates into color-coded SVG packets that represent data throughput on the canvas.</li>' +
+          '</ul>',
       ],
       tips: [
-        'Toggle the Pause button on the canvas toolbar to freeze PulseFlow mid-tick and trace precise bottlenecks.'
-      ]
+        'Toggle the Pause button on the canvas toolbar to freeze PulseFlow mid-tick and trace precise bottlenecks.',
+      ],
     },
     {
       id: 'ov-rubix',
       title: 'Rubix: Automated Architecture Rubric Engine',
       category: 'engines',
       icon: 'fas fa-cubes',
-      summary: 'The declarative verification engine that grades system designs, checks connection legality, and tracks milestone progress.',
+      summary:
+        'The declarative verification engine that grades system designs, checks connection legality, and tracks milestone progress.',
       content: [
         '<span class="text-orange"><strong>Rubix</strong></span> is our custom-designed, declarative validation and grading engine. It reads your visual canvas and evaluates the architectural structural design against complex engineering constraints.',
         '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
-        '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
-        '    <defs>' +
-        '      <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">' +
-        '        <feGaussianBlur stdDeviation="3" result="blur" />' +
-        '        <feMerge>' +
-        '          <feMergeNode in="blur" />' +
-        '          <feMergeNode in="SourceGraphic" />' +
-        '        </feMerge>' +
-        '      </filter>' +
-        '    </defs>' +
-        '    <line x1="280" y1="90" x2="100" y2="40" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
-        '    <line x1="280" y1="90" x2="100" y2="90" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
-        '    <line x1="280" y1="90" x2="100" y2="140" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
-        '    <line x1="280" y1="90" x2="460" y2="90" stroke="#3b82f6" stroke-width="2" />' +
-        '    <g transform="translate(280, 90)">' +
-        '      <circle r="30" fill="#1e1e38" stroke="#a78bfa" stroke-width="2" />' +
-        '      <polygon points="0,-18 16,-6 10,12 -10,12 -16,-6" fill="none" stroke="#a78bfa" stroke-width="1.5">' +
-        '        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite" />' +
-        '      </polygon>' +
-        '      <text y="4" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" font-family="monospace">RUBIX</text>' +
-        '    </g>' +
-        '    <g transform="translate(100, 40)">' +
-        '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" />' +
-        '      <path d="M -45 -3 L -39 3 M -39 -3 L -45 3" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />' +
-        '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#ef4444" font-family="monospace">hasService (APIGW)</text>' +
-        '    </g>' +
-        '    <g transform="translate(100, 90)">' +
-        '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
-        '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
-        '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">hasEdge (ELB->EC2)</text>' +
-        '    </g>' +
-        '    <g transform="translate(100, 140)">' +
-        '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
-        '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
-        '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">countAtLeast (EC2>=2)</text>' +
-        '    </g>' +
-        '    <g transform="translate(460, 90)">' +
-        '      <rect x="-40" y="-25" width="80" height="50" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />' +
-        '      <text y="-8" text-anchor="middle" font-size="8" font-weight="800" fill="#94a3b8" font-family="sans-serif">GRADE REPORT</text>' +
-        '      <text y="15" text-anchor="middle" font-size="20" font-weight="950" fill="#3b82f6" font-family="monospace" filter="url(#glow-orange)">85/100</text>' +
-        '    </g>' +
-        '  </svg>' +
-        '</div>',
+          '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
+          '    <defs>' +
+          '      <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">' +
+          '        <feGaussianBlur stdDeviation="3" result="blur" />' +
+          '        <feMerge>' +
+          '          <feMergeNode in="blur" />' +
+          '          <feMergeNode in="SourceGraphic" />' +
+          '        </feMerge>' +
+          '      </filter>' +
+          '    </defs>' +
+          '    <line x1="280" y1="90" x2="100" y2="40" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+          '    <line x1="280" y1="90" x2="100" y2="90" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+          '    <line x1="280" y1="90" x2="100" y2="140" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+          '    <line x1="280" y1="90" x2="460" y2="90" stroke="#3b82f6" stroke-width="2" />' +
+          '    <g transform="translate(280, 90)">' +
+          '      <circle r="30" fill="#1e1e38" stroke="#a78bfa" stroke-width="2" />' +
+          '      <polygon points="0,-18 16,-6 10,12 -10,12 -16,-6" fill="none" stroke="#a78bfa" stroke-width="1.5">' +
+          '        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite" />' +
+          '      </polygon>' +
+          '      <text y="4" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" font-family="monospace">RUBIX</text>' +
+          '    </g>' +
+          '    <g transform="translate(100, 40)">' +
+          '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" />' +
+          '      <path d="M -45 -3 L -39 3 M -39 -3 L -45 3" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />' +
+          '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#ef4444" font-family="monospace">hasService (APIGW)</text>' +
+          '    </g>' +
+          '    <g transform="translate(100, 90)">' +
+          '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
+          '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
+          '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">hasEdge (ELB->EC2)</text>' +
+          '    </g>' +
+          '    <g transform="translate(100, 140)">' +
+          '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
+          '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
+          '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">countAtLeast (EC2>=2)</text>' +
+          '    </g>' +
+          '    <g transform="translate(460, 90)">' +
+          '      <rect x="-40" y="-25" width="80" height="50" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />' +
+          '      <text y="-8" text-anchor="middle" font-size="8" font-weight="800" fill="#94a3b8" font-family="sans-serif">GRADE REPORT</text>' +
+          '      <text y="15" text-anchor="middle" font-size="20" font-weight="950" fill="#3b82f6" font-family="monospace" filter="url(#glow-orange)">85/100</text>' +
+          '    </g>' +
+          '  </svg>' +
+          '</div>',
         '<ul>' +
-        '<li><span class="text-orange"><strong>Declarative Rule Grammar:</strong></span> Rubix parses a custom JSON rule language (supporting <code>hasService</code>, <code>hasEdge</code>, <code>configAtLeast</code>, <code>countAtLeast</code>, and <code>noOverload</code>) to validate designs without any procedural code modifications.</li>' +
-        '<li><span class="text-purple"><strong>Automated Live Grading:</strong></span> Instantly computes a 0-100 score based on weighted check criteria, automatically isolating bonus points (such as configuring read replicas) and applying score penalties for overloaded components.</li>' +
-        '<li><span class="text-blue"><strong>Milestone Tracking:</strong></span> Evaluates progress against ordered checkpoints in real time as you draw, providing immediate hints and guidance to lead the user toward optimal design goals.</li>' +
-        '<li><span class="text-emerald"><strong>Connection Legality Checker:</strong></span> Rubix scans your active connections against AWS service specifications (defined in <code>aws-services.json</code>) to immediately flag illegal port connections (like wiring a public client directly to an internal DB).</li>' +
-        '</ul>'
+          '<li><span class="text-orange"><strong>Declarative Rule Grammar:</strong></span> Rubix parses a custom JSON rule language (supporting <code>hasService</code>, <code>hasEdge</code>, <code>configAtLeast</code>, <code>countAtLeast</code>, and <code>noOverload</code>) to validate designs without any procedural code modifications.</li>' +
+          '<li><span class="text-purple"><strong>Automated Live Grading:</strong></span> Instantly computes a 0-100 score based on weighted check criteria, automatically isolating bonus points (such as configuring read replicas) and applying score penalties for overloaded components.</li>' +
+          '<li><span class="text-blue"><strong>Milestone Tracking:</strong></span> Evaluates progress against ordered checkpoints in real time as you draw, providing immediate hints and guidance to lead the user toward optimal design goals.</li>' +
+          '<li><span class="text-emerald"><strong>Connection Legality Checker:</strong></span> Rubix scans your active connections against AWS service specifications (defined in <code>aws-services.json</code>) to immediately flag illegal port connections (like wiring a public client directly to an internal DB).</li>' +
+          '</ul>',
       ],
       tips: [
-        'Run `npm run validate:challenges` in the frontend directory to run the Rubix engine locally and verify all design challenges.'
-      ]
+        'Run `npm run validate:challenges` in the frontend directory to run the Rubix engine locally and verify all design challenges.',
+      ],
     },
     {
       id: 'ov-gaps',
       title: 'Problems Solved & Gaps Filled',
       category: 'overview',
       icon: 'fas fa-puzzle-piece',
-      summary: 'Fills the massive gap between static draw boards and expensive live deployment testing.',
+      summary:
+        'Fills the massive gap between static draw boards and expensive live deployment testing.',
       content: [
         '<ul>' +
-        '<li><span class="text-purple"><strong>Static Diagrams vs. Dynamic Reality</strong></span><br>' +
-        'Traditional tools like Draw.io create nice pictures, but they cannot tell you when a server will crash, when a database queue will bottleneck, or how much latency your users will experience. Sr. Architect solves this by running a custom tick-based traffic engine that dynamically calculates bottlenecks, drop rates, and server overload state in real time.</li>' +
-        '<li><span class="text-orange"><strong>The Cost and Complexity of Testing</strong></span><br>' +
-        'Provisioning real AWS environments to run load tests is incredibly slow, expensive, and risky. Sr. Architect fills this gap by giving you a zero-cost sandbox to experiment instantly. Validate failure-recovery scenarios (like SQS decoupling or RDS replica scaling) in seconds, with absolutely zero AWS bills.</li>' +
-        '<li><span class="text-blue"><strong>Hidden Billing Surprises</strong></span><br>' +
-        'Traditional tools do not connect drawing with financial realities. Sr. Architect integrates live cost estimators that factor in instance classes, database EBS IOPS, and serverless invocations with real-world regional modifiers, protecting developers from costly architecture designs.</li>' +
-        '</ul>'
-      ]
+          '<li><span class="text-purple"><strong>Static Diagrams vs. Dynamic Reality</strong></span><br>' +
+          'Traditional tools like Draw.io create nice pictures, but they cannot tell you when a server will crash, when a database queue will bottleneck, or how much latency your users will experience. Sr. Architect solves this by running a custom tick-based traffic engine that dynamically calculates bottlenecks, drop rates, and server overload state in real time.</li>' +
+          '<li><span class="text-orange"><strong>The Cost and Complexity of Testing</strong></span><br>' +
+          'Provisioning real AWS environments to run load tests is incredibly slow, expensive, and risky. Sr. Architect fills this gap by giving you a zero-cost sandbox to experiment instantly. Validate failure-recovery scenarios (like SQS decoupling or RDS replica scaling) in seconds, with absolutely zero AWS bills.</li>' +
+          '<li><span class="text-blue"><strong>Hidden Billing Surprises</strong></span><br>' +
+          'Traditional tools do not connect drawing with financial realities. Sr. Architect integrates live cost estimators that factor in instance classes, database EBS IOPS, and serverless invocations with real-world regional modifiers, protecting developers from costly architecture designs.</li>' +
+          '</ul>',
+      ],
     },
     {
       id: 'ov-roadmap',
@@ -339,14 +439,14 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       content: [
         'We are building revolutionary capabilities to close the gap between drawing architectures, validating cost, and finding the most optimized solution for your organization. Here is a sneak peek at what is coming:',
         '<ul>' +
-        '<li><span class="text-purple"><strong>1. Terraform State Imports (Coming Soon)</strong></span><br>' +
-        'What it offers: Upload any <code>.tf</code> configuration or <code>terraform.tfstate</code> file, and watch Sr. Architect automatically parse, map, and draw the entire AWS infrastructure onto the canvas instantly. No manual dragging required get a fully composed, stress-testable simulation environment in under 5 seconds!</li>' +
-        '<li><span class="text-orange"><strong>2. AI-Powered Architecture Suggestions (Game Changer!)</strong></span><br>' +
-        'What it offers: Input your personalized business usecase, and our integrated AI agent will analyze your visual canvas topology. It provides tailored cost-performance optimizations such as recommending Lambda serverless transitions, adjusting database IOPS queues, or scaling ECS container replica thresholds to fit your usecase perfectly.</li>' +
-        '<li><span class="text-blue"><strong>3. AI Multi-Cloud Builder & Comparative Benchmarking</strong></span><br>' +
-        'What it offers: Ever wondered if GCP or Azure would be better for your usecase? Our AI engine translates your active AWS blueprint into exact equivalent architectures on <code>Google Cloud Platform (GCP)</code> and <code>Microsoft Azure</code>. It runs side-by-side cost and performance comparisons, advising you which cloud provider delivers the absolute best value and scalability for your business.</li>' +
-        '</ul>'
-      ]
+          '<li><span class="text-purple"><strong>1. Terraform State Imports (Coming Soon)</strong></span><br>' +
+          'What it offers: Upload any <code>.tf</code> configuration or <code>terraform.tfstate</code> file, and watch Sr. Architect automatically parse, map, and draw the entire AWS infrastructure onto the canvas instantly. No manual dragging required get a fully composed, stress-testable simulation environment in under 5 seconds!</li>' +
+          '<li><span class="text-orange"><strong>2. AI-Powered Architecture Suggestions (Game Changer!)</strong></span><br>' +
+          'What it offers: Input your personalized business usecase, and our integrated AI agent will analyze your visual canvas topology. It provides tailored cost-performance optimizations such as recommending Lambda serverless transitions, adjusting database IOPS queues, or scaling ECS container replica thresholds to fit your usecase perfectly.</li>' +
+          '<li><span class="text-blue"><strong>3. AI Multi-Cloud Builder & Comparative Benchmarking</strong></span><br>' +
+          'What it offers: Ever wondered if GCP or Azure would be better for your usecase? Our AI engine translates your active AWS blueprint into exact equivalent architectures on <code>Google Cloud Platform (GCP)</code> and <code>Microsoft Azure</code>. It runs side-by-side cost and performance comparisons, advising you which cloud provider delivers the absolute best value and scalability for your business.</li>' +
+          '</ul>',
+      ],
     },
     // --- GETTING STARTED ---
     {
@@ -359,57 +459,59 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         'Welcome to Sr. Architect! Building AWS architectures starts with the <strong>Left Service Palette</strong>.',
         'To build your first topology, follow these simple steps:',
         '<ul>' +
-        '<li><strong>Drag and Drop:</strong> Pull any available AWS service onto the high-tech 2D visual canvas to instantiate it.</li>' +
-        '<li><strong>Make Connections:</strong> Each service has input and output ports. Hover over an output port (colored circle) and drag a link directly to an input port on another service.</li>' +
-        '<li><strong>Validation Check:</strong> The builder automatically runs architectural validation rules. If a link or service configuration is invalid, a red health card will warn you exactly what is wrong.</li>' +
-        '<li><strong>Delete Elements:</strong> To delete a service or link, simply select it and press the <code>Backspace</code> or <code>Delete</code> key.</li>' +
-        '</ul>'
+          '<li><strong>Drag and Drop:</strong> Pull any available AWS service onto the high-tech 2D visual canvas to instantiate it.</li>' +
+          '<li><strong>Make Connections:</strong> Each service has input and output ports. Hover over an output port (colored circle) and drag a link directly to an input port on another service.</li>' +
+          '<li><strong>Validation Check:</strong> The builder automatically runs architectural validation rules. If a link or service configuration is invalid, a red health card will warn you exactly what is wrong.</li>' +
+          '<li><strong>Delete Elements:</strong> To delete a service or link, simply select it and press the <code>Backspace</code> or <code>Delete</code> key.</li>' +
+          '</ul>',
       ],
       tips: [
         'Pressing the Ctrl / Command key allows you to multi-select nodes on the canvas.',
-        'You can double-click on empty canvas space to place custom annotations/sticky notes.'
-      ]
+        'You can double-click on empty canvas space to place custom annotations/sticky notes.',
+      ],
     },
     {
       id: 'gs-modes',
       title: 'Developer vs. Architect Modes',
       category: 'start',
       icon: 'fas fa-user-gear',
-      summary: 'Understand the difference between the beginner-friendly Developer mode and the advanced Architect mode.',
+      summary:
+        'Understand the difference between the beginner-friendly Developer mode and the advanced Architect mode.',
       content: [
         'Sr. Architect supports two experience modes tailored for different experience levels:',
         '<ul>' +
-        '<li><span class="text-emerald"><strong>Developer Mode:</strong></span> Focused on system design learning. It simplifies the palette to 24+ core AWS services, simplifies configuration sliders, and disables granular billing complexity. Ideal for learning system behaviors and traffic flow dynamics.</li>' +
-        '<li><span class="text-purple"><strong>Architect Mode:</strong></span> Focused on professional production-scale design. It exposes 65+ AWS services, adds deep configuration fields (LCU factors, compute classes, EBS types), and opens full cost breakdowns.</li>' +
-        '</ul>',
-        'Toggle modes on the launch dashboard. Your progress is synced and saved in your browser storage so you never lose your designs.'
-      ]
+          '<li><span class="text-emerald"><strong>Developer Mode:</strong></span> Focused on system design learning. It simplifies the palette to 24+ core AWS services, simplifies configuration sliders, and disables granular billing complexity. Ideal for learning system behaviors and traffic flow dynamics.</li>' +
+          '<li><span class="text-purple"><strong>Architect Mode:</strong></span> Focused on professional production-scale design. It exposes 65+ AWS services, adds deep configuration fields (LCU factors, compute classes, EBS types), and opens full cost breakdowns.</li>' +
+          '</ul>',
+        'Toggle modes on the launch dashboard. Your progress is synced and saved in your browser storage so you never lose your designs.',
+      ],
     },
     {
       id: 'gs-hotkeys',
       title: 'Keyboard Shortcuts',
       category: 'start',
       icon: 'fas fa-keyboard',
-      summary: 'Work faster on the canvas with undo/redo, quick save, multi-select, and deletion hotkeys.',
+      summary:
+        'Work faster on the canvas with undo/redo, quick save, multi-select, and deletion hotkeys.',
       content: [
         'The simulator canvas supports keyboard shortcuts for the most common actions. On macOS, use <code>⌘ Cmd</code> wherever <code>Ctrl</code> is listed.',
         '<table class="hotkey-table">' +
-        '<thead><tr><th>Shortcut</th><th>Action</th></tr></thead>' +
-        '<tbody>' +
-        '<tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo the last change (add, delete, connect, move, rename, or config edit)</td></tr>' +
-        '<tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd> <span class="hk-or">or</span> <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo the change you just undid</td></tr>' +
-        '<tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save the current architecture to browser storage</td></tr>' +
-        '<tr><td><kbd>Delete</kbd> <span class="hk-or">or</span> <kbd>Backspace</kbd></td><td>Delete the selected service(s), connection(s), or note(s)</td></tr>' +
-        '<tr><td><kbd>Ctrl</kbd> / <kbd>Shift</kbd> + drag</td><td>Draw a selection box to multi-select nodes and links</td></tr>' +
-        '<tr><td>Scroll / pinch</td><td>Zoom the canvas in and out</td></tr>' +
-        '<tr><td>Double-click a canvas tab</td><td>Rename that canvas; <kbd>Enter</kbd> confirms, <kbd>Esc</kbd> cancels</td></tr>' +
-        '</tbody></table>',
-        'Undo history holds the last 60 changes per canvas and is cleared when you switch tabs or load a different project. Rapid edits (like dragging a slider or moving a node) collapse into a single undo step. Undo and redo are paused while a simulation is running; stop the run first.'
+          '<thead><tr><th>Shortcut</th><th>Action</th></tr></thead>' +
+          '<tbody>' +
+          '<tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo the last change (add, delete, connect, move, rename, or config edit)</td></tr>' +
+          '<tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd> <span class="hk-or">or</span> <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo the change you just undid</td></tr>' +
+          '<tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save the current architecture to browser storage</td></tr>' +
+          '<tr><td><kbd>Delete</kbd> <span class="hk-or">or</span> <kbd>Backspace</kbd></td><td>Delete the selected service(s), connection(s), or note(s)</td></tr>' +
+          '<tr><td><kbd>Ctrl</kbd> / <kbd>Shift</kbd> + drag</td><td>Draw a selection box to multi-select nodes and links</td></tr>' +
+          '<tr><td>Scroll / pinch</td><td>Zoom the canvas in and out</td></tr>' +
+          '<tr><td>Double-click a canvas tab</td><td>Rename that canvas; <kbd>Enter</kbd> confirms, <kbd>Esc</kbd> cancels</td></tr>' +
+          '</tbody></table>',
+        'Undo history holds the last 60 changes per canvas and is cleared when you switch tabs or load a different project. Rapid edits (like dragging a slider or moving a node) collapse into a single undo step. Undo and redo are paused while a simulation is running; stop the run first.',
       ],
       tips: [
         'While typing in a text field or note, <kbd>Ctrl</kbd> + <kbd>Z</kbd> performs normal text undo instead of canvas undo.',
-        'The circular undo/redo arrows in the top toolbar do the same thing and show when actions are available.'
-      ]
+        'The circular undo/redo arrows in the top toolbar do the same thing and show when actions are available.',
+      ],
     },
 
     // --- SIMULATOR CORE ---
@@ -422,15 +524,15 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       content: [
         'Once you click the Run play button, the Users node starts generating active data packets.',
         '<ul>' +
-        '<li><strong>Glowing Packets:</strong> Traffic flows down visual paths as glowing packets. The rate of requests is determined by the Users node\'s <code>Request Rate</code> slider.</li>' +
-        '<li><strong>Simulation Ticks:</strong> The engine updates at a steady 60 FPS, resolving queues, packet transfers, and database queries dynamically.</li>' +
-        '<li><strong>Degradation:</strong> If a server gets overloaded (exceeding its capacity limit), you\'ll watch packets stack up, latency climb, or requests fail and drop on the live dashboard.</li>' +
-        '</ul>'
+          "<li><strong>Glowing Packets:</strong> Traffic flows down visual paths as glowing packets. The rate of requests is determined by the Users node's <code>Request Rate</code> slider.</li>" +
+          '<li><strong>Simulation Ticks:</strong> The engine updates at a steady 60 FPS, resolving queues, packet transfers, and database queries dynamically.</li>' +
+          "<li><strong>Degradation:</strong> If a server gets overloaded (exceeding its capacity limit), you'll watch packets stack up, latency climb, or requests fail and drop on the live dashboard.</li>" +
+          '</ul>',
       ],
       tips: [
         'Toggle the Pause button to freeze the data packets mid-conduit for fine-grained tracing.',
-        'Watch the sparkline graph in the telemetry overlay to see real-time latency fluctuations.'
-      ]
+        'Watch the sparkline graph in the telemetry overlay to see real-time latency fluctuations.',
+      ],
     },
     {
       id: 'sim-telemetry',
@@ -441,27 +543,28 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       content: [
         'The Sandbox Console logs all operational transactions in real time at the bottom-left.',
         '<ul>' +
-        '<li><span class="text-emerald">Success Logs (Green):</span> Indicate healthy <code>HTTP 200</code> transactions reaching databases or consumers.</li>' +
-        '<li><span class="text-orange">Error Logs (Red):</span> Display overload failures, connection timeouts, or service integration faults.</li>' +
-        '<li><span class="text-purple">Telemetry Feed (Top-Right):</span> Acts as your real-time cloud dashboard. It charts Latency, Requests Per Second (RPS), and total Error count across your cloud blueprint.</li>' +
-        '</ul>'
-      ]
+          '<li><span class="text-emerald">Success Logs (Green):</span> Indicate healthy <code>HTTP 200</code> transactions reaching databases or consumers.</li>' +
+          '<li><span class="text-orange">Error Logs (Red):</span> Display overload failures, connection timeouts, or service integration faults.</li>' +
+          '<li><span class="text-purple">Telemetry Feed (Top-Right):</span> Acts as your real-time cloud dashboard. It charts Latency, Requests Per Second (RPS), and total Error count across your cloud blueprint.</li>' +
+          '</ul>',
+      ],
     },
     {
       id: 'sim-bottlenecks',
       title: 'Bottlenecks & Collapses',
       category: 'sim',
       icon: 'fas fa-skull-crossbones',
-      summary: 'Understand the multi-factor bottleneck simulation, load shedding, and failure modes.',
+      summary:
+        'Understand the multi-factor bottleneck simulation, load shedding, and failure modes.',
       content: [
         'Rather than checking raw Requests-per-Second (RPS) thresholds, Sr. Architect simulates resource bottlenecks based on actual hardware limits and architecture behavior:',
         '<ul>' +
-        '<li><span class="text-purple"><strong>Multi-Factor Saturation:</strong></span> Nodes saturate when concurrent query queues, CPU pressure, or physical limits (like DB parallel queries, EC2 vCPU threads, or Lambda reserved concurrency) are exceeded.</li>' +
-        '<li><span class="text-orange"><strong>Load Shedding & Throttling:</strong></span> Fully managed or serverless services (such as API Gateway, SQS, or DynamoDB) shed excess load. They return transient <code>HTTP 429 Too Many Requests</code> or <code>503 Service Unavailable</code> errors but remain online and recover immediately when traffic drops.</li>' +
-        '<li><span class="text-red"><strong>Hard Collapse (Offline States):</strong></span> Compute-bound resources (like EC2 instances, ECS container tasks, or RDS database connections) model physical failure. If sustained overload exceeds 150% capacity for over 1 second (6 simulation ticks), the node collapses into a terminal <code>offline</code> state (e.g. CPU exhaustion, connection pool exhaustion) and must be stopped and restarted.</li>' +
-        '<li><span class="text-blue"><strong>Cascading Failures:</strong></span> When an upstream service goes offline or is overloaded, its failed state propagates downstream. Any dependent microservices will lose incoming traffic, visualizing a realistic system-wide collapse.</li>' +
-        '</ul>'
-      ]
+          '<li><span class="text-purple"><strong>Multi-Factor Saturation:</strong></span> Nodes saturate when concurrent query queues, CPU pressure, or physical limits (like DB parallel queries, EC2 vCPU threads, or Lambda reserved concurrency) are exceeded.</li>' +
+          '<li><span class="text-orange"><strong>Load Shedding & Throttling:</strong></span> Fully managed or serverless services (such as API Gateway, SQS, or DynamoDB) shed excess load. They return transient <code>HTTP 429 Too Many Requests</code> or <code>503 Service Unavailable</code> errors but remain online and recover immediately when traffic drops.</li>' +
+          '<li><span class="text-red"><strong>Hard Collapse (Offline States):</strong></span> Compute-bound resources (like EC2 instances, ECS container tasks, or RDS database connections) model physical failure. If sustained overload exceeds 150% capacity for over 1 second (6 simulation ticks), the node collapses into a terminal <code>offline</code> state (e.g. CPU exhaustion, connection pool exhaustion) and must be stopped and restarted.</li>' +
+          '<li><span class="text-blue"><strong>Cascading Failures:</strong></span> When an upstream service goes offline or is overloaded, its failed state propagates downstream. Any dependent microservices will lose incoming traffic, visualizing a realistic system-wide collapse.</li>' +
+          '</ul>',
+      ],
     },
 
     // --- FORMULAS & CALCULATIONS ---
@@ -474,50 +577,50 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       content: [
         'Every architecture you draw runs on one simple loop. Roughly every <code>180ms</code>, about five times a second, the engine wakes up, walks your whole graph, and recomputes traffic, latency, pressure and cost for every node. Each pass is called a <strong>tick</strong>.',
         '<ul>' +
-        '<li><span class="text-purple"><strong>Producers before consumers:</strong></span> each tick visits nodes in <em>flow order</em> (a topological sort), so a node always sees its full upstream traffic before it runs. Fan-outs and fan-ins stay accurate.</li>' +
-        '<li><span class="text-blue"><strong>Fresh each tick, but with memory:</strong></span> incoming traffic is recomputed from scratch every tick, yet two things deliberately carry over: each node\'s request <strong>queue</strong> and its accumulated <strong>overload latency</strong>. That memory is what makes congestion build and then drain over time.</li>' +
-        '<li><span class="text-emerald"><strong>Nothing is hand-set:</strong></span> during a run no number is faked. Capacity, demand, latency, CPU and cost are all <em>derived</em> from the formulas in this section.</li>' +
-        '</ul>'
+          '<li><span class="text-purple"><strong>Producers before consumers:</strong></span> each tick visits nodes in <em>flow order</em> (a topological sort), so a node always sees its full upstream traffic before it runs. Fan-outs and fan-ins stay accurate.</li>' +
+          '<li><span class="text-blue"><strong>Fresh each tick, but with memory:</strong></span> incoming traffic is recomputed from scratch every tick, yet two things deliberately carry over: each node\'s request <strong>queue</strong> and its accumulated <strong>overload latency</strong>. That memory is what makes congestion build and then drain over time.</li>' +
+          '<li><span class="text-emerald"><strong>Nothing is hand-set:</strong></span> during a run no number is faked. Capacity, demand, latency, CPU and cost are all <em>derived</em> from the formulas in this section.</li>' +
+          '</ul>',
       ],
-      tips: [
-        'Hit Pause to freeze a single tick and read the exact numbers each node resolved.'
-      ]
+      tips: ['Hit Pause to freeze a single tick and read the exact numbers each node resolved.'],
     },
     {
       id: 'formula-capacity',
       title: 'Capacity: How Much Can a Node Take?',
       category: 'formulas',
       icon: 'fas fa-gauge-high',
-      summary: 'The ceiling each service can serve before it struggles, and why it is rarely just "RPS".',
+      summary:
+        'The ceiling each service can serve before it struggles, and why it is rarely just "RPS".',
       content: [
         'Picture every node as a <strong>kitchen</strong>: capacity is how many orders its cooks can plate per second. Push more than that and orders pile up. Capacity is computed differently per service, because real services bottleneck on different resources:',
         '<ul>' +
-        '<li><span class="text-purple"><strong>Lambda (concurrency-bound):</strong></span> <code>capacity = reserved concurrency ÷ execution time(s)</code>. A 200ms function with 100 concurrency serves ~500 rps.</li>' +
-        '<li><span class="text-orange"><strong>EC2 / ECS (compute-bound):</strong></span> <code>capacity = tasks × vCPU × concurrency-per-vCPU ÷ request time(s)</code>.</li>' +
-        '<li><span class="text-blue"><strong>RDS (connection-bound):</strong></span> <code>capacity = parallel queries ÷ query time(s)</code>. Parallel queries are capped by CPU cores (not raw max-connections) and lifted by read replicas.</li>' +
-        '<li><span class="text-emerald"><strong>ElastiCache / OpenSearch:</strong></span> scale with <code>node count × per-node op/query rate</code>.</li>' +
-        '<li><strong>S3:</strong> effectively unbounded, so it is never the bottleneck.</li>' +
-        '</ul>',
-        'This is why a slow 500ms function saturates at a far lower request rate than a fast 10ms one, even with identical concurrency. The cooks are simply tied up longer per order.'
-      ]
+          '<li><span class="text-purple"><strong>Lambda (concurrency-bound):</strong></span> <code>capacity = reserved concurrency ÷ execution time(s)</code>. A 200ms function with 100 concurrency serves ~500 rps.</li>' +
+          '<li><span class="text-orange"><strong>EC2 / ECS (compute-bound):</strong></span> <code>capacity = tasks × vCPU × concurrency-per-vCPU ÷ request time(s)</code>.</li>' +
+          '<li><span class="text-blue"><strong>RDS (connection-bound):</strong></span> <code>capacity = parallel queries ÷ query time(s)</code>. Parallel queries are capped by CPU cores (not raw max-connections) and lifted by read replicas.</li>' +
+          '<li><span class="text-emerald"><strong>ElastiCache / OpenSearch:</strong></span> scale with <code>node count × per-node op/query rate</code>.</li>' +
+          '<li><strong>S3:</strong> effectively unbounded, so it is never the bottleneck.</li>' +
+          '</ul>',
+        'This is why a slow 500ms function saturates at a far lower request rate than a fast 10ms one, even with identical concurrency. The cooks are simply tied up longer per order.',
+      ],
     },
     {
       id: 'formula-demand',
       title: 'Demand, Queue & the Overload Ratio',
       category: 'formulas',
       icon: 'fas fa-arrow-trend-up',
-      summary: 'How incoming traffic, backlog and capacity combine into one "how cooked is this node?" number.',
+      summary:
+        'How incoming traffic, backlog and capacity combine into one "how cooked is this node?" number.',
       content: [
         'Each tick a node works out how much it is facing versus how much it can clear:',
         '<ul>' +
-        '<li><code>total demand = incoming rps + leftover queue</code>: new orders plus the existing backlog.</li>' +
-        '<li><code>processed = min(total demand, capacity)</code>: you can only plate as fast as the cooks allow.</li>' +
-        '<li><code>queue = total demand − processed</code>: whatever could not be served waits in line.</li>' +
-        '<li><span class="text-orange"><code>overload ratio = total demand ÷ capacity</code></span> is the single most important number. <code>1.0</code> = exactly full; <code>2.0</code> = twice what the node can handle.</li>' +
-        '</ul>',
+          '<li><code>total demand = incoming rps + leftover queue</code>: new orders plus the existing backlog.</li>' +
+          '<li><code>processed = min(total demand, capacity)</code>: you can only plate as fast as the cooks allow.</li>' +
+          '<li><code>queue = total demand − processed</code>: whatever could not be served waits in line.</li>' +
+          '<li><span class="text-orange"><code>overload ratio = total demand ÷ capacity</code></span> is the single most important number. <code>1.0</code> = exactly full; <code>2.0</code> = twice what the node can handle.</li>' +
+          '</ul>',
         'When a node fans out to several children, each edge carries a share set by its <strong>traffic weight</strong>: <code>load = processed × (weight ÷ 100)</code>. That is how you model a 90/10 canary or a 70/30 pool split.',
-        'The queue is deliberately <strong>capped</strong> at a few seconds\' worth of capacity. Without a cap, a node that briefly overloaded would hoard an impossible backlog and never look healthy again. The cap lets it recover the instant traffic eases.'
-      ]
+        "The queue is deliberately <strong>capped</strong> at a few seconds' worth of capacity. Without a cap, a node that briefly overloaded would hoard an impossible backlog and never look healthy again. The cap lets it recover the instant traffic eases.",
+      ],
     },
     {
       id: 'formula-latency',
@@ -529,40 +632,41 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         'Latency is the headline number on every node, and it is just a sum of intuitive parts:',
         '<code>latency = base + queue-wait + load-penalty + overload-climb − cache-savings</code>',
         '<ul>' +
-        '<li><strong>Base:</strong> the node\'s own processing time at rest (its <code>Base Latency</code> param).</li>' +
-        '<li><strong>Queue-wait</strong> <code>= min(500, queue × 0.5)</code> is time spent waiting in line, capped so it never dominates on its own.</li>' +
-        '<li><span class="text-orange"><strong>Load-penalty</strong> <code>= overload ratio × 18</code></span> is a steady tax for running hot.</li>' +
-        '<li><span class="text-emerald"><strong>Cache-savings:</strong></span> CloudFront / ElastiCache / API Gateway subtract <code>cache hit rate × 0.28</code>.</li>' +
-        '</ul>',
+          "<li><strong>Base:</strong> the node's own processing time at rest (its <code>Base Latency</code> param).</li>" +
+          '<li><strong>Queue-wait</strong> <code>= min(500, queue × 0.5)</code> is time spent waiting in line, capped so it never dominates on its own.</li>' +
+          '<li><span class="text-orange"><strong>Load-penalty</strong> <code>= overload ratio × 18</code></span> is a steady tax for running hot.</li>' +
+          '<li><span class="text-emerald"><strong>Cache-savings:</strong></span> CloudFront / ElastiCache / API Gateway subtract <code>cache hit rate × 0.28</code>.</li>' +
+          '</ul>',
         'The <strong>overload-climb</strong> is the part that makes a stuck node feel real. While a node stays past capacity, this penalty <em>compounds</em> every tick: <code>next = (previous + (overload ratio − 1) × 12) × 1.12</code>. So latency does not plateau. It escalates milliseconds → seconds → minutes the longer overload lasts. The moment load drops back under capacity it decays ~40% per tick and the node visibly recovers.',
         'It cannot climb forever. It is capped at the <strong>request timeout</strong> (default 60s). Hitting that means requests are timing out, which sheds the backlog and, for real hardware, tips the node offline (see the next article).',
-        '<em>Example:</em> a 50ms node held at <code>2×</code> overload starts around a few hundred ms, then compounds upward through seconds toward the 60s timeout if the pressure is sustained.'
+        '<em>Example:</em> a 50ms node held at <code>2×</code> overload starts around a few hundred ms, then compounds upward through seconds toward the 60s timeout if the pressure is sustained.',
       ],
       tips: [
-        'These multipliers (× 0.5, × 18, × 1.12) are tuned for a readable, realistic feel on a 180ms tick. They are a behavioural model, not measured AWS numbers.'
-      ]
+        'These multipliers (× 0.5, × 18, × 1.12) are tuned for a readable, realistic feel on a 180ms tick. They are a behavioural model, not measured AWS numbers.',
+      ],
     },
     {
       id: 'formula-health',
       title: 'Health States & the Point of Collapse',
       category: 'formulas',
       icon: 'fas fa-heart-crack',
-      summary: 'The thresholds that turn a node green → amber → red, and when it goes dark for good.',
+      summary:
+        'The thresholds that turn a node green → amber → red, and when it goes dark for good.',
       content: [
-        'A node\'s colour is decided purely by the numbers above, mainly the overload ratio and CPU pressure:',
+        "A node's colour is decided purely by the numbers above, mainly the overload ratio and CPU pressure:",
         '<ul>' +
-        '<li><span class="text-emerald"><strong>Normal:</strong></span> overload ratio below ~0.78, comfortable headroom.</li>' +
-        '<li><span class="text-orange"><strong>Busy:</strong></span> ratio above ~0.78 (or CPU > 66%). <em>Exactly at capacity (ratio = 1.0) a node is Busy, not Overloaded.</em></li>' +
-        '<li><span class="text-red"><strong>Overloaded:</strong></span> ratio above ~1.12 (or CPU > 84%), shedding load with latency climbing.</li>' +
-        '<li><span class="text-red"><strong>Offline:</strong></span> sustained collapse, the node goes dark.</li>' +
-        '</ul>',
+          '<li><span class="text-emerald"><strong>Normal:</strong></span> overload ratio below ~0.78, comfortable headroom.</li>' +
+          '<li><span class="text-orange"><strong>Busy:</strong></span> ratio above ~0.78 (or CPU > 66%). <em>Exactly at capacity (ratio = 1.0) a node is Busy, not Overloaded.</em></li>' +
+          '<li><span class="text-red"><strong>Overloaded:</strong></span> ratio above ~1.12 (or CPU > 84%), shedding load with latency climbing.</li>' +
+          '<li><span class="text-red"><strong>Offline:</strong></span> sustained collapse, the node goes dark.</li>' +
+          '</ul>',
         'Pressure gauges have their own formulas: <code>CPU = baseline × 0.45 + overload ratio × 58</code>, while memory rises with the queue (for Lambda it is concurrency utilisation instead).',
-        'Whether a node can actually go <strong>offline</strong> depends on its class, the same split shown in every service\'s <strong>Bottleneck &amp; Capacity</strong> card:',
+        "Whether a node can actually go <strong>offline</strong> depends on its class, the same split shown in every service's <strong>Bottleneck &amp; Capacity</strong> card:",
         '<ul>' +
-        '<li><span class="text-orange"><strong>Throttle services</strong></span> (Lambda, API Gateway, SQS, DynamoDB…) shed excess as <code>HTTP 429/503</code> and <strong>stay up</strong>. They return errors and recover, never going dark.</li>' +
-        '<li><span class="text-red"><strong>Resource-bound services</strong></span> (EC2, ECS, RDS…) model real hardware. Stay past the offline threshold for ~1 second (6 ticks), <em>or</em> pin latency at the request timeout, and they <strong>collapse offline</strong>, cascading to everything downstream.</li>' +
-        '</ul>'
-      ]
+          '<li><span class="text-orange"><strong>Throttle services</strong></span> (Lambda, API Gateway, SQS, DynamoDB…) shed excess as <code>HTTP 429/503</code> and <strong>stay up</strong>. They return errors and recover, never going dark.</li>' +
+          '<li><span class="text-red"><strong>Resource-bound services</strong></span> (EC2, ECS, RDS…) model real hardware. Stay past the offline threshold for ~1 second (6 ticks), <em>or</em> pin latency at the request timeout, and they <strong>collapse offline</strong>, cascading to everything downstream.</li>' +
+          '</ul>',
+      ],
     },
     {
       id: 'formula-cost',
@@ -573,13 +677,13 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       content: [
         'While traffic flows, the same loop prices your architecture from <strong>real AWS Price List API rates</strong> (refreshed weekly). Every service has its own formula; a few favourites:',
         '<ul>' +
-        '<li><span class="text-purple"><strong>Lambda:</strong></span> <code>(invocations × $/M requests) + (GB-seconds × $/GB-s)</code>, where <code>GB-seconds = invocations × duration(s) × memory(GB)</code>.</li>' +
-        '<li><span class="text-orange"><strong>EC2:</strong></span> <code>instances × hourly rate × 730 hrs</code> (+ EBS storage + data transfer).</li>' +
-        '<li><span class="text-blue"><strong>Requests (API Gateway, etc.):</strong></span> tiered <code>$ per million requests</code>.</li>' +
-        '<li><span class="text-emerald"><strong>Storage:</strong></span> <code>GB × $/GB-month</code>, by storage class.</li>' +
-        '</ul>',
-        'Free-tier allowances are subtracted and shown as a separate green badge, so you can see exactly what you are saving. Switch on <strong>Variable Traffic</strong> and the panel reports both the <em>average</em> and the <em>peak</em> monthly cost.'
-      ]
+          '<li><span class="text-purple"><strong>Lambda:</strong></span> <code>(invocations × $/M requests) + (GB-seconds × $/GB-s)</code>, where <code>GB-seconds = invocations × duration(s) × memory(GB)</code>.</li>' +
+          '<li><span class="text-orange"><strong>EC2:</strong></span> <code>instances × hourly rate × 730 hrs</code> (+ EBS storage + data transfer).</li>' +
+          '<li><span class="text-blue"><strong>Requests (API Gateway, etc.):</strong></span> tiered <code>$ per million requests</code>.</li>' +
+          '<li><span class="text-emerald"><strong>Storage:</strong></span> <code>GB × $/GB-month</code>, by storage class.</li>' +
+          '</ul>',
+        'Free-tier allowances are subtracted and shown as a separate green badge, so you can see exactly what you are saving. Switch on <strong>Variable Traffic</strong> and the panel reports both the <em>average</em> and the <em>peak</em> monthly cost.',
+      ],
     },
 
     // --- COST DYNAMICS ---
@@ -592,13 +696,13 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       content: [
         'The cost simulator maps real AWS billing pricing tables with dynamic geographic adjustments.',
         '<ul>' +
-        '<li><strong>Fine-Grained Regional Multipliers:</strong> Cloud costs differ heavily based on geography and service type. Instead of a single multiplier, Sr. Architect loads a dedicated JSON configuration file for each region (e.g. <code>us-west-1.json</code>).</li>' +
-        '<li><strong>Per-Service, Per-Parameter Flexibility:</strong> Each region JSON specifies multipliers for all 64+ AWS services and their individual cost-impacting parameters (like requests, CPU cores, GB storage, and data transfer). This allows you to customize and track cost structures with absolute precision.</li>' +
-        '<li><strong>Default Adjustments:</strong> By default, service parameters inherit standard regional multipliers (e.g., <code>us-east-1</code> at 1.0x, <code>us-west-1</code> at 1.10x, <code>sa-east-1</code> at 1.38x).</li>' +
-        '<li><strong>Currency Switching:</strong> Tap currency conversions live (USD, EUR, INR, GBP, JPY) to see local pricing equivalents instantly in the telemetry footer.</li>' +
-        '</ul>'
-      ]
-    }
+          '<li><strong>Fine-Grained Regional Multipliers:</strong> Cloud costs differ heavily based on geography and service type. Instead of a single multiplier, Sr. Architect loads a dedicated JSON configuration file for each region (e.g. <code>us-west-1.json</code>).</li>' +
+          '<li><strong>Per-Service, Per-Parameter Flexibility:</strong> Each region JSON specifies multipliers for all 64+ AWS services and their individual cost-impacting parameters (like requests, CPU cores, GB storage, and data transfer). This allows you to customize and track cost structures with absolute precision.</li>' +
+          '<li><strong>Default Adjustments:</strong> By default, service parameters inherit standard regional multipliers (e.g., <code>us-east-1</code> at 1.0x, <code>us-west-1</code> at 1.10x, <code>sa-east-1</code> at 1.38x).</li>' +
+          '<li><strong>Currency Switching:</strong> Tap currency conversions live (USD, EUR, INR, GBP, JPY) to see local pricing equivalents instantly in the telemetry footer.</li>' +
+          '</ul>',
+      ],
+    },
   ];
 
   navScrolled = false;
@@ -611,9 +715,13 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   outboundNodes: any[] = [];
   rules: any[] = [];
 
-  readonly serviceDocs: Record<string, Partial<Omit<ServiceDoc, 'illustrationSvg'>> & { illustrationSvg?: string }> = {
+  readonly serviceDocs: Record<
+    string,
+    Partial<Omit<ServiceDoc, 'illustrationSvg'>> & { illustrationSvg?: string }
+  > = {
     client: {
-      practicalExample: 'Simulating 5,000 global shoppers accessing your ecommerce website concurrently during a Black Friday flash sale event.',
+      practicalExample:
+        'Simulating 5,000 global shoppers accessing your ecommerce website concurrently during a Black Friday flash sale event.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -676,10 +784,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="32" font-size="8.5" text-anchor="middle" font-weight="800" fill="#3730a3">Application</text>
           </g>
         </svg>
-      `
+      `,
     },
     route53: {
-      practicalExample: 'Resolving `api.shop.com` to a localized Application Load Balancer IP address dynamically, routing users to their nearest server cluster.',
+      practicalExample:
+        'Resolving `api.shop.com` to a localized Application Load Balancer IP address dynamically, routing users to their nearest server cluster.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -755,10 +864,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="-30" y="7" font-size="7" font-family="monospace" fill="#dc2626" text-anchor="start">UNHEALTHY</text>
           </g>
         </svg>
-      `
+      `,
     },
     cloudfront: {
-      practicalExample: 'Serving cached product catalog images instantly from an edge location in London to a local UK buyer, bypassing the origin server located in Oregon.',
+      practicalExample:
+        'Serving cached product catalog images instantly from an edge location in London to a local UK buyer, bypassing the origin server located in Oregon.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -818,10 +928,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="38" font-size="8.5" text-anchor="middle" font-weight="800" fill="#065f46">Origin (S3)</text>
           </g>
         </svg>
-      `
+      `,
     },
     apiGateway: {
-      practicalExample: 'Receiving requests on `/checkout` and verifying the user\'s Cognito authentication token before routing the request downstream to the Checkout microservice.',
+      practicalExample:
+        "Receiving requests on `/checkout` and verifying the user's Cognito authentication token before routing the request downstream to the Checkout microservice.",
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS WITH ANIMATION -->
@@ -904,10 +1015,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="27" font-size="8.5" text-anchor="middle" font-weight="700" fill="#1e3a8a">ECS Fargate</text>
           </g>
         </svg>
-      `
+      `,
     },
     elb: {
-      practicalExample: 'Distributing incoming checkout traffic across a pool of 5 EC2 instances. If instance #3 crashes, the ELB automatically detects the health check failure and reroutes new payments to the remaining 4 instances.',
+      practicalExample:
+        'Distributing incoming checkout traffic across a pool of 5 EC2 instances. If instance #3 crashes, the ELB automatically detects the health check failure and reroutes new payments to the remaining 4 instances.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -994,10 +1106,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             </g>
           </g>
         </svg>
-      `
+      `,
     },
     lambda: {
-      practicalExample: 'A microservice that activates the instant a customer uploads a profile image to S3, resizing the image into standard sizes and generating database thumbnail URLs.',
+      practicalExample:
+        'A microservice that activates the instant a customer uploads a profile image to S3, resizing the image into standard sizes and generating database thumbnail URLs.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1066,10 +1179,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="22" font-size="8" text-anchor="middle" font-weight="800" fill="#065f46">S3 Bucket</text>
           </g>
         </svg>
-      `
+      `,
     },
     ec2: {
-      practicalExample: 'Running an enterprise Java Spring Boot backend framework with custom network sockets and internal application caches that must remain active 24/7.',
+      practicalExample:
+        'Running an enterprise Java Spring Boot backend framework with custom network sockets and internal application caches that must remain active 24/7.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1147,10 +1261,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="26" font-size="8" text-anchor="middle" font-weight="800" fill="#1e3a8a">RDS</text>
           </g>
         </svg>
-      `
+      `,
     },
     ecs: {
-      practicalExample: 'Packaging an API application inside a Docker container, deploying it as multiple task replicas on Fargate, and auto-scaling task capacity up or down based on CPU load metrics.',
+      practicalExample:
+        'Packaging an API application inside a Docker container, deploying it as multiple task replicas on Fargate, and auto-scaling task capacity up or down based on CPU load metrics.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1228,10 +1343,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="24" font-size="8" text-anchor="middle" font-weight="800" fill="#0369a1">Backend</text>
           </g>
         </svg>
-      `
+      `,
     },
     s3: {
-      practicalExample: 'Storing millions of user-uploaded profile pictures and video clips securely, serving them globally through CloudFront edge caches.',
+      practicalExample:
+        'Storing millions of user-uploaded profile pictures and video clips securely, serving them globally through CloudFront edge caches.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1291,10 +1407,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="-30" y="7" font-size="6.5" font-family="monospace" fill="#475569" text-anchor="start">$0.004/GB · cold</text>
           </g>
         </svg>
-      `
+      `,
     },
     rds: {
-      practicalExample: 'Storing client accounting balances, customer orders, and transaction ledgers, where data relationships and strict transaction accuracy are critical.',
+      practicalExample:
+        'Storing client accounting balances, customer orders, and transaction ledgers, where data relationships and strict transaction accuracy are critical.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1363,10 +1480,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="22" font-size="7" text-anchor="middle" font-weight="800" fill="#475569">REPLICA 2</text>
           </g>
         </svg>
-      `
+      `,
     },
     dynamoDb: {
-      practicalExample: 'Storing millions of active gaming session states or shopping cart list items that require immediate, high-frequency read/write operations.',
+      practicalExample:
+        'Storing millions of active gaming session states or shopping cart list items that require immediate, high-frequency read/write operations.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1434,10 +1552,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="32" font-size="8" text-anchor="middle" font-weight="800" fill="#7c2d12">Lambda</text>
           </g>
         </svg>
-      `
+      `,
     },
     elastiCache: {
-      practicalExample: 'Caching the checkout store\'s "Top 5 Hot Products" list on the homepage. Instead of running relational RDS SQL queries thousands of times per second, the server retrieves it instantly from Redis cache memory.',
+      practicalExample:
+        'Caching the checkout store\'s "Top 5 Hot Products" list on the homepage. Instead of running relational RDS SQL queries thousands of times per second, the server retrieves it instantly from Redis cache memory.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1493,10 +1612,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="26" font-size="8" text-anchor="middle" font-weight="800" fill="#1d4ed8">RDS Database</text>
           </g>
         </svg>
-      `
+      `,
     },
     sqs: {
-      practicalExample: 'Buffering incoming payment orders in a queue. If the payment gateway API goes down temporarily, checkout messages remain safely in SQS and process automatically once the gateway recovers.',
+      practicalExample:
+        'Buffering incoming payment orders in a queue. If the payment gateway API goes down temporarily, checkout messages remain safely in SQS and process automatically once the gateway recovers.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1561,10 +1681,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="22" font-size="7.5" text-anchor="middle" font-weight="800" fill="#7c2d12">EC2 Worker</text>
           </g>
         </svg>
-      `
+      `,
     },
     sns: {
-      practicalExample: 'Broadcasting an `OrderCompleted` event to trigger three separate actions: triggering SQS to prepare packing, running Lambda to email the client invoice, and alerting Cognito.',
+      practicalExample:
+        'Broadcasting an `OrderCompleted` event to trigger three separate actions: triggering SQS to prepare packing, running Lambda to email the client invoice, and alerting Cognito.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1631,10 +1752,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="10" y="3" font-size="7.5" font-weight="800" fill="#1e3a8a">Webhook</text>
           </g>
         </svg>
-      `
+      `,
     },
     eventBridge: {
-      practicalExample: 'Routing system error events to a PagerDuty Lambda connector while sending standard operations events to a CloudWatch log stream.',
+      practicalExample:
+        'Routing system error events to a PagerDuty Lambda connector while sending standard operations events to a CloudWatch log stream.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1694,10 +1816,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="4" y="3" font-size="8" font-weight="800" fill="#991b1b">SNS · Pager</text>
           </g>
         </svg>
-      `
+      `,
     },
     stepFunctions: {
-      practicalExample: 'Managing payment checkout steps: (1) Charge bank card, (2) If bank approval succeeds, write order row to database, (3) If charging fails, trigger refund process and alert email.',
+      practicalExample:
+        'Managing payment checkout steps: (1) Charge bank card, (2) If bank approval succeeds, write order row to database, (3) If charging fails, trigger refund process and alert email.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1765,10 +1888,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#047857">END</text>
           </g>
         </svg>
-      `
+      `,
     },
     cloudWatch: {
-      practicalExample: 'Monitoring server CPU levels. If average EC2 CPU pressure exceeds 75% for 3 minutes, CloudWatch triggers an Alarm calling the Auto Scaling policy to add another server.',
+      practicalExample:
+        'Monitoring server CPU levels. If average EC2 CPU pressure exceeds 75% for 3 minutes, CloudWatch triggers an Alarm calling the Auto Scaling policy to add another server.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1841,10 +1965,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="6" y="3" font-size="7.5" font-weight="800" fill="#7c2d12">Scale Out</text>
           </g>
         </svg>
-      `
+      `,
     },
     cognito: {
-      practicalExample: 'Allowing customers to sign up and authenticate using their email or Google credentials to fetch secure JSON Web Tokens (JWT) for API Authorization.',
+      practicalExample:
+        'Allowing customers to sign up and authenticate using their email or Google credentials to fetch secure JSON Web Tokens (JWT) for API Authorization.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1914,10 +2039,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="3" font-size="8" text-anchor="middle" font-weight="800" fill="#1d4ed8">Backend</text>
           </g>
         </svg>
-      `
+      `,
     },
     waf: {
-      practicalExample: 'Blocking requests coming from malicious blacklisted IP subnet ranges, or automatically blocking a client who fires more than 100 requests per second to the endpoint.',
+      practicalExample:
+        'Blocking requests coming from malicious blacklisted IP subnet ranges, or automatically blocking a client who fires more than 100 requests per second to the endpoint.',
       illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
@@ -1995,7 +2121,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#92400e">CAPTCHA</text>
           </g>
         </svg>
-      `
+      `,
     },
     vpc: {
       illustrationSvg: `
@@ -2048,7 +2174,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="23" y="8" font-size="6.5" text-anchor="middle" font-weight="700" fill="#1e3a8a">DB</text>
           </g>
         </svg>
-      `
+      `,
     },
     natGateway: {
       illustrationSvg: `
@@ -2099,7 +2225,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="14" font-size="7.5" text-anchor="middle" font-weight="800" fill="#475569">Internet</text>
           </g>
         </svg>
-      `
+      `,
     },
     transitGateway: {
       illustrationSvg: `
@@ -2148,7 +2274,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="3" font-size="7.5" text-anchor="middle" font-weight="800" fill="#6d28d9">VPC C</text>
           </g>
         </svg>
-      `
+      `,
     },
     directConnect: {
       illustrationSvg: `
@@ -2189,7 +2315,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="36" font-size="7.5" text-anchor="middle" font-weight="800" fill="#c2410c">Region</text>
           </g>
         </svg>
-      `
+      `,
     },
     globalAccelerator: {
       illustrationSvg: `
@@ -2244,7 +2370,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="8" font-size="6" text-anchor="middle" font-weight="700" fill="#065f46">ALB</text>
           </g>
         </svg>
-      `
+      `,
     },
     privateLink: {
       illustrationSvg: `
@@ -2293,7 +2419,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#9a3412">SaaS</text>
           </g>
         </svg>
-      `
+      `,
     },
     iam: {
       illustrationSvg: `
@@ -2344,7 +2470,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#991b1b">DENY 403</text>
           </g>
         </svg>
-      `
+      `,
     },
     securityGroup: {
       illustrationSvg: `
@@ -2397,7 +2523,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="28" font-size="7" text-anchor="middle" font-weight="800" fill="#1d4ed8">Instance</text>
           </g>
         </svg>
-      `
+      `,
     },
     secretsManager: {
       illustrationSvg: `
@@ -2446,7 +2572,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="26" font-size="7.5" text-anchor="middle" font-weight="800" fill="#1d4ed8">RDS</text>
           </g>
         </svg>
-      `
+      `,
     },
     kms: {
       illustrationSvg: `
@@ -2488,7 +2614,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="26" font-size="7.5" text-anchor="middle" font-weight="800" fill="#065f46">Encrypted S3</text>
           </g>
         </svg>
-      `
+      `,
     },
     shield: {
       illustrationSvg: `
@@ -2527,7 +2653,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="30" font-size="7" text-anchor="middle" font-weight="800" fill="#047857">CloudFront</text>
           </g>
         </svg>
-      `
+      `,
     },
     certificateManager: {
       illustrationSvg: `
@@ -2572,7 +2698,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="6" y="3" font-size="7" font-weight="800" fill="#1d4ed8">ALB · HTTPS</text>
           </g>
         </svg>
-      `
+      `,
     },
     autoScalingGroup: {
       illustrationSvg: `
@@ -2624,7 +2750,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <circle cx="-18" cy="6" r="2" fill="#f59e0b" class="ill-pulse" />
           </g>
         </svg>
-      `
+      `,
     },
     batch: {
       illustrationSvg: `
@@ -2673,7 +2799,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="24" font-size="7" text-anchor="middle" font-weight="800" fill="#065f46">S3</text>
           </g>
         </svg>
-      `
+      `,
     },
     appRunner: {
       illustrationSvg: `
@@ -2717,7 +2843,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="7" font-size="5.5" font-family="monospace" text-anchor="middle" fill="#065f46">*.run.app</text>
           </g>
         </svg>
-      `
+      `,
     },
     elasticBeanstalk: {
       illustrationSvg: `
@@ -2768,7 +2894,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="22" font-size="6.5" text-anchor="middle" font-weight="800" fill="#1d4ed8">RDS</text>
           </g>
         </svg>
-      `
+      `,
     },
     eks: {
       illustrationSvg: `
@@ -2813,7 +2939,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(265, 90)"><rect x="-30" y="-14" width="60" height="28" rx="3" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" /><circle cx="-18" cy="0" r="6" fill="none" stroke="#0369a1" stroke-width="1.4" /><text x="6" y="3" font-size="6.5" font-weight="800" fill="#0369a1">pod · api</text></g>
           <g transform="translate(265, 125)"><rect x="-30" y="-14" width="60" height="28" rx="3" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" /><circle cx="-18" cy="0" r="6" fill="none" stroke="#0369a1" stroke-width="1.4" /><text x="6" y="3" font-size="6.5" font-weight="800" fill="#0369a1">pod · job</text></g>
         </svg>
-      `
+      `,
     },
     ecr: {
       illustrationSvg: `
@@ -2855,7 +2981,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(340, 90)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" /><text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#7c2d12">EC2</text></g>
           <g transform="translate(340, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fffbeb" stroke="#ff9900" stroke-width="1.5" /><text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#7c2d12">Lambda</text></g>
         </svg>
-      `
+      `,
     },
     aurora: {
       illustrationSvg: `
@@ -2905,7 +3031,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="34" font-size="6" text-anchor="middle" font-weight="700" fill="#6d28d9">AZ-a · AZ-b · AZ-c</text>
           </g>
         </svg>
-      `
+      `,
     },
     openSearch: {
       illustrationSvg: `
@@ -2951,7 +3077,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="30" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0e7490">Dashboards</text>
           </g>
         </svg>
-      `
+      `,
     },
     redshift: {
       illustrationSvg: `
@@ -2997,7 +3123,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="26" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0e7490">BI</text>
           </g>
         </svg>
-      `
+      `,
     },
     kinesis: {
       illustrationSvg: `
@@ -3036,7 +3162,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(345, 50)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fffbeb" stroke="#ff9900" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">Lambda</text></g>
           <g transform="translate(345, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#f5f3ff" stroke="#5b21b6" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#5b21b6">Firehose</text></g>
         </svg>
-      `
+      `,
     },
     msk: {
       illustrationSvg: `
@@ -3071,7 +3197,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(345, 55)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">Consumer A</text></g>
           <g transform="translate(345, 125)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fffbeb" stroke="#ff9900" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">Lambda</text></g>
         </svg>
-      `
+      `,
     },
     athena: {
       illustrationSvg: `
@@ -3118,7 +3244,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="26" font-size="6.5" text-anchor="middle" font-weight="800" fill="#047857">Result Set</text>
           </g>
         </svg>
-      `
+      `,
     },
     glue: {
       illustrationSvg: `
@@ -3170,7 +3296,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="22" font-size="6" text-anchor="middle" font-weight="800" fill="#065f46">Redshift</text>
           </g>
         </svg>
-      `
+      `,
     },
     emr: {
       illustrationSvg: `
@@ -3216,7 +3342,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="22" font-size="6" text-anchor="middle" font-weight="800" fill="#065f46">out</text>
           </g>
         </svg>
-      `
+      `,
     },
     kinesisFirehose: {
       illustrationSvg: `
@@ -3260,7 +3386,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(325, 90)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#6d28d9">Redshift</text></g>
           <g transform="translate(325, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#ecfeff" stroke="#0891b2" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0e7490">OpenSearch</text></g>
         </svg>
-      `
+      `,
     },
     efs: {
       illustrationSvg: `
@@ -3292,7 +3418,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="34" font-size="7.5" text-anchor="middle" font-weight="800" fill="#0f766e">EFS · elastic NFS</text>
           </g>
         </svg>
-      `
+      `,
     },
     fsx: {
       illustrationSvg: `
@@ -3325,7 +3451,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="22" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">S3 tier</text>
           </g>
         </svg>
-      `
+      `,
     },
     backup: {
       illustrationSvg: `
@@ -3366,7 +3492,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="34" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Vault</text>
           </g>
         </svg>
-      `
+      `,
     },
     mq: {
       illustrationSvg: `
@@ -3404,7 +3530,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(350, 55)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">EC2 worker</text></g>
           <g transform="translate(350, 125)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">ECS task</text></g>
         </svg>
-      `
+      `,
     },
     organizations: {
       illustrationSvg: `
@@ -3441,7 +3567,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(335, 110)"><rect x="-24" y="-10" width="48" height="20" rx="3" fill="#fff1f2" stroke="#be123c" stroke-width="1.3" /><text x="0" y="3" font-size="6" text-anchor="middle" font-weight="700" fill="#9f1239">acct C</text></g>
           <g transform="translate(335, 140)"><rect x="-24" y="-10" width="48" height="20" rx="3" fill="#fff1f2" stroke="#be123c" stroke-width="1.3" /><text x="0" y="3" font-size="6" text-anchor="middle" font-weight="700" fill="#9f1239">acct D</text></g>
         </svg>
-      `
+      `,
     },
     cloudTrail: {
       illustrationSvg: `
@@ -3479,7 +3605,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(340, 90)"><rect x="-28" y="-13" width="56" height="26" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#047857">CloudWatch</text></g>
           <g transform="translate(340, 135)"><rect x="-28" y="-13" width="56" height="26" rx="3" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#6b21a8">EventBridge</text></g>
         </svg>
-      `
+      `,
     },
     systemsManager: {
       illustrationSvg: `
@@ -3518,7 +3644,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(300, 90)"><rect x="-26" y="-13" width="52" height="26" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">EC2</text></g>
           <g transform="translate(300, 130)"><rect x="-26" y="-13" width="52" height="26" rx="3" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0369a1">ECS</text></g>
         </svg>
-      `
+      `,
     },
     appSync: {
       illustrationSvg: `
@@ -3556,7 +3682,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(330, 90)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fffbeb" stroke="#ff9900" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">Lambda</text></g>
           <g transform="translate(330, 132)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#ecfeff" stroke="#0891b2" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0e7490">OpenSearch</text></g>
         </svg>
-      `
+      `,
     },
     iotCore: {
       illustrationSvg: `
@@ -3596,7 +3722,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(345, 50)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#1d4ed8">DynamoDB</text></g>
           <g transform="translate(345, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#f5f3ff" stroke="#5b21b6" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#5b21b6">Kinesis</text></g>
         </svg>
-      `
+      `,
     },
     xray: {
       illustrationSvg: `
@@ -3630,7 +3756,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <rect x="-84" y="5" width="40" height="4" rx="1" fill="#fca5a5" />
           </g>
         </svg>
-      `
+      `,
     },
     codePipeline: {
       illustrationSvg: `
@@ -3670,7 +3796,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           </g>
           <text x="200" y="148" font-size="7.5" text-anchor="middle" font-weight="800" fill="#0369a1">CodePipeline · continuous delivery</text>
         </svg>
-      `
+      `,
     },
     codeBuild: {
       illustrationSvg: `
@@ -3707,7 +3833,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(330, 48)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">S3 artifact</text></g>
           <g transform="translate(330, 132)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0369a1">ECR image</text></g>
         </svg>
-      `
+      `,
     },
     codeDeploy: {
       illustrationSvg: `
@@ -3745,7 +3871,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <!-- Green (new) -->
           <g transform="translate(320, 132)"><rect x="-30" y="-14" width="60" height="28" rx="4" fill="#f0fdf4" stroke="#10b981" stroke-width="1.6" /><text x="0" y="-1" font-size="6.5" text-anchor="middle" font-weight="800" fill="#047857">GREEN v2</text><text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#065f46">new</text></g>
         </svg>
-      `
+      `,
     },
     bedrock: {
       illustrationSvg: `
@@ -3784,7 +3910,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(322, 90)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Titan</text></g>
           <g transform="translate(322, 135)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Llama</text></g>
         </svg>
-      `
+      `,
     },
     sageMaker: {
       illustrationSvg: `
@@ -3837,7 +3963,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
             <text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Inference</text>
           </g>
         </svg>
-      `
+      `,
     },
     rekognition: {
       illustrationSvg: `
@@ -3875,7 +4001,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(340, 90)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Object: car</text></g>
           <g transform="translate(340, 135)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Text / OCR</text></g>
         </svg>
-      `
+      `,
     },
     textract: {
       illustrationSvg: `
@@ -3910,7 +4036,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(340, 90)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Forms (K/V)</text></g>
           <g transform="translate(340, 135)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Tables</text></g>
         </svg>
-      `
+      `,
     },
     mediaConvert: {
       illustrationSvg: `
@@ -3949,8 +4075,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           <g transform="translate(338, 90)"><rect x="-30" y="-11" width="60" height="22" rx="3" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#92400e">720p DASH</text></g>
           <g transform="translate(338, 140)"><rect x="-30" y="-11" width="60" height="22" rx="3" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#92400e">480p MP4</text></g>
         </svg>
-      `
-    }
+      `,
+    },
   };
 
   private onPop = () => {
@@ -3961,8 +4087,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     private el: ElementRef,
     public awsCatalog: AwsCatalogService,
     private sanitizer: DomSanitizer,
-    private themeService: ThemeService
-  ) { }
+    private themeService: ThemeService,
+  ) {}
 
   get isDarkMode(): boolean {
     return this.themeService.isDark;
@@ -3986,7 +4112,10 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     if (typeof window !== 'undefined' && window.location) {
       const params = new URLSearchParams(window.location.search);
       const serviceParam = params.get('service');
-      if (serviceParam && this.awsCatalog.services.some(service => service.type === serviceParam)) {
+      if (
+        serviceParam &&
+        this.awsCatalog.services.some((service) => service.type === serviceParam)
+      ) {
         this.selectedServiceType = serviceParam as AwsServiceType;
         this.updateConnectivityMap(serviceParam);
         this.activeCategoryId = '';
@@ -4011,20 +4140,22 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       }
     });
 
-    const rawSvg = custom?.illustrationSvg || this.buildServiceIllustration(defaultInfo, connectedTargets);
+    const rawSvg =
+      custom?.illustrationSvg || this.buildServiceIllustration(defaultInfo, connectedTargets);
 
     // Bottleneck model (what limits this service and whether it throttles or fails).
     const bnRaw = (serviceBottleneckData as any)[type];
-    const bottleneck = bnRaw && bnRaw.summary
-      ? {
-          kind: bnRaw.kind,
-          failureMode: bnRaw.failureMode,
-          capacityDriver: bnRaw.capacityDriver || '',
-          summary: bnRaw.summary,
-          saturationCondition: bnRaw.saturationCondition || '',
-          atSaturation: bnRaw.atSaturation || ''
-        }
-      : null;
+    const bottleneck =
+      bnRaw && bnRaw.summary
+        ? {
+            kind: bnRaw.kind,
+            failureMode: bnRaw.failureMode,
+            capacityDriver: bnRaw.capacityDriver || '',
+            summary: bnRaw.summary,
+            saturationCondition: bnRaw.saturationCondition || '',
+            atSaturation: bnRaw.atSaturation || '',
+          }
+        : null;
 
     return {
       whyNeeded: docData.overview || defaultInfo.description,
@@ -4038,11 +4169,14 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       // from the serviceDocs map or buildServiceIllustration() output derived
       // from static service definitions. It must never carry user input.
       illustrationSvg: this.sanitizer.bypassSecurityTrustHtml(rawSvg),
-      bottleneck
+      bottleneck,
     };
   }
 
-  private buildServiceIllustration(service: AwsServiceDefinition, connectedTargets: string[]): string {
+  private buildServiceIllustration(
+    service: AwsServiceDefinition,
+    connectedTargets: string[],
+  ): string {
     const color = this.serviceColor(service.type);
     const safeName = this.escapeSvgText(service.name);
     const safeCategory = this.escapeSvgText(service.category);
@@ -4094,7 +4228,10 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   }
 
   private humanizePort(port: string): string {
-    return port.replace(/([A-Z])/g, ' $1').replace(/-/g, ' ').toLowerCase();
+    return port
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/-/g, ' ')
+      .toLowerCase();
   }
 
   private escapeSvgText(value: string): string {
@@ -4131,30 +4268,37 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
 
     // Find this service rules
     const thisService = services.find((s: any) => s.type === type);
-    this.rules = thisService?.rules?.map((r: any) => {
-      const targetDef = this.awsCatalog.getByType(r.target);
-      return {
-        target: r.target,
-        targetName: targetDef.name,
-        type: r.type,
-        description: r.description
-      };
-    }) || [];
+    this.rules =
+      thisService?.rules?.map((r: any) => {
+        const targetDef = this.awsCatalog.getByType(r.target);
+        return {
+          target: r.target,
+          targetName: targetDef.name,
+          type: r.type,
+          description: r.description,
+        };
+      }) || [];
 
     // Find outbound services
     const allowedTargets = thisService?.rules?.map((r: any) => r.target) || [];
-    const outboundList = services.filter((s: any) => allowedTargets.includes(s.type)).map((s: any) => {
-      const def = this.awsCatalog.getByType(s.type);
-      return { name: def.name, iconUrl: def.iconUrl };
-    }).slice(0, 4);
+    const outboundList = services
+      .filter((s: any) => allowedTargets.includes(s.type))
+      .map((s: any) => {
+        const def = this.awsCatalog.getByType(s.type);
+        return { name: def.name, iconUrl: def.iconUrl };
+      })
+      .slice(0, 4);
 
     // Find inbound services
-    const inboundList = services.filter((s: any) => {
-      return s.rules?.some((r: any) => r.target === type);
-    }).map((s: any) => {
-      const def = this.awsCatalog.getByType(s.type);
-      return { name: def.name, iconUrl: def.iconUrl };
-    }).slice(0, 4);
+    const inboundList = services
+      .filter((s: any) => {
+        return s.rules?.some((r: any) => r.target === type);
+      })
+      .map((s: any) => {
+        const def = this.awsCatalog.getByType(s.type);
+        return { name: def.name, iconUrl: def.iconUrl };
+      })
+      .slice(0, 4);
 
     this.inboundNodes = this.getNodesWithY(inboundList);
     this.outboundNodes = this.getNodesWithY(outboundList);
@@ -4169,7 +4313,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     return nodesList.map((node, i) => ({
       name: node.name,
       iconUrl: node.iconUrl,
-      y: startY + i * step
+      y: startY + i * step,
     }));
   }
 
@@ -4191,7 +4335,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           transform: `translate3d(${left}px, ${top}px, 0)`,
           width: `${rect.width}px`,
           height: `${rect.height}px`,
-          opacity: '1'
+          opacity: '1',
         };
 
         if (
@@ -4215,7 +4359,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   }
 
   get displayedCategories() {
-    return this.categories.filter(cat => {
+    return this.categories.filter((cat) => {
       if (cat.id === 'services') {
         return this.filteredServices.length > 0;
       }
@@ -4234,10 +4378,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     if (!query) {
       return this.contributionWays;
     }
-    return this.contributionWays.filter(way =>
-      way.title.toLowerCase().includes(query) ||
-      way.text.toLowerCase().includes(query) ||
-      way.cta.toLowerCase().includes(query)
+    return this.contributionWays.filter(
+      (way) =>
+        way.title.toLowerCase().includes(query) ||
+        way.text.toLowerCase().includes(query) ||
+        way.cta.toLowerCase().includes(query),
     );
   }
 
@@ -4246,11 +4391,12 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     if (!query) {
       return this.releaseNotes;
     }
-    return this.releaseNotes.filter(rel =>
-      rel.version.includes(query) ||
-      rel.title.toLowerCase().includes(query) ||
-      rel.summary.toLowerCase().includes(query) ||
-      rel.items.some(i => i.text.toLowerCase().includes(query))
+    return this.releaseNotes.filter(
+      (rel) =>
+        rel.version.includes(query) ||
+        rel.title.toLowerCase().includes(query) ||
+        rel.summary.toLowerCase().includes(query) ||
+        rel.items.some((i) => i.text.toLowerCase().includes(query)),
     );
   }
 
@@ -4260,7 +4406,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       return this.awsCatalog.services;
     }
 
-    return this.awsCatalog.services.filter(service => {
+    return this.awsCatalog.services.filter((service) => {
       const doc = this.getServiceDoc(service.type);
       return (
         service.name.toLowerCase().includes(query) ||
@@ -4286,20 +4432,21 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
 
   getArticlesByCategory(categoryId: string): DocArticle[] {
     const query = this.searchQuery.trim().toLowerCase();
-    let list = this.articles.filter(a => a.category === categoryId);
+    let list = this.articles.filter((a) => a.category === categoryId);
 
     if (query) {
-      list = list.filter(a =>
-        a.title.toLowerCase().includes(query) ||
-        a.summary.toLowerCase().includes(query) ||
-        a.content.some(c => c.toLowerCase().includes(query))
+      list = list.filter(
+        (a) =>
+          a.title.toLowerCase().includes(query) ||
+          a.summary.toLowerCase().includes(query) ||
+          a.content.some((c) => c.toLowerCase().includes(query)),
       );
     }
     return list;
   }
 
   openServiceDoc(type: string): void {
-    if (!this.awsCatalog.services.some(service => service.type === type)) {
+    if (!this.awsCatalog.services.some((service) => service.type === type)) {
       return;
     }
 
@@ -4311,7 +4458,6 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     const shell = this.el.nativeElement.querySelector('.docs-shell');
     shell?.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
 
   onScroll(event: Event): void {
     const shell = event.target as HTMLElement;
@@ -4355,7 +4501,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       const shell = this.el.nativeElement.querySelector('.docs-shell');
       if (id === 'overview') {
         shell.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(() => this.isManualScrolling = false, 800);
+        setTimeout(() => (this.isManualScrolling = false), 800);
       } else {
         const targetSection = this.el.nativeElement.querySelector(`#section-${id}`);
         if (targetSection && shell) {
@@ -4365,7 +4511,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           const targetTop = targetRect.top + scrollTop - shellRect.top - 88;
 
           shell.scrollTo({ top: targetTop, behavior: 'smooth' });
-          setTimeout(() => this.isManualScrolling = false, 800);
+          setTimeout(() => (this.isManualScrolling = false), 800);
         } else {
           this.isManualScrolling = false;
         }
