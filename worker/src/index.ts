@@ -2,6 +2,7 @@ import { Env, WorkerProgress } from './types';
 import { REGIONS, WEEKLY_INTERVAL_MS, FAILURE_COOLDOWN_MS } from './regions';
 import { PricingFetcher } from './fetcher';
 import { buildPricingFile } from './schema-builder';
+import { maybeRefreshStats, getPublicStats } from './stats';
 
 // KV keys
 const KV_PROGRESS_KEY = 'worker:progress';
@@ -115,6 +116,8 @@ export default {
   async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     console.log('[Worker] ⏰ Cron triggered at', new Date().toISOString());
     ctx.waitUntil(processOneRegion(env));
+    // Refresh live project stats (self-gated to ~once every 12h).
+    ctx.waitUntil(maybeRefreshStats(env));
   },
 
   /**
@@ -178,6 +181,12 @@ export default {
       return new Response(raw, { headers: { 'Content-Type': 'application/json', 'X-Cache': 'KV' } });
     }
 
+    // ── GET /stats — live project stats for the landing page ─────────────
+    if (path === '/stats' && request.method === 'GET') {
+      const stats = await getPublicStats(env);
+      return json(stats, 200, { ...CORS, 'Cache-Control': 'public, max-age=3600' });
+    }
+
     // ── GET /votes — all challenge tallies ───────────────────────────────
     if (path === '/votes' && request.method === 'GET') {
       const rows = await env.DB.prepare(
@@ -234,6 +243,7 @@ export default {
         'POST /reset',
         'POST /start',
         'GET  /pricing/{regionCode}',
+        'GET  /stats',
         'GET  /votes',
         'POST /votes',
       ],

@@ -80,10 +80,14 @@
           <span>Launch Simulator</span>
           <i class="fas fa-arrow-right"></i>
         </button>
-        <a class="cta-button ghost" href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
+        <a class="cta-button ghost github-btn" href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
           rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-          <span>GitHub</span>
           <i class="fab fa-github"></i>
+          <span>GitHub</span>
+          <span *ngIf="githubStars" class="github-stars-badge">
+            <i class="fas fa-star"></i>
+            {{ githubStars }}
+          </span>
         </a>
       </div>
     </div>
@@ -182,7 +186,7 @@
       </p>
       <div class="creator-badges">
         <span>Open Source</span>
-        <span>MIT Licensed</span>
+        <span>GNU GPLv3 Licensed</span>
         <span>Contributions Welcome</span>
       </div>
     </div>
@@ -195,8 +199,20 @@
   </section>
 
   <section class="contributors-card glass-panel" aria-label="Top contributors">
-    <span class="section-kicker">Community</span>
-    <h2>Top Contributors</h2>
+    <span class="section-kicker">Community &amp; Reach</span>
+    <h2>Loved by developers worldwide</h2>
+
+    <!-- Live project stats grid -->
+    <div *ngIf="liveStats" class="community-stats-grid">
+      <div *ngFor="let stat of liveStats" class="community-stat-card glass-panel"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span class="comm-stat-icon"><i [class]="stat.icon"></i></span>
+        <span class="comm-stat-value">{{ stat.value }}</span>
+        <span class="comm-stat-label">{{ stat.label }}</span>
+      </div>
+    </div>
+
+    <h3 class="contributors-subheading">Top Contributors</h3>
 
     <!-- Live contributors list -->
     <div class="contributors-list">

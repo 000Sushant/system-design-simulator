@@ -30,6 +30,13 @@ jobs:
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@v0.33.1
+        env:
+          # Pull DBs from the AWS ECR mirrors instead of ghcr.io, which
+          # anonymously rate-limits in CI (TOOMANYREQUESTS) and makes the
+          # scan exit 1 before writing the SARIF.
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
+          TRIVY_CHECKS_BUNDLE_REPOSITORY: public.ecr.aws/aquasecurity/trivy-checks:1
         with:
           scan-type: fs
           scan-ref: .

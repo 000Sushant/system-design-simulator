@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { SimulationCanvasComponent } from '../canvas animation/simulation-canvas.component';
 import { ThemeService } from '../../core/services/theme.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-landing',
@@ -10,9 +11,58 @@ import { ThemeService } from '../../core/services/theme.service';
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css'],
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
   @Output() launch = new EventEmitter<'developer' | 'architect' | undefined>();
   @ViewChild('shell', { static: true }) shellRef!: ElementRef<HTMLElement>;
+
+  /** Live project stats from the Worker. Null until loaded; hidden if it stays null. */
+  liveStats: { icon: string; value: string; label: string }[] | null = null;
+  githubStars: string | null = null;
+
+  ngOnInit(): void {
+    this.loadLiveStats();
+  }
+
+  private async loadLiveStats(): Promise<void> {
+    const base = environment.votesApiBase;
+    if (base) {
+      try {
+        const res = await fetch(`${base}/stats`);
+        if (res.ok) {
+          const s = await res.json();
+          // Only show the strip once there is something real to show.
+          if (s && (s.stars || s.clones || s.visitors)) {
+            this.liveStats = this.toStats(s);
+            return;
+          }
+        }
+      } catch {
+        // Network/Worker unavailable: fall through to the dev fallback below.
+      }
+    }
+    // Dev fallback: show placeholder numbers locally so the strip stays visible
+    // while building. Production never shows dummy data.
+    if (!environment.production) {
+      this.liveStats = this.toStats({ stars: 12, clones: 340, visitors: 1200, countries: 28 });
+    }
+  }
+
+  private toStats(s: { stars: number; clones: number; visitors: number; countries: number }) {
+    this.githubStars = this.formatCount(s.stars);
+    return [
+      { icon: 'fas fa-star', value: this.formatCount(s.stars), label: 'GitHub Stars' },
+      { icon: 'fas fa-download', value: this.formatCount(s.clones), label: 'Clones' },
+      { icon: 'fas fa-eye', value: this.formatCount(s.visitors), label: 'Visitors' },
+      { icon: 'fas fa-earth-americas', value: this.formatCount(s.countries), label: 'Countries' },
+    ];
+  }
+
+  private formatCount(n: number): string {
+    if (!n || n < 0) return '0';
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
 
   readonly contributors = [
     {
@@ -107,7 +157,7 @@ export class LandingComponent {
 
   readonly trustPills = [
     'Open Source',
-    'MIT Licensed',
+    'GNU GPLv3 Licensed',
     '10+ System Design Challenges',
     'Live Cost Analytics',
     'Real-time Simulation',

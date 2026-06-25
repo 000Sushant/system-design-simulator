@@ -477,6 +477,41 @@
   justify-content: center;
 }
 
+/* --- GitHub Star Badge --- */
+.github-btn {
+  align-items: center !important;
+}
+
+.github-btn i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.github-stars-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: #7c3aed;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-left: 4px;
+  height: 20px;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+:host-context(.dark) .github-stars-badge {
+  background: rgba(167, 139, 250, 0.16);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: #a78bfa;
+}
+
 .cta-button,
 .mode-button {
   position: relative;
@@ -1310,6 +1345,8 @@
   line-height: 1.05;
   letter-spacing: -0.04em;
 }
+
+/* Live stats styles removed - replaced by hero telemetry status bar */
 
 .contributor-ghosts {
   display: flex;
@@ -2332,6 +2369,8 @@
   color: #94a3b8;
 }
 
+/* Live stat dark mode overrides removed */
+
 :host-context(.dark) .preview-canvas {
   background:
     linear-gradient(rgba(124, 58, 237, 0.12) 1px, transparent 1px),
@@ -2743,4 +2782,97 @@
 
 :host-context(.dark) .footer-copy {
   color: #64748b;
+}
+
+/* --- Community Stats Dashboard --- */
+.community-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  max-width: 860px;
+  margin: 28px auto 36px;
+}
+
+.community-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.75), rgba(245, 243, 255, 0.45));
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.05);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+}
+
+.community-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.comm-stat-icon {
+  font-size: 16px;
+  color: #7c3aed;
+  margin-bottom: 8px;
+}
+
+.comm-stat-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.comm-stat-label {
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.contributors-subheading {
+  font-size: 18px;
+  font-weight: 850;
+  color: #111827;
+  margin: 32px 0 16px;
+  letter-spacing: -0.02em;
+}
+
+:host-context(.dark) .community-stat-card {
+  border-color: rgba(167, 139, 250, 0.16);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(167, 139, 250, 0.04));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+:host-context(.dark) .community-stat-card:hover {
+  border-color: rgba(167, 139, 250, 0.35);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+:host-context(.dark) .comm-stat-icon {
+  color: #a78bfa;
+}
+
+:host-context(.dark) .comm-stat-value {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .comm-stat-label {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .contributors-subheading {
+  color: #f1f5f9;
+}
+
+@media (max-width: 768px) {
+  .community-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
 }
