@@ -2164,8 +2164,6 @@
 }
 
 #doc-moon-mask circle {
-  cx: -10;
-  cy: 34;
   transition:
     cx 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     cy 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2183,10 +2181,6 @@
   transform: rotate(90deg);
 }
 
-.theme-toggle-btn.show-moon #doc-moon-mask circle {
-  cx: 6;
-  cy: 18;
-}
 
 .theme-toggle-btn.show-moon .sun-moon-svg circle {
   r: 9;

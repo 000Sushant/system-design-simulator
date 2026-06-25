@@ -23,7 +23,7 @@
           stroke-linecap="round" stroke-linejoin="round">
           <mask id="moon-mask">
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            <circle cx="-10" cy="34" r="7" fill="black" />
+            <circle [attr.cx]="!isDarkMode ? 6 : -10" [attr.cy]="!isDarkMode ? 18 : 34" r="7" fill="black" />
           </mask>
           <circle cx="12" cy="12" r="5" mask="url(#moon-mask)" fill="currentColor" />
           <g class="sun-rays" stroke="currentColor">
