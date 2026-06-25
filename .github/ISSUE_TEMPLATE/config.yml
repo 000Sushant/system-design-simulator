@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question or start a discussion
+    url: https://github.com/000Sushant/system-design-simulator/discussions
+    about: For general questions and ideas, please use Discussions instead of an issue.
+  - name: Report a security vulnerability
+    url: https://github.com/000Sushant/system-design-simulator/security/advisories/new
+    about: Please report security issues privately, not as a public issue.
