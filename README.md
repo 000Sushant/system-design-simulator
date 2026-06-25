@@ -6,13 +6,59 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db2777?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/000Sushant)
 
-> **Design. Simulate. Optimize.** A browser-based AWS architecture sketchbook featuring a **deterministic traffic-and-cost simulation engine**. Drag AWS services onto a canvas, connect them, tune system knobs, and watch a live simulation trace traffic flow, detect bottlenecks, and evaluate real-time monthly billing.
+**Learn. Design. Simulate. Optimize.** Sr. Architect is an interactive, browser-based system design simulator and cloud architecture sketchbook. It features a deterministic traffic-and-cost simulation engine that lets you model AWS environments, watch real-time traffic flow, spot bottlenecks under load, and evaluate real-time monthly billing.
+
+---
+
+## ✨ Key Features
+
+### 🏆 Interactive System Design Challenges
+Learn cloud engineering and system design by solving real-world challenges directly on the canvas:
+- **Guided Scenarios**: Solve design problems such as scaling a URL shortener, building a chat system, or optimizing a video transcoding pipeline.
+- **Interactive Scoring & Hints**: Receive instant, data-driven feedback on your architecture's performance, capacity, and cost, alongside guided hints to help you improve.
+- **Reference Solutions**: Access architectural diagrams and expert guides detailing the trade-offs and rationale behind every decision.
+
+### 📐 Interactive Architecture Dashboard
+Model production-grade topologies with a comprehensive, interactive service palette:
+- **60+ Hand-Crafted AWS Services**: Exposes compute, database, networking, serverless, storage, analytics, and security services.
+- **Hardware-Level Configurations**: Customize instance sizes (e.g. EC2 `t3.medium` vs `c6g.xlarge`), storage volumes (gp3/io2), DB engine families, read replicas, and caching states.
+- **Multi-Canvas Workspace**: Organize your architectures using tabbed views, enabling you to design and compare alternative topologies side-by-side.
+
+### ⚡ Real-Time Traffic & Bottleneck Simulation
+Observe how your system behaves under variable workloads with a built-in step simulator:
+- **Visual Flow Mapping**: Watch animated SVG packets cascade through nodes along defined paths, showing how data distributes.
+- **Dynamic Resource Constraints**: Node-level resources evaluate CPU utilization, queue depth delays, and request limits, warning you of bottlenecks in red.
+- **Realistic Failures**: Simulate load-shedding, traffic throttling, server collapses, and offline cascading failures.
+
+### 💰 Live AWS Cost Estimation Engine
+Design cost-efficient architectures with a real-time billing dashboard:
+- **Live AWS Pricing Sync**: Utilizes a Cloudflare Worker CRON scheduler that pulls regional rate tables from the live AWS Pricing API weekly.
+- **Granular Billing Formulas**: Calculates monthly cost estimates reflecting request counts, provisioned throughput, database engines, regional transfer, and tier configurations.
+- **Cost Breakdown**: View a detailed, itemized cost panel showing the exact billing impact of each node in your architecture.
+
+---
+
+## ⚙️ Core Simulation Engines
+
+Sr. Architect's interactive simulator runs on two custom, deterministic engines:
+
+### 💓 PulseFlow: Reactive Traffic Simulation Engine
+PulseFlow is the reactive heartbeat of the visual workspace, running about 5 times a second (at a steady ~180ms tick interval):
+- **Reactive Stream Traversal**: Traverses your active canvas node graph in logical topological flow order using RxJS, ensuring upstream loads accurately cascade down to child nodes.
+- **Compounding Backlog Latency**: Rather than simple static metrics, it simulates request queues over time. If a service experiences traffic past its capacity, queue delays build up and latency compounds exponentially tick-by-tick.
+- **Hard Server Collapses**: Models physical compute limitations (EC2, ECS, RDS). If load exceeds 150% capacity for more than 1 second, PulseFlow triggers a server crash, forcing the node into a terminal `offline` state.
+
+### 🧩 Rubix: Automated Architecture Rubric Engine
+Rubix is a declarative verification and grading engine that analyzes your visual topologies against design challenges:
+- **Declarative Rule Parser**: Processes a lightweight JSON rule grammar supporting validation operators like `hasService`, `hasEdge`, `configAtLeast`, `countAtLeast`, and `noOverload`.
+- **Live Scoring & Milestones**: Calculates a final design score from 0–100 dynamically, awarding bonus points for best practices (e.g. read replicas) and applying penalties for resource overloads.
+- **Topology Compliance Checker**: Cross-references your canvas connections against service specs to immediately flag illegal port configurations (such as connecting a client directly to an internal DB node).
 
 ---
 
 ## 🗺️ System Architecture
 
-Sr. Architect decouples canvas UI, simulation iterations, and AWS rate-fetching into a modern distributed layout:
+Sr. Architect decouples the canvas UI, the simulation iteration loop, and the live AWS pricing pipelines into a highly efficient distributed topology:
 
 ```mermaid
 graph TD
@@ -41,9 +87,9 @@ graph TD
 
 ---
 
-## 🔄 Simulation & Cost Evaluation Lifecycle
+## 🔄 Simulation & Cost Lifecycle
 
-Every canvas modification triggers a deterministic step loop (running at ~180ms intervals) to update node capacity, demand, queue delays, and cost lines:
+Every canvas change triggers a deterministic evaluation loop (running at ~180ms intervals) to evaluate traffic flow, queue depths, bottlenecks, and costs:
 
 ```mermaid
 sequenceDiagram
@@ -59,80 +105,48 @@ sequenceDiagram
     SE->>SE: Calculate Utilization & Bottlenecks (cascades offline status)
     C->>User: Animate Traffic Flows (categorized SVG packets)
     SE->>CS: Request Cost Calculation
-    CS->>KV: Read regional rates (e.g. EC2 hourly, GB-sec x86/ARM, requestsM)
-    CS->>CS: Compute formulas (e.g. REST API, Lambda provisioned, S3 tiering)
+    CS->>KV: Read regional rates (e.g. EC2 hourly, GB-sec, requestsM)
+    CS->>CS: Compute formulas (e.g. REST API, Lambda, S3 tiering)
     CS->>User: Render Live Cost Panel ($ per month breakdown)
 ```
 
 ---
 
-## 🎛️ Dual-Mode Design System
-
-Sr. Architect features two distinct operation modes tailored to different engineering goals:
-
-### 🎓 Developer Mode (Learning-Oriented Sandbox)
-Designed for students and developers learning cloud engineering fundamentals. The experience is optimized for system behavior, traffic logic, and architectural patterns:
-- **Core Service Catalog**: Simplifies the workspace palette to essential AWS resources (24+ core services).
-- **Interactive Documentation**: Instant access to overview guides, integration patterns, and best practices directly next to the canvas nodes.
-- **Simplified Controls**: Abstracts complex billing parameters into easy-to-use sliders (e.g., base latency, request loads).
-- **Simplicity Focus**: All complex pricing factors, region selectors, and billing tabs are hidden to keep you focused on structural system design.
-- **Traffic & Bottleneck Analysis**: Easily watch animated packets flow through nodes and see bottlenecks turn red under high demand.
-
-### 📐 Architect Mode (Production-Grade Design)
-Exposes the complete feature set needed by Senior Engineers and Cloud Architects to model enterprise environments:
-- **Comprehensive Catalog**: Unlock **60+ AWS services** (compute, database, serverless, networking, analytics, security).
-- **Granular Parameter Control**: Exposes hardware options (such as EC2 instance sizes, EBS types, DB engines, cache sizes, Multi-AZ switches).
-- **In-Depth Cost Estimation**: Employs real AWS billing formulas driven by live weekly pricing updates fetched directly from the AWS Pricing API.
-- **Bigger & Complex Architectures**: Design multi-tier architectures with custom traffic distribution rules, variable loads, and failover pathways.
-
----
-
-## 💻 Technical Stack
+## 💻 Tech Stack
 
 - **Frontend Core**: Angular 19 (Standalone Components, Signals, RxJS streams)
-- **Canvas Framework**: `@foblex/flow` (interactive drawing, port bindings)
-- **Worker Infrastructure**: Cloudflare Worker running Wrangler, writing to Cloudflare KV.
+- **Canvas Engine**: `@foblex/flow` (interactive drawing, port bindings)
+- **Worker Infrastructure**: Cloudflare Worker running Wrangler, storing rates in Cloudflare KV.
 - **AWS API Integration**: `aws4fetch` for signing requests to the AWS Price List API.
-- **Styling**: Premium Glassmorphism Design System constructed with Vanilla CSS.
+- **Styling**: Premium CSS Glassmorphism Design System.
 
 ---
 
 ## 🧱 Project Structure
 
-The codebase follows a **Layered (Clean-lite) architecture** so each file's role
-is obvious. See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full map.
+The project is structured with clean separation between the domain logic, simulation handlers, and visual presentation layers. Refer to **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for a detailed file map.
 
 ```
 frontend/src/app/
   core/
     models/        # Domain — pure types (no logic, no deps)
     services/      # Application — simulation, cost & validation engines
-    constants/     # shared named constants (no magic literals in logic)
-    data/ config/  # data-driven core: 64 services described in JSON
+    constants/     # Shared configuration and magic constants
+    data/ config/  # Data-driven core: 64 services described in JSON
   features/        # Presentation — Angular components (canvas, docs, landing)
-worker/            # Infrastructure — Cloudflare Worker: weekly pricing generation
-backend/           # Infrastructure — Express reader serving pricing from KV
+worker/            # Infrastructure — Cloudflare Worker (pricing scraper)
+backend/           # Infrastructure — Express reader serving regional pricing from KV
 ```
-
-### 🧩 Adding a Design Challenge
-
-Challenges are pure data — add one object to `frontend/src/app/core/data/challenges.json`,
-then run `cd frontend && npm run validate:challenges`. No code changes needed.
-Full guide: **[docs/CHALLENGES.md](docs/CHALLENGES.md)**.
 
 ---
 
 ## 🚀 Getting Started
 
-Sr. Architect is split into a frontend Angular simulator application, a Cloudflare Worker directory, and localized automation scripts.
-
 ### Prerequisites
 - Node.js (v20+)
 - npm (v10+)
 
----
-
-### 📦 Installation
+### Installation & Run
 
 #### 1. Clone the repository
 ```bash
@@ -140,38 +154,38 @@ git clone https://github.com/000Sushant/system-design-simulator.git
 cd system-design-simulator
 ```
 
-#### 2. Run the Frontend (Angular Simulator)
+#### 2. Run the Angular Frontend (Simulator)
 ```bash
 cd frontend
 npm install
 npm run start
 ```
-The application will launch at `http://localhost:4200/`.
+The application will launch locally at `http://localhost:4200/`.
 
-#### 3. Run the Cloudflare Worker (Weekly Pricing Sync)
+#### 3. Run the Cloudflare Worker (Pricing Scraper)
 ```bash
 cd ../worker
 npm install
 npm run dev
 ```
-To configure credentials and deploy:
-```bash
-# Add AWS Credentials for Pricing API
-npm run secret:aws-key
-npm run secret:aws-secret
-# Deploy
-npm run deploy
-```
 
 #### 4. Run the Pricing Validation Script
-The workspace includes a validation script in `scripts/` to verify that pricing fallback parameters remain in sync with the live AWS Pricing API:
+Verify local pricing database files match the schema requirements:
 ```bash
 cd ../scripts
 npm install
-# Set Process Environment Variables or use a scripts/.env file
-# Run validation (defaults to ap-south-1)
+# Set process environment variables or use a local .env file
 node --env-file=.env validate-pricing.mjs
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions from the community are welcome!
+- To report a bug or suggest a feature, please open an issue in the [GitHub Issues](https://github.com/000Sushant/system-design-simulator/issues) page.
+- If you'd like to add a new system design challenge, please refer to the [Challenges Guideline](docs/CHALLENGES.md).
+- To contribute new service parameters, edit the data JSON files in `frontend/src/app/core/data/` and submit a Pull Request.
 
 ---
 
@@ -179,8 +193,6 @@ node --env-file=.env validate-pricing.mjs
 
 **Sushant Kumar**  
 *Backend-focused Full-Stack Engineer and Systems Builder*  
-
-Obsessed with building high-performance, developer-centric tooling. Feel free to connect:
 - ✉️ [Email](mailto:000suahntkumar@gmail.com)
 - 💼 [LinkedIn](https://linkedin.com/in/sushant--kumar)
 - 🌐 [Portfolio](https://000sushant.github.io/sushant-portfolio/)
@@ -189,38 +201,9 @@ Obsessed with building high-performance, developer-centric tooling. Feel free to
 ---
 
 ## 💜 Support the Project
-
-Sr. Architect is open source and free for everyone. If it has helped you learn, design, or estimate a little better, you can help it keep growing.
-
-**100% of every sponsorship goes directly into the development of this project** — keeping the weekly pricing pipeline running, expanding the AWS service catalog, and shipping new features. Even **$1 matters** and helps keep things running.
-
+If this tool has helped you learn system design, model cloud environments, or evaluate AWS bills, please consider supporting its development:
 > 💖 [**Become a sponsor on GitHub →**](https://github.com/sponsors/000Sushant)
 
-Not able to sponsor? There are plenty of other meaningful ways to contribute:
-
-- 🎯 **Take on the current open challenge** — pick up a focused, well-scoped task from the [open issues](https://github.com/000Sushant/system-design-simulator/issues).
-- 🧩 **Add a meaningful service** — the catalog is fully data-driven, so describe a service's real traffic and cost behavior in JSON and open a PR.
-- 💬 **Share your feedback** — send improvement suggestions or tell us about your experience via the [feedback form](https://forms.gle/2Kh6TKqcwYUSnYnHA).
-- 🐞 **Report a bug** — spotted something off? Let us know through the [bug report form](https://forms.gle/RJwRybjgRPPi11jg7).
-
 ---
-
-## 📦 Release History
-
-### Version 1.2 (Current)
-- **Expanded AWS Service Catalog**: Model architectures with **60+ hand-crafted AWS services**, each with custom properties, input/output port definitions, and visual flow mappings.
-- **Dual-Mode Workspace**: Seamlessly transition between **Developer Mode** (a simplified sandbox designed for learning cloud concepts) and **Architect Mode** (a professional designer with detailed hardware classes and pricing options).
-- **Interactive Documentation**: Comprehensive, in-app guide articles for all 64 services detailing Conceptual Models, Architectural Working (with custom animations), Recommended Practices, and common Failure Modes.
-- **Live AWS Cost Estimation**: Accurate monthly cost updates driven by real AWS pricing rates fetched weekly from the live AWS Pricing API and updated on the fly.
-- **Multi-Canvas Configuration Support**: Create, manage, and design multiple independent cloud architectures side-by-side using tabs.
-- **Variable Traffic Modeling**: Model realistic user traffic behavior by configuring minimum/maximum traffic bounds with live, randomized fluctuations.
-- **Traffic Distribution Manager**: Route and manage traffic flows between multiple downstream nodes with custom routing weights or percentages.
-- **Canvas Keyboard Hotkeys**: Accelerate your design iterations with keyboard shortcuts (e.g., `Ctrl+Z` / `Ctrl+Y` or `Ctrl+Shift+Z` for Undo/Redo, `Ctrl+S` to save, and `Delete` / `Backspace` to remove selected canvas elements).
-- **Realistic Bottleneck Modeling**: Advanced multi-factor resource-bound modeling (evaluating queue depths, CPU pressure, and concurrent execution limits) featuring load-shedding/throttling and server collapses.
-
-### Version 1.1
-- Integrated regional pricing calculations.
-- Responsive simulation and cost layouts.
-- Added compact run stats bar.
 
 Built with ❤️ for the Cloud Community. Licensed under the [GNU General Public License v3.0](LICENSE).
