@@ -1,36 +1,30 @@
-import { CommonModule } from "@angular/common";
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Output,
-  ViewChild,
-} from "@angular/core";
-import { SimulationCanvasComponent } from "../canvas animation/simulation-canvas.component";
-import { ThemeService } from "../../core/services/theme.service";
+import { CommonModule } from '@angular/common';
+import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
+import { SimulationCanvasComponent } from '../canvas animation/simulation-canvas.component';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
-  selector: "app-landing",
+  selector: 'app-landing',
   standalone: true,
   imports: [CommonModule, SimulationCanvasComponent],
-  templateUrl: "./landing.component.html",
-  styleUrls: ["./landing.component.css"],
+  templateUrl: './landing.component.html',
+  styleUrls: ['./landing.component.css'],
 })
 export class LandingComponent {
-  @Output() launch = new EventEmitter<"developer" | "architect" | undefined>();
-  @ViewChild("shell", { static: true }) shellRef!: ElementRef<HTMLElement>;
+  @Output() launch = new EventEmitter<'developer' | 'architect' | undefined>();
+  @ViewChild('shell', { static: true }) shellRef!: ElementRef<HTMLElement>;
 
   readonly contributors = [
     {
-      login: "000Sushant",
-      avatar_url: "https://github.com/000Sushant.png",
-      html_url: "https://github.com/000Sushant"
+      login: '000Sushant',
+      avatar_url: 'https://github.com/000Sushant.png',
+      html_url: 'https://github.com/000Sushant',
     },
     {
-      login: "harsh-dwivedi",
-      avatar_url: "https://github.com/harsh-dwivedi.png",
-      html_url: "https://github.com/harsh-dwivedi"
-    }
+      login: 'harsh-dwivedi',
+      avatar_url: 'https://github.com/harsh-dwivedi.png',
+      html_url: 'https://github.com/harsh-dwivedi',
+    },
   ];
 
   constructor(private themeService: ThemeService) {}
@@ -58,8 +52,8 @@ export class LandingComponent {
 
   openDocs(event: Event) {
     event.preventDefault();
-    window.history.pushState(null, "", "/docs");
-    window.dispatchEvent(new Event("popstate"));
+    window.history.pushState(null, '', '/docs');
+    window.dispatchEvent(new Event('popstate'));
   }
 
   onButtonMouseMove(event: MouseEvent) {
@@ -76,173 +70,159 @@ export class LandingComponent {
     const shadowX = -rx * 8; // max 8px shift
     const shadowY = -ry * 8; // max 8px shift
 
-    btn.style.setProperty("--mouse-x", `${x}px`);
-    btn.style.setProperty("--mouse-y", `${y}px`);
-    btn.style.setProperty("--shadow-x", `${shadowX}px`);
-    btn.style.setProperty("--shadow-y", `${shadowY}px`);
+    btn.style.setProperty('--mouse-x', `${x}px`);
+    btn.style.setProperty('--mouse-y', `${y}px`);
+    btn.style.setProperty('--shadow-x', `${shadowX}px`);
+    btn.style.setProperty('--shadow-y', `${shadowY}px`);
 
     // Subtle 3D tilt
     const tiltX = ry * 4; // rotate around X axis
     const tiltY = -rx * 4; // rotate around Y axis
-    btn.style.setProperty("--tilt-x", `${tiltX}deg`);
-    btn.style.setProperty("--tilt-y", `${tiltY}deg`);
+    btn.style.setProperty('--tilt-x', `${tiltX}deg`);
+    btn.style.setProperty('--tilt-y', `${tiltY}deg`);
   }
 
   onButtonMouseLeave(event: MouseEvent) {
     const btn = event.currentTarget as HTMLElement;
-    btn.style.removeProperty("--mouse-x");
-    btn.style.removeProperty("--mouse-y");
-    btn.style.removeProperty("--shadow-x");
-    btn.style.removeProperty("--shadow-y");
-    btn.style.removeProperty("--tilt-x");
-    btn.style.removeProperty("--tilt-y");
+    btn.style.removeProperty('--mouse-x');
+    btn.style.removeProperty('--mouse-y');
+    btn.style.removeProperty('--shadow-x');
+    btn.style.removeProperty('--shadow-y');
+    btn.style.removeProperty('--tilt-x');
+    btn.style.removeProperty('--tilt-y');
   }
 
   scrollToModes(): void {
     const shell = this.shellRef?.nativeElement;
     if (!shell) return;
-    const target = shell.querySelector("#mode-title") as HTMLElement | null;
+    const target = shell.querySelector('#mode-title') as HTMLElement | null;
     if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
     // fallback: find first mode-section
-    const section = shell.querySelector(".mode-section") as HTMLElement | null;
-    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+    const section = shell.querySelector('.mode-section') as HTMLElement | null;
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   readonly trustPills = [
-    "Open Source",
-    "MIT Licensed",
-    "10+ System Design Challenges",
-    "Live Cost Analytics",
-    "Real-time Simulation",
+    'Open Source',
+    'MIT Licensed',
+    '10+ System Design Challenges',
+    'Live Cost Analytics',
+    'Real-time Simulation',
   ];
 
   readonly features = [
     {
-      icon: "fas fa-graduation-cap",
-      title: "System Design Challenges",
-      badge: "New",
+      icon: 'fas fa-graduation-cap',
+      title: 'Design Challenges',
+      badge: 'New',
       description:
-        "Learn system design by solving real world problems. Guided hints, live scoring, and reference solutions that explain the why behind every decision.",
+        'Learn system design by solving real world problems. Guided hints, live scoring, and reference solutions that explain the why behind every decision.',
     },
     {
-      icon: "fas fa-diagram-project",
-      title: "Design Architectures",
+      icon: 'fas fa-diagram-project',
+      title: 'Design Architectures',
       description:
-        "Shape real AWS architectures on a visual canvas. Every service, connection, and parameter at your fingertips.",
+        'Shape real AWS architectures on a visual canvas. Every service, connection, and parameter at your fingertips.',
     },
     {
-      icon: "fas fa-bolt",
-      title: "Real-Time Simulation",
+      icon: 'fas fa-bolt',
+      title: 'Real-Time Simulation',
       description:
-        "Watch live traffic flow through every node and see bottlenecks surface before your users ever could.",
+        'Watch live traffic flow through every node and see bottlenecks surface before your users ever could.',
     },
     {
-      icon: "fas fa-chart-line",
-      title: "Performance Metrics",
+      icon: 'fas fa-chart-line',
+      title: 'Performance Metrics',
       description:
-        "Per-node RPS, latency, utilization, and failures, all streamed live while your system runs.",
+        'Per-node RPS, latency, utilization, and failures, all streamed live while your system runs.',
     },
     {
-      icon: "fas fa-sliders",
-      title: "Tune & Optimize",
+      icon: 'fas fa-sliders',
+      title: 'Tune & Optimize',
       description:
-        "Explore scaling, caching, retries, and capacity freely, with every adjustment reflected in real time.",
+        'Explore scaling, caching, retries, and capacity freely, with every adjustment reflected in real time.',
     },
     {
-      icon: "fas fa-coins",
-      title: "Cost Analytics",
+      icon: 'fas fa-coins',
+      title: 'Cost Analytics',
       description:
-        "A live cost dashboard with real AWS pricing behind every node. Your whole architecture priced as you design, so you can defend every dollar.",
+        'A live cost dashboard with real AWS pricing behind every node. Your whole architecture priced as you design, so you can defend every dollar.',
     },
     {
-      icon: "fas fa-cubes",
-      title: "Terraform Import",
-      badge: "Coming Soon",
+      icon: 'fas fa-rocket',
+      title: 'Sr. Architect 2.0',
+      badge: 'Coming Soon',
       description:
-        "Drop in your HCL and get a running, simulation-ready replica of your infrastructure in seconds.",
-    },
-    {
-      icon: "fas fa-wand-magic-sparkles",
-      title: "AI Intelligence",
-      badge: "Coming Soon",
-      description:
-        "An AI architect that reviews your design and flags weaknesses before production does.",
-    },
-    {
-      icon: "fas fa-globe",
-      title: "Multi-Cloud Support",
-      badge: "Coming Soon",
-      description:
-        "One canvas for AWS, Azure, and GCP to compare the same architecture across clouds.",
+        'The next chapter of Sr. Architect. with AI powerd engine, Terraform import, multi-cloud support across AWS, Azure, and GCP, and much more.',
     },
   ];
 
   readonly showcaseStats = [
-    { label: "Latency", value: "42ms", tone: "cyan" },
-    { label: "Req/sec", value: "2.4k", tone: "orange" },
-    { label: "Est. Cost", value: "$284", tone: "purple" },
-    { label: "Scaling", value: "+3 nodes", tone: "green" },
+    { label: 'Latency', value: '42ms', tone: 'cyan' },
+    { label: 'Req/sec', value: '2.4k', tone: 'orange' },
+    { label: 'Est. Cost', value: '$284', tone: 'purple' },
+    { label: 'Scaling', value: '+3 nodes', tone: 'green' },
   ];
 
   readonly socialLinks = [
     {
-      label: "Email",
-      icon: "fa fa-envelope",
-      href: "mailto:[000susahntkumar@gmail.com]",
+      label: 'Email',
+      icon: 'fa fa-envelope',
+      href: 'mailto:[000susahntkumar@gmail.com]',
     },
     {
-      label: "LinkedIn",
-      icon: "fab fa-linkedin",
-      href: "https://linkedin.com/in/sushant--kumar",
+      label: 'LinkedIn',
+      icon: 'fab fa-linkedin',
+      href: 'https://linkedin.com/in/sushant--kumar',
     },
     {
-      label: "Portfolio",
-      icon: "fas fa-globe",
-      href: "https://000sushant.github.io/sushant-portfolio/",
+      label: 'Portfolio',
+      icon: 'fas fa-globe',
+      href: 'https://000sushant.github.io/sushant-portfolio/',
     },
     {
-      label: "GitHub",
-      icon: "fab fa-github",
-      href: "https://github.com/000Sushant",
+      label: 'GitHub',
+      icon: 'fab fa-github',
+      href: 'https://github.com/000Sushant',
     },
   ];
 
   readonly modes = [
     {
-      id: "developer" as const,
-      badge: "Learn System Design",
-      title: "Developer",
+      id: 'developer' as const,
+      badge: 'Learn System Design',
+      title: 'Developer',
       description:
-        "Learn system design by doing. Take on real world challenges, follow guided hints, and watch your architecture come alive as you build it.",
-      button: "Start Learning",
-      icon: "fas fa-graduation-cap",
-      visual: "developer-visual",
+        'Learn system design by doing. Take on real world challenges, follow guided hints, and watch your architecture come alive as you build it.',
+      button: 'Start Learning',
+      icon: 'fas fa-graduation-cap',
+      visual: 'developer-visual',
       features: [
-        "Guided system design challenges",
-        "Real interview style problems",
-        "Step by step hints and milestones",
-        "Instant scoring and feedback",
-        "Reference solutions that explain every choice",
+        'Guided system design challenges',
+        'Real interview style problems',
+        'Step by step hints and milestones',
+        'Instant scoring and feedback',
+        'Reference solutions that explain every choice',
       ],
     },
     {
-      id: "architect" as const,
-      badge: "Design + Cost Analytics",
-      title: "Architect",
+      id: 'architect' as const,
+      badge: 'Design + Cost Analytics',
+      title: 'Architect',
       description:
-        "Model production grade systems with 60+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.",
-      button: "Design Infrastructure",
-      icon: "fas fa-building-columns",
-      visual: "architect-visual",
+        'Model production grade systems with 60+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.',
+      button: 'Design Infrastructure',
+      icon: 'fas fa-building-columns',
+      visual: 'architect-visual',
       features: [
-        "60+ real AWS services",
-        "Live cost analytics dashboard",
-        "Accurate per service monthly estimates",
-        "Stress test production workloads",
-        "Granular performance tuning",
+        '60+ real AWS services',
+        'Live cost analytics dashboard',
+        'Accurate per service monthly estimates',
+        'Stress test production workloads',
+        'Granular performance tuning',
       ],
     },
   ];
