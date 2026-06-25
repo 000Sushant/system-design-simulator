@@ -33,6 +33,9 @@ backend/.dev.vars
 # Wrangler local state
 .wrangler/
 
+# Real wrangler config with resource IDs — copy wrangler.toml.example to wrangler.toml
+worker/wrangler.toml
+
 # Claude Code (local AI assistant files, not for the repo)
 .claude/
 CLAUDE.md

@@ -12,5 +12,5 @@ export const environment = {
    * Base URL of the Cloudflare Worker that stores challenge votes in D1.
    * Local dev points at `wrangler dev` (default port 8787). Empty disables votes.
    */
-  votesApiBase: 'http://127.0.0.1:8787',
+  votesApiBase: 'http://localhost:4200',
 };
