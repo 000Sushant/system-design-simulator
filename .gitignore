@@ -30,6 +30,9 @@ backend/.dev.vars
 !*.env.example
 !**/.env.example
 
+# Trivy / scanner output from local runs
+*.sarif
+
 # Wrangler local state
 .wrangler/
 
