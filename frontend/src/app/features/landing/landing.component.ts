@@ -40,9 +40,8 @@ export class LandingComponent implements OnInit {
         // Network/Worker unavailable: fall through to the dev fallback below.
       }
     }
-    // Dev fallback: show placeholder numbers locally so the strip stays visible
-    // while building. Production never shows dummy data.
-    if (!environment.production) {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
       this.liveStats = this.toStats({ stars: 12, clones: 340, visitors: 1200, countries: 28 });
     }
   }
