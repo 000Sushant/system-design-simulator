@@ -5,7 +5,7 @@
   "description": "AWS architecture sketchbook and deterministic simulation engine",
   "scripts": {
     "start": "ng serve --host 0.0.0.0 --port 4200",
-    "build": "ng build && node scripts/generate-seo-pages.mjs",
+    "build": "ng build --configuration production && node scripts/generate-seo-pages.mjs",
     "seo:generate": "node scripts/generate-seo-pages.mjs",
     "test": "ng test",
     "lint": "eslint src",
