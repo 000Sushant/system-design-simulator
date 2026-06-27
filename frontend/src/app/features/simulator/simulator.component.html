@@ -1110,13 +1110,13 @@
       <div class="leave-guard-actions">
         <ng-container *ngIf="leaveGuard.action === 'switch'">
           <button type="button" class="lg-btn lg-primary" (click)="resolveLeaveGuard('keep')">
-            <i class="fas fa-arrow-right-arrow-left"></i> Bring my canvas
+            <i class="fas fa-wand-magic-sparkles"></i> Bring my canvas
           </button>
           <button type="button" class="lg-btn" (click)="resolveLeaveGuard('saveFresh')">
             <i class="fas fa-floppy-disk"></i> Save &amp; start fresh
           </button>
           <button type="button" class="lg-btn lg-ghost" (click)="resolveLeaveGuard('fresh')">
-            <i class="fas fa-eraser"></i> Start fresh
+            <i class="fas fa-file"></i> Start fresh
           </button>
         </ng-container>
         <ng-container *ngIf="leaveGuard.action !== 'switch'">

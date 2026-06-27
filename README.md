@@ -206,4 +206,6 @@ If this tool has helped you learn system design, model cloud environments, or ev
 
 ---
 
-Built with ❤️ for the Cloud Community. Licensed under the [GNU General Public License v3.0](LICENSE).
+Built with ❤️ for the Cloud Community.
+
+**© 2026 Sushant Kumar. All rights reserved.** Licensed under the [GNU General Public License v3.0](LICENSE).

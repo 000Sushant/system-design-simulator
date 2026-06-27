@@ -15,8 +15,7 @@ export class ThemeService {
   private initTheme(): void {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('sr-architect-darkmode');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const isDark = stored !== null ? stored === 'true' : prefersDark;
+      const isDark = stored !== null ? stored === 'true' : false;
       this.setDark(isDark);
     }
   }

@@ -61,18 +61,16 @@
   <section class="hero-section">
     <div class="hero-copy">
       <div class="eyebrow glass-pill">
-        <i class="fas fa-circle"></i> Learn system design. Architect real AWS systems.
+        <i class="fas fa-circle"></i> Think like an Architect & Build like an Engineer
       </div>
       <h1>
-        <span class="eyebrow-pre">A living canvas where</span><br />
-        Designs<br />take shape,<br />traffic comes<br />alive, and<br />costs
-        become clear.
+        <span class="eyebrow-pre">An interactive playground to</span><br />
+        Learn, Design,<br />Simulate and Analyze<br />AWS Cloud<br />Infrastructures
       </h1>
       <p>
-        Sr. Architect is two tools in one. Learn system design hands on through
-        guided challenges, then architect real AWS systems on a live canvas where
-        traffic flows through every node and a full cost analysis takes shape, all
-        before anything is deployed.
+        Sr. Architect enables developers to master system design through interactive challenges and
+        empowers cloud architects to design, validate, and analyze AWS architectures with traffic
+        simulation, cost estimation, and production-ready insights.
       </p>
       <div class="hero-actions">
         <button type="button" class="cta-button primary" (click)="scrollToModes()"
@@ -80,8 +78,9 @@
           <span>Launch Simulator</span>
           <i class="fas fa-arrow-right"></i>
         </button>
-        <a class="cta-button ghost github-btn" href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
-          rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <a class="cta-button ghost github-btn" href="https://github.com/000Sushant/system-design-simulator/"
+          target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)">
           <i class="fab fa-github"></i>
           <span>GitHub</span>
           <span *ngIf="githubStars" class="github-stars-badge">
@@ -106,12 +105,11 @@
       <span class="mode-speck speck-c"></span>
     </div>
     <div class="section-heading centered">
-      <span class="section-kicker">Two modes. One engine.</span>
-      <h2 id="mode-title">Built for learners. Sharpened for architects.</h2>
+      <span class="section-kicker">One Engine - Two Modes</span>
+      <h2 id="mode-title">Built for learners & Sharpened for architects</h2>
       <p>
-        Pick up system design through guided challenges in Developer mode, or model
-        production systems with live cost analytics in Architect mode. Same engine,
-        whichever path you are on.
+        Pick up system design through guided challenges in Developer mode, or model production
+        systems with live cost analytics in Architect mode. Same engine, whichever path you are on.
       </p>
     </div>
 
@@ -136,9 +134,7 @@
         <h3>{{ mode.title }}</h3>
         <p>{{ mode.description }}</p>
         <ul>
-          <li *ngFor="let feature of mode.features">
-            <i class="fas fa-check"></i>{{ feature }}
-          </li>
+          <li *ngFor="let feature of mode.features"><i class="fas fa-check"></i>{{ feature }}</li>
         </ul>
         <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
           <span>{{ mode.button }}</span>
@@ -181,8 +177,8 @@
       <span class="section-kicker">Creator</span>
       <h2>Made with <span class="beating-heart">❤️</span> by Sushant Kumar</h2>
       <p>
-        Backend-focused full stack engineer obsessed with cloud architecture,
-        scalable systems, and building tools that make engineering feel alive.
+        Backend-focused full stack engineer obsessed with cloud architecture, scalable systems, and
+        building tools that make engineering feel alive.
       </p>
       <div class="creator-badges">
         <span>Open Source</span>
@@ -225,7 +221,8 @@
     </div>
 
     <p class="contributors-note">
-      Thanks to all the amazing developers helping shape Sr. Architect! Open a PR and claim your spot.
+      Thanks to all the amazing developers helping shape Sr. Architect! Open a PR and claim your
+      spot.
     </p>
   </section>
 
@@ -235,14 +232,12 @@
       <img src="assets/mascot/cat-sponsor.svg" alt="" />
     </div>
     <span class="section-kicker">Support the project</span>
-    <h2 id="sponsor-title">
-      Help keep Sr<span class="brand-dot">.</span> Architect alive
-    </h2>
+    <h2 id="sponsor-title">Help keep Sr<span class="brand-dot">.</span> Architect alive</h2>
     <p class="sponsor-copy">
-      Sr. Architect is open source and free for everyone. If it has helped you,
-      you can help it keep growing.
-      <strong>100% of every sponsorship goes directly into building this
-        project</strong>. Even <strong>$1 matters</strong>
+      Sr. Architect is open source and free for everyone. If it has helped you, you can help it keep
+      growing.
+      <strong>100% of every sponsorship goes directly into building this project</strong>. Even
+      <strong>$1 matters</strong>
       and helps keep things running.
     </p>
     <div class="hero-actions center">
@@ -288,7 +283,7 @@
         rel="noopener noreferrer">GitHub</a>
       <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer">Sponsor</a>
     </nav>
-    <p class="footer-copy">© 2026 Sr. Architect. Built in the open, free for everyone.</p>
+    <p class="footer-copy">© 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.</p>
   </footer>
 
   <!-- Mobile back-to-top -->
