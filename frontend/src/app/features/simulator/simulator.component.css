@@ -6929,8 +6929,14 @@ small {
   padding: 34px 28px 28px;
   text-align: center;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.65));
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.85),
+      rgba(255, 255, 255, 0.45)),
+    rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
   box-shadow:
     0 24px 60px rgba(15, 23, 42, 0.15),
     inset 0 1px 1px rgba(255, 255, 255, 0.6);
@@ -6944,8 +6950,8 @@ small {
   z-index: 0;
   opacity: 0.8;
   background:
-    radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.08), transparent 45%),
-    radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.06), transparent 45%);
+    radial-gradient(circle at 12% 8%, rgba(124, 58, 237, 0.1), transparent 46%),
+    radial-gradient(circle at 88% 90%, rgba(6, 182, 212, 0.07), transparent 48%);
 }
 .leave-guard-close {
   position: absolute;
@@ -6991,8 +6997,8 @@ small {
   inset: -15%;
   border-radius: 50%;
   background: radial-gradient(circle,
-      rgba(245, 158, 11, 0.22) 0%,
-      rgba(245, 158, 11, 0.08) 45%,
+      rgba(124, 58, 237, 0.2) 0%,
+      rgba(124, 58, 237, 0.07) 45%,
       transparent 70%);
   pointer-events: none;
   z-index: 0;
@@ -7032,84 +7038,102 @@ small {
   position: relative;
   z-index: 1;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
 }
 .lg-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px 20px;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.7);
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.6);
   color: #334155;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease, border-color 0.25s ease, background 0.2s ease, color 0.2s ease;
 }
 .lg-btn i {
-  font-size: 14px;
-  transition: transform 0.2s ease;
+  font-size: 12px;
 }
 .lg-btn:hover {
-  background: #ffffff;
-  border-color: rgba(15, 23, 42, 0.16);
+  transform: translateY(-1.5px);
+  border-color: rgba(124, 58, 237, 0.4);
   color: #0f172a;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-.lg-btn:hover i {
-  transform: scale(1.15);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.1);
 }
 .lg-btn:active {
   transform: scale(0.97);
 }
+
 .lg-btn.lg-primary {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  border-color: #d97706;
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  color: #3b0764;
+  font-weight: 700;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%),
+    linear-gradient(135deg,
+      rgba(167, 139, 250, 0.38) 0%,
+      rgba(236, 72, 153, 0.28) 40%,
+      rgba(6, 182, 212, 0.24) 75%,
+      rgba(167, 139, 250, 0.38) 100%),
+    rgba(255, 255, 255, 0.32);
+  box-shadow:
+    0 10px 25px rgba(124, 58, 237, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92),
+    inset 0 -2px 4px rgba(124, 58, 237, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 .lg-btn.lg-primary:hover {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  border-color: #f59e0b;
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transform: translateY(-1.5px);
+  border-color: rgba(236, 72, 153, 0.7);
+  color: #3b0764;
+  box-shadow:
+    0 14px 32px rgba(124, 58, 237, 0.14),
+    0 0 0 4px rgba(167, 139, 250, 0.22),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
 }
+
 .lg-btn.lg-danger {
-  background: rgba(239, 68, 68, 0.05);
-  border-color: rgba(239, 68, 68, 0.24);
   color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.05);
 }
 .lg-btn.lg-danger:hover {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  border-color: #dc2626;
   color: #ffffff;
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: #dc2626;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.22);
 }
+
 .lg-btn.lg-ghost {
   background: transparent;
-  border-color: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.1);
   color: #64748b;
-  box-shadow: none;
 }
 .lg-btn.lg-ghost:hover {
   background: rgba(15, 23, 42, 0.04);
   color: #475569;
-  border-color: rgba(15, 23, 42, 0.16);
+  border-color: rgba(15, 23, 42, 0.18);
 }
 
 /* Dark Mode Overrides */
 :host-context(.dark) .leave-guard-card {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
   background:
-    radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.18), transparent 45%),
-    radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.12), transparent 45%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)),
-    rgba(15, 23, 42, 0.92);
+    radial-gradient(circle at 16% 6%, rgba(124, 58, 237, 0.28), transparent 46%),
+    radial-gradient(circle at 88% 12%, rgba(6, 182, 212, 0.2), transparent 46%),
+    radial-gradient(circle at 60% 92%, rgba(59, 130, 246, 0.18), transparent 52%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(13, 17, 29, 0.92);
   box-shadow:
     0 24px 60px rgba(0, 0, 0, 0.6),
     inset 0 1px 1px rgba(255, 255, 255, 0.05);
@@ -7135,58 +7159,46 @@ small {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 :host-context(.dark) .lg-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
   color: #cbd5e1;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 :host-context(.dark) .lg-btn:hover {
   background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(167, 139, 250, 0.4);
   color: #ffffff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-:host-context(.dark) .lg-btn.lg-primary {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  border-color: #d97706;
-  color: #1b1206;
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-:host-context(.dark) .lg-btn.lg-primary:hover {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  border-color: #f59e0b;
-  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 :host-context(.dark) .lg-btn.lg-danger {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.32);
   color: #f87171;
 }
 :host-context(.dark) .lg-btn.lg-danger:hover {
   background: linear-gradient(135deg, #ef4444, #dc2626);
   border-color: #dc2626;
   color: #ffffff;
-  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.28);
 }
 :host-context(.dark) .lg-btn.lg-ghost {
   background: transparent;
-  border-color: rgba(255, 255, 255, 0.06);
-  color: #64748b;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
 }
 :host-context(.dark) .lg-btn.lg-ghost:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.14);
   color: #cbd5e1;
 }
 :host-context(.dark) .leave-guard-mascot::before {
   background: radial-gradient(circle,
-      rgba(245, 158, 11, 0.3) 0%,
-      rgba(245, 158, 11, 0.1) 45%,
+      rgba(124, 58, 237, 0.32) 0%,
+      rgba(124, 58, 237, 0.12) 45%,
       transparent 70%);
 }
 :host-context(.dark) .leave-guard-mascot img {
   filter:
-    drop-shadow(0 0 10px rgba(245, 158, 11, 0.35))
+    drop-shadow(0 0 10px rgba(124, 58, 237, 0.4))
     drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
 }
 

@@ -76,7 +76,7 @@ export class LandingComponent implements OnInit {
     },
   ];
 
-  constructor(private themeService: ThemeService) {}
+  constructor(private themeService: ThemeService) { }
 
   get isDarkMode(): boolean {
     return this.themeService.isDark;
@@ -255,6 +255,7 @@ export class LandingComponent implements OnInit {
         'Step by step hints and milestones',
         'Instant scoring and feedback',
         'Reference solutions that explain every choice',
+        'Beginner friendly documentation on each service',
       ],
     },
     {
@@ -268,6 +269,7 @@ export class LandingComponent implements OnInit {
       visual: 'architect-visual',
       features: [
         '60+ real AWS services',
+        '20+ real AWS regions with precise pricing',
         'Live cost analytics dashboard',
         'Accurate per service monthly estimates',
         'Stress test production workloads',

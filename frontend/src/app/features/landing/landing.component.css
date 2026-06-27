@@ -135,7 +135,7 @@
   z-index: 200;
 
   width: calc(100% - 48px);
-  max-width: 1100px;
+  max-width: clamp(1100px, 80vw, 1500px);
   min-height: 54px;
   border-radius: 20px;
   padding: 8px 14px;
@@ -403,8 +403,10 @@
 .hero-section {
   position: relative;
   z-index: 2;
-  max-width: 1100px;
-  margin: 8px auto 22px;
+  /* Responsive container that expands with the viewport (Bootstrap-style):
+     stays 1100px on laptops, grows up to 1500px on wide screens. */
+  max-width: clamp(1100px, 80vw, 1500px);
+  margin: clamp(20px, 5vh, 64px) auto clamp(28px, 4vh, 56px);
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(380px, 1.1fr);
   gap: clamp(24px, 5vw, 52px);
@@ -700,7 +702,7 @@
 .trust-strip {
   position: relative;
   z-index: 2;
-  max-width: 1100px;
+  max-width: clamp(1100px, 80vw, 1500px);
   margin-inline: auto;
 }
 
@@ -1248,7 +1250,7 @@
   position: relative;
   z-index: 2;
   overflow: hidden;
-  max-width: 1100px;
+  max-width: clamp(1100px, 80vw, 1500px);
   margin: 42px auto 0;
   border-radius: 26px;
   padding: 32px 24px;
@@ -1331,7 +1333,7 @@
 .contributors-card {
   position: relative;
   z-index: 2;
-  max-width: 1100px;
+  max-width: clamp(1100px, 80vw, 1500px);
   margin: 42px auto 0;
   border-radius: 26px;
   padding: 28px 18px;
@@ -1433,7 +1435,7 @@
   height: 60px;
   border-radius: 50%;
   border: 2px solid rgba(124, 58, 237, 0.25);
-  box-shadow: 
+  box-shadow:
     0 8px 20px rgba(124, 58, 237, 0.08),
     inset 0 1px 2px rgba(255, 255, 255, 1);
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
@@ -1520,6 +1522,49 @@
   to {
     transform: translateX(150px);
     opacity: 0;
+  }
+}
+
+/* Bootstrap-style width breakpoints: on screens wider than a laptop the hero
+   container has already expanded (responsive max-width), so step the copy up to
+   match and keep the proportions natural. Laptops (<1400px) are untouched. */
+@media (min-width: 1400px) {
+  .hero-copy .eyebrow-pre {
+    font-size: 28px;
+  }
+
+  .hero-copy h1 {
+    font-size: 74px;
+  }
+
+  .hero-copy p {
+    font-size: 16px;
+    max-width: 600px;
+  }
+
+  .hero-actions {
+    margin-top: 28px;
+  }
+}
+
+@media (min-width: 1700px) {
+  .hero-copy .eyebrow-pre {
+    font-size: 32px;
+  }
+
+  .hero-copy h1 {
+    font-size: 86px;
+    max-width: 760px;
+  }
+
+  .hero-copy p {
+    font-size: 17px;
+    max-width: 640px;
+  }
+
+  .hero-actions .cta-button {
+    min-height: 54px;
+    font-size: 16px;
   }
 }
 
@@ -1664,6 +1709,7 @@
     flex-direction: column;
     align-items: center;
   }
+
   .creator-avatar {
     display: none;
   }
@@ -2787,7 +2833,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px 32px;
-  max-width: 1100px;
+  max-width: clamp(1100px, 80vw, 1500px);
   margin: 64px auto 0;
   padding: 28px 24px 40px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
