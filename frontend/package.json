@@ -34,7 +34,7 @@
     "@angular/compiler-cli": "^19.0.0",
     "@types/three": "^0.184.1",
     "angular-eslint": "^19.8.1",
-    "eslint": "^9.39.4",
+    "eslint": "^10.6.0",
     "png-to-ico": "^3.0.1",
     "prettier": "^3.8.4",
     "sharp": "^0.35.2",
