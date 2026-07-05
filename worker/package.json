@@ -11,7 +11,8 @@
     "kv:create": "wrangler kv namespace create PRICING_KV",
     "status": "wrangler tail",
     "build": "tsc --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "vitest run"
   },
   "dependencies": {
     "aws4fetch": "^1.0.20"
@@ -21,6 +22,7 @@
     "eslint": "^9.39.4",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.61.1",
-    "wrangler": "^3.80.0"
+    "vitest": "^4.1.9",
+    "wrangler": "^4.107.0"
   }
 }

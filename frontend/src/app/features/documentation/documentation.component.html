@@ -20,8 +20,14 @@
 
     <div class="nav-search glass-pill">
       <i class="fas fa-search search-icon"></i>
-      <input type="text" [(ngModel)]="searchQuery" placeholder="Search guides, AWS rules, billing..." />
-      <button *ngIf="searchQuery" class="clear-search" (click)="searchQuery = ''">&times;</button>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Search guides, AWS rules, billing..."
+      />
+      @if (searchQuery) {
+        <button class="clear-search" (click)="searchQuery = ''">&times;</button>
+      }
     </div>
     <button
       type="button"
@@ -30,10 +36,23 @@
       (click)="toggleTheme()"
       [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
     >
-      <svg class="sun-moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        class="sun-moon-svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <mask id="doc-moon-mask">
           <rect x="0" y="0" width="100%" height="100%" fill="white" />
-          <circle [attr.cx]="!isDarkMode ? 6 : -10" [attr.cy]="!isDarkMode ? 18 : 34" r="7" fill="black" />
+          <circle
+            [attr.cx]="!isDarkMode ? 6 : -10"
+            [attr.cy]="!isDarkMode ? 18 : 34"
+            r="7"
+            fill="black"
+          />
         </mask>
         <circle cx="12" cy="12" r="5" mask="url(#doc-moon-mask)" fill="currentColor" />
         <g class="sun-rays" stroke="currentColor">
@@ -51,13 +70,7 @@
   </nav>
 
   <!-- Liquid-glass distortion filter (referenced by .docs-nav.nav-scrolled backdrop-filter) -->
-  <svg
-    class="liquid-glass-defs"
-    aria-hidden="true"
-    width="0"
-    height="0"
-    focusable="false"
-  >
+  <svg class="liquid-glass-defs" aria-hidden="true" width="0" height="0" focusable="false">
     <defs>
       <filter
         id="liquid-glass"
@@ -90,7 +103,6 @@
 
   <!-- Split Docs Workspace Layout -->
   <div class="docs-workspace">
-
     <!-- Sidebar Neumorphic Category Navigation -->
     <aside class="docs-sidebar glass-panel">
       <h3>Categories</h3>
@@ -98,11 +110,16 @@
         <!-- Liquid Glass Active Indicator Background Pill -->
         <div class="active-indicator" [ngStyle]="indicatorStyle"></div>
 
-        <button *ngFor="let cat of categories" class="category-btn" [class.active]="activeCategoryId === cat.id"
-          (click)="selectCategory(cat.id)">
-          <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
-          <span>{{ cat.name }}</span>
-        </button>
+        @for (cat of categories; track cat) {
+          <button
+            class="category-btn"
+            [class.active]="activeCategoryId === cat.id"
+            (click)="selectCategory(cat.id)"
+          >
+            <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
+            <span>{{ cat.name }}</span>
+          </button>
+        }
       </nav>
     </aside>
 
@@ -112,382 +129,530 @@
       <h2>Service Library</h2>
 
       <!-- Service Deep Dive View -->
-      <div *ngIf="selectedServiceType as serviceType" class="service-deep-dive">
-        <div class="service-deep-dive-header">
-          <button class="back-to-services-btn" (click)="backToServices()">
-            <i class="fas fa-arrow-left"></i> <span>Back to Service Library</span>
-          </button>
-        </div>
-        <div class="service-switcher glass-panel">
-          <div>
-            <span class="switcher-kicker">Service documentation</span>
-            <strong>Know about AWS services</strong>
+      @if (selectedServiceType; as serviceType) {
+        <div class="service-deep-dive">
+          <div class="service-deep-dive-header">
+            <button class="back-to-services-btn" (click)="backToServices()">
+              <i class="fas fa-arrow-left"></i> <span>Back to Service Library</span>
+            </button>
           </div>
-          <select [ngModel]="serviceType" (ngModelChange)="openServiceDoc($event)" aria-label="Choose a service guide">
-            <option *ngFor="let service of awsCatalog.services" [value]="service.type">
-              {{ service.name }} - {{ service.category }}
-            </option>
-          </select>
-        </div>
-
-        <div class="deep-dive-grid">
-          <!-- Left Panel: Core Service Info -->
-          <div class="deep-dive-left glass-panel">
-            <div class="service-header-row">
-              <span class="service-icon-lg" [style.--service-color]="serviceColor(serviceType)">
-                <img [src]="awsCatalog.getByType(serviceType).iconUrl" alt="" />
-                <div class="tint-overlay" [style.background]="serviceColor(serviceType)"></div>
-              </span>
-              <div>
-                <span class="category-badge">{{ awsCatalog.getByType(serviceType).category }}</span>
-                <h2>{{ awsCatalog.getByType(serviceType).name }}</h2>
-              </div>
+          <div class="service-switcher glass-panel">
+            <div>
+              <span class="switcher-kicker">Service documentation</span>
+              <strong>Know about AWS services</strong>
             </div>
-
-            <div class="doc-section">
-              <h4>Overview</h4>
-              <p class="service-desc-text">{{ getServiceDoc(serviceType).whyNeeded }}</p>
-            </div>
-
-            <div class="doc-section">
-              <h4>Conceptual Model</h4>
-              <p class="service-desc-text">{{ getServiceDoc(serviceType).beginnerExplanation }}</p>
-            </div>
-
-            <div class="doc-section">
-              <h4>Architectural Working</h4>
-              <div class="illustration-card" [innerHTML]="getServiceDoc(serviceType).illustrationSvg"></div>
-            </div>
-
-            <div class="capabilities-panel">
-              <h4>Design Notes</h4>
-              <ul class="service-doc-list compact">
-                <li *ngFor="let capability of getServiceDoc(serviceType).keyCapabilities">{{ capability }}</li>
-              </ul>
-            </div>
-
-            <div class="doc-section service-notes-stack">
-              <div>
-                <h4>Recommended Using</h4>
-                <p class="service-desc-text">{{ getServiceDoc(serviceType).whenToUse }}</p>
-              </div>
-              <div>
-                <h4>Recommended Avoiding</h4>
-                <p class="service-desc-text">{{ getServiceDoc(serviceType).whenNotToUse }}</p>
-              </div>
-            </div>
-
-            <div class="doc-section">
-              <h4>Practical Scenario Example</h4>
-              <div class="example-box">
-                <i class="fas fa-project-diagram example-icon"></i>
-                <p>{{ getServiceDoc(serviceType).practicalExample }}</p>
-              </div>
-            </div>
-
-            <div class="doc-section" *ngIf="getServiceDoc(serviceType).bottleneck as bn">
-              <h4>Bottleneck &amp; Capacity</h4>
-              <div class="bottleneck-box" [class.is-offline]="bn.failureMode === 'offline'">
-                <div class="bottleneck-head">
-                  <span class="bottleneck-badge kind">{{ bn.kind }}</span>
-
-                  <!-- Runtime behaviour: whether it can overload, and the outcome at saturation -->
-                  <ng-container [ngSwitch]="bn.failureMode">
-                    <span *ngSwitchCase="'none'" class="bottleneck-badge mode none">No hard limit</span>
-                    <ng-container *ngSwitchCase="'offline'">
-                      <span class="bottleneck-badge mode overload">Can overload</span>
-                      <span class="bottleneck-badge mode offline">Goes offline</span>
-                    </ng-container>
-                    <ng-container *ngSwitchDefault>
-                      <span class="bottleneck-badge mode overload">Can overload</span>
-                      <span class="bottleneck-badge mode">Stays up · throttles</span>
-                    </ng-container>
-                  </ng-container>
-
-                  <span class="bottleneck-driver">{{ bn.capacityDriver }}</span>
+            <select
+              [ngModel]="serviceType"
+              (ngModelChange)="openServiceDoc($event)"
+              aria-label="Choose a service guide"
+            >
+              @for (service of awsCatalog.services; track service) {
+                <option [value]="service.type">{{ service.name }} - {{ service.category }}</option>
+              }
+            </select>
+          </div>
+          <div class="deep-dive-grid">
+            <!-- Left Panel: Core Service Info -->
+            <div class="deep-dive-left glass-panel">
+              <div class="service-header-row">
+                <span class="service-icon-lg" [style.--service-color]="serviceColor(serviceType)">
+                  <img [src]="awsCatalog.getByType(serviceType).iconUrl" alt="" />
+                  <div class="tint-overlay" [style.background]="serviceColor(serviceType)"></div>
+                </span>
+                <div>
+                  <span class="category-badge">{{
+                    awsCatalog.getByType(serviceType).category
+                  }}</span>
+                  <h2>{{ awsCatalog.getByType(serviceType).name }}</h2>
                 </div>
-
-                <p class="bottleneck-summary">{{ bn.summary }}</p>
-
-                <p class="bottleneck-at-capacity" *ngIf="bn.atSaturation">
-                  <strong>At capacity:</strong> {{ bn.atSaturation }}
+              </div>
+              <div class="doc-section">
+                <h4>Overview</h4>
+                <p class="service-desc-text">{{ getServiceDoc(serviceType).whyNeeded }}</p>
+              </div>
+              <div class="doc-section">
+                <h4>Conceptual Model</h4>
+                <p class="service-desc-text">
+                  {{ getServiceDoc(serviceType).beginnerExplanation }}
                 </p>
               </div>
-            </div>
-          </div>
-
-          <!-- Right Panel: Connectivity & Visual Map -->
-          <div class="deep-dive-right glass-panel">
-            <h4>Architecture & Connectivity Map</h4>
-            <p class="subtitle">Valid source and target connection paths supported in the simulator</p>
-
-            <div class="connectivity-map-container">
-              <svg viewBox="0 0 600 300" width="100%" height="280">
-                <defs>
-                  <filter id="glow-soft" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="3.5" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-
-                  <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8" />
-                    <stop offset="100%" stop-color="#10b981" stop-opacity="0.8" />
-                  </linearGradient>
-                </defs>
-
-                <!-- Connection Lines (Inbound to Center) -->
-                <g *ngFor="let node of inboundNodes; let i = index">
-                  <path [attr.d]="'M 100 ' + node.y + ' Q 180 ' + (node.y + 150) / 2 + ' 260 150'"
-                    stroke="url(#flowGrad)" stroke-width="2.5" fill="none" opacity="0.3" stroke-dasharray="6 4" />
-                  <!-- Pulsing Data Packet -->
-                  <circle r="4.5" fill="#10b981" filter="url(#glow-soft)">
-                    <animateMotion dur="2.4s" repeatCount="indefinite"
-                      [attr.path]="'M 100 ' + node.y + ' Q 180 ' + (node.y + 150) / 2 + ' 260 150'" />
-                  </circle>
-                </g>
-
-                <!-- Connection Lines (Center to Outbound) -->
-                <g *ngFor="let node of outboundNodes; let i = index">
-                  <path [attr.d]="'M 340 150 Q 420 ' + (node.y + 150) / 2 + ' 500 ' + node.y" stroke="url(#flowGrad)"
-                    stroke-width="2.5" fill="none" opacity="0.3" stroke-dasharray="6 4" />
-                  <!-- Pulsing Data Packet -->
-                  <circle r="4.5" fill="#3b82f6" filter="url(#glow-soft)">
-                    <animateMotion dur="2s" repeatCount="indefinite"
-                      [attr.path]="'M 340 150 Q 420 ' + (node.y + 150) / 2 + ' 500 ' + node.y" />
-                  </circle>
-                </g>
-
-                <!-- Left Nodes (Inbound Source Services) -->
-                <g *ngFor="let node of inboundNodes; let i = index" [attr.transform]="'translate(100, ' + node.y + ')'">
-                  <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
-                  <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
-                  <text y="36" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">{{ node.name
-                    }}</text>
-                </g>
-                <text *ngIf="inboundNodes.length === 0" x="100" y="150" text-anchor="middle" font-size="11"
-                  font-weight="600" fill="#94a3b8">No Direct Inputs</text>
-
-                <!-- Right Nodes (Outbound Target Services) -->
-                <g *ngFor="let node of outboundNodes; let i = index"
-                  [attr.transform]="'translate(500, ' + node.y + ')'">
-                  <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
-                  <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
-                  <text y="36" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">{{ node.name
-                    }}</text>
-                </g>
-                <text *ngIf="outboundNodes.length === 0" x="500" y="150" text-anchor="middle" font-size="11"
-                  font-weight="600" fill="#94a3b8">Terminal Node</text>
-
-                <!-- Center Node (Selected Service) -->
-                <g transform="translate(300, 150)">
-                  <circle r="38" [attr.fill]="serviceColor(serviceType) + '1f'" filter="url(#glow-soft)" />
-                  <circle r="32" fill="#ffffff" [attr.stroke]="serviceColor(serviceType)" stroke-width="2.5" />
-                  <image [attr.href]="awsCatalog.getByType(serviceType).iconUrl" x="-18" y="-18" width="36"
-                    height="36" />
-                  <text y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">{{
-                    awsCatalog.getByType(serviceType).name }}</text>
-                </g>
-              </svg>
-            </div>
-
-            <div class="doc-section">
-              <h4>Common Integration Patterns</h4>
-              <ul class="service-doc-list">
-                <li *ngFor="let useCase of getServiceDoc(serviceType).useCases">{{ useCase }}</li>
-              </ul>
-            </div>
-
-            <!-- List of Allowed Integrations -->
-            <div class="integrations-list-wrapper">
-              <h4>Supported Integrations ({{ rules.length }} rules)</h4>
-              <div class="rules-scroll">
-                <div *ngFor="let r of rules" class="integration-rule-card">
-                  <div class="rule-header">
-                    <span class="port-badge source">{{ r.type === 'identity' ? 'IAM' : r.type | uppercase }}</span>
-                    <i class="fas fa-arrow-right"></i>
-                    <span class="target-name">{{ r.targetName }}</span>
-                  </div>
-                  <p>{{ r.description }}</p>
+              <div class="doc-section">
+                <h4>Architectural Working</h4>
+                <div
+                  class="illustration-card"
+                  [innerHTML]="getServiceDoc(serviceType).illustrationSvg"
+                ></div>
+              </div>
+              <div class="capabilities-panel">
+                <h4>Design Notes</h4>
+                <ul class="service-doc-list compact">
+                  @for (
+                    capability of getServiceDoc(serviceType).keyCapabilities;
+                    track capability
+                  ) {
+                    <li>{{ capability }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="doc-section service-notes-stack">
+                <div>
+                  <h4>Recommended Using</h4>
+                  <p class="service-desc-text">{{ getServiceDoc(serviceType).whenToUse }}</p>
                 </div>
-                <div *ngIf="rules.length === 0" class="no-rules-message">
-                  <i class="fas fa-info-circle"></i>
-                  <span>No defined outbound connection rules exist for this node in the sandbox.</span>
+                <div>
+                  <h4>Recommended Avoiding</h4>
+                  <p class="service-desc-text">{{ getServiceDoc(serviceType).whenNotToUse }}</p>
+                </div>
+              </div>
+              <div class="doc-section">
+                <h4>Practical Scenario Example</h4>
+                <div class="example-box">
+                  <i class="fas fa-project-diagram example-icon"></i>
+                  <p>{{ getServiceDoc(serviceType).practicalExample }}</p>
+                </div>
+              </div>
+              @if (getServiceDoc(serviceType).bottleneck; as bn) {
+                <div class="doc-section">
+                  <h4>Bottleneck &amp; Capacity</h4>
+                  <div class="bottleneck-box" [class.is-offline]="bn.failureMode === 'offline'">
+                    <div class="bottleneck-head">
+                      <span class="bottleneck-badge kind">{{ bn.kind }}</span>
+                      <!-- Runtime behaviour: whether it can overload, and the outcome at saturation -->
+                      @switch (bn.failureMode) {
+                        @case ('none') {
+                          <span class="bottleneck-badge mode none">No hard limit</span>
+                        }
+                        @case ('offline') {
+                          <span class="bottleneck-badge mode overload">Can overload</span>
+                          <span class="bottleneck-badge mode offline">Goes offline</span>
+                        }
+                        @default {
+                          <span class="bottleneck-badge mode overload">Can overload</span>
+                          <span class="bottleneck-badge mode">Stays up · throttles</span>
+                        }
+                      }
+                      <span class="bottleneck-driver">{{ bn.capacityDriver }}</span>
+                    </div>
+                    <p class="bottleneck-summary">{{ bn.summary }}</p>
+                    @if (bn.atSaturation) {
+                      <p class="bottleneck-at-capacity">
+                        <strong>At capacity:</strong> {{ bn.atSaturation }}
+                      </p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            <!-- Right Panel: Connectivity & Visual Map -->
+            <div class="deep-dive-right glass-panel">
+              <h4>Architecture & Connectivity Map</h4>
+              <p class="subtitle">
+                Valid source and target connection paths supported in the simulator
+              </p>
+              <div class="connectivity-map-container">
+                <svg viewBox="0 0 600 300" width="100%" height="280">
+                  <defs>
+                    <filter id="glow-soft" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="3.5" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                    <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8" />
+                      <stop offset="100%" stop-color="#10b981" stop-opacity="0.8" />
+                    </linearGradient>
+                  </defs>
+                  <!-- Connection Lines (Inbound to Center) -->
+                  @for (node of inboundNodes; track node; let i = $index) {
+                    <g>
+                      <path
+                        [attr.d]="'M 100 ' + node.y + ' Q 180 ' + (node.y + 150) / 2 + ' 260 150'"
+                        stroke="url(#flowGrad)"
+                        stroke-width="2.5"
+                        fill="none"
+                        opacity="0.3"
+                        stroke-dasharray="6 4"
+                      />
+                      <!-- Pulsing Data Packet -->
+                      <circle r="4.5" fill="#10b981" filter="url(#glow-soft)">
+                        <animateMotion
+                          dur="2.4s"
+                          repeatCount="indefinite"
+                          [attr.path]="
+                            'M 100 ' + node.y + ' Q 180 ' + (node.y + 150) / 2 + ' 260 150'
+                          "
+                        />
+                      </circle>
+                    </g>
+                  }
+                  <!-- Connection Lines (Center to Outbound) -->
+                  @for (node of outboundNodes; track node; let i = $index) {
+                    <g>
+                      <path
+                        [attr.d]="'M 340 150 Q 420 ' + (node.y + 150) / 2 + ' 500 ' + node.y"
+                        stroke="url(#flowGrad)"
+                        stroke-width="2.5"
+                        fill="none"
+                        opacity="0.3"
+                        stroke-dasharray="6 4"
+                      />
+                      <!-- Pulsing Data Packet -->
+                      <circle r="4.5" fill="#3b82f6" filter="url(#glow-soft)">
+                        <animateMotion
+                          dur="2s"
+                          repeatCount="indefinite"
+                          [attr.path]="'M 340 150 Q 420 ' + (node.y + 150) / 2 + ' 500 ' + node.y"
+                        />
+                      </circle>
+                    </g>
+                  }
+                  <!-- Left Nodes (Inbound Source Services) -->
+                  @for (node of inboundNodes; track node; let i = $index) {
+                    <g [attr.transform]="'translate(100, ' + node.y + ')'">
+                      <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+                      <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
+                      <text
+                        y="36"
+                        text-anchor="middle"
+                        font-size="10"
+                        font-weight="600"
+                        fill="#64748b"
+                      >
+                        {{ node.name }}
+                      </text>
+                    </g>
+                  }
+                  @if (inboundNodes.length === 0) {
+                    <text
+                      x="100"
+                      y="150"
+                      text-anchor="middle"
+                      font-size="11"
+                      font-weight="600"
+                      fill="#94a3b8"
+                    >
+                      No Direct Inputs
+                    </text>
+                  }
+                  <!-- Right Nodes (Outbound Target Services) -->
+                  @for (node of outboundNodes; track node; let i = $index) {
+                    <g [attr.transform]="'translate(500, ' + node.y + ')'">
+                      <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+                      <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
+                      <text
+                        y="36"
+                        text-anchor="middle"
+                        font-size="10"
+                        font-weight="600"
+                        fill="#64748b"
+                      >
+                        {{ node.name }}
+                      </text>
+                    </g>
+                  }
+                  @if (outboundNodes.length === 0) {
+                    <text
+                      x="500"
+                      y="150"
+                      text-anchor="middle"
+                      font-size="11"
+                      font-weight="600"
+                      fill="#94a3b8"
+                    >
+                      Terminal Node
+                    </text>
+                  }
+                  <!-- Center Node (Selected Service) -->
+                  <g transform="translate(300, 150)">
+                    <circle
+                      r="38"
+                      [attr.fill]="serviceColor(serviceType) + '1f'"
+                      filter="url(#glow-soft)"
+                    />
+                    <circle
+                      r="32"
+                      fill="#ffffff"
+                      [attr.stroke]="serviceColor(serviceType)"
+                      stroke-width="2.5"
+                    />
+                    <image
+                      [attr.href]="awsCatalog.getByType(serviceType).iconUrl"
+                      x="-18"
+                      y="-18"
+                      width="36"
+                      height="36"
+                    />
+                    <text
+                      y="52"
+                      text-anchor="middle"
+                      font-size="12"
+                      font-weight="700"
+                      fill="#0f172a"
+                    >
+                      {{ awsCatalog.getByType(serviceType).name }}
+                    </text>
+                  </g>
+                </svg>
+              </div>
+              <div class="doc-section">
+                <h4>Common Integration Patterns</h4>
+                <ul class="service-doc-list">
+                  @for (useCase of getServiceDoc(serviceType).useCases; track useCase) {
+                    <li>{{ useCase }}</li>
+                  }
+                </ul>
+              </div>
+              <!-- List of Allowed Integrations -->
+              <div class="integrations-list-wrapper">
+                <h4>Supported Integrations ({{ rules.length }} rules)</h4>
+                <div class="rules-scroll">
+                  @for (r of rules; track r) {
+                    <div class="integration-rule-card">
+                      <div class="rule-header">
+                        <span class="port-badge source">{{
+                          r.type === 'identity' ? 'IAM' : (r.type | uppercase)
+                        }}</span>
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="target-name">{{ r.targetName }}</span>
+                      </div>
+                      <p>{{ r.description }}</p>
+                    </div>
+                  }
+                  @if (rules.length === 0) {
+                    <div class="no-rules-message">
+                      <i class="fas fa-info-circle"></i>
+                      <span
+                        >No defined outbound connection rules exist for this node in the
+                        sandbox.</span
+                      >
+                    </div>
+                  }
                 </div>
               </div>
             </div>
-
           </div>
         </div>
-      </div>
+      }
 
       <!-- Standard Guides View -->
-      <ng-container *ngIf="!selectedServiceType">
-        <div class="docs-sections-container" *ngIf="displayedCategories.length > 0; else emptyState">
-
-          <!-- Category Section (Grouped Scroll-Spy Layout) -->
-          <div *ngFor="let cat of displayedCategories" [id]="'section-' + cat.id" class="docs-category-section">
-            <h3 class="category-section-title">
-              <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
-              <span>{{ cat.name }}</span>
-            </h3>
-
-            <div *ngIf="cat.id === 'services'; else articleGrid" class="services-directory">
-              <div class="services-directory-header glass-panel">
-                <div>
-                  <span class="section-kicker mini">Complete AWS Service Guide</span>
-                  <h3>Browse all {{ awsCatalog.services.length }} supported services</h3>
-                  <p>Each guide includes a beginner-friendly explanation, when-to-use guidance, a practical example, and
-                    a simulator connectivity diagram.</p>
-                </div>
-                <div class="service-count-figure">
-                  <strong>{{ filteredServices.length }}</strong>
-                  <span>matching services</span>
-                </div>
-              </div>
-
-              <div *ngFor="let group of serviceDirectoryGroups" class="service-group">
-                <div class="service-group-heading">
-                  <span class="service-group-dot" [style.background]="awsCatalog.categoryColor(group.category)"></span>
-                  <h4>{{ group.category }}</h4>
-                  <small>{{ group.services.length }} services</small>
-                </div>
-
-                <div class="service-doc-grid">
-                  <article *ngFor="let service of group.services" class="service-doc-card glass-panel" [style.--service-color]="serviceColor(service.type)">
-                    <div class="service-doc-card-top">
-                      <span class="service-mini-icon" [style.--service-color]="serviceColor(service.type)">
-                        <img [src]="service.iconUrl" alt="" />
-                      </span>
+      @if (!selectedServiceType) {
+        @if (displayedCategories.length > 0) {
+          <div class="docs-sections-container">
+            <!-- Category Section (Grouped Scroll-Spy Layout) -->
+            @for (cat of displayedCategories; track cat) {
+              <div [id]="'section-' + cat.id" class="docs-category-section">
+                <h3 class="category-section-title">
+                  <span class="cat-icon-wrapper"><i [class]="cat.icon"></i></span>
+                  <span>{{ cat.name }}</span>
+                </h3>
+                @if (cat.id === 'services') {
+                  <div class="services-directory">
+                    <div class="services-directory-header glass-panel">
                       <div>
-                        <h3>{{ service.name }}</h3>
-                        <small>{{ service.type }}</small>
+                        <span class="section-kicker mini">Complete AWS Service Guide</span>
+                        <h3>Browse all {{ awsCatalog.services.length }} supported services</h3>
+                        <p>
+                          Each guide includes a beginner-friendly explanation, when-to-use guidance,
+                          a practical example, and a simulator connectivity diagram.
+                        </p>
+                      </div>
+                      <div class="service-count-figure">
+                        <strong>{{ filteredServices.length }}</strong>
+                        <span>matching services</span>
                       </div>
                     </div>
-                    <p>{{ service.description }}</p>
-                    <div class="service-card-figure" [style.--service-color]="serviceColor(service.type)">
-                      <span>Input</span>
-                      <i class="fas fa-arrow-right"></i>
-                      <strong>{{ service.shortName }}</strong>
-                      <i class="fas fa-arrow-right"></i>
-                      <span>Target</span>
+                    <!-- track by category (stable key): serviceDirectoryGroups is a getter that
+                         builds fresh group objects each CD pass, so identity tracking would
+                         recreate these views mid-check (NG0100 under Angular 21 dev mode). -->
+                    @for (group of serviceDirectoryGroups; track group.category) {
+                      <div class="service-group">
+                        <div class="service-group-heading">
+                          <span
+                            class="service-group-dot"
+                            [style.background]="awsCatalog.categoryColor(group.category)"
+                          ></span>
+                          <h4>{{ group.category }}</h4>
+                          <small>{{ group.services.length }} services</small>
+                        </div>
+                        <div class="service-doc-grid">
+                          @for (service of group.services; track service.type) {
+                            <article
+                              class="service-doc-card glass-panel"
+                              [style.--service-color]="serviceColor(service.type)"
+                            >
+                              <div class="service-doc-card-top">
+                                <span
+                                  class="service-mini-icon"
+                                  [style.--service-color]="serviceColor(service.type)"
+                                >
+                                  <img [src]="service.iconUrl" alt="" />
+                                </span>
+                                <div>
+                                  <h3>{{ service.name }}</h3>
+                                  <small>{{ service.type }}</small>
+                                </div>
+                              </div>
+                              <p>{{ service.description }}</p>
+                              <div
+                                class="service-card-figure"
+                                [style.--service-color]="serviceColor(service.type)"
+                              >
+                                <span>Input</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <strong>{{ service.shortName }}</strong>
+                                <i class="fas fa-arrow-right"></i>
+                                <span>Target</span>
+                              </div>
+                              <div class="service-doc-actions">
+                                <button
+                                  type="button"
+                                  class="read-guide-btn"
+                                  (click)="openServiceDoc(service.type)"
+                                >
+                                  <i class="fas fa-book-open"></i>
+                                  <span>Read guide</span>
+                                </button>
+                              </div>
+                            </article>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <!-- Release Notes Timeline -->
+                  @if (cat.id === 'release-notes') {
+                    <div class="release-timeline">
+                      @for (rel of filteredReleaseNotes; track rel) {
+                        <article class="release-card glass-panel" [class.is-latest]="rel.current">
+                          <div class="release-rail">
+                            <span class="release-dot"><i class="fas fa-rocket"></i></span>
+                          </div>
+                          <div class="release-content">
+                            <div class="release-head">
+                              <span class="release-version">v{{ rel.version }}</span>
+                              @if (rel.current) {
+                                <span class="release-pill"><i class="fas fa-star"></i> Latest</span>
+                              }
+                              @if (rel.date) {
+                                <span class="release-date"
+                                  ><i class="far fa-calendar"></i> {{ rel.date }}</span
+                                >
+                              }
+                            </div>
+                            <h3 class="release-title">{{ rel.title }}</h3>
+                            <p class="release-summary">{{ rel.summary }}</p>
+                            <ul class="release-items">
+                              @for (item of rel.items; track item) {
+                                <li>
+                                  <span class="release-item-icon"><i [class]="item.icon"></i></span>
+                                  <span>{{ item.text }}</span>
+                                </li>
+                              }
+                            </ul>
+                          </div>
+                        </article>
+                      }
                     </div>
-                    <div class="service-doc-actions">
-                      <button type="button" class="read-guide-btn" (click)="openServiceDoc(service.type)">
-                        <i class="fas fa-book-open"></i>
-                        <span>Read guide</span>
-                      </button>
+                  }
+                  <!-- Ways to Contribute -->
+                  @if (cat.id === 'contribute') {
+                    <div class="contribute-section">
+                      <section class="contribute-block glass-panel">
+                        <div class="contribute-head">
+                          <span class="contribute-kicker"
+                            ><i class="fas fa-hands-helping"></i> Open Source</span
+                          >
+                          <p>
+                            Sr. Architect grows with everyone who pitches in. Pick whichever way
+                            fits you best — code or no code.
+                          </p>
+                        </div>
+                        <div class="contribute-grid">
+                          @for (way of filteredContributionWays; track way) {
+                            <a
+                              class="contribute-card"
+                              [class]="'accent-' + way.accent"
+                              [href]="way.href"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <span class="contribute-icon"><i [class]="way.icon"></i></span>
+                              <h4>{{ way.title }}</h4>
+                              <p>{{ way.text }}</p>
+                              <span class="contribute-cta"
+                                >{{ way.cta }} <i class="fas fa-arrow-right"></i
+                              ></span>
+                            </a>
+                          }
+                        </div>
+                      </section>
                     </div>
-                  </article>
-                </div>
-              </div>
-            </div>
-
-            <ng-template #articleGrid>
-              <!-- Release Notes Timeline -->
-              <div *ngIf="cat.id === 'release-notes'" class="release-timeline">
-                <article *ngFor="let rel of filteredReleaseNotes" class="release-card glass-panel"
-                  [class.is-latest]="rel.current">
-                  <div class="release-rail">
-                    <span class="release-dot"><i class="fas fa-rocket"></i></span>
-                  </div>
-                  <div class="release-content">
-                    <div class="release-head">
-                      <span class="release-version">v{{ rel.version }}</span>
-                      <span class="release-pill" *ngIf="rel.current"><i class="fas fa-star"></i> Latest</span>
-                      <span class="release-date" *ngIf="rel.date"><i class="far fa-calendar"></i> {{ rel.date }}</span>
+                  }
+                  @if (cat.id !== 'release-notes' && cat.id !== 'contribute') {
+                    <div class="docs-grid">
+                      <!-- Interactive Claymorphic Guide Card -->
+                      @for (art of getArticlesByCategory(cat.id); track art) {
+                        <article class="doc-card glass-panel">
+                          <div class="doc-card-header">
+                            <span class="doc-badge">{{ cat.name }}</span>
+                            <div class="doc-icon"><i [class]="art.icon"></i></div>
+                          </div>
+                          <h3>{{ art.title }}</h3>
+                          <p class="doc-summary">{{ art.summary }}</p>
+                          <div class="doc-body">
+                            @for (para of art.content; track para) {
+                              <div class="doc-para" [innerHTML]="para"></div>
+                            }
+                          </div>
+                          @if (art.tips && art.tips.length > 0) {
+                            <div class="doc-tips">
+                              <div class="tips-header">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Pro Architect Tip</span>
+                              </div>
+                              <ul>
+                                @for (tip of art.tips; track tip) {
+                                  <li [innerHTML]="tip"></li>
+                                }
+                              </ul>
+                            </div>
+                          }
+                        </article>
+                      }
                     </div>
-                    <h3 class="release-title">{{ rel.title }}</h3>
-                    <p class="release-summary">{{ rel.summary }}</p>
-                    <ul class="release-items">
-                      <li *ngFor="let item of rel.items">
-                        <span class="release-item-icon"><i [class]="item.icon"></i></span>
-                        <span>{{ item.text }}</span>
-                      </li>
-                    </ul>
-                  </div>
-                </article>
+                  }
+                }
               </div>
-
-              <!-- Ways to Contribute -->
-              <div *ngIf="cat.id === 'contribute'" class="contribute-section">
-                <section class="contribute-block glass-panel">
-                  <div class="contribute-head">
-                    <span class="contribute-kicker"><i class="fas fa-hands-helping"></i> Open Source</span>
-                    <p>Sr. Architect grows with everyone who pitches in. Pick whichever way fits you best — code or no code.</p>
-                  </div>
-                  <div class="contribute-grid">
-                    <a *ngFor="let way of filteredContributionWays" class="contribute-card" [class]="'accent-' + way.accent"
-                      [href]="way.href" target="_blank" rel="noopener noreferrer">
-                      <span class="contribute-icon"><i [class]="way.icon"></i></span>
-                      <h4>{{ way.title }}</h4>
-                      <p>{{ way.text }}</p>
-                      <span class="contribute-cta">{{ way.cta }} <i class="fas fa-arrow-right"></i></span>
-                    </a>
-                  </div>
-                </section>
-              </div>
-
-              <div *ngIf="cat.id !== 'release-notes' && cat.id !== 'contribute'" class="docs-grid">
-                <!-- Interactive Claymorphic Guide Card -->
-                <article *ngFor="let art of getArticlesByCategory(cat.id)" class="doc-card glass-panel">
-                  <div class="doc-card-header">
-                    <span class="doc-badge">{{ cat.name }}</span>
-                    <div class="doc-icon"><i [class]="art.icon"></i></div>
-                  </div>
-
-                  <h3>{{ art.title }}</h3>
-                  <p class="doc-summary">{{ art.summary }}</p>
-
-                  <div class="doc-body">
-                    <div *ngFor="let para of art.content" class="doc-para" [innerHTML]="para"></div>
-                  </div>
-
-                  <div class="doc-tips" *ngIf="art.tips && art.tips.length > 0">
-                    <div class="tips-header">
-                      <i class="fas fa-lightbulb"></i>
-                      <span>Pro Architect Tip</span>
-                    </div>
-                    <ul>
-                      <li *ngFor="let tip of art.tips" [innerHTML]="tip"></li>
-                    </ul>
-                  </div>
-                </article>
-              </div>
-            </ng-template>
+            }
           </div>
-
-        </div>
-
-        <ng-template #emptyState>
+        } @else {
           <div class="empty-docs glass-panel">
             <i class="fas fa-search-minus empty-icon"></i>
             <h3>No documentation found</h3>
-            <p>We couldn't find any guides matching "{{ searchQuery }}". Try adjusting your keywords or selecting
-              another category.</p>
+            <p>
+              We couldn't find any guides matching "{{ searchQuery }}". Try adjusting your keywords
+              or selecting another category.
+            </p>
             <button class="reset-btn" (click)="searchQuery = ''; selectCategory('overview')">
               Reset Filters
             </button>
           </div>
-        </ng-template>
-      </ng-container>
+        }
+      }
 
       <footer class="docs-footer">
         <p>AWS System Design Simulator · GNU GPLv3 Licensed · Open Source</p>
       </footer>
     </section>
-
   </div>
 
   <!-- Mobile back-to-top -->
-  <button
-    *ngIf="showBackToTop"
-    class="back-to-top"
-    aria-label="Back to top"
-    (click)="scrollToTop()"
-  >
-    <i class="fas fa-chevron-up"></i>
-  </button>
+  @if (showBackToTop) {
+    <button class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
+      <i class="fas fa-chevron-up"></i>
+    </button>
+  }
 </main>

@@ -75,7 +75,8 @@ const BASELINE_SERVICES: Record<string, any> = {
   s3: { storage: { standard: 0.023, intelligent: 0.023, sia: 0.0125, glacier: 0.0036 }, puts: { standard: 5.0, intelligent: 5.0, sia: 10.0, glacier: 30.0 }, gets: { standard: 0.40, intelligent: 0.40, sia: 1.00, glacier: 10.0 }, dataTransferGB: 0.09 },
   rds: { engines: { mysql: 1.0, postgresql: 1.05, mariadb: 1.0, 'sqlserver-ex': 1.2, 'oracle-se2': 1.8 }, instances: { 'db.t3.medium': 0.068, 'db.m5.large': 0.171, 'db.r5.large': 0.240, 'db.r6g.large': 0.216 }, multiAzMultiplier: 2.0, storage: { gp2: 0.115, gp3: 0.115, io1: 0.125 }, backupGB: 0.095 },
   elastiCache: { instances: { 'cache.t3.micro': 0.016, 'cache.t3.medium': 0.068, 'cache.m5.large': 0.156, 'cache.r6g.large': 0.211 }, tieringPremium: 1.15 },
-  dynamoDb: { std: { readM: 0.25, writeM: 1.25, storageGB: 0.25, wcuHr: 0.00065, rcuHr: 0.000130 }, ia: { readM: 0.3125, writeM: 1.5625, storageGB: 0.10, wcuHr: 0.0008125, rcuHr: 0.0001625 }, globalMultiplier: 1.5 },
+  // On-demand request rates reflect AWS's Nov 2024 50% price reduction.
+  dynamoDb: { std: { readM: 0.125, writeM: 0.625, storageGB: 0.25, wcuHr: 0.00065, rcuHr: 0.000130 }, ia: { readM: 0.15625, writeM: 0.78125, storageGB: 0.10, wcuHr: 0.0008125, rcuHr: 0.0001625 }, globalMultiplier: 1.5 },
   iam: {},
   cloudWatch: { metricRate: 0.30, logsGB: 0.50, dashboard: 3.00, alarmMonth: 0.10, logsStorageGB: 0.03 },
   stepFunctions: { standardM: 25.00, expressReq: 1.00, expressGBsec: 16.67 },
@@ -86,7 +87,7 @@ const BASELINE_SERVICES: Record<string, any> = {
   aurora: { serverlessAcuHour: 0.12, instances: { 'db.t3.medium': 0.082, 'db.r5.large': 0.290, 'db.r6g.large': 0.260 }, storageGB: 0.10, ioRequestPerM: 0.20 },
   eventBridge: { eventM: 1.00 },
   kinesis: { shardHour: 0.015, putM: 0.014, retentionGB: 0.023 },
-  msk: { instances: { 'kafka.t3.small': 0.0466, 'kafka.m5.large': 0.21 }, storageGB: 0.10 },
+  msk: { instances: { 'kafka.t3.small': 0.0456, 'kafka.m5.large': 0.21 }, storageGB: 0.10 },
   cognito: { freeTier: 50000, ratePerUser: 0.0055 },
   waf: { aclMonth: 5.0, ruleMonth: 1.0, reqM: 0.60 },
   efs: { storage: { standard: 0.30, ia: 0.016 }, throughputMBps: 6.0 },
@@ -96,12 +97,12 @@ const BASELINE_SERVICES: Record<string, any> = {
   directConnect: { portRates: { '1g': 0.30, '10g': 2.25, '100g': 22.5 }, dataTransferGB: 0.02 },
   globalAccelerator: { hourly: 0.025, dataGB: 0.015 },
   xray: { recordM: 5.00, scanM: 0.50 },
-  openSearch: { instances: { 't3.medium': 0.073, 'm6g.large': 0.129, 'r6g.large': 0.167 }, storageGB: 0.122 },
+  openSearch: { instances: { 't3.medium': 0.073, 'm6g.large': 0.128, 'r6g.large': 0.167 }, storageGB: 0.122 },
   redshift: { instances: { 'ra3.xlplus': 1.086, 'ra3.4xlarge': 3.26 }, rpuHour: 0.375, storageTB: 24.576 },
   glue: { dpuHour: 0.44 },
-  emr: { instances: { 'm5.large': 0.12, 'm5.xlarge': 0.24, 'r5.xlarge': 0.31 } },
+  emr: { instances: { 'm5.large': 0.12, 'm5.xlarge': 0.24, 'r5.xlarge': 0.315 } },
   kinesisFirehose: { ingestGB: 0.029, convertGB: 0.018 },
-  mq: { instances: { 'mq.t3.micro': 0.034, 'mq.m5.large': 0.288 }, storageGB: 0.30 },
+  mq: { instances: { 'mq.t3.micro': 0.027, 'mq.m5.large': 0.288 }, storageGB: 0.30 },
   kms: { keyMonth: 1.00, reqM: 3.00 },
   shield: { advancedMonth: 3000 },
   organizations: {},
@@ -135,33 +136,38 @@ const BASELINE_SERVICES: Record<string, any> = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function round(n: number | null, decimals = 10): number | null {
+export function round(n: number | null, decimals = 10): number | null {
   if (n === null) return null;
   return parseFloat(n.toFixed(decimals));
 }
 
-function set<T>(obj: T, val: number | null): T {
-  return val !== null ? val as any : obj;
-}
-
 // ─── Main builder ────────────────────────────────────────────────────────────
 
+/** Number of build phases per region. Each phase stays well under Cloudflare's
+ *  free-plan limit of 50 subrequests per invocation (~25 Pricing calls max). */
+export const PHASE_COUNT = 4;
+
 /**
- * Builds a complete regional pricing file for a single region.
- * All AWS Pricing API calls are sequential (enforced by PricingFetcher's
- * built-in 200ms rate-limiter). A null result from any query leaves the
+ * Runs ONE phase of the regional pricing build. `partial` carries the
+ * accumulated result between phases (pass null on phase 0 to start from a
+ * fresh baseline clone). A null result from any query leaves the
  * corresponding baseline value untouched.
+ *
+ * Phases: 0 = Route53/ELB/NAT/egress/EC2/EBS · 1 = Fargate/Lambda/S3/RDS/
+ * Aurora/ElastiCache · 2 = DynamoDB/OpenSearch/Redshift/EMR/MSK/MQ ·
+ * 3 = Glue/Kinesis/EFS/API Gateway
  */
-export async function buildPricingFile(
+export async function buildPricingPhase(
   region: Region,
-  fetcher: PricingFetcher
+  fetcher: PricingFetcher,
+  partial: Record<string, any> | null,
+  phase: number
 ): Promise<Record<string, any>> {
-  // Deep-clone the baseline so each region gets an independent copy
-  const svc: Record<string, any> = JSON.parse(JSON.stringify(BASELINE_SERVICES));
-
-  console.log(`[Builder] Starting pricing build for ${region.code} (${region.name})...`);
+  const svc: Record<string, any> = partial ?? JSON.parse(JSON.stringify(BASELINE_SERVICES));
   const loc = region.name;
+  console.log(`[Builder] ${region.code}: phase ${phase + 1}/${PHASE_COUNT}...`);
 
+  if (phase === 0) {
   // ── Route53 (global) ────────────────────────────────────────────────────
   const r53Zone = await fetcher.route53Zone();
   const r53QueriesRaw = await fetcher.route53Queries();
@@ -263,6 +269,10 @@ export async function buildPricingFile(
   // Propagate EKS EBS rate
   svc.eks.ebsGBMonth = svc.ec2.ebsRates.gp3;
 
+  return svc;
+  }
+
+  if (phase === 1) {
   // ── ECS Fargate ──────────────────────────────────────────────────────────
   const cpuX86 = await fetcher.ecsFargateCpu(loc);
   const memX86 = await fetcher.ecsFargateMemory(loc);
@@ -326,6 +336,10 @@ export async function buildPricingFile(
   if (ecM5Lg !== null) svc.elastiCache.instances['cache.m5.large'] = round(ecM5Lg, 4)!;
   if (ecR6gLg !== null) svc.elastiCache.instances['cache.r6g.large'] = round(ecR6gLg, 4)!;
 
+  return svc;
+  }
+
+  if (phase === 2) {
   // ── DynamoDB ─────────────────────────────────────────────────────────────
   const ddbReadRaw = await fetcher.dynamoDbRead(loc);
   const ddbWriteRaw = await fetcher.dynamoDbWrite(loc);
@@ -363,12 +377,14 @@ export async function buildPricingFile(
   if (rs4xlarge !== null) svc.redshift.instances['ra3.4xlarge'] = round(rs4xlarge, 4)!;
   if (rsRpu !== null) svc.redshift.rpuHour = round(rsRpu, 4)!;
 
-  // ── EMR ──────────────────────────────────────────────────────────────────
-  const emrM5Lg = await fetcher.emrInstance(loc, 'm5.large');
+  // ── EMR (all-in node cost: EC2 + EMR fee) ────────────────────────────────
+  // m5.large has no EMR fee SKU; derived as 50% of m5.xlarge.
   const emrM5Xl = await fetcher.emrInstance(loc, 'm5.xlarge');
   const emrR5Xl = await fetcher.emrInstance(loc, 'r5.xlarge');
-  if (emrM5Lg !== null) svc.emr.instances['m5.large'] = round(emrM5Lg, 4)!;
-  if (emrM5Xl !== null) svc.emr.instances['m5.xlarge'] = round(emrM5Xl, 4)!;
+  if (emrM5Xl !== null) {
+    svc.emr.instances['m5.xlarge'] = round(emrM5Xl, 4)!;
+    svc.emr.instances['m5.large'] = round(emrM5Xl * 0.5, 4)!;
+  }
   if (emrR5Xl !== null) svc.emr.instances['r5.xlarge'] = round(emrR5Xl, 4)!;
 
   // ── MSK ──────────────────────────────────────────────────────────────────
@@ -383,6 +399,10 @@ export async function buildPricingFile(
   if (mqT3Micro !== null) svc.mq.instances['mq.t3.micro'] = round(mqT3Micro, 4)!;
   if (mqM5Lg !== null) svc.mq.instances['mq.m5.large'] = round(mqM5Lg, 4)!;
 
+  return svc;
+  }
+
+  // ── Phase 3 ────────────────────────────────────────────────────────────
   // ── Glue ─────────────────────────────────────────────────────────────────
   const glueDpu = await fetcher.glueDpu(loc);
   if (glueDpu !== null) svc.glue.dpuHour = round(glueDpu, 4)!;
@@ -402,7 +422,9 @@ export async function buildPricingFile(
   // ── API Gateway (tiered pricing scale) ───────────────────────────────────
   const apiGwPrice = await fetcher.apiGatewayRest(loc);
   if (apiGwPrice !== null) {
-    const ratio = apiGwPrice / 3.50;
+    // apiGatewayRest returns the PER-REQUEST price; scale to per-million
+    // before computing the regional ratio against the $3.50/M baseline.
+    const ratio = (apiGwPrice * 1_000_000) / 3.50;
     svc.apiGateway.requestsM.rest.tier1 = round(3.50 * ratio, 4)!;
     svc.apiGateway.requestsM.rest.tier2 = round(2.80 * ratio, 4)!;
     svc.apiGateway.requestsM.rest.tier3 = round(2.38 * ratio, 4)!;
@@ -421,6 +443,22 @@ export async function buildPricingFile(
     svc.apiGateway.wsConnectionMinuteM = round(BASELINE_SERVICES.apiGateway.wsConnectionMinuteM * ratio, 4)!;
   }
 
-  console.log(`[Builder] Completed pricing build for ${region.code}. Total API calls made: (see fetcher count).`);
+  console.log(`[Builder] Completed pricing build for ${region.code}.`);
   return svc;
+}
+
+/**
+ * Builds a complete regional pricing file in one call by running all phases
+ * sequentially. Only safe where the 50-subrequest limit does not apply
+ * (local dev / paid plan) — production cron uses buildPricingPhase instead.
+ */
+export async function buildPricingFile(
+  region: Region,
+  fetcher: PricingFetcher
+): Promise<Record<string, any>> {
+  let svc: Record<string, any> | null = null;
+  for (let phase = 0; phase < PHASE_COUNT; phase++) {
+    svc = await buildPricingPhase(region, fetcher, svc, phase);
+  }
+  return svc!;
 }

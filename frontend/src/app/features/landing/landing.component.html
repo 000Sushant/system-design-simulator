@@ -7,23 +7,58 @@
 
   <nav class="landing-nav glass-panel" [class.nav-scrolled]="navScrolled">
     <a class="brand-mark" href="#" aria-label="Sr. Architect home">
-      <img class="brand-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="32" height="32" />
+      <img
+        class="brand-logo"
+        src="assets/brand/logo-mark-dark.svg"
+        alt="Sr. Architect"
+        width="32"
+        height="32"
+      />
       <span>Sr<span class="brand-dot">.</span> Architect</span>
       <small>v1.3.0</small>
     </a>
     <div class="nav-actions">
-      <a href="/docs" (click)="openDocs($event)" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">Docs</a>
-      <a href="https://github.com/000Sushant/system-design-simulator/" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">GitHub</a>
-      <button type="button" class="theme-toggle-btn" [class.show-moon]="!isDarkMode" (click)="toggleTheme()"
-        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
-        <svg class="sun-moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
+      <a
+        href="/docs"
+        (click)="openDocs($event)"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        >Docs</a
+      >
+      <a
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        >GitHub</a
+      >
+      <button
+        type="button"
+        class="theme-toggle-btn"
+        [class.show-moon]="!isDarkMode"
+        (click)="toggleTheme()"
+        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
+        <svg
+          class="sun-moon-svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <mask id="moon-mask">
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            <circle [attr.cx]="!isDarkMode ? 6 : -10" [attr.cy]="!isDarkMode ? 18 : 34" r="7" fill="black" />
+            <circle
+              [attr.cx]="!isDarkMode ? 6 : -10"
+              [attr.cy]="!isDarkMode ? 18 : 34"
+              r="7"
+              fill="black"
+            />
           </mask>
           <circle cx="12" cy="12" r="5" mask="url(#moon-mask)" fill="currentColor" />
           <g class="sun-rays" stroke="currentColor">
@@ -38,8 +73,13 @@
           </g>
         </svg>
       </button>
-      <button type="button" class="mini-launch" (click)="scrollToModes()" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
+      <button
+        type="button"
+        class="mini-launch"
+        (click)="scrollToModes()"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <span>Launch</span>
       </button>
     </div>
@@ -48,11 +88,30 @@
   <!-- Liquid-glass distortion filter (referenced by .landing-nav.nav-scrolled backdrop-filter) -->
   <svg class="liquid-glass-defs" aria-hidden="true" width="0" height="0" focusable="false">
     <defs>
-      <filter id="liquid-glass" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.006 0.006" numOctaves="3" seed="7" result="turbulence" />
+      <filter
+        id="liquid-glass"
+        x="0%"
+        y="0%"
+        width="100%"
+        height="100%"
+        color-interpolation-filters="sRGB"
+      >
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.006 0.006"
+          numOctaves="3"
+          seed="7"
+          result="turbulence"
+        />
         <feGaussianBlur in="turbulence" stdDeviation="3.5" result="blurredNoise" />
-        <feDisplacementMap in="SourceGraphic" in2="blurredNoise" scale="40" xChannelSelector="R" yChannelSelector="B"
-          result="displaced" />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="blurredNoise"
+          scale="40"
+          xChannelSelector="R"
+          yChannelSelector="B"
+          result="displaced"
+        />
         <feGaussianBlur in="displaced" stdDeviation="0.4" />
       </filter>
     </defs>
@@ -73,20 +132,32 @@
         simulation, cost estimation, and production-ready insights.
       </p>
       <div class="hero-actions">
-        <button type="button" class="cta-button primary" (click)="scrollToModes()"
-          (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <button
+          type="button"
+          class="cta-button primary"
+          (click)="scrollToModes()"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
           <span>Launch Simulator</span>
           <i class="fas fa-arrow-right"></i>
         </button>
-        <a class="cta-button ghost github-btn" href="https://github.com/000Sushant/system-design-simulator/"
-          target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-          (mouseleave)="onButtonMouseLeave($event)">
+        <a
+          class="cta-button ghost github-btn"
+          href="https://github.com/000Sushant/system-design-simulator/"
+          target="_blank"
+          rel="noopener noreferrer"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
           <i class="fab fa-github"></i>
           <span>GitHub</span>
-          <span *ngIf="githubStars" class="github-stars-badge">
-            <i class="fas fa-star"></i>
-            {{ githubStars }}
-          </span>
+          @if (githubStars) {
+            <span class="github-stars-badge">
+              <i class="fas fa-star"></i>
+              {{ githubStars }}
+            </span>
+          }
         </a>
       </div>
     </div>
@@ -114,59 +185,77 @@
     </div>
 
     <div class="mode-grid">
-      <article class="mode-card glass-panel" *ngFor="let mode of modes" [class]="mode.id"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-        <div class="mode-card-top">
-          <span class="mode-badge">{{ mode.badge }}</span>
-          <span class="mode-icon"><i [class]="mode.icon"></i></span>
-        </div>
-        <div class="mode-visual" [class]="mode.visual" aria-hidden="true">
-          <span class="mini-node node-one"></span>
-          <span class="mini-node node-two"></span>
-          <span class="mini-node node-three"></span>
-          <span class="mini-line line-one"></span>
-          <span class="mini-line line-two"></span>
-          <span class="mini-packet packet-one"></span>
-          <span class="mini-packet packet-two"></span>
-          <span class="mini-metric metric-one"></span>
-          <span class="mini-metric metric-two"></span>
-        </div>
-        <h3>{{ mode.title }}</h3>
-        <p>{{ mode.description }}</p>
-        <ul>
-          <li *ngFor="let feature of mode.features"><i class="fas fa-check"></i>{{ feature }}</li>
-        </ul>
-        <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
-          <span>{{ mode.button }}</span>
-          <i class="fas fa-arrow-right"></i>
-        </button>
-      </article>
+      @for (mode of modes; track mode) {
+        <article
+          class="mode-card glass-panel"
+          [class]="mode.id"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
+          <div class="mode-card-top">
+            <span class="mode-badge">{{ mode.badge }}</span>
+            <span class="mode-icon"><i [class]="mode.icon"></i></span>
+          </div>
+          <div class="mode-visual" [class]="mode.visual" aria-hidden="true">
+            <span class="mini-node node-one"></span>
+            <span class="mini-node node-two"></span>
+            <span class="mini-node node-three"></span>
+            <span class="mini-line line-one"></span>
+            <span class="mini-line line-two"></span>
+            <span class="mini-packet packet-one"></span>
+            <span class="mini-packet packet-two"></span>
+            <span class="mini-metric metric-one"></span>
+            <span class="mini-metric metric-two"></span>
+          </div>
+          <h3>{{ mode.title }}</h3>
+          <p>{{ mode.description }}</p>
+          <ul>
+            @for (feature of mode.features; track feature) {
+              <li><i class="fas fa-check"></i>{{ feature }}</li>
+            }
+          </ul>
+          <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
+            <span>{{ mode.button }}</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </article>
+      }
     </div>
     <p class="mode-microcopy">Start simple. Scale infinitely.</p>
   </section>
 
   <section class="trust-strip glass-panel" aria-label="Project status">
-    <span *ngFor="let pill of trustPills">{{ pill }}</span>
+    @for (pill of trustPills; track pill) {
+      <span>{{ pill }}</span>
+    }
   </section>
 
   <section class="feature-section" id="features">
     <div class="section-heading">
       <span class="section-kicker">Know your Arsenal</span>
       <h2>
-        Know what can you do with<br /><span class="brand-name-header">Sr<span class="brand-dot">.</span>
-          Architect</span>
+        Know what can you do with<br /><span class="brand-name-header"
+          >Sr<span class="brand-dot">.</span> Architect</span
+        >
       </h2>
     </div>
     <div class="feature-grid">
-      <article class="feature-card glass-panel" *ngFor="let feature of features" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
-        <div class="feature-icon"><i [class]="feature.icon"></i></div>
-        <div class="feature-title">
-          <h3>{{ feature.title }}</h3>
-          <small *ngIf="feature.badge">{{ feature.badge }}</small>
-        </div>
-        <p>{{ feature.description }}</p>
-      </article>
+      @for (feature of features; track feature) {
+        <article
+          class="feature-card glass-panel"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
+          <div class="feature-icon"><i [class]="feature.icon"></i></div>
+          <div class="feature-title">
+            <h3>{{ feature.title }}</h3>
+            @if (feature.badge) {
+              <small>{{ feature.badge }}</small>
+            }
+          </div>
+          <p>{{ feature.description }}</p>
+        </article>
+      }
     </div>
   </section>
 
@@ -187,10 +276,17 @@
       </div>
     </div>
     <div class="social-links">
-      <a *ngFor="let link of socialLinks" [href]="link.href" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-        <i [class]="link.icon"></i>{{ link.label }}
-      </a>
+      @for (link of socialLinks; track link) {
+        <a
+          [href]="link.href"
+          target="_blank"
+          rel="noopener noreferrer"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
+          <i [class]="link.icon"></i>{{ link.label }}
+        </a>
+      }
     </div>
   </section>
 
@@ -199,25 +295,44 @@
     <h2>Loved by developers worldwide</h2>
 
     <!-- Live project stats grid -->
-    <div *ngIf="liveStats" class="community-stats-grid">
-      <div *ngFor="let stat of liveStats" class="community-stat-card glass-panel"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-        <span class="comm-stat-icon"><i [class]="stat.icon"></i></span>
-        <span class="comm-stat-value">{{ stat.value }}</span>
-        <span class="comm-stat-label">{{ stat.label }}</span>
+    @if (liveStats) {
+      <div class="community-stats-grid">
+        @for (stat of liveStats; track stat) {
+          <div
+            class="community-stat-card glass-panel"
+            (mousemove)="onButtonMouseMove($event)"
+            (mouseleave)="onButtonMouseLeave($event)"
+          >
+            <span class="comm-stat-icon"><i [class]="stat.icon"></i></span>
+            <span class="comm-stat-value">{{ stat.value }}</span>
+            <span class="comm-stat-label">{{ stat.label }}</span>
+          </div>
+        }
       </div>
-    </div>
+    }
 
     <h3 class="contributors-subheading">Top Contributors</h3>
 
     <!-- Live contributors list -->
     <div class="contributors-list">
-      <a *ngFor="let contributor of contributors" [href]="contributor.html_url" target="_blank"
-        rel="noopener noreferrer" class="contributor-link" [title]="contributor.login"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-        <img [src]="contributor.avatar_url" [alt]="contributor.login" class="contributor-avatar" />
-        <span class="contributor-name">{{ contributor.login }}</span>
-      </a>
+      @for (contributor of contributors; track contributor) {
+        <a
+          [href]="contributor.html_url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="contributor-link"
+          [title]="contributor.login"
+          (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)"
+        >
+          <img
+            [src]="contributor.avatar_url"
+            [alt]="contributor.login"
+            class="contributor-avatar"
+          />
+          <span class="contributor-name">{{ contributor.login }}</span>
+        </a>
+      }
     </div>
 
     <p class="contributors-note">
@@ -241,8 +356,14 @@
       and helps keep things running.
     </p>
     <div class="hero-actions center">
-      <a class="cta-button primary sponsor-cta" href="https://github.com/sponsors/000Sushant" target="_blank"
-        rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <a
+        class="cta-button primary sponsor-cta"
+        href="https://github.com/sponsors/000Sushant"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <i class="fas fa-heart"></i>
         <span>Sponsor on GitHub</span>
       </a>
@@ -256,22 +377,45 @@
     <span class="section-kicker">Start now</span>
     <h2>Watch your next architecture come alive before it ships.</h2>
     <div class="hero-actions center">
-      <button type="button" class="cta-button primary" (click)="launch.emit('architect')"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      <button
+        type="button"
+        class="cta-button primary"
+        (click)="launch.emit('architect')"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+      >
         <span>Launch Sr. Architect</span>
       </button>
-      <a class="cta-button primary github-btn" href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Explore GitHub</span></a>
-      <a class="cta-button primary contribute-btn" href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
+      <a
+        class="cta-button primary github-btn"
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        ><span>Explore GitHub</span></a
+      >
+      <a
+        class="cta-button primary contribute-btn"
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"
+        ><span>Contribute</span></a
+      >
     </div>
   </section>
 
   <footer class="landing-footer">
     <div class="footer-brand">
-      <img class="footer-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="38" height="38" />
+      <img
+        class="footer-logo"
+        src="assets/brand/logo-mark-dark.svg"
+        alt="Sr. Architect"
+        width="38"
+        height="38"
+      />
       <div class="footer-brand-text">
         <span class="footer-name">Sr<span class="brand-dot">.</span> Architect</span>
         <span class="footer-tag">See your architecture before you ship it.</span>
@@ -279,15 +423,25 @@
     </div>
     <nav class="footer-links" aria-label="Footer">
       <a href="/docs" (click)="openDocs($event)">Docs</a>
-      <a href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
-        rel="noopener noreferrer">GitHub</a>
-      <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer">Sponsor</a>
+      <a
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        >GitHub</a
+      >
+      <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer"
+        >Sponsor</a
+      >
     </nav>
-    <p class="footer-copy">© 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.</p>
+    <p class="footer-copy">
+      © 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.
+    </p>
   </footer>
 
   <!-- Mobile back-to-top -->
-  <button *ngIf="showBackToTop" class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
-    <i class="fas fa-chevron-up"></i>
-  </button>
+  @if (showBackToTop) {
+    <button class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
+      <i class="fas fa-chevron-up"></i>
+    </button>
+  }
 </main>

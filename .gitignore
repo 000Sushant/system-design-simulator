@@ -19,9 +19,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Cloudflare secrets
+# Cloudflare secrets (worker uses wrangler's .dev.vars convention)
 .dev.vars
-backend/.dev.vars
 
 # Environment files (never commit real secrets; *.example files are tracked)
 .env

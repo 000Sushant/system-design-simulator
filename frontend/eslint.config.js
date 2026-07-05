@@ -25,7 +25,13 @@ module.exports = tseslint.config(
         { type: 'element', prefix: 'app', style: 'kebab-case' },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // New in angular-eslint 21. Constructor DI is still supported; migrate to
+      // inject() incrementally rather than blocking lint on ~30 call sites.
+      '@angular-eslint/prefer-inject': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },

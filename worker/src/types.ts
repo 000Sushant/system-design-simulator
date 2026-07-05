@@ -2,6 +2,17 @@ export interface Env {
   AWS_PRICING_KV: KVNamespace;
   AWS_ACCESS_KEY_ID: string;
   AWS_SECRET_ACCESS_KEY: string;
+  /**
+   * Shared secret guarding the state-changing admin endpoints
+   * (POST /trigger, /reset, /start). When unset, those endpoints are disabled.
+   * Set via: wrangler secret put ADMIN_TOKEN
+   */
+  ADMIN_TOKEN?: string;
+  /**
+   * Comma-separated list of browser origins allowed to call the CORS endpoints
+   * (/votes, /stats). Defaults to the production site + localhost when unset.
+   */
+  ALLOWED_ORIGINS?: string;
   /** D1 database holding per-challenge thumbs up/down tallies. */
   DB: D1Database;
   // ── Live stats (optional; /stats serves zeros until these are set) ──────────

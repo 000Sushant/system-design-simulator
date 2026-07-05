@@ -253,15 +253,15 @@
     },
     "dynamoDb": {
       "std": {
-        "readM": 0.25,
-        "writeM": 1.25,
+        "readM": 0.125,
+        "writeM": 0.625,
         "wcuHr": 0.00065,
         "rcuHr": 0.00013,
         "storageGB": 0.25
       },
       "ia": {
-        "readM": 0.3125,
-        "writeM": 1.5625,
+        "readM": 0.15625,
+        "writeM": 0.78125,
         "wcuHr": 0.0008125,
         "rcuHr": 0.0001625,
         "storageGB": 0.1
@@ -343,7 +343,7 @@
     },
     "msk": {
       "instances": {
-        "kafka.t3.small": 0.0466,
+        "kafka.t3.small": 0.0456,
         "kafka.m5.large": 0.21
       },
       "storageGB": 0.1
@@ -394,7 +394,7 @@
     "openSearch": {
       "instances": {
         "t3.medium": 0.073,
-        "m6g.large": 0.129,
+        "m6g.large": 0.128,
         "r6g.large": 0.167
       },
       "storageGB": 0.122
@@ -414,7 +414,7 @@
       "instances": {
         "m5.large": 0.12,
         "m5.xlarge": 0.24,
-        "r5.xlarge": 0.31
+        "r5.xlarge": 0.315
       }
     },
     "kinesisFirehose": {
@@ -423,7 +423,7 @@
     },
     "mq": {
       "instances": {
-        "mq.t3.micro": 0.034,
+        "mq.t3.micro": 0.027,
         "mq.m5.large": 0.288
       },
       "storageGB": 0.3

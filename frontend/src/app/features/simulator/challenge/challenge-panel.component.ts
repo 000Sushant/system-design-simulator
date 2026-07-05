@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ElementRef, AfterViewChecked } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  ElementRef,
+  AfterViewChecked,
+  inject,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   Challenge,
@@ -24,6 +33,12 @@ import { ChallengeTagComponent, categoryStyle } from './challenge-tag.component'
   styleUrls: ['./challenge-panel.component.css'],
 })
 export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChecked {
+  private el = inject(ElementRef);
+  readonly challenges = inject(ChallengeService);
+  readonly votes = inject(VoteService);
+  private readonly catalog = inject(AwsCatalogService);
+  private readonly theme = inject(ThemeService);
+
   /** Asks the host to scaffold a fresh canvas for this challenge. */
   @Output() startChallenge = new EventEmitter<Challenge>();
   /** Asks the host to clear the canvas when resetting a challenge. */
@@ -50,14 +65,6 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
 
   /** Collapsible state for the post-completion solution walkthrough. */
   solutionExpanded = true;
-
-  constructor(
-    private el: ElementRef,
-    readonly challenges: ChallengeService,
-    readonly votes: VoteService,
-    private readonly catalog: AwsCatalogService,
-    private readonly theme: ThemeService,
-  ) {}
 
   /** Mascot illustration, swapped for a dark-friendly variant in dark mode. */
   get mascotImage(): string {
@@ -101,7 +108,7 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
           transform: `translate3d(${left}px, ${top}px, 0)`,
           width: `${rect.width}px`,
           height: `${rect.height}px`,
-          opacity: '1'
+          opacity: '1',
         };
 
         if (
@@ -164,7 +171,7 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
 
   maxPossibleScore(): number {
     if (!this.active) return 100;
-    const standardChecks = this.active.rubric.checks.filter(c => !c.optional);
+    const standardChecks = this.active.rubric.checks.filter((c) => !c.optional);
     const standardWeight = standardChecks.reduce((sum, c) => sum + c.weight, 0) || 1;
     const totalWeight = this.active.rubric.checks.reduce((sum, c) => sum + c.weight, 0);
     return Math.round((totalWeight / standardWeight) * 100);
@@ -172,19 +179,23 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
 
   standardMilestones(): Milestone[] {
     if (!this.active) return [];
-    return this.active.milestones.filter(m => !m.hidden);
+    return this.active.milestones.filter((m) => !m.hidden);
   }
 
   /** Only the completed standard milestones, so the list can number them 1..N
    *  by how many are done (not by their fixed position in the full list). */
   reachedStandardMilestones(): Milestone[] {
     if (!this.progress) return [];
-    return this.standardMilestones().filter(m => this.progress!.reachedMilestoneIds.includes(m.id));
+    return this.standardMilestones().filter((m) =>
+      this.progress!.reachedMilestoneIds.includes(m.id),
+    );
   }
 
   reachedHiddenMilestones(): Milestone[] {
     if (!this.active || !this.progress) return [];
-    return this.active.milestones.filter(m => m.hidden && this.progress!.reachedMilestoneIds.includes(m.id));
+    return this.active.milestones.filter(
+      (m) => m.hidden && this.progress!.reachedMilestoneIds.includes(m.id),
+    );
   }
 
   reachedHiddenCount(): number {
@@ -193,15 +204,15 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
 
   totalHiddenCount(): number {
     if (!this.active) return 0;
-    return this.active.milestones.filter(m => m.hidden).length;
+    return this.active.milestones.filter((m) => m.hidden).length;
   }
 
   hasHiddenMilestones(challenge: Challenge): boolean {
-    return challenge.milestones.some(m => m.hidden);
+    return challenge.milestones.some((m) => m.hidden);
   }
 
   hiddenMilestonesCount(challenge: Challenge): number {
-    return challenge.milestones.filter(m => m.hidden).length;
+    return challenge.milestones.filter((m) => m.hidden).length;
   }
 
   savedScore(challenge: Challenge): number | undefined {
@@ -253,12 +264,14 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
 
   reachedCount(): number {
     if (!this.active || !this.progress) return 0;
-    return this.active.milestones.filter((m) => !m.hidden && this.progress!.reachedMilestoneIds.includes(m.id)).length;
+    return this.active.milestones.filter(
+      (m) => !m.hidden && this.progress!.reachedMilestoneIds.includes(m.id),
+    ).length;
   }
 
   milestonePercent(): number {
     if (!this.active) return 0;
-    const standards = this.active.milestones.filter(m => !m.hidden);
+    const standards = this.active.milestones.filter((m) => !m.hidden);
     if (standards.length === 0) return 0;
     return Math.round((this.reachedCount() / standards.length) * 100);
   }

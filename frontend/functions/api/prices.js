@@ -1,49 +1,55 @@
+/**
+ * Cloudflare Pages Function: GET /api/prices?region={code}
+ *
+ * Serves pre-generated regional pricing JSON from the AWS_PRICING_KV namespace.
+ * Served same-origin as the app, so no CORS headers are needed.
+ */
+
+// Matches AWS region codes (e.g. us-east-1, ap-southeast-1, us-gov-east-1).
+// Restricting the charset keeps arbitrary input out of the KV key lookup.
+const REGION_PATTERN = /^[a-z0-9-]{1,32}$/;
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+const DEFAULT_REGION = 'us-east-1';
+
+function jsonResponse(data, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...JSON_HEADERS, ...extraHeaders },
+  });
+}
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
-  const regionCode = (url.searchParams.get('region') || 'us-east-1').trim().toLowerCase();
+  const regionCode = (url.searchParams.get('region') || DEFAULT_REGION).trim().toLowerCase();
 
-  // 1. Fetch the pricing file from the KV namespace binding
-  // Note: Pages Functions bind the KV database to context.env.<BINDING_NAME>
-  const kvKey = `pricing:${regionCode}`;
-  
+  if (!REGION_PATTERN.test(regionCode)) {
+    return jsonResponse({ unsupportedRegion: true, regionCode, message: 'Invalid region code.' }, 400);
+  }
+
   if (!context.env.AWS_PRICING_KV) {
-    return new Response(JSON.stringify({ 
-      error: "Cloudflare KV binding 'AWS_PRICING_KV' is not configured in your Pages settings." 
-    }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    // Misconfiguration: log for the operator, return a generic message to the client.
+    console.error("[prices] KV binding 'AWS_PRICING_KV' is not configured.");
+    return jsonResponse({ error: 'Pricing service is temporarily unavailable.' }, 503);
   }
 
   try {
-    const rawData = await context.env.AWS_PRICING_KV.get(kvKey);
+    const rawData = await context.env.AWS_PRICING_KV.get(`pricing:${regionCode}`);
 
     if (!rawData) {
-      return new Response(JSON.stringify({ 
-        unsupportedRegion: true, 
-        regionCode,
-        message: `Pricing for region "${regionCode}" has not been generated yet. The Worker generates all regions weekly.`
-      }), {
-        status: 404,
-        headers: { 
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return jsonResponse(
+        {
+          unsupportedRegion: true,
+          regionCode,
+          message: `Pricing for region "${regionCode}" has not been generated yet. The Worker generates all regions weekly.`,
+        },
+        404,
+      );
     }
 
-    // Return the pricing JSON content to the frontend
-    return new Response(rawData, {
-      headers: { 
-        "Content-Type": "application/json",
-        "X-Cache": "KV_PAGES_FUNCTION",
-        "Access-Control-Allow-Origin": "*"
-      }
-    });
+    return new Response(rawData, { headers: { ...JSON_HEADERS, 'X-Cache': 'KV_PAGES_FUNCTION' } });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    // Never echo raw error details back to the client.
+    console.error(`[prices] KV read failed for ${regionCode}:`, err);
+    return jsonResponse({ error: 'Failed to read pricing data.' }, 500);
   }
 }

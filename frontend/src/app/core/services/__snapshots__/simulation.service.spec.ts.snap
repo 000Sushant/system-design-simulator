@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SimulationService > matches the recorded metrics for a fixed graph after 10 ticks 1`] = `
+{
+  "nodes": [
+    {
+      "avgLatency": 58,
+      "cpuPressure": 73.75,
+      "errorRate": 0,
+      "queueSize": 0,
+      "status": "normal",
+      "throughput": 50,
+      "type": "client",
+    },
+    {
+      "avgLatency": 38,
+      "cpuPressure": 62.5,
+      "errorRate": 0,
+      "queueSize": 0,
+      "status": "busy",
+      "throughput": 50,
+      "type": "ec2",
+    },
+    {
+      "avgLatency": 10.14,
+      "cpuPressure": 16.2,
+      "errorRate": 0,
+      "queueSize": 0,
+      "status": "normal",
+      "throughput": 50,
+      "type": "rds",
+    },
+  ],
+  "tick": 10,
+}
+`;

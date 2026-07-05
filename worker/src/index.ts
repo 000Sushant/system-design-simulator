@@ -1,12 +1,18 @@
 import { Env, WorkerProgress } from './types';
 import { REGIONS, WEEKLY_INTERVAL_MS, FAILURE_COOLDOWN_MS } from './regions';
 import { PricingFetcher } from './fetcher';
-import { buildPricingFile } from './schema-builder';
+import { buildPricingPhase, PHASE_COUNT } from './schema-builder';
 import { maybeRefreshStats, getPublicStats } from './stats';
+import { json, requireAdmin, corsHeaders, clampDelta } from './security';
 
 // KV keys
 const KV_PROGRESS_KEY = 'worker:progress';
 const KV_PRICING_PREFIX = 'pricing:';
+/** Partial (mid-phase) build for the region currently in progress. */
+const KV_PARTIAL_PREFIX = 'pricing-partial:';
+
+// Advertised on the health-check route.
+const WORKER_VERSION = '1.0.0';
 
 // ─── KV helpers ──────────────────────────────────────────────────────────────
 
@@ -56,14 +62,39 @@ async function processOneRegion(env: Env): Promise<void> {
     return;
   }
 
-  // ── Process the next region ──────────────────────────────────────────────
+  // ── Process the next phase of the current region ────────────────────────
+  // A region is built in PHASE_COUNT chunks (one per cron tick) so each
+  // invocation stays under the free-plan limit of 50 subrequests.
   const region = REGIONS[progress.currentIndex];
-  console.log(`[Worker] 🌍 Processing region ${progress.currentIndex + 1}/${REGIONS.length}: ${region.code} (${region.name})`);
+  const phase = progress.phase ?? 0;
+  console.log(`[Worker] 🌍 Region ${progress.currentIndex + 1}/${REGIONS.length}: ${region.code} — phase ${phase + 1}/${PHASE_COUNT}`);
 
   try {
     const fetcher = new PricingFetcher(env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY);
-    const services = await buildPricingFile(region, fetcher);
 
+    // Resume from the partial build unless this is the first phase
+    let partial: Record<string, any> | null = null;
+    if (phase > 0) {
+      const rawPartial = await env.AWS_PRICING_KV.get(`${KV_PARTIAL_PREFIX}${region.code}`);
+      partial = rawPartial ? JSON.parse(rawPartial) : null;
+      if (!partial) console.warn(`[Worker] ⚠ Partial for ${region.code} missing; restarting from baseline.`);
+    }
+
+    const services = await buildPricingPhase(region, fetcher, partial, phase);
+
+    if (phase < PHASE_COUNT - 1) {
+      // Persist the partial and continue on the next tick
+      await env.AWS_PRICING_KV.put(
+        `${KV_PARTIAL_PREFIX}${region.code}`,
+        JSON.stringify(services),
+        { expirationTtl: 24 * 60 * 60 } // partials are short-lived
+      );
+      await saveProgress(env, { ...progress, status: 'running', phase: phase + 1, lastError: undefined, cooldownUntil: undefined });
+      console.log(`[Worker] 💾 Saved phase ${phase + 1} partial for ${region.code}.`);
+      return;
+    }
+
+    // Final phase — write the complete regional pricing file
     const pricingFile = {
       regionCode:   region.code,
       regionName:   region.name,
@@ -71,7 +102,6 @@ async function processOneRegion(env: Env): Promise<void> {
       services,
     };
 
-    // Save to KV
     await env.AWS_PRICING_KV.put(
       `${KV_PRICING_PREFIX}${region.code}`,
       JSON.stringify(pricingFile),
@@ -80,11 +110,12 @@ async function processOneRegion(env: Env): Promise<void> {
 
     console.log(`[Worker] ✅ Saved pricing for ${region.code} to KV.`);
 
-    // Advance to next region
+    // Advance to next region (phase resets to 0)
     await saveProgress(env, {
       ...progress,
       status:              'running',
       currentIndex:        progress.currentIndex + 1,
+      phase:               0,
       lastCompletedRegion: region.code,
       completedCount:      (progress.completedCount ?? 0) + 1,
       lastError:           undefined,
@@ -131,10 +162,11 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
+    const cors = corsHeaders(request, env);
 
     // CORS preflight (votes are called cross-origin by the frontend).
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS });
+      return new Response(null, { status: 204, headers: cors });
     }
 
     // ── GET /status ──────────────────────────────────────────────────────
@@ -149,22 +181,28 @@ export default {
       });
     }
 
-    // ── POST /trigger ────────────────────────────────────────────────────
+    // ── POST /trigger ── (admin) ─────────────────────────────────────────
     if (path === '/trigger' && request.method === 'POST') {
+      const denied = await requireAdmin(request, env);
+      if (denied) return denied;
       ctx.waitUntil(processOneRegion(env));
       const progress = await getProgress(env);
       return json({ message: 'Processing triggered', nextRegion: REGIONS[progress.currentIndex]?.code }, 202);
     }
 
-    // ── POST /reset ──────────────────────────────────────────────────────
+    // ── POST /reset ── (admin) ───────────────────────────────────────────
     if (path === '/reset' && request.method === 'POST') {
+      const denied = await requireAdmin(request, env);
+      if (denied) return denied;
       await saveProgress(env, { status: 'idle', currentIndex: 0, startedAt: 0 });
       return json({ message: 'Progress reset to idle. Weekly run will start on next cron trigger.' });
     }
 
-    // ── POST /start ──────────────────────────────────────────────────────
+    // ── POST /start ── (admin) ───────────────────────────────────────────
     // Force-start a new weekly run right now (ignoring the 7-day check)
     if (path === '/start' && request.method === 'POST') {
+      const denied = await requireAdmin(request, env);
+      if (denied) return denied;
       await saveProgress(env, { status: 'running', currentIndex: 0, startedAt: Date.now(), completedCount: 0 });
       ctx.waitUntil(processOneRegion(env));
       return json({ message: `Weekly run force-started. Processing ${REGIONS[0]?.code}...` }, 202);
@@ -184,7 +222,7 @@ export default {
     // ── GET /stats — live project stats for the landing page ─────────────
     if (path === '/stats' && request.method === 'GET') {
       const stats = await getPublicStats(env);
-      return json(stats, 200, { ...CORS, 'Cache-Control': 'public, max-age=3600' });
+      return json(stats, 200, { ...cors, 'Cache-Control': 'public, max-age=3600' });
     }
 
     // ── GET /votes — all challenge tallies ───────────────────────────────
@@ -196,25 +234,28 @@ export default {
       for (const r of rows.results) {
         tally[r.challenge_id] = { up: r.up, down: r.down };
       }
-      return json(tally, 200, CORS);
+      return json(tally, 200, cors);
     }
 
     // ── POST /votes — apply an up/down delta ─────────────────────────────
+    // CORS blocks cross-site browser voting; deltas are clamped to ±1. The
+    // remaining abuse vector (scripted/server-side stuffing) is best mitigated
+    // with a Cloudflare Rate Limiting rule or Turnstile in front of this route.
     if (path === '/votes' && request.method === 'POST') {
       let body: { challengeId?: string; upDelta?: number; downDelta?: number };
       try {
         body = (await request.json()) as typeof body;
       } catch {
-        return json({ error: 'Invalid JSON body.' }, 400, CORS);
+        return json({ error: 'Invalid JSON body.' }, 400, cors);
       }
       const id = (body.challengeId ?? '').trim();
       const up = clampDelta(body.upDelta);
       const down = clampDelta(body.downDelta);
       if (!/^[a-z0-9-]{1,64}$/.test(id)) {
-        return json({ error: 'Invalid challengeId.' }, 400, CORS);
+        return json({ error: 'Invalid challengeId.' }, 400, cors);
       }
       if (up === 0 && down === 0) {
-        return json({ error: 'Empty vote.' }, 400, CORS);
+        return json({ error: 'Empty vote.' }, 400, cors);
       }
       await env.DB.prepare(
         `INSERT INTO challenge_votes (challenge_id, up, down)
@@ -229,19 +270,19 @@ export default {
       )
         .bind(id)
         .first<{ up: number; down: number }>();
-      return json({ challengeId: id, up: row?.up ?? 0, down: row?.down ?? 0 }, 200, CORS);
+      return json({ challengeId: id, up: row?.up ?? 0, down: row?.down ?? 0 }, 200, cors);
     }
 
     // ── Health check ─────────────────────────────────────────────────────
+    // Only public routes are advertised. The state-changing admin endpoints
+    // (POST /trigger, /reset, /start) are intentionally omitted and require
+    // a Bearer ADMIN_TOKEN.
     return json({
       name:    'AWS Pricing Generator Worker',
-      version: '1.0.0',
+      version: WORKER_VERSION,
       regions: REGIONS.length,
       routes: [
         'GET  /status',
-        'POST /trigger',
-        'POST /reset',
-        'POST /start',
         'GET  /pricing/{regionCode}',
         'GET  /stats',
         'GET  /votes',
@@ -250,26 +291,3 @@ export default {
     });
   },
 };
-
-// ─── Votes helpers ─────────────────────────────────────────────────────────────
-
-const CORS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-/** Coerces an incoming vote delta to exactly -1, 0, or 1. */
-function clampDelta(value: unknown): number {
-  if (value === 1 || value === -1) return value;
-  return 0;
-}
-
-// ─── Utility ─────────────────────────────────────────────────────────────────
-
-function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...extraHeaders },
-  });
-}

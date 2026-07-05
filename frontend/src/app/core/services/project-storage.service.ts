@@ -40,7 +40,13 @@ export class ProjectStorageService {
 
   loadLocal(): ArchitectureProject | null {
     const raw = localStorage.getItem(storageKey);
-    return raw ? JSON.parse(raw) as ArchitectureProject : null;
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as ArchitectureProject;
+    } catch {
+      // Corrupt blob (e.g. truncated write, manual edit) must not break startup.
+      return null;
+    }
   }
 
   saveWorkspace(workspace: PersistedWorkspace): void {

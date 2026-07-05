@@ -1,258 +1,385 @@
 <!-- ============================ ACTIVE CHALLENGE ============================ -->
-<div class="challenge-active" *ngIf="active; else hub">
-  <div class="active-header-row">
-    <button type="button" class="btn-back" (click)="onExit()" title="Back to all challenges">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <div class="active-header-info">
-      <h2 class="active-title">{{ active.title }}</h2>
-      <div class="active-meta-row">
-        <span class="difficulty-tag" [class]="'diff-' + active.difficulty">
-          <i class="fas" [class.fa-leaf]="active.difficulty === 'easy'" [class.fa-bolt]="active.difficulty === 'medium'"
-            [class.fa-fire]="active.difficulty === 'hard'"></i>
-          {{ active.difficulty }}
-        </span>
-        <app-challenge-tag [text]="active.category"></app-challenge-tag>
-        <app-challenge-tag *ngIf="active.companyTag" [text]="active.companyTag"></app-challenge-tag>
-        <span class="time-meta"><i class="fas fa-clock"></i> {{ active.estMinutes }}m</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Problem -->
-  <div class="problem-card">
-    <p class="challenge-problem">{{ active.problem }}</p>
-    <div class="scale-row" *ngIf="active.targetScale">
-      <i class="fas fa-gauge-high"></i>
-      <span>Target scale &middot; <strong>{{ active.targetScale }}</strong></span>
-    </div>
-  </div>
-
-  <!-- Requirements -->
-  <div class="info-block" *ngIf="active.functionalRequirements.length">
-    <div class="block-header"><i class="fas fa-list-check accent-blue"></i><span>Functional Requirements</span></div>
-    <div class="spec-item" *ngFor="let req of active.functionalRequirements">
-      <i class="fas fa-circle-check check-icon"></i><span>{{ req }}</span>
-    </div>
-  </div>
-
-  <!-- Constraints -->
-  <div class="info-block" *ngIf="active.constraints.length">
-    <div class="block-header"><i class="fas fa-triangle-exclamation accent-amber"></i><span>System Constraints</span>
-    </div>
-    <div class="limit-item" *ngFor="let c of active.constraints">
-      <i class="fas fa-circle-dot ban-icon"></i><span>{{ c }}</span>
-    </div>
-  </div>
-
-  <!-- Milestones -->
-  <div class="info-block milestones-block" *ngIf="!isClearedWithMaxScore()">
-    <div class="block-header-row">
-      <div class="block-header"><i class="fas fa-trophy accent-gold"></i><span>Design Milestones</span></div>
-      <span class="ms-count">{{ reachedCount() + reachedHiddenCount() }}<small>/{{ standardMilestones().length }}<span
-            *ngIf="totalHiddenCount() > 0">+{{ totalHiddenCount() }}</span></small></span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" [style.width.%]="milestonePercent()"></div>
-    </div>
-    <ng-container *ngFor="let m of reachedStandardMilestones(); let i = index">
-      <div class="milestone-row done">
-        <span class="ms-check"><i class="fas fa-circle-check"></i></span>
-        <div class="ms-content">
-          <span class="ms-label">{{ i + 1 }}. {{ m.label }}</span>
-          <span class="ms-detail" *ngIf="m.detail">{{ m.detail }}</span>
+@if (active) {
+  <div class="challenge-active">
+    <div class="active-header-row">
+      <button type="button" class="btn-back" (click)="onExit()" title="Back to all challenges">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="active-header-info">
+        <h2 class="active-title">{{ active.title }}</h2>
+        <div class="active-meta-row">
+          <span class="difficulty-tag" [class]="'diff-' + active.difficulty">
+            <i
+              class="fas"
+              [class.fa-leaf]="active.difficulty === 'easy'"
+              [class.fa-bolt]="active.difficulty === 'medium'"
+              [class.fa-fire]="active.difficulty === 'hard'"
+            ></i>
+            {{ active.difficulty }}
+          </span>
+          <app-challenge-tag [text]="active.category"></app-challenge-tag>
+          @if (active.companyTag) {
+            <app-challenge-tag [text]="active.companyTag"></app-challenge-tag>
+          }
+          <span class="time-meta"><i class="fas fa-clock"></i> {{ active.estMinutes }}m</span>
         </div>
       </div>
-    </ng-container>
-    <p class="ms-locked-note" *ngIf="reachedCount() < standardMilestones().length">
-      <i class="fas fa-lock"></i>
-      {{ standardMilestones().length - reachedCount() }} more milestone{{ standardMilestones().length - reachedCount()
-      === 1 ?
-      '' : 's' }} reveal as you build.
-    </p>
-
-    <!-- Secret Milestones Section -->
-    <div class="hidden-milestones-unlocked" *ngIf="reachedHiddenCount() > 0">
-      <div class="hidden-ms-header">
-        <i class="fas fa-sparkles text-gold"></i>
-        <span>Secret Milestones Unlocked ({{ reachedHiddenCount() }}/{{ totalHiddenCount() }})</span>
-      </div>
-      <div class="hidden-ms-row-container">
-        <div class="milestone-row done hidden-ms-row" *ngFor="let m of reachedHiddenMilestones()">
-          <span class="ms-check"><i class="fas fa-star text-gold"></i></span>
-          <div class="ms-content">
-            <span class="ms-label">{{ m.label }} <small class="text-gold">(Bonus)</small></span>
-            <span class="ms-detail" *ngIf="m.detail">{{ m.detail }}</span>
+    </div>
+    <!-- Problem -->
+    <div class="problem-card">
+      <p class="challenge-problem">{{ active.problem }}</p>
+      @if (active.targetScale) {
+        <div class="scale-row">
+          <i class="fas fa-gauge-high"></i>
+          <span
+            >Target scale &middot; <strong>{{ active.targetScale }}</strong></span
+          >
+        </div>
+      }
+    </div>
+    <!-- Requirements -->
+    @if (active.functionalRequirements.length) {
+      <div class="info-block">
+        <div class="block-header">
+          <i class="fas fa-list-check accent-blue"></i><span>Functional Requirements</span>
+        </div>
+        @for (req of active.functionalRequirements; track req) {
+          <div class="spec-item">
+            <i class="fas fa-circle-check check-icon"></i><span>{{ req }}</span>
           </div>
+        }
+      </div>
+    }
+    <!-- Constraints -->
+    @if (active.constraints.length) {
+      <div class="info-block">
+        <div class="block-header">
+          <i class="fas fa-triangle-exclamation accent-amber"></i><span>System Constraints</span>
         </div>
+        @for (c of active.constraints; track c) {
+          <div class="limit-item">
+            <i class="fas fa-circle-dot ban-icon"></i><span>{{ c }}</span>
+          </div>
+        }
       </div>
-    </div>
-
-    <!-- Info about locked hidden milestones -->
-    <p class="ms-hidden-locked-note" *ngIf="reachedHiddenCount() < totalHiddenCount()">
-      <i class="fas fa-circle-question text-gold"></i>
-      <span>{{ totalHiddenCount() - reachedHiddenCount() }} hidden bonus milestone{{ totalHiddenCount() -
-        reachedHiddenCount() === 1 ? '' : 's' }} to discover!</span>
-    </p>
-  </div>
-
-  <!-- Hints -->
-  <div class="info-block hints-block"
-    *ngIf="!isClearedWithMaxScore() && (revealedHints().length > 0 || (hasHintToReveal() && !isCurrentHintRevealed()))">
-    <div class="block-header"><i class="fas fa-lightbulb accent-yellow"></i><span>Architectural Hints</span></div>
-    <div class="hint-card" *ngFor="let h of revealedHints()">
-      <span class="hint-title"><i class="fas fa-key"></i> {{ h.title }}</span>
-      <p class="hint-body">{{ h.body }}</p>
-    </div>
-    <button type="button" class="btn-hint" *ngIf="hasHintToReveal() && !isCurrentHintRevealed()"
-      (click)="onRevealHint()" style="margin-top: 6px;">
-      <i class="fas fa-lightbulb"></i> Reveal Hint
-    </button>
-  </div>
-
-  <!-- Actions -->
-  <div class="actions-group" *ngIf="!isClearedWithMaxScore()">
-    <button type="button" class="btn-evaluate" (click)="requestEvaluate.emit()">
-      <i class="fas fa-clipboard-check"></i> Evaluate
-    </button>
-    <button type="button" class="btn-reference" (click)="showReference.emit(active)"
-      title="Load the reference solution">
-      <i class="fas fa-diagram-project"></i> Solution
-    </button>
-  </div>
-
-  <!-- Review -->
-  <div class="review-panel" *ngIf="review" [class.passed]="review.passed" [class.gold-bonus]="review.score > 100">
-    <div class="review-head">
-      <div class="score-ring" [class.gold-ring]="review.score > 100" [style.--pct]="review.score * 3.6 + 'deg'">
-        <div class="score-inner">
-          <span class="score-num" [class.gold-text]="review.score > 100">{{ review.score }}</span>
-          <small>/100</small>
+    }
+    <!-- Milestones -->
+    @if (!isClearedWithMaxScore()) {
+      <div class="info-block milestones-block">
+        <div class="block-header-row">
+          <div class="block-header">
+            <i class="fas fa-trophy accent-gold"></i><span>Design Milestones</span>
+          </div>
+          <span class="ms-count"
+            >{{ reachedCount() + reachedHiddenCount()
+            }}<small
+              >/{{ standardMilestones().length }}
+              @if (totalHiddenCount() > 0) {
+                <span>+{{ totalHiddenCount() }}</span>
+              }
+            </small></span
+          >
         </div>
-      </div>
-      <div class="score-status">
-        <strong>{{ review.passed ? 'Architecture approved' : 'Keep optimizing' }}</strong>
-        <span>Pass mark &middot; {{ review.passScore }}</span>
-      </div>
-    </div>
-    <div class="finding-card" *ngFor="let f of review.findings" [class]="'sev-' + f.severity">
-      <i class="fas finding-icon" [class.fa-circle-check]="f.severity === 'pass'"
-        [class.fa-triangle-exclamation]="f.severity === 'warn'" [class.fa-circle-xmark]="f.severity === 'fail'"></i>
-      <div class="finding-info">
-        <span class="finding-msg">{{ f.message }}</span>
-        <span class="finding-fix" *ngIf="f.fixHint"><i class="fas fa-wrench"></i> {{ f.fixHint }}</span>
-      </div>
-    </div>
-
-    <!-- Celebration Feedback Section on Completion -->
-    <div class="completion-feedback" *ngIf="review.passed && active">
-      <div class="feedback-prompt-header">
-        <i class="fas fa-award reward-icon"></i>
-        <span>Challenge Completed Successfully!</span>
-      </div>
-
-      <!-- How this architecture works -->
-      <div class="solution-explainer" *ngIf="active.solution as sol">
-        <button type="button" class="solution-toggle" (click)="toggleSolution()"
-          [attr.aria-expanded]="solutionExpanded">
-          <i class="fas fa-lightbulb"></i>
-          <span>Why this architecture works</span>
-          <i class="fas chevron" [class.fa-chevron-up]="solutionExpanded" [class.fa-chevron-down]="!solutionExpanded"></i>
-        </button>
-
-        <div class="solution-body" *ngIf="solutionExpanded">
-          <p class="solution-summary">{{ sol.summary }}</p>
-
-          <div class="solution-reqs" *ngIf="sol.requirementsMet?.length">
-            <h5>How it meets the requirements</h5>
-            <div class="req-row" *ngFor="let r of sol.requirementsMet">
-              <i class="fas fa-circle-check"></i>
-              <div>
-                <strong>{{ r.requirement }}</strong>
-                <span>{{ r.satisfiedBy }}</span>
-              </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="milestonePercent()"></div>
+        </div>
+        @for (m of reachedStandardMilestones(); track m; let i = $index) {
+          <div class="milestone-row done">
+            <span class="ms-check"><i class="fas fa-circle-check"></i></span>
+            <div class="ms-content">
+              <span class="ms-label">{{ i + 1 }}. {{ m.label }}</span>
+              @if (m.detail) {
+                <span class="ms-detail">{{ m.detail }}</span>
+              }
             </div>
           </div>
-
-          <div class="solution-services">
-            <h5>The role of each service</h5>
-            <div class="svc-row" *ngFor="let s of sol.services"
-              [style.--svc-color]="solutionColor(s.type)">
-              <span class="svc-icon">
-                <img [src]="solutionIcon(s.type)" [alt]="(s.name || s.type) + ' icon'" />
-              </span>
-              <div class="svc-text">
-                <strong>{{ s.name || s.type }}</strong>
-                <span class="svc-role">{{ s.role }}</span>
-                <span class="svc-why"><i class="fas fa-circle-info"></i> {{ s.why }}</span>
-              </div>
+        }
+        @if (reachedCount() < standardMilestones().length) {
+          <p class="ms-locked-note">
+            <i class="fas fa-lock"></i>
+            {{ standardMilestones().length - reachedCount() }} more milestone{{
+              standardMilestones().length - reachedCount() === 1 ? '' : 's'
+            }}
+            reveal as you build.
+          </p>
+        }
+        <!-- Secret Milestones Section -->
+        @if (reachedHiddenCount() > 0) {
+          <div class="hidden-milestones-unlocked">
+            <div class="hidden-ms-header">
+              <i class="fas fa-sparkles text-gold"></i>
+              <span
+                >Secret Milestones Unlocked ({{ reachedHiddenCount() }}/{{
+                  totalHiddenCount()
+                }})</span
+              >
+            </div>
+            <div class="hidden-ms-row-container">
+              @for (m of reachedHiddenMilestones(); track m) {
+                <div class="milestone-row done hidden-ms-row">
+                  <span class="ms-check"><i class="fas fa-star text-gold"></i></span>
+                  <div class="ms-content">
+                    <span class="ms-label"
+                      >{{ m.label }} <small class="text-gold">(Bonus)</small></span
+                    >
+                    @if (m.detail) {
+                      <span class="ms-detail">{{ m.detail }}</span>
+                    }
+                  </div>
+                </div>
+              }
             </div>
           </div>
-        </div>
+        }
+        <!-- Info about locked hidden milestones -->
+        @if (reachedHiddenCount() < totalHiddenCount()) {
+          <p class="ms-hidden-locked-note">
+            <i class="fas fa-circle-question text-gold"></i>
+            <span
+              >{{ totalHiddenCount() - reachedHiddenCount() }} hidden bonus milestone{{
+                totalHiddenCount() - reachedHiddenCount() === 1 ? '' : 's'
+              }}
+              to discover!</span
+            >
+          </p>
+        }
       </div>
-
-      <div class="design-again-container">
-        <button type="button" class="btn-design-again" (click)="onDesignAgain()">
-          <i class="fas fa-rotate-left"></i> Design Again
+    }
+    <!-- Hints -->
+    @if (
+      !isClearedWithMaxScore() &&
+      (revealedHints().length > 0 || (hasHintToReveal() && !isCurrentHintRevealed()))
+    ) {
+      <div class="info-block hints-block">
+        <div class="block-header">
+          <i class="fas fa-lightbulb accent-yellow"></i><span>Architectural Hints</span>
+        </div>
+        @for (h of revealedHints(); track h) {
+          <div class="hint-card">
+            <span class="hint-title"><i class="fas fa-key"></i> {{ h.title }}</span>
+            <p class="hint-body">{{ h.body }}</p>
+          </div>
+        }
+        @if (hasHintToReveal() && !isCurrentHintRevealed()) {
+          <button type="button" class="btn-hint" (click)="onRevealHint()" style="margin-top: 6px">
+            <i class="fas fa-lightbulb"></i> Reveal Hint
+          </button>
+        }
+      </div>
+    }
+    <!-- Actions -->
+    @if (!isClearedWithMaxScore()) {
+      <div class="actions-group">
+        <button type="button" class="btn-evaluate" (click)="requestEvaluate.emit()">
+          <i class="fas fa-clipboard-check"></i> Evaluate
+        </button>
+        <button
+          type="button"
+          class="btn-reference"
+          (click)="showReference.emit(active)"
+          title="Load the reference solution"
+        >
+          <i class="fas fa-diagram-project"></i> Solution
         </button>
       </div>
-
-      <div class="feedback-vote-container">
-        <span class="vote-label">Did you enjoyed this challenge?</span>
-        <div class="vote-buttons-row">
-          <button type="button" class="completion-vote-btn up" [class.active]="votes.myVote(active.id) === 'up'"
-            (click)="onVote(active, 'up', $event)">
-            <i class="fas fa-thumbs-up"></i>
-            <span>Yes</span>
-          </button>
-          <button type="button" class="completion-vote-btn down" [class.active]="votes.myVote(active.id) === 'down'"
-            (click)="onVote(active, 'down', $event)">
-            <i class="fas fa-thumbs-down"></i>
-            <span>Could be Better</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Dynamic psychological CTAs based on rating -->
-      <div class="feedback-cta-container">
-        <!-- Upvote or No Vote: Happy Path Nudge -->
-        <div class="cta-flow happy-path" *ngIf="votes.myVote(active.id) !== 'down'">
-          <p class="cta-note">Awesome job! Help us inspire others by sharing your feedback.</p>
-          <div class="cta-buttons">
-            <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
-              class="cta-btn testimonial">
-              <i class="fas fa-trophy"></i>
-              <span>Submit Testimonial</span>
-            </a>
-            <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
-              class="cta-btn bug-link">
-              <i class="fas fa-bug"></i> Report bug
-            </a>
+    }
+    <!-- Review -->
+    @if (review) {
+      <div
+        class="review-panel"
+        [class.passed]="review.passed"
+        [class.gold-bonus]="review.score > 100"
+      >
+        <div class="review-head">
+          <div
+            class="score-ring"
+            [class.gold-ring]="review.score > 100"
+            [style.--pct]="review.score * 3.6 + 'deg'"
+          >
+            <div class="score-inner">
+              <span class="score-num" [class.gold-text]="review.score > 100">{{
+                review.score
+              }}</span>
+              <small>/100</small>
+            </div>
+          </div>
+          <div class="score-status">
+            <strong>{{ review.passed ? 'Architecture approved' : 'Keep optimizing' }}</strong>
+            <span>Pass mark &middot; {{ review.passScore }}</span>
           </div>
         </div>
-
-        <!-- Downvote: Empathetic Support Path Nudge -->
-        <div class="cta-flow support-path" *ngIf="votes.myVote(active.id) === 'down'">
-          <p class="cta-note">We're sorry this was frustrating! Let us know how we can improve.</p>
-          <div class="cta-buttons">
-            <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
-              class="cta-btn bug-report">
-              <i class="fas fa-triangle-exclamation"></i>
-              <span>Report Bug or Issue</span>
-            </a>
-            <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
-              class="cta-btn testimonial-link">
-              <i class="fas fa-star"></i> Submit testimonial
-            </a>
+        @for (f of review.findings; track f) {
+          <div class="finding-card" [class]="'sev-' + f.severity">
+            <i
+              class="fas finding-icon"
+              [class.fa-circle-check]="f.severity === 'pass'"
+              [class.fa-triangle-exclamation]="f.severity === 'warn'"
+              [class.fa-circle-xmark]="f.severity === 'fail'"
+            ></i>
+            <div class="finding-info">
+              <span class="finding-msg">{{ f.message }}</span>
+              @if (f.fixHint) {
+                <span class="finding-fix"><i class="fas fa-wrench"></i> {{ f.fixHint }}</span>
+              }
+            </div>
           </div>
-        </div>
+        }
+        <!-- Celebration Feedback Section on Completion -->
+        @if (review.passed && active) {
+          <div class="completion-feedback">
+            <div class="feedback-prompt-header">
+              <i class="fas fa-award reward-icon"></i>
+              <span>Challenge Completed Successfully!</span>
+            </div>
+            <!-- How this architecture works -->
+            @if (active.solution; as sol) {
+              <div class="solution-explainer">
+                <button
+                  type="button"
+                  class="solution-toggle"
+                  (click)="toggleSolution()"
+                  [attr.aria-expanded]="solutionExpanded"
+                >
+                  <i class="fas fa-lightbulb"></i>
+                  <span>Why this architecture works</span>
+                  <i
+                    class="fas chevron"
+                    [class.fa-chevron-up]="solutionExpanded"
+                    [class.fa-chevron-down]="!solutionExpanded"
+                  ></i>
+                </button>
+                @if (solutionExpanded) {
+                  <div class="solution-body">
+                    <p class="solution-summary">{{ sol.summary }}</p>
+                    @if (sol.requirementsMet?.length) {
+                      <div class="solution-reqs">
+                        <h5>How it meets the requirements</h5>
+                        @for (r of sol.requirementsMet; track r) {
+                          <div class="req-row">
+                            <i class="fas fa-circle-check"></i>
+                            <div>
+                              <strong>{{ r.requirement }}</strong>
+                              <span>{{ r.satisfiedBy }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+                    <div class="solution-services">
+                      <h5>The role of each service</h5>
+                      @for (s of sol.services; track s) {
+                        <div class="svc-row" [style.--svc-color]="solutionColor(s.type)">
+                          <span class="svc-icon">
+                            <img
+                              [src]="solutionIcon(s.type)"
+                              [alt]="(s.name || s.type) + ' icon'"
+                            />
+                          </span>
+                          <div class="svc-text">
+                            <strong>{{ s.name || s.type }}</strong>
+                            <span class="svc-role">{{ s.role }}</span>
+                            <span class="svc-why"
+                              ><i class="fas fa-circle-info"></i> {{ s.why }}</span
+                            >
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            <div class="design-again-container">
+              <button type="button" class="btn-design-again" (click)="onDesignAgain()">
+                <i class="fas fa-rotate-left"></i> Design Again
+              </button>
+            </div>
+            <div class="feedback-vote-container">
+              <span class="vote-label">Did you enjoyed this challenge?</span>
+              <div class="vote-buttons-row">
+                <button
+                  type="button"
+                  class="completion-vote-btn up"
+                  [class.active]="votes.myVote(active.id) === 'up'"
+                  (click)="onVote(active, 'up', $event)"
+                >
+                  <i class="fas fa-thumbs-up"></i>
+                  <span>Yes</span>
+                </button>
+                <button
+                  type="button"
+                  class="completion-vote-btn down"
+                  [class.active]="votes.myVote(active.id) === 'down'"
+                  (click)="onVote(active, 'down', $event)"
+                >
+                  <i class="fas fa-thumbs-down"></i>
+                  <span>Could be Better</span>
+                </button>
+              </div>
+            </div>
+            <!-- Dynamic psychological CTAs based on rating -->
+            <div class="feedback-cta-container">
+              <!-- Upvote or No Vote: Happy Path Nudge -->
+              @if (votes.myVote(active.id) !== 'down') {
+                <div class="cta-flow happy-path">
+                  <p class="cta-note">
+                    Awesome job! Help us inspire others by sharing your feedback.
+                  </p>
+                  <div class="cta-buttons">
+                    <a
+                      href="https://forms.gle/2Kh6TKqcwYUSnYnHA"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="cta-btn testimonial"
+                    >
+                      <i class="fas fa-trophy"></i>
+                      <span>Submit Testimonial</span>
+                    </a>
+                    <a
+                      href="https://forms.gle/RJwRybjgRPPi11jg7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="cta-btn bug-link"
+                    >
+                      <i class="fas fa-bug"></i> Report bug
+                    </a>
+                  </div>
+                </div>
+              }
+              <!-- Downvote: Empathetic Support Path Nudge -->
+              @if (votes.myVote(active.id) === 'down') {
+                <div class="cta-flow support-path">
+                  <p class="cta-note">
+                    We're sorry this was frustrating! Let us know how we can improve.
+                  </p>
+                  <div class="cta-buttons">
+                    <a
+                      href="https://forms.gle/RJwRybjgRPPi11jg7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="cta-btn bug-report"
+                    >
+                      <i class="fas fa-triangle-exclamation"></i>
+                      <span>Report Bug or Issue</span>
+                    </a>
+                    <a
+                      href="https://forms.gle/2Kh6TKqcwYUSnYnHA"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="cta-btn testimonial-link"
+                    >
+                      <i class="fas fa-star"></i> Submit testimonial
+                    </a>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
       </div>
-    </div>
+    }
   </div>
-</div>
-
-<!-- ================================ HUB ==================================== -->
-<ng-template #hub>
+} @else {
   <div class="challenge-hub">
     <div class="hub-illustration" aria-hidden="true">
       <img [src]="mascotImage" alt="Server Metaphor" />
@@ -266,62 +393,106 @@
         </div>
       </div>
     </div>
-
     <!-- Difficulty segmented tabs -->
-    <div class="diff-tabs" [class.active-easy]="selectedDiff === 'easy'"
-      [class.active-medium]="selectedDiff === 'medium'" [class.active-hard]="selectedDiff === 'hard'">
+    <div
+      class="diff-tabs"
+      [class.active-easy]="selectedDiff === 'easy'"
+      [class.active-medium]="selectedDiff === 'medium'"
+      [class.active-hard]="selectedDiff === 'hard'"
+    >
       <div class="active-indicator" [ngStyle]="indicatorStyle"></div>
-      <button *ngFor="let diff of difficulties" type="button" class="tab-btn" [class]="'tab-' + diff"
-        [class.active]="selectedDiff === diff" (click)="selectedDiff = diff">
-        <i class="fas" [class.fa-leaf]="diff === 'easy'" [class.fa-bolt]="diff === 'medium'"
-          [class.fa-fire]="diff === 'hard'"></i>
-        <span>{{ diff | titlecase }}</span>
-        <span class="tab-count">{{ authoredCount(diff) }}</span>
-      </button>
+      @for (diff of difficulties; track diff) {
+        <button
+          type="button"
+          class="tab-btn"
+          [class]="'tab-' + diff"
+          [class.active]="selectedDiff === diff"
+          (click)="selectedDiff = diff"
+        >
+          <i
+            class="fas"
+            [class.fa-leaf]="diff === 'easy'"
+            [class.fa-bolt]="diff === 'medium'"
+            [class.fa-fire]="diff === 'hard'"
+          ></i>
+          <span>{{ diff | titlecase }}</span>
+          <span class="tab-count">{{ authoredCount(diff) }}</span>
+        </button>
+      }
     </div>
-
     <!-- Challenge cards -->
     <div class="challenge-list">
-      <div class="challenge-card" *ngFor="let c of challengesByDifficulty(selectedDiff)"
-        [class]="'diff-' + c.difficulty" [class.locked]="!c.authored" [class.completed]="isCompleted(c)" role="button"
-        tabindex="0" [attr.aria-disabled]="!c.authored" (click)="onSelect(c)" (keydown.enter)="onSelect(c)">
-        <span class="card-accent"></span>
-        <span class="card-icon"><i class="fas" [ngClass]="iconFor(c)"></i></span>
-        <span class="card-body">
-          <span class="card-title">
-            {{ c.title }}
-            <span class="card-score-badge" [class.gold-badge]="(savedScore(c) ?? 0) > 100"
-              *ngIf="c.authored && isCompleted(c)">
-              <i class="fas" [class.fa-check]="(savedScore(c) ?? 0) <= 100"
-                [class.fa-crown]="(savedScore(c) ?? 0) > 100"></i>{{ savedScore(c) }}%
+      @for (c of challengesByDifficulty(selectedDiff); track c) {
+        <div
+          class="challenge-card"
+          [class]="'diff-' + c.difficulty"
+          [class.locked]="!c.authored"
+          [class.completed]="isCompleted(c)"
+          role="button"
+          tabindex="0"
+          [attr.aria-disabled]="!c.authored"
+          (click)="onSelect(c)"
+          (keydown.enter)="onSelect(c)"
+        >
+          <span class="card-accent"></span>
+          <span class="card-icon"><i class="fas" [ngClass]="iconFor(c)"></i></span>
+          <span class="card-body">
+            <span class="card-title">
+              {{ c.title }}
+              @if (c.authored && isCompleted(c)) {
+                <span class="card-score-badge" [class.gold-badge]="(savedScore(c) ?? 0) > 100">
+                  <i
+                    class="fas"
+                    [class.fa-check]="(savedScore(c) ?? 0) <= 100"
+                    [class.fa-crown]="(savedScore(c) ?? 0) > 100"
+                  ></i
+                  >{{ savedScore(c) }}%
+                </span>
+              }
+            </span>
+            <span class="card-meta">
+              <app-challenge-tag [text]="c.category"></app-challenge-tag>
+              @if (c.companyTag) {
+                <app-challenge-tag [text]="c.companyTag"></app-challenge-tag>
+              }
             </span>
           </span>
-          <span class="card-meta">
-            <app-challenge-tag [text]="c.category"></app-challenge-tag>
-            <app-challenge-tag *ngIf="c.companyTag" [text]="c.companyTag"></app-challenge-tag>
+          @if (votes.enabled) {
+            <span class="vote-group">
+              <button
+                type="button"
+                class="vote-btn up"
+                [class.on]="votes.myVote(c.id) === 'up'"
+                (click)="onVote(c, 'up', $event)"
+                aria-label="Thumbs up"
+              >
+                <i class="fas fa-thumbs-up"></i>{{ votes.tally(c.id).up }}
+              </button>
+              <button
+                type="button"
+                class="vote-btn down"
+                [class.on]="votes.myVote(c.id) === 'down'"
+                (click)="onVote(c, 'down', $event)"
+                aria-label="Thumbs down"
+              >
+                <i class="fas fa-thumbs-down"></i>{{ votes.tally(c.id).down }}
+              </button>
+            </span>
+          }
+          <span class="card-state">
+            @if (!c.authored) {
+              <span class="state-soon"><i class="fas fa-lock"></i></span>
+            }
+            @if (c.authored) {
+              <i class="fas fa-chevron-right state-arrow"></i>
+            }
           </span>
-        </span>
-        <span class="vote-group" *ngIf="votes.enabled">
-          <button type="button" class="vote-btn up" [class.on]="votes.myVote(c.id) === 'up'"
-            (click)="onVote(c, 'up', $event)" aria-label="Thumbs up">
-            <i class="fas fa-thumbs-up"></i>{{ votes.tally(c.id).up }}
-          </button>
-          <button type="button" class="vote-btn down" [class.on]="votes.myVote(c.id) === 'down'"
-            (click)="onVote(c, 'down', $event)" aria-label="Thumbs down">
-            <i class="fas fa-thumbs-down"></i>{{ votes.tally(c.id).down }}
-          </button>
-        </span>
-        <span class="card-state">
-          <span class="state-soon" *ngIf="!c.authored"><i class="fas fa-lock"></i></span>
-          <i class="fas fa-chevron-right state-arrow" *ngIf="c.authored"></i>
-        </span>
-      </div>
-
-      <div class="list-empty" *ngIf="challengesByDifficulty(selectedDiff).length === 0">
-        <i class="fas fa-inbox"></i> No challenges here yet.
-      </div>
+        </div>
+      }
+      @if (challengesByDifficulty(selectedDiff).length === 0) {
+        <div class="list-empty"><i class="fas fa-inbox"></i> No challenges here yet.</div>
+      }
     </div>
-
     <!-- Footer -->
     <div class="hub-footer">
       <button type="button" class="btn-ghost" (click)="freePractice.emit()">
@@ -332,4 +503,6 @@
       </button>
     </div>
   </div>
-</ng-template>
+}
+
+<!-- ================================ HUB ==================================== -->

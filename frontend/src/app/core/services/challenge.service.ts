@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ArchitectureConnection, ArchitectureNode } from '../models/architecture.model';
-import { Challenge, ChallengeProgress, Hint, Milestone, ReviewResult } from '../models/challenge.model';
+import {
+  Challenge,
+  ChallengeProgress,
+  Hint,
+  Milestone,
+  ReviewResult,
+} from '../models/challenge.model';
 import challengesData from '../data/challenges.json';
 import { RubricReviewer, evaluateMilestones } from './evaluation/architecture-reviewer';
 
@@ -15,7 +21,11 @@ const PROGRESS_KEY = 'sds.challengeProgress';
  */
 @Injectable({ providedIn: 'root' })
 export class ChallengeService {
-  readonly challenges: Challenge[] = (challengesData as unknown as { challenges: Challenge[] }).challenges;
+  // Constructor DI (not inject()) so unit tests can construct with `new`.
+  constructor(private readonly reviewer: RubricReviewer) {}
+
+  readonly challenges: Challenge[] = (challengesData as unknown as { challenges: Challenge[] })
+    .challenges;
 
   private readonly activeChallengeSubject = new BehaviorSubject<Challenge | null>(null);
   readonly activeChallenge$ = this.activeChallengeSubject.asObservable();
@@ -24,13 +34,16 @@ export class ChallengeService {
   readonly progress$ = this.progressSubject.asObservable();
 
   /** Emits a milestone the moment it is first reached (for toasts). */
-  private readonly milestoneReachedSubject = new Subject<{ milestone: Milestone; number: number; total: number; isHidden?: boolean }>();
+  private readonly milestoneReachedSubject = new Subject<{
+    milestone: Milestone;
+    number: number;
+    total: number;
+    isHidden?: boolean;
+  }>();
   readonly milestoneReached$ = this.milestoneReachedSubject.asObservable();
 
   private readonly lastReviewSubject = new BehaviorSubject<ReviewResult | null>(null);
   readonly lastReview$ = this.lastReviewSubject.asObservable();
-
-  constructor(private readonly reviewer: RubricReviewer) { }
 
   getById(id: string): Challenge | undefined {
     return this.challenges.find((challenge) => challenge.id === id);
@@ -63,8 +76,8 @@ export class ChallengeService {
           {
             severity: 'pass',
             message: 'All rubric checks passed successfully!',
-          }
-        ]
+          },
+        ],
       });
     } else {
       this.lastReviewSubject.next(null);
@@ -106,11 +119,13 @@ export class ChallengeService {
 
     // Find the first milestone (standard or hidden) that is NOT reached
     const firstMissingIndex = challenge.milestones.findIndex(
-      (m) => !progress.reachedMilestoneIds.includes(m.id)
+      (m) => !progress.reachedMilestoneIds.includes(m.id),
     );
     if (firstMissingIndex === -1) {
       const unrevealedAdditionalHints = challenge.hints
-        .filter((h) => h.order > challenge.milestones.length && !progress.revealedHintIds.includes(h.id))
+        .filter(
+          (h) => h.order > challenge.milestones.length && !progress.revealedHintIds.includes(h.id),
+        )
         .sort((a, b) => a.order - b.order);
       return unrevealedAdditionalHints[0] || null;
     }
@@ -145,11 +160,13 @@ export class ChallengeService {
     const progress = this.progressSubject.value;
     if (!challenge || !progress) return [];
 
-    const standardMilestones = challenge.milestones.filter(m => !m.hidden);
-    const reachedCount = standardMilestones.filter((m) => progress.reachedMilestoneIds.includes(m.id)).length;
+    const standardMilestones = challenge.milestones.filter((m) => !m.hidden);
+    const reachedCount = standardMilestones.filter((m) =>
+      progress.reachedMilestoneIds.includes(m.id),
+    ).length;
 
-    const allReached = challenge.milestones.every(
-      (m) => progress.reachedMilestoneIds.includes(m.id)
+    const allReached = challenge.milestones.every((m) =>
+      progress.reachedMilestoneIds.includes(m.id),
     );
 
     return challenge.hints
@@ -180,10 +197,10 @@ export class ChallengeService {
     // (such as loading an empty canvas) to downgrade the reached milestone IDs list.
     if (progress.completed) {
       const previouslyReachedStandard = challenge.milestones.filter(
-        (m) => !m.hidden && progress.reachedMilestoneIds.includes(m.id)
+        (m) => !m.hidden && progress.reachedMilestoneIds.includes(m.id),
       ).length;
       const newlyReachedStandard = challenge.milestones.filter(
-        (m) => !m.hidden && reached.includes(m.id)
+        (m) => !m.hidden && reached.includes(m.id),
       ).length;
       if (newlyReachedStandard < previouslyReachedStandard) {
         return;

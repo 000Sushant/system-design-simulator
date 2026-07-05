@@ -114,7 +114,7 @@ sequenceDiagram
 
 ## 💻 Tech Stack
 
-- **Frontend Core**: Angular 19 (Standalone Components, Signals, RxJS streams)
+- **Frontend Core**: Angular 21 (Standalone Components, Signals, RxJS streams)
 - **Canvas Engine**: `@foblex/flow` (interactive drawing, port bindings)
 - **Worker Infrastructure**: Cloudflare Worker running Wrangler, storing rates in Cloudflare KV.
 - **AWS API Integration**: `aws4fetch` for signing requests to the AWS Price List API.
@@ -161,6 +161,12 @@ npm install
 npm run start
 ```
 The application will launch locally at `http://localhost:4200/`.
+
+Run the unit/characterization test suite (Vitest) and lint:
+```bash
+npm test
+npm run lint
+```
 
 #### 3. Run the Cloudflare Worker (Pricing Scraper)
 ```bash

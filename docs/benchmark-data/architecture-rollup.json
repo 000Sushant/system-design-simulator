@@ -1,0 +1,3704 @@
+{
+  "generatedAt": "2026-07-05T14:20:06.139Z",
+  "architecture": [
+    "client",
+    "route53",
+    "cloudfront",
+    "waf",
+    "apiGateway",
+    "elb",
+    "autoScalingGroup",
+    "eks",
+    "lambda",
+    "rds",
+    "aurora",
+    "dynamoDb",
+    "elastiCache",
+    "s3",
+    "efs",
+    "sqs",
+    "sns",
+    "kinesis",
+    "natGateway",
+    "vpc",
+    "cloudWatch",
+    "kms",
+    "ecr",
+    "secretsManager",
+    "cloudTrail"
+  ],
+  "regions": {
+    "af-south-1": {
+      "kvGeneratedAt": "2026-06-28T17:16:03.034Z",
+      "totalMonthlyUsd_kv": 4392.217582458497,
+      "totalMonthlyUsd_aws": 2754.8595824584963,
+      "deltaUsd": 1637.358000000001,
+      "deltaPct": 59.435261616448244,
+      "correctionsApplied": 121,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 547.938,
+          "deltaPct": -16.067146282973614
+        },
+        "elb": {
+          "kv": 81.4235824584961,
+          "aws": 81.4235824584961,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 100.887,
+          "aws": 100.887,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 351.13,
+          "aws": 351.13,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 316.762,
+          "aws": 316.762,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 356.425,
+          "aws": 356.425,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1761.9200000000003,
+          "aws": 14.3,
+          "deltaPct": 12221.118881118884
+        },
+        "elastiCache": {
+          "kv": 49.64,
+          "aws": 49.64,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 27.14,
+          "aws": 27.14,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 39,
+          "deltaPct": -23.076923076923077
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 35.263999999999996,
+          "deltaPct": -37.49999999999999
+        },
+        "natGateway": {
+          "kv": 47.31,
+          "aws": 47.31,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-east-1": {
+      "kvGeneratedAt": "2026-06-28T16:11:03.055Z",
+      "totalMonthlyUsd_kv": 8425.899434277344,
+      "totalMonthlyUsd_aws": 2904.4364342773433,
+      "deltaUsd": 5521.463000000001,
+      "deltaPct": 190.10445313373862,
+      "correctionsApplied": 121,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 614.295,
+          "deltaPct": -25.13368983957218
+        },
+        "elb": {
+          "kv": 75.35863427734375,
+          "aws": 75.35863427734375,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 103.6,
+          "aws": 103.6,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 362.08000000000004,
+          "aws": 362.08000000000004,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 328.5128,
+          "aws": 328.5128,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 407.7805,
+          "aws": 407.7805,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5705.8375,
+          "aws": 13.3125,
+          "deltaPct": 42760.751173708915
+        },
+        "elastiCache": {
+          "kv": 65.7,
+          "aws": 65.7,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 23.5,
+          "aws": 23.5,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 39,
+          "deltaPct": -23.076923076923077
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 29.706999999999997,
+          "deltaPct": -25.808731948698956
+        },
+        "natGateway": {
+          "kv": 53.95,
+          "aws": 53.95,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-northeast-1": {
+      "kvGeneratedAt": "2026-06-28T16:26:02.970Z",
+      "totalMonthlyUsd_kv": 7713.261880070312,
+      "totalMonthlyUsd_aws": 2635.4568800703128,
+      "deltaUsd": 5077.804999999999,
+      "deltaPct": 192.67266478154352,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 558.45,
+          "deltaPct": -17.647058823529413
+        },
+        "elb": {
+          "kv": 67.8641220703125,
+          "aws": 67.8641220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 96.584,
+          "aws": 96.584,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 344.56,
+          "aws": 344.56,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 387.855,
+          "aws": 387.855,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 304,
+          "aws": 304,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5201.125,
+          "aws": 12.125,
+          "deltaPct": 42795.87628865979
+        },
+        "elastiCache": {
+          "kv": 61.32,
+          "aws": 61.32,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 22.9,
+          "aws": 22.9,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 28.685,
+          "deltaPct": -23.165417465574343
+        },
+        "natGateway": {
+          "kv": 51.46,
+          "aws": 51.46,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-northeast-2": {
+      "kvGeneratedAt": "2026-06-28T16:31:03.067Z",
+      "totalMonthlyUsd_kv": 3868.681380070312,
+      "totalMonthlyUsd_aws": 2468.4103800703124,
+      "deltaUsd": 1400.2709999999997,
+      "deltaPct": 56.72764185832475,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 66.5501220703125,
+          "aws": 66.5501220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 93.99199999999999,
+          "aws": 93.99199999999999,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 331.41999999999996,
+          "aws": 331.41999999999996,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 374.88800000000003,
+          "aws": 374.88800000000003,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 304,
+          "aws": 304,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1419.9675,
+          "aws": 11.5225,
+          "deltaPct": 12223.432414840529
+        },
+        "elastiCache": {
+          "kv": 29.2,
+          "aws": 29.2,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 24.1,
+          "aws": 24.1,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 27.214,
+          "deltaPct": -19.012273094730652
+        },
+        "natGateway": {
+          "kv": 48.97,
+          "aws": 48.97,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-northeast-3": {
+      "kvGeneratedAt": "2026-06-28T16:36:03.023Z",
+      "totalMonthlyUsd_kv": 4040.705880070313,
+      "totalMonthlyUsd_aws": 2669.3258800703125,
+      "deltaUsd": 1371.3800000000006,
+      "deltaPct": 51.37551807514327,
+      "correctionsApplied": 123,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 558.45,
+          "deltaPct": -17.647058823529413
+        },
+        "elb": {
+          "kv": 67.8641220703125,
+          "aws": 67.8641220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 96.584,
+          "aws": 96.584,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 344.56,
+          "aws": 344.56,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 393.98400000000004,
+          "aws": 393.98400000000004,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1494.7,
+          "aws": 12.125,
+          "deltaPct": 12227.422680412372
+        },
+        "elastiCache": {
+          "kv": 30.66,
+          "aws": 30.66,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 22.9,
+          "aws": 22.9,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 28.685,
+          "deltaPct": -23.165417465574343
+        },
+        "natGateway": {
+          "kv": 51.46,
+          "aws": 51.46,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-south-1": {
+      "kvGeneratedAt": "2026-06-28T16:16:03.041Z",
+      "totalMonthlyUsd_kv": 7595.293880070312,
+      "totalMonthlyUsd_aws": 2426.963880070313,
+      "deltaUsd": 5168.33,
+      "deltaPct": 212.95454960995403,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 67.5721220703125,
+          "aws": 67.5721220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 81.81,
+          "aws": 81.81,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 294.19000000000005,
+          "aws": 294.19000000000005,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 395.65299999999996,
+          "aws": 395.65299999999996,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 274.8,
+          "aws": 274.8,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5187.125,
+          "aws": 12.099999999999998,
+          "deltaPct": 42768.801652892565
+        },
+        "elastiCache": {
+          "kv": 49.64,
+          "aws": 49.64,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 22.43,
+          "aws": 22.43,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 25.735,
+          "deltaPct": -14.357878375752867
+        },
+        "natGateway": {
+          "kv": 46.480000000000004,
+          "aws": 46.480000000000004,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-south-2": {
+      "kvGeneratedAt": "2026-06-28T16:21:02.922Z",
+      "totalMonthlyUsd_kv": 3990.139880070312,
+      "totalMonthlyUsd_aws": 2518.259880070312,
+      "deltaUsd": 1471.8799999999997,
+      "deltaPct": 58.44829644662819,
+      "correctionsApplied": 121,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 67.5721220703125,
+          "aws": 67.5721220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 81.81,
+          "aws": 81.81,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 294.19000000000005,
+          "aws": 294.19000000000005,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 399.349,
+          "aws": 399.349,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1490.675,
+          "aws": 12.099999999999998,
+          "deltaPct": 12219.628099173557
+        },
+        "elastiCache": {
+          "kv": 49.64,
+          "aws": 49.64,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 22.43,
+          "aws": 22.43,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 25.735,
+          "deltaPct": -14.357878375752867
+        },
+        "natGateway": {
+          "kv": 46.480000000000004,
+          "aws": 46.480000000000004,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-southeast-1": {
+      "kvGeneratedAt": "2026-06-28T16:41:03.054Z",
+      "totalMonthlyUsd_kv": 7641.612880070312,
+      "totalMonthlyUsd_aws": 2576.1568800703126,
+      "deltaUsd": 5065.455999999999,
+      "deltaPct": 196.62839787388043,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 558.45,
+          "deltaPct": -17.647058823529413
+        },
+        "elb": {
+          "kv": 68.5211220703125,
+          "aws": 68.5211220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 94.848,
+          "aws": 94.848,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 335.8,
+          "aws": 335.8,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 374.055,
+          "aws": 374.055,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 304,
+          "aws": 304,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5187.125,
+          "aws": 12.099999999999998,
+          "deltaPct": 42768.801652892565
+        },
+        "elastiCache": {
+          "kv": 29.2,
+          "aws": 29.2,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 23.5,
+          "aws": 23.5,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 27.059,
+          "deltaPct": -18.548357293322006
+        },
+        "natGateway": {
+          "kv": 48.97,
+          "aws": 48.97,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-southeast-2": {
+      "kvGeneratedAt": "2026-06-28T16:46:03.091Z",
+      "totalMonthlyUsd_kv": 7640.412880070312,
+      "totalMonthlyUsd_aws": 2476.4068800703126,
+      "deltaUsd": 5164.005999999999,
+      "deltaPct": 208.52817206893636,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 68.5211220703125,
+          "aws": 68.5211220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 94.248,
+          "aws": 94.248,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 335.8,
+          "aws": 335.8,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 374.055,
+          "aws": 374.055,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 304,
+          "aws": 304,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5187.125,
+          "aws": 12.099999999999998,
+          "deltaPct": 42768.801652892565
+        },
+        "elastiCache": {
+          "kv": 29.2,
+          "aws": 29.2,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 22.9,
+          "aws": 22.9,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 27.059,
+          "deltaPct": -18.548357293322006
+        },
+        "natGateway": {
+          "kv": 48.97,
+          "aws": 48.97,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-southeast-3": {
+      "kvGeneratedAt": "2026-06-28T16:51:03.095Z",
+      "totalMonthlyUsd_kv": 7723.512880070312,
+      "totalMonthlyUsd_aws": 2658.056880070312,
+      "deltaUsd": 5065.456,
+      "deltaPct": 190.56988727291667,
+      "correctionsApplied": 123,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 558.45,
+          "deltaPct": -17.647058823529413
+        },
+        "elb": {
+          "kv": 68.5211220703125,
+          "aws": 68.5211220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 96.048,
+          "aws": 96.048,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 335.8,
+          "aws": 335.8,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 387.855,
+          "aws": 387.855,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5187.125,
+          "aws": 12.099999999999998,
+          "deltaPct": 42768.801652892565
+        },
+        "elastiCache": {
+          "kv": 36.5,
+          "aws": 36.5,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 24.700000000000003,
+          "aws": 24.700000000000003,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 27.059,
+          "deltaPct": -18.548357293322006
+        },
+        "natGateway": {
+          "kv": 48.97,
+          "aws": 48.97,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ap-southeast-4": {
+      "kvGeneratedAt": "2026-06-28T16:56:02.942Z",
+      "totalMonthlyUsd_kv": 7746.408880070311,
+      "totalMonthlyUsd_aws": 2582.4028800703127,
+      "deltaUsd": 5164.0059999999985,
+      "deltaPct": 199.96903038844948,
+      "correctionsApplied": 123,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 68.5211220703125,
+          "aws": 68.5211220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 94.248,
+          "aws": 94.248,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 335.8,
+          "aws": 335.8,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 392.451,
+          "aws": 392.451,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5187.125,
+          "aws": 12.099999999999998,
+          "deltaPct": 42768.801652892565
+        },
+        "elastiCache": {
+          "kv": 58.4,
+          "aws": 58.4,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 22.9,
+          "aws": 22.9,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 27.059,
+          "deltaPct": -18.548357293322006
+        },
+        "natGateway": {
+          "kv": 48.97,
+          "aws": 48.97,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "ca-central-1": {
+      "kvGeneratedAt": "2026-06-28T15:26:03.087Z",
+      "totalMonthlyUsd_kv": 2258.453892277344,
+      "totalMonthlyUsd_aws": 2263.657892277344,
+      "deltaUsd": -5.204000000000178,
+      "deltaPct": -0.22989339589493865,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 73.24163427734375,
+          "aws": 73.24163427734375,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 82.024,
+          "aws": 82.024,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 307.33000000000004,
+          "aws": 307.33000000000004,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 302.437,
+          "aws": 302.437,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 216.4,
+          "aws": 216.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 11.6875,
+          "aws": 11.6875,
+          "deltaPct": 0
+        },
+        "elastiCache": {
+          "kv": 27.74,
+          "aws": 27.74,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.5,
+          "aws": 20.5,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 24.244,
+          "deltaPct": -9.090909090909093
+        },
+        "natGateway": {
+          "kv": 41.5,
+          "aws": 41.5,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-central-1": {
+      "kvGeneratedAt": "2026-06-28T15:46:03.073Z",
+      "totalMonthlyUsd_kv": 3879.3423800703135,
+      "totalMonthlyUsd_aws": 2331.562380070313,
+      "deltaUsd": 1547.7800000000007,
+      "deltaPct": 66.38381255548154,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 486.18000000000006,
+          "deltaPct": -5.405405405405411
+        },
+        "elb": {
+          "kv": 69.83512207031251,
+          "aws": 69.83512207031251,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 84.792,
+          "aws": 84.792,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 324.85,
+          "aws": 324.85,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 324.89900000000006,
+          "aws": 324.89900000000006,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 216.4,
+          "aws": 216.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1597.4625,
+          "aws": 12.9875,
+          "deltaPct": 12200
+        },
+        "elastiCache": {
+          "kv": 21.9,
+          "aws": 21.9,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.45,
+          "aws": 20.45,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 26.455,
+          "deltaPct": -16.68871668871669
+        },
+        "natGateway": {
+          "kv": 43.160000000000004,
+          "aws": 43.160000000000004,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-central-2": {
+      "kvGeneratedAt": "2026-06-28T15:51:03.087Z",
+      "totalMonthlyUsd_kv": 6920.198150277343,
+      "totalMonthlyUsd_aws": 2659.3321502773447,
+      "deltaUsd": 4260.865999999998,
+      "deltaPct": 160.22315977173548,
+      "correctionsApplied": 121,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 534.7980000000001,
+          "deltaPct": -14.004914004914019
+        },
+        "elb": {
+          "kv": 76.81863427734375,
+          "aws": 76.81863427734375,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 92.94,
+          "aws": 92.94,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 351.13,
+          "aws": 351.13,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 262.255516,
+          "aws": 262.255516,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 368.6890000000001,
+          "aws": 368.6890000000001,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 4370.095,
+          "aws": 14.270000000000001,
+          "deltaPct": 30524.351786965657
+        },
+        "elastiCache": {
+          "kv": 30.514,
+          "aws": 30.514,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.7,
+          "aws": 20.7,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 43,
+          "deltaPct": -30.23255813953488
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 29.101000000000003,
+          "deltaPct": -24.263771004432847
+        },
+        "natGateway": {
+          "kv": 47.476,
+          "aws": 47.476,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-north-1": {
+      "kvGeneratedAt": "2026-06-28T15:56:03.017Z",
+      "totalMonthlyUsd_kv": 3763.682623966797,
+      "totalMonthlyUsd_aws": 2366.7966239667976,
+      "deltaUsd": 1396.8859999999995,
+      "deltaPct": 59.020111227756914,
+      "correctionsApplied": 123,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 65.06586596679688,
+          "aws": 65.06586596679688,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 77.08800000000001,
+          "aws": 77.08800000000001,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 296.38,
+          "aws": 296.38,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 287.94,
+          "aws": 287.94,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1410.0749999999998,
+          "aws": 11.420000000000002,
+          "deltaPct": 12247.416812609452
+        },
+        "elastiCache": {
+          "kv": 30.66,
+          "aws": 30.66,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.3,
+          "aws": 20.3,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 30,
+          "deltaPct": 0
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 23.808999999999997,
+          "deltaPct": -7.429963459196095
+        },
+        "natGateway": {
+          "kv": 38.18,
+          "aws": 38.18,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-south-1": {
+      "kvGeneratedAt": "2026-06-28T16:01:03.031Z",
+      "totalMonthlyUsd_kv": 7898.4695061738275,
+      "totalMonthlyUsd_aws": 2548.1005061738283,
+      "deltaUsd": 5350.368999999999,
+      "deltaPct": 209.97480229043225,
+      "correctionsApplied": 123,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 483.552,
+          "deltaPct": -4.891304347826083
+        },
+        "elb": {
+          "kv": 71.97637817382812,
+          "aws": 71.97637817382812,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 84.478,
+          "aws": 84.478,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 318.28,
+          "aws": 318.28,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 278.641128,
+          "aws": 278.641128,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 330.13400000000007,
+          "aws": 330.13400000000007,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5409.68,
+          "aws": 12.615000000000002,
+          "deltaPct": 42782.9171621086
+        },
+        "elastiCache": {
+          "kv": 43.8,
+          "aws": 43.8,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.4,
+          "aws": 20.4,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 39.083999999999996,
+          "deltaPct": -43.60863780575171
+        },
+        "natGateway": {
+          "kv": 41.5,
+          "aws": 41.5,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-south-2": {
+      "kvGeneratedAt": "2026-06-28T16:06:03.199Z",
+      "totalMonthlyUsd_kv": 3875.2218800703135,
+      "totalMonthlyUsd_aws": 2412.5818800703137,
+      "deltaUsd": 1462.6399999999999,
+      "deltaPct": 60.62550714164245,
+      "correctionsApplied": 121,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 68.5211220703125,
+          "aws": 68.5211220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 80.85600000000001,
+          "aws": 80.85600000000001,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 307.33000000000004,
+          "aws": 307.33000000000004,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 313.50100000000003,
+          "aws": 313.50100000000003,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1480.6000000000001,
+          "aws": 12.014999999999999,
+          "deltaPct": 12222.92967124428
+        },
+        "elastiCache": {
+          "kv": 26.279999999999998,
+          "aws": 26.279999999999998,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.3,
+          "aws": 20.3,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 24.985,
+          "deltaPct": -11.787072243346008
+        },
+        "natGateway": {
+          "kv": 39.839999999999996,
+          "aws": 39.839999999999996,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-west-1": {
+      "kvGeneratedAt": "2026-06-28T15:31:03.116Z",
+      "totalMonthlyUsd_kv": 5915.207880070312,
+      "totalMonthlyUsd_aws": 2249.677880070313,
+      "deltaUsd": 3665.529999999999,
+      "deltaPct": 162.93577104849487,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 68.5211220703125,
+          "aws": 68.5211220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 80.85600000000001,
+          "aws": 80.85600000000001,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 307.33000000000004,
+          "aws": 307.33000000000004,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 302.437,
+          "aws": 302.437,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 216.4,
+          "aws": 216.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 3683.49,
+          "aws": 12.014999999999999,
+          "deltaPct": 30557.42821473159
+        },
+        "elastiCache": {
+          "kv": 20.44,
+          "aws": 20.44,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.3,
+          "aws": 20.3,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 24.985,
+          "deltaPct": -11.787072243346008
+        },
+        "natGateway": {
+          "kv": 39.839999999999996,
+          "aws": 39.839999999999996,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-west-2": {
+      "kvGeneratedAt": "2026-06-28T15:36:03.054Z",
+      "totalMonthlyUsd_kv": 2278.161136173829,
+      "totalMonthlyUsd_aws": 2284.0696361738287,
+      "deltaUsd": -5.908499999999549,
+      "deltaPct": -0.2586830062632067,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 71.97637817382812,
+          "aws": 71.97637817382812,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 83.47999999999999,
+          "aws": 83.47999999999999,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 316.09000000000003,
+          "aws": 316.09000000000003,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 316.83400000000006,
+          "aws": 316.83400000000006,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 216.4,
+          "aws": 216.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 13.987,
+          "aws": 12.6285,
+          "deltaPct": 10.757413786277066
+        },
+        "elastiCache": {
+          "kv": 21.9,
+          "aws": 21.9,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.4,
+          "aws": 20.4,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 26.307,
+          "deltaPct": -16.22001748584027
+        },
+        "natGateway": {
+          "kv": 41.5,
+          "aws": 41.5,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "eu-west-3": {
+      "kvGeneratedAt": "2026-06-28T15:41:03.054Z",
+      "totalMonthlyUsd_kv": 2292.2926361738287,
+      "totalMonthlyUsd_aws": 2299.5596361738285,
+      "deltaUsd": -7.266999999999825,
+      "deltaPct": -0.31601702715965124,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 71.97637817382812,
+          "aws": 71.97637817382812,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 83.47999999999999,
+          "aws": 83.47999999999999,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 318.28,
+          "aws": 318.28,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 330.13400000000007,
+          "aws": 330.13400000000007,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 216.4,
+          "aws": 216.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 12.6285,
+          "aws": 12.6285,
+          "deltaPct": 0
+        },
+        "elastiCache": {
+          "kv": 21.9,
+          "aws": 21.9,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.4,
+          "aws": 20.4,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 26.307,
+          "deltaPct": -16.22001748584027
+        },
+        "natGateway": {
+          "kv": 41.5,
+          "aws": 41.5,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "me-central-1": {
+      "kvGeneratedAt": "2026-06-28T17:06:03.042Z",
+      "totalMonthlyUsd_kv": 8207.058020329101,
+      "totalMonthlyUsd_aws": 2610.4245203291016,
+      "deltaUsd": 5596.6335,
+      "deltaPct": 214.39553055126913,
+      "correctionsApplied": 122,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 505.89000000000004,
+          "deltaPct": -9.090909090909092
+        },
+        "elb": {
+          "kv": 76.97676232910155,
+          "aws": 76.97676232910155,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 90.02699999999999,
+          "aws": 90.02699999999999,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 331.41999999999996,
+          "aws": 331.41999999999996,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 295.89375800000005,
+          "aws": 295.89375800000005,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 332.83400000000006,
+          "aws": 332.83400000000006,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 5667.2825,
+          "aws": 13.215,
+          "deltaPct": 42785.22512296633
+        },
+        "elastiCache": {
+          "kv": 46.72,
+          "aws": 46.72,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 22.5,
+          "aws": 22.5,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 27.484,
+          "deltaPct": -19.807888225876884
+        },
+        "natGateway": {
+          "kv": 43.824,
+          "aws": 43.824,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "me-south-1": {
+      "kvGeneratedAt": "2026-06-28T17:01:03.021Z",
+      "totalMonthlyUsd_kv": 6593.574892277343,
+      "totalMonthlyUsd_aws": 2612.3838922773443,
+      "deltaUsd": 3981.1909999999984,
+      "deltaPct": 152.39685912047932,
+      "correctionsApplied": 121,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 505.89000000000004,
+          "deltaPct": -9.090909090909092
+        },
+        "elb": {
+          "kv": 75.35863427734375,
+          "aws": 75.35863427734375,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 90.72699999999999,
+          "aws": 90.72699999999999,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 331.41999999999996,
+          "aws": 331.41999999999996,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 295.89375800000005,
+          "aws": 295.89375800000005,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 346.694,
+          "aws": 346.694,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 4051.8374999999996,
+          "aws": 13.2125,
+          "deltaPct": 30566.698202459786
+        },
+        "elastiCache": {
+          "kv": 35.04,
+          "aws": 35.04,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 23.200000000000003,
+          "aws": 23.200000000000003,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 36,
+          "deltaPct": -16.666666666666664
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 27.484,
+          "deltaPct": -19.807888225876884
+        },
+        "natGateway": {
+          "kv": 43.824,
+          "aws": 43.824,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "sa-east-1": {
+      "kvGeneratedAt": "2026-06-28T17:11:03.134Z",
+      "totalMonthlyUsd_kv": 9524.395800846678,
+      "totalMonthlyUsd_aws": 2853.54830084668,
+      "deltaUsd": 6670.847499999998,
+      "deltaPct": 233.77377204446415,
+      "correctionsApplied": 123,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 558.45,
+          "deltaPct": -17.647058823529413
+        },
+        "elb": {
+          "kv": 93.74204284667968,
+          "aws": 93.74204284667968,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 122.232,
+          "aws": 122.232,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 408.07,
+          "aws": 408.07,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 376.023,
+          "aws": 376.023,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 362.4,
+          "aws": 362.4,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 6834.375,
+          "aws": 15.9375,
+          "deltaPct": 42782.35294117647
+        },
+        "elastiCache": {
+          "kv": 46.72,
+          "aws": 46.72,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 28.05,
+          "aws": 28.05,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 56.99999999999999,
+          "deltaPct": -47.36842105263157
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 44.08,
+          "deltaPct": -50
+        },
+        "natGateway": {
+          "kv": 77.19,
+          "aws": 77.19,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "us-east-1": {
+      "kvGeneratedAt": "2026-06-28T15:06:03.575Z",
+      "totalMonthlyUsd_kv": 3459.7278800703134,
+      "totalMonthlyUsd_aws": 2160.977880070313,
+      "deltaUsd": 1298.7500000000005,
+      "deltaPct": 60.10010615924224,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 66.5501220703125,
+          "aws": 66.5501220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 74.536,
+          "aws": 74.536,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 283.24,
+          "aws": 283.24,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 285.14300000000003,
+          "aws": 285.14300000000003,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 187.2,
+          "aws": 187.2,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 1309.375,
+          "aws": 10.625,
+          "deltaPct": 12223.529411764706
+        },
+        "elastiCache": {
+          "kv": 20.44,
+          "aws": 20.44,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.3,
+          "aws": 20.3,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 30,
+          "deltaPct": 0
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 22.04,
+          "deltaPct": 0
+        },
+        "natGateway": {
+          "kv": 37.35,
+          "aws": 37.35,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "us-east-2": {
+      "kvGeneratedAt": "2026-06-28T15:11:03.145Z",
+      "totalMonthlyUsd_kv": 6695.1028800703125,
+      "totalMonthlyUsd_aws": 2149.477880070313,
+      "deltaUsd": 4545.625,
+      "deltaPct": 211.47577475192745,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 66.5501220703125,
+          "aws": 66.5501220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 74.536,
+          "aws": 74.536,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 283.24,
+          "aws": 283.24,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 273.64300000000003,
+          "aws": 273.64300000000003,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 187.2,
+          "aws": 187.2,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 4556.25,
+          "aws": 10.625,
+          "deltaPct": 42782.35294117647
+        },
+        "elastiCache": {
+          "kv": 20.44,
+          "aws": 20.44,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.3,
+          "aws": 20.3,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 30,
+          "deltaPct": 0
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 22.04,
+          "deltaPct": 0
+        },
+        "natGateway": {
+          "kv": 37.35,
+          "aws": 37.35,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "us-west-1": {
+      "kvGeneratedAt": "2026-06-28T15:16:03.143Z",
+      "totalMonthlyUsd_kv": 5928.020880070312,
+      "totalMonthlyUsd_aws": 2314.212880070313,
+      "deltaUsd": 3613.807999999999,
+      "deltaPct": 156.1571120410582,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 68.5211220703125,
+          "aws": 68.5211220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 87.176,
+          "aws": 87.176,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 318.28,
+          "aws": 318.28,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 312.735,
+          "aws": 312.735,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 245.6,
+          "aws": 245.6,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 3633.395,
+          "aws": 11.870000000000001,
+          "deltaPct": 30509.89890480202
+        },
+        "elastiCache": {
+          "kv": 26.279999999999998,
+          "aws": 26.279999999999998,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.6,
+          "aws": 20.6,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 33,
+          "deltaPct": -9.090909090909092
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 26.757,
+          "deltaPct": -17.629031655267788
+        },
+        "natGateway": {
+          "kv": 39.839999999999996,
+          "aws": 39.839999999999996,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    },
+    "us-west-2": {
+      "kvGeneratedAt": "2026-06-28T15:21:03.093Z",
+      "totalMonthlyUsd_kv": 2165.3578800703126,
+      "totalMonthlyUsd_aws": 2165.3578800703126,
+      "deltaUsd": 0,
+      "deltaPct": 0,
+      "correctionsApplied": 124,
+      "applyFailures": [],
+      "perNode": {
+        "client": {
+          "kv": 0,
+          "aws": 0,
+          "deltaPct": 0
+        },
+        "route53": {
+          "kv": 52.56,
+          "aws": 52.56,
+          "deltaPct": 0
+        },
+        "cloudfront": {
+          "kv": 121.4,
+          "aws": 121.4,
+          "deltaPct": 0
+        },
+        "waf": {
+          "kv": 88.84,
+          "aws": 88.84,
+          "deltaPct": 0
+        },
+        "apiGateway": {
+          "kv": 459.90000000000003,
+          "aws": 459.90000000000003,
+          "deltaPct": 0
+        },
+        "elb": {
+          "kv": 66.5501220703125,
+          "aws": 66.5501220703125,
+          "deltaPct": 0
+        },
+        "autoScalingGroup": {
+          "kv": 74.536,
+          "aws": 74.536,
+          "deltaPct": 0
+        },
+        "eks": {
+          "kv": 283.24,
+          "aws": 283.24,
+          "deltaPct": 0
+        },
+        "lambda": {
+          "kv": 238.41375800000003,
+          "aws": 238.41375800000003,
+          "deltaPct": 0
+        },
+        "rds": {
+          "kv": 285.14300000000003,
+          "aws": 285.14300000000003,
+          "deltaPct": 0
+        },
+        "aurora": {
+          "kv": 187.2,
+          "aws": 187.2,
+          "deltaPct": 0
+        },
+        "dynamoDb": {
+          "kv": 10.625,
+          "aws": 10.625,
+          "deltaPct": 0
+        },
+        "elastiCache": {
+          "kv": 24.82,
+          "aws": 24.82,
+          "deltaPct": 0
+        },
+        "s3": {
+          "kv": 20.3,
+          "aws": 20.3,
+          "deltaPct": 0
+        },
+        "efs": {
+          "kv": 30,
+          "aws": 30,
+          "deltaPct": 0
+        },
+        "sqs": {
+          "kv": 52.160000000000004,
+          "aws": 52.160000000000004,
+          "deltaPct": 0
+        },
+        "sns": {
+          "kv": 65.74000000000001,
+          "aws": 65.74000000000001,
+          "deltaPct": 0
+        },
+        "kinesis": {
+          "kv": 22.04,
+          "aws": 22.04,
+          "deltaPct": 0
+        },
+        "natGateway": {
+          "kv": 37.35,
+          "aws": 37.35,
+          "deltaPct": 0
+        },
+        "vpc": {
+          "kv": 7.3,
+          "aws": 7.3,
+          "deltaPct": 0
+        },
+        "cloudWatch": {
+          "kv": 2.8,
+          "aws": 2.8,
+          "deltaPct": 0
+        },
+        "kms": {
+          "kv": 7.9399999999999995,
+          "aws": 7.9399999999999995,
+          "deltaPct": 0
+        },
+        "ecr": {
+          "kv": 9.5,
+          "aws": 9.5,
+          "deltaPct": 0
+        },
+        "secretsManager": {
+          "kv": 7,
+          "aws": 7,
+          "deltaPct": 0
+        },
+        "cloudTrail": {
+          "kv": 10,
+          "aws": 10,
+          "deltaPct": 0
+        }
+      }
+    }
+  }
+}

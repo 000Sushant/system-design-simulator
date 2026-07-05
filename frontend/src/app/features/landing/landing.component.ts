@@ -1,5 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnInit,
+  Output,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { SimulationCanvasComponent } from '../canvas animation/simulation-canvas.component';
 import { ThemeService } from '../../core/services/theme.service';
 import { environment } from '../../../environments/environment';
@@ -7,11 +14,13 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, SimulationCanvasComponent],
+  imports: [SimulationCanvasComponent],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css'],
 })
 export class LandingComponent implements OnInit {
+  private themeService = inject(ThemeService);
+
   @Output() launch = new EventEmitter<'developer' | 'architect' | undefined>();
   @ViewChild('shell', { static: true }) shellRef!: ElementRef<HTMLElement>;
 
@@ -75,8 +84,6 @@ export class LandingComponent implements OnInit {
       html_url: 'https://github.com/harsh-dwivedi',
     },
   ];
-
-  constructor(private themeService: ThemeService) { }
 
   get isDarkMode(): boolean {
     return this.themeService.isDark;

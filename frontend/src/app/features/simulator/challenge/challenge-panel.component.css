@@ -2,13 +2,13 @@
   display: block;
   font-size: 13px;
   line-height: 1.5;
-  color: #0f172a;
+  color: var(--c-slate-900);
   --line: #e7e9ee;
   --line-strong: #d6d9e0;
   --muted: #6b7280;
   --faint: #9aa1ad;
   --accent: #4f46e5;
-  --surface: #ffffff;
+  --surface: var(--c-white);
 }
 
 .challenge-hub,
@@ -33,7 +33,7 @@
 .accent-amber,
 .accent-yellow,
 .accent-gold {
-  color: #d97706;
+  color: var(--c-amber);
 }
 
 .accent-sky {
@@ -41,7 +41,7 @@
 }
 
 .accent-violet {
-  color: #7c3aed;
+  color: var(--c-violet);
 }
 
 /* ===================== HUB ===================== */
@@ -78,7 +78,7 @@
   flex-shrink: 0;
   color: #fff;
   font-size: 13px;
-  background: #0f172a;
+  background: var(--c-slate-900);
 }
 
 .hub-head h2 {
@@ -86,7 +86,7 @@
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #0f172a;
+  color: var(--c-slate-900);
 }
 
 .hub-head p {
@@ -115,13 +115,13 @@
   border-radius: 7px;
   background:
     linear-gradient(145deg,
-      rgba(255, 255, 255, 0.95),
-      rgba(255, 255, 255, 0.55)),
+      var(--c-white-95),
+      var(--c-white-55)),
     rgba(255, 255, 255, 0.62);
   border: 1px solid var(--indicator-border, rgba(124, 58, 237, 0.28));
   box-shadow:
-    0 8px 22px var(--indicator-shadow, rgba(124, 58, 237, 0.08)),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
+    0 8px 22px var(--indicator-shadow, var(--c-violet-08)),
+    inset 0 1.5px 2px var(--c-white-95);
   pointer-events: none;
   z-index: 0;
   transition:
@@ -173,7 +173,7 @@
 }
 
 .tab-btn:hover {
-  color: #0f172a;
+  color: var(--c-slate-900);
 }
 
 .tab-count {
@@ -181,21 +181,21 @@
   font-weight: 700;
   padding: 0 5px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.06);
+  background: var(--c-s900-06);
   color: var(--faint);
   transition: background 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tab-btn.active {
-  color: #0f172a;
+  color: var(--c-slate-900);
 }
 
 .tab-btn.tab-easy.active i {
-  color: #059669;
+  color: var(--c-emerald-600);
 }
 
 .tab-btn.tab-medium.active i {
-  color: #d97706;
+  color: var(--c-amber);
 }
 
 .tab-btn.tab-hard.active i {
@@ -203,13 +203,13 @@
 }
 
 .tab-btn.tab-easy.active .tab-count {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
+  background: var(--c-emerald-10a);
+  color: var(--c-emerald-600);
 }
 
 .tab-btn.tab-medium.active .tab-count {
   background: rgba(245, 158, 11, 0.1);
-  color: #d97706;
+  color: var(--c-amber);
 }
 
 .tab-btn.tab-hard.active .tab-count {
@@ -248,11 +248,11 @@
   bottom: 11px;
   width: 2px;
   border-radius: 2px;
-  background: var(--dot, #cbd5e1);
+  background: var(--dot, var(--c-slate-300));
 }
 
 .challenge-card.diff-easy {
-  --dot: #10b981;
+  --dot: var(--c-emerald);
 }
 
 .challenge-card.diff-medium {
@@ -271,9 +271,9 @@
   flex-shrink: 0;
   border-radius: 8px;
   font-size: 13px;
-  color: var(--dot, #475569);
-  background: color-mix(in srgb, var(--dot, #475569) 12%, #fff);
-  border: 1px solid color-mix(in srgb, var(--dot, #475569) 28%, var(--line));
+  color: var(--dot, var(--c-slate-600));
+  background: color-mix(in srgb, var(--dot, var(--c-slate-600)) 12%, #fff);
+  border: 1px solid color-mix(in srgb, var(--dot, var(--c-slate-600)) 28%, var(--line));
 }
 
 .card-body {
@@ -287,7 +287,7 @@
 .card-title {
   font-size: 12.5px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--c-slate-900);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -302,19 +302,6 @@
 /* Same border on the chips inside hub challenge cards: a faint tint of each chip's own color */
 .card-meta ::ng-deep .cat-chip {
   border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
-}
-
-.card-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10.5px;
-  font-weight: 400;
-  color: var(--faint);
-}
-
-.card-time i {
-  font-size: 9px;
 }
 
 /* Vote controls */
@@ -359,7 +346,7 @@
 }
 
 .vote-btn.up:hover {
-  color: #059669;
+  color: var(--c-emerald-600);
 }
 
 .vote-btn.down:hover {
@@ -367,7 +354,7 @@
 }
 
 .vote-btn.up.on {
-  color: #059669;
+  color: var(--c-emerald-600);
   border-color: #bbe7d2;
   background: #f2fbf6;
 }
@@ -386,7 +373,7 @@
 
 .state-arrow {
   font-size: 11px;
-  color: #cbd5e1;
+  color: var(--c-slate-300);
   transition: transform 0.13s ease, color 0.13s ease;
 }
 
@@ -396,7 +383,7 @@
   gap: 3px;
   font-size: 10px;
   font-weight: 700;
-  color: #059669;
+  color: var(--c-emerald-600);
   background: rgba(16, 185, 129, 0.08);
   padding: 1px 5px;
   border-radius: 5px;
@@ -495,7 +482,7 @@
   border-radius: 8px;
   border: 1px solid var(--line);
   background: #fff;
-  color: #475569;
+  color: var(--c-slate-600);
   font-size: 11px;
   cursor: pointer;
   transition: border-color 0.13s ease, color 0.13s ease;
@@ -515,7 +502,7 @@
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #0f172a;
+  color: var(--c-slate-900);
 }
 
 .active-meta-row {
@@ -535,7 +522,7 @@
   padding: 2px 7px;
   border-radius: 5px;
   border: 1px solid var(--line);
-  color: #475569;
+  color: var(--c-slate-600);
 }
 
 .difficulty-tag i {
@@ -543,13 +530,13 @@
 }
 
 .difficulty-tag.diff-easy {
-  color: #059669;
+  color: var(--c-emerald-600);
   border-color: #bbe7d2;
   background: #f2fbf6;
 }
 
 .difficulty-tag.diff-medium {
-  color: #d97706;
+  color: var(--c-amber);
   border-color: #f6e0b3;
   background: #fffaf0;
 }
@@ -638,7 +625,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #475569;
+  color: var(--c-slate-600);
 }
 
 .block-header-row {
@@ -661,12 +648,12 @@
   gap: 8px;
   padding: 3px 0;
   font-size: 12px;
-  color: #475569;
+  color: var(--c-slate-600);
   line-height: 1.45;
 }
 
 .check-icon {
-  color: #10b981;
+  color: var(--c-emerald);
   margin-top: 1px;
   font-size: 11px;
 }
@@ -681,11 +668,11 @@
 .ms-count {
   font-size: 12px;
   font-weight: 700;
-  color: #059669;
+  color: var(--c-emerald-600);
 }
 
 .ms-count small {
-  color: #cbd5e1;
+  color: var(--c-slate-300);
   font-weight: 600;
 }
 
@@ -700,7 +687,7 @@
 .progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: #10b981;
+  background: var(--c-emerald);
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -716,14 +703,14 @@
 }
 
 .ms-check {
-  color: #cbd5e1;
+  color: var(--c-slate-300);
   font-size: 14px;
   line-height: 1.25;
   flex-shrink: 0;
 }
 
 .milestone-row.done .ms-check {
-  color: #10b981;
+  color: var(--c-emerald);
 }
 
 .ms-content {
@@ -735,7 +722,7 @@
 .ms-label {
   font-size: 12px;
   font-weight: 500;
-  color: #475569;
+  color: var(--c-slate-600);
 }
 
 .milestone-row.done .ms-label {
@@ -784,7 +771,7 @@
 
 .hint-title i {
   font-size: 10px;
-  color: #d97706;
+  color: var(--c-amber);
 }
 
 .hint-body {
@@ -815,15 +802,6 @@
 
 .btn-hint:hover {
   background: #fef9ec;
-}
-
-.hint-pill {
-  font-size: 9.5px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: #f6e6bf;
-  color: #b45309;
 }
 
 /* Actions */
@@ -920,7 +898,7 @@
 }
 
 .review-panel.passed .score-ring {
-  --ring: #10b981;
+  --ring: var(--c-emerald);
 }
 
 .score-inner {
@@ -960,7 +938,7 @@
 .score-status strong {
   font-size: 12.5px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--c-slate-900);
 }
 
 .review-panel.passed .score-status strong {
@@ -1004,15 +982,15 @@
 }
 
 .finding-card.sev-pass .finding-icon {
-  color: #10b981;
+  color: var(--c-emerald);
 }
 
 .finding-card.sev-warn .finding-icon {
-  color: #d97706;
+  color: var(--c-amber);
 }
 
 .finding-card.sev-fail .finding-icon {
-  color: #ef4444;
+  color: var(--c-red);
 }
 
 .finding-info {
@@ -1060,7 +1038,7 @@
 .completion-feedback {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px dashed var(--line-strong, #cbd5e1);
+  border-top: 1px dashed var(--line-strong, var(--c-slate-300));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1089,7 +1067,7 @@
 
 .feedback-prompt-header .reward-icon {
   font-size: 14px;
-  color: #d97706; /* gold trophy */
+  color: var(--c-amber); /* gold trophy */
   animation: bounceBadge 2.2s infinite ease-in-out;
 }
 
@@ -1105,13 +1083,13 @@
   background: #f8fafc;
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--c-slate-100);
 }
 
 .vote-label {
   font-size: 11px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--c-slate-500);
 }
 
 .vote-buttons-row {
@@ -1128,19 +1106,19 @@
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
-  background: #ffffff;
+  background: var(--c-white);
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-  color: #475569;
+  color: var(--c-slate-600);
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .completion-vote-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-  border-color: #cbd5e1;
+  background: var(--c-slate-100);
+  color: var(--c-slate-900);
+  border-color: var(--c-slate-300);
   transform: translateY(-1px);
 }
 
@@ -1150,9 +1128,9 @@
 
 /* Upvote Active: Celebratory Emerald Green */
 .completion-vote-btn.up.active {
-  background: rgba(16, 185, 129, 0.1) !important;
+  background: var(--c-emerald-10a) !important;
   border-color: rgba(16, 185, 129, 0.4) !important;
-  color: #059669 !important;
+  color: var(--c-emerald-600) !important;
   box-shadow: 0 4px 10px rgba(16, 185, 129, 0.08);
 }
 
@@ -1176,7 +1154,7 @@
 
 .cta-note {
   font-size: 11.5px;
-  color: #475569;
+  color: var(--c-slate-600);
   line-height: 1.45;
   margin: 0;
 }
@@ -1197,15 +1175,15 @@
   padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid rgba(217, 119, 6, 0.35);
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #ffffff;
+  background: linear-gradient(135deg, #f59e0b, var(--c-amber));
+  color: var(--c-white);
   font-size: 12px;
   font-weight: 750;
   text-decoration: none;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
   box-shadow:
     0 4px 12px rgba(217, 119, 6, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 var(--c-white-20);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1215,7 +1193,7 @@
   transform: translateY(-1px);
   box-shadow:
     0 6px 16px rgba(217, 119, 6, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 var(--c-white-20);
 }
 
 .cta-btn.testimonial:active {
@@ -1233,14 +1211,14 @@
   border-radius: 8px;
   border: 1px solid rgba(2, 132, 199, 0.35);
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: #ffffff;
+  color: var(--c-white);
   font-size: 12px;
   font-weight: 750;
   text-decoration: none;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
   box-shadow:
     0 4px 12px rgba(2, 132, 199, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 var(--c-white-20);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1250,7 +1228,7 @@
   transform: translateY(-1px);
   box-shadow:
     0 6px 16px rgba(2, 132, 199, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 var(--c-white-20);
 }
 
 .cta-btn.bug-report:active {
@@ -1261,7 +1239,7 @@
 .cta-btn.bug-link,
 .cta-btn.testimonial-link {
   font-size: 11px;
-  color: #64748b;
+  color: var(--c-slate-500);
   font-weight: 650;
   text-decoration: none;
   cursor: pointer;
@@ -1271,7 +1249,7 @@
 
 .cta-btn.bug-link:hover,
 .cta-btn.testimonial-link:hover {
-  color: #0f172a;
+  color: var(--c-slate-900);
   text-decoration: underline;
 }
 
@@ -1320,23 +1298,6 @@
 }
 
 /* Bonus Tag & Secret Milestone styles */
-.bonus-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 9px;
-  font-weight: 700;
-  color: #d97706; /* amber/gold */
-  background: rgba(217, 119, 6, 0.06);
-  padding: 1.5px 5.5px;
-  border-radius: 999px;
-  border: 1px solid rgba(217, 119, 6, 0.12);
-}
-
-.bonus-tag i {
-  font-size: 8px;
-}
-
 .hidden-milestones-unlocked {
   margin-top: 14px;
   padding-top: 12px;
@@ -1375,7 +1336,7 @@
 }
 
 .hidden-ms-row .ms-check i {
-  color: #d97706;
+  color: var(--c-amber);
 }
 
 .hidden-ms-row .ms-label {
@@ -1402,7 +1363,7 @@
 }
 
 .text-gold {
-  color: #d97706 !important;
+  color: var(--c-amber) !important;
 }
 
 /* Gold Bonus styling for scores > 100% */
@@ -1413,7 +1374,7 @@
 }
 
 .score-ring.gold-ring {
-  --ring: #d97706;
+  --ring: var(--c-amber);
 }
 
 .score-num.gold-text {
@@ -1423,12 +1384,6 @@
 .review-panel.gold-bonus {
   border-color: #fef08a;
   background: #fffdf9;
-}
-
-.bonus-count {
-  color: #d97706;
-  font-weight: 800;
-  font-size: 11px;
 }
 
 /* ───── Post-completion solution walkthrough ───── */
@@ -1476,7 +1431,7 @@
   margin: 0;
   font-size: 12.5px;
   line-height: 1.55;
-  color: #475569;
+  color: var(--c-slate-600);
 }
 
 .solution-body h5 {
@@ -1485,7 +1440,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #7c3aed;
+  color: var(--c-violet);
 }
 
 .req-row {
@@ -1511,13 +1466,13 @@
 .req-row strong {
   font-size: 12px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--c-slate-800);
 }
 
 .req-row span {
   font-size: 11.5px;
   line-height: 1.5;
-  color: #64748b;
+  color: var(--c-slate-500);
 }
 
 .svc-row {
@@ -1539,8 +1494,8 @@
   border-radius: 9px;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--svc-color, #7c3aed) 12%, #ffffff);
-  border: 1px solid color-mix(in srgb, var(--svc-color, #7c3aed) 22%, transparent);
+  background: color-mix(in srgb, var(--svc-color, var(--c-violet)) 12%, var(--c-white));
+  border: 1px solid color-mix(in srgb, var(--svc-color, var(--c-violet)) 22%, transparent);
 }
 
 .svc-icon img {
@@ -1559,19 +1514,19 @@
 .svc-text strong {
   font-size: 12.5px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--c-slate-800);
 }
 
 .svc-role {
   font-size: 11.5px;
   line-height: 1.45;
-  color: #475569;
+  color: var(--c-slate-600);
 }
 
 .svc-why {
   font-size: 11px;
   line-height: 1.45;
-  color: #7c3aed;
+  color: var(--c-violet);
 }
 
 .svc-why .fa-circle-info {
@@ -1585,27 +1540,27 @@
    surfaces / dark ink. Saturated accent colors (green/amber/rose/blue) are
    left as-is — they read fine on the dark panel. */
 :host-context(.dark) {
-  --line: rgba(255, 255, 255, 0.08);
+  --line: var(--c-white-08);
   --line-strong: rgba(255, 255, 255, 0.16);
-  --muted: #94a3b8;
-  --faint: #64748b;
-  --surface: rgba(15, 23, 42, 0.5);
+  --muted: var(--c-slate-400);
+  --faint: var(--c-slate-500);
+  --surface: var(--c-s900-50);
   color: #e2e8f0;
 }
 
 /* Hub header */
 :host-context(.dark) .hub-badge {
   background: #334155;
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 :host-context(.dark) .hub-head h2 {
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 /* Segmented difficulty tabs */
 :host-context(.dark) .diff-tabs {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--c-s900-60);
 }
 
 :host-context(.dark) .active-indicator {
@@ -1616,34 +1571,34 @@
     rgba(30, 41, 59, 0.7);
   box-shadow:
     0 8px 22px var(--indicator-shadow, rgba(124, 58, 237, 0.25)),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.08);
+    inset 0 1.5px 2px var(--c-white-08);
 }
 
 :host-context(.dark) .tab-btn:hover,
 :host-context(.dark) .tab-btn.active {
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 :host-context(.dark) .tab-count {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--c-white-08);
 }
 
 /* Challenge cards */
 :host-context(.dark) .card-icon {
-  background: color-mix(in srgb, var(--dot, #475569) 18%, #0f172a);
-  border-color: color-mix(in srgb, var(--dot, #475569) 30%, var(--line));
+  background: color-mix(in srgb, var(--dot, var(--c-slate-600)) 18%, var(--c-slate-900));
+  border-color: color-mix(in srgb, var(--dot, var(--c-slate-600)) 30%, var(--line));
 }
 
 :host-context(.dark) .card-title {
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 :host-context(.dark) .challenge-card:not(.locked):hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--c-white-04);
 }
 
 :host-context(.dark) .vote-btn {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--c-white-04);
 }
 
 :host-context(.dark) .vote-btn.up.on {
@@ -1657,8 +1612,8 @@
 }
 
 :host-context(.dark) .btn-ghost {
-  background: rgba(255, 255, 255, 0.04);
-  color: #cbd5e1;
+  background: var(--c-white-04);
+  color: var(--c-slate-300);
 }
 
 :host-context(.dark) .btn-ghost:hover {
@@ -1667,16 +1622,16 @@
 
 /* Active challenge view */
 :host-context(.dark) .btn-back {
-  background: rgba(255, 255, 255, 0.04);
-  color: #cbd5e1;
+  background: var(--c-white-04);
+  color: var(--c-slate-300);
 }
 
 :host-context(.dark) .active-title {
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 :host-context(.dark) .difficulty-tag {
-  color: #cbd5e1;
+  color: var(--c-slate-300);
 }
 
 :host-context(.dark) .difficulty-tag.diff-easy {
@@ -1695,7 +1650,7 @@
 }
 
 :host-context(.dark) .problem-card {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--c-s900-50);
 }
 
 :host-context(.dark) .challenge-problem,
@@ -1705,25 +1660,25 @@
 :host-context(.dark) .ms-label,
 :host-context(.dark) .finding-msg,
 :host-context(.dark) .cta-note {
-  color: #cbd5e1;
+  color: var(--c-slate-300);
 }
 
 :host-context(.dark) .info-block {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--c-s900-50);
 }
 
 :host-context(.dark) .block-header,
 :host-context(.dark) .block-header-row {
-  color: #94a3b8;
+  color: var(--c-slate-400);
 }
 
 /* Milestones */
 :host-context(.dark) .progress-track {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--c-white-08);
 }
 
 :host-context(.dark) .milestone-row {
-  border-bottom-color: rgba(255, 255, 255, 0.06);
+  border-bottom-color: var(--c-white-06);
 }
 
 /* Hints */
@@ -1738,7 +1693,7 @@
 }
 
 :host-context(.dark) .hint-body {
-  color: #cbd5e1;
+  color: var(--c-slate-300);
 }
 
 :host-context(.dark) .hint-pill {
@@ -1747,7 +1702,7 @@
 
 /* Action buttons */
 :host-context(.dark) .btn-reference {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--c-white-04);
 }
 
 :host-context(.dark) .btn-reference:hover {
@@ -1756,28 +1711,28 @@
 
 /* Review / score */
 :host-context(.dark) .review-panel {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--c-s900-50);
 }
 
 :host-context(.dark) .review-panel.passed {
   background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: var(--c-emerald-30a);
 }
 
 :host-context(.dark) .score-ring {
-  background: conic-gradient(var(--ring) var(--pct, 0deg), rgba(255, 255, 255, 0.1) 0);
+  background: conic-gradient(var(--ring) var(--pct, 0deg), var(--c-white-10) 0);
 }
 
 :host-context(.dark) .score-inner {
-  background: #0f172a;
+  background: var(--c-slate-900);
 }
 
 :host-context(.dark) .score-status strong {
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 :host-context(.dark) .finding-card.sev-pass {
-  background: rgba(16, 185, 129, 0.1);
+  background: var(--c-emerald-10a);
   border-color: rgba(16, 185, 129, 0.28);
 }
 
@@ -1792,30 +1747,30 @@
 }
 
 :host-context(.dark) .finding-fix {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-white-05);
 }
 
 /* Completion feedback / voting */
 :host-context(.dark) .feedback-vote-container {
-  background: rgba(15, 23, 42, 0.5);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--c-s900-50);
+  border-color: var(--c-white-08);
 }
 
 :host-context(.dark) .completion-vote-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  background: var(--c-white-04);
+  border-color: var(--c-white-10);
+  color: var(--c-slate-300);
 }
 
 :host-context(.dark) .completion-vote-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--c-white-08);
+  color: var(--c-slate-100);
+  border-color: var(--c-white-20);
 }
 
 :host-context(.dark) .cta-btn.bug-link:hover,
 :host-context(.dark) .cta-btn.testimonial-link:hover {
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 /* Bonus / hidden milestones */
@@ -1835,34 +1790,34 @@
 
 /* Solution walkthrough */
 :host-context(.dark) .solution-explainer {
-  background: rgba(124, 58, 237, 0.1);
+  background: var(--c-violet-10a);
   border-color: rgba(124, 58, 237, 0.3);
 }
 
 :host-context(.dark) .solution-toggle {
-  color: #a78bfa;
+  color: var(--c-violet-300);
 }
 
 :host-context(.dark) .solution-summary,
 :host-context(.dark) .svc-role {
-  color: #cbd5e1;
+  color: var(--c-slate-300);
 }
 
 :host-context(.dark) .req-row strong,
 :host-context(.dark) .svc-text strong {
-  color: #f1f5f9;
+  color: var(--c-slate-100);
 }
 
 :host-context(.dark) .svc-icon {
-  background: color-mix(in srgb, var(--svc-color, #7c3aed) 18%, #0f172a);
+  background: color-mix(in srgb, var(--svc-color, var(--c-violet)) 18%, var(--c-slate-900));
 }
 
 :host-context(.dark) .svc-row {
-  border-top-color: rgba(255, 255, 255, 0.06);
+  border-top-color: var(--c-white-06);
 }
 
 :host-context(.dark) .svc-why {
-  color: #a78bfa;
+  color: var(--c-violet-300);
 }
 
 

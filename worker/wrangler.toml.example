@@ -42,6 +42,16 @@ crons = ["*/5 * * * *"]
 #   wrangler secret put AWS_ACCESS_KEY_ID
 #   wrangler secret put AWS_SECRET_ACCESS_KEY
 #
+# Admin auth — required to use POST /trigger, /reset, /start. When unset, those
+# endpoints return 503 (disabled). Generate a strong random value, e.g.:
+#   openssl rand -hex 32 | wrangler secret put ADMIN_TOKEN
+# Then call: curl -X POST -H "Authorization: Bearer <token>" .../trigger
+#
+# CORS allowlist for /votes and /stats (browser origins, comma-separated).
+# Defaults to the production site + http://localhost:4200 when unset. Set as a
+# plain var (not a secret), e.g. in the [vars] block below:
+#   ALLOWED_ORIGINS = "https://srarchitect.qzz.io,http://localhost:4200"
+#
 # Live stats (optional — /stats serves zeros until all three are set):
 #   wrangler secret put GITHUB_TOKEN   # PAT with repo (push) access, for traffic/clones
 #   wrangler secret put CF_API_TOKEN   # token with Analytics:Read on the zone

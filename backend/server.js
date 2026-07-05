@@ -16,19 +16,8 @@ const fs      = require('fs');
 const path    = require('path');
 const { SUPPORTED_REGIONS } = require('./regions');
 
-// ── Load credentials from .dev.vars (local dev only) ────────────────────────
-const devVarsPath = path.join(__dirname, '.dev.vars');
-if (fs.existsSync(devVarsPath)) {
-  try {
-    const envConfig = dotenv.parse(fs.readFileSync(devVarsPath));
-    for (const k in envConfig) process.env[k] = envConfig[k];
-    console.log('[server] Loaded local credentials from .dev.vars');
-  } catch (e) {
-    console.error('[server] Failed to parse .dev.vars:', e);
-  }
-} else {
-  dotenv.config();
-}
+// ── Load credentials from .env (local dev only) ─────────────────────────────
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const app  = express();
@@ -91,7 +80,7 @@ async function getPricingFromKV(regionCode) {
 
   // 2. Validate CF credentials are configured
   if (!isKVConfigured()) {
-    console.warn('[server] ⚠️  Cloudflare KV credentials not configured or placeholder in .dev.vars.');
+    console.warn('[server] ⚠️  Cloudflare KV credentials not configured or placeholder in .env.');
     return null;
   }
 

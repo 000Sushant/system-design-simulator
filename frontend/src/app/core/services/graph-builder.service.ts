@@ -19,6 +19,7 @@ export interface BuiltGraph {
  */
 @Injectable({ providedIn: 'root' })
 export class GraphBuilderService {
+  // Constructor DI (not inject()) so unit tests can construct with `new`.
   constructor(
     private readonly factory: ArchitectureFactoryService,
     private readonly validation: ValidationRuleService,
@@ -53,7 +54,13 @@ export class GraphBuilderService {
           targetPorts.map((targetPort) => ({
             sourcePort,
             targetPort,
-            result: this.validation.validate(sourceNode, sourcePort, targetNode, targetPort, connections),
+            result: this.validation.validate(
+              sourceNode,
+              sourcePort,
+              targetNode,
+              targetPort,
+              connections,
+            ),
           })),
         )
         .find((candidate) => candidate.result.allowed);
