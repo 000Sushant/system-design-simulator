@@ -7,6 +7,9 @@
   [class.sim-running]="mode === 'running'"
   [class.selection-mode]="ctrlPressed"
   [class.developer-mode]="roleMode === 'developer'"
+  [class.is-resizing]="isResizingLeft || isResizingRight"
+  [style.--palette-width]="(leftCollapsed ? 44 : paletteWidth) + 'px'"
+  [style.--inspector-width]="(rightCollapsed ? 44 : inspectorWidth) + 'px'"
 >
   <header class="toolbar" (mousemove)="onMouseMove($event)">
     <div class="brand">
@@ -229,6 +232,9 @@
       >
         {{ leftCollapsed ? '›' : '‹' }}
       </button>
+      @if (!leftCollapsed) {
+        <div class="sidebar-resizer left-resizer" (mousedown)="startResizeLeft($event)" aria-hidden="true"></div>
+      }
       <div class="sidebar-content">
         <div class="panel-heading">
           <div style="display: flex; align-items: center; gap: 8px">
@@ -699,6 +705,9 @@
       >
         {{ rightCollapsed ? '‹' : '›' }}
       </button>
+      @if (!rightCollapsed) {
+        <div class="sidebar-resizer right-resizer" (mousedown)="startResizeRight($event)" aria-hidden="true"></div>
+      }
       @if (loadingRegionCost) {
         <div class="region-cost-loader">
           <div class="loader-spinner"></div>

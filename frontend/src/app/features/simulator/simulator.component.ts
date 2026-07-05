@@ -915,6 +915,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   paletteSearch = '';
   leftCollapsed = false;
   rightCollapsed = false;
+  paletteWidth = window.innerWidth <= 1180 ? 260 : 312;
+  inspectorWidth = window.innerWidth <= 1180 ? 320 : 372;
+  isResizingLeft = false;
+  isResizingRight = false;
+  private startX = 0;
+  private startWidth = 0;
+  private readonly MIN_PALETTE_WIDTH = 220;
+  private readonly MAX_PALETTE_WIDTH = 550;
+  private readonly MIN_INSPECTOR_WIDTH = 280;
+  private readonly MAX_INSPECTOR_WIDTH = 650;
   collapsedCategories = new Set<string>();
   nodes: ArchitectureNode[] = [];
   connections: ArchitectureConnection[] = [];
@@ -1257,6 +1267,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopResizeLeft();
+    this.stopResizeRight();
     this.snapshotSubscription?.unsubscribe();
     this.unsupportedRegionSubscription?.unsubscribe();
     this.challengeSubscription?.unsubscribe();
@@ -2841,6 +2853,58 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.leftCollapsed = true;
     }
   }
+
+  startResizeLeft(event: MouseEvent): void {
+    if (this.isMobileViewport) return;
+    event.preventDefault();
+    this.isResizingLeft = true;
+    this.startX = event.clientX;
+    this.startWidth = this.paletteWidth;
+    document.addEventListener('mousemove', this.onResizeLeft);
+    document.addEventListener('mouseup', this.stopResizeLeft);
+  }
+
+  private onResizeLeft = (event: MouseEvent): void => {
+    if (!this.isResizingLeft) return;
+    const deltaX = event.clientX - this.startX;
+    let newWidth = this.startWidth + deltaX;
+    if (newWidth < this.MIN_PALETTE_WIDTH) newWidth = this.MIN_PALETTE_WIDTH;
+    if (newWidth > this.MAX_PALETTE_WIDTH) newWidth = this.MAX_PALETTE_WIDTH;
+    this.paletteWidth = newWidth;
+    window.dispatchEvent(new Event('resize'));
+  };
+
+  private stopResizeLeft = (): void => {
+    this.isResizingLeft = false;
+    document.removeEventListener('mousemove', this.onResizeLeft);
+    document.removeEventListener('mouseup', this.stopResizeLeft);
+  };
+
+  startResizeRight(event: MouseEvent): void {
+    if (this.isMobileViewport) return;
+    event.preventDefault();
+    this.isResizingRight = true;
+    this.startX = event.clientX;
+    this.startWidth = this.inspectorWidth;
+    document.addEventListener('mousemove', this.onResizeRight);
+    document.addEventListener('mouseup', this.stopResizeRight);
+  }
+
+  private onResizeRight = (event: MouseEvent): void => {
+    if (!this.isResizingRight) return;
+    const deltaX = this.startX - event.clientX;
+    let newWidth = this.startWidth + deltaX;
+    if (newWidth < this.MIN_INSPECTOR_WIDTH) newWidth = this.MIN_INSPECTOR_WIDTH;
+    if (newWidth > this.MAX_INSPECTOR_WIDTH) newWidth = this.MAX_INSPECTOR_WIDTH;
+    this.inspectorWidth = newWidth;
+    window.dispatchEvent(new Event('resize'));
+  };
+
+  private stopResizeRight = (): void => {
+    this.isResizingRight = false;
+    document.removeEventListener('mousemove', this.onResizeRight);
+    document.removeEventListener('mouseup', this.stopResizeRight);
+  };
 
   toggleCategory(category: string): void {
     const next = new Set(this.collapsedCategories);

@@ -6889,3 +6889,66 @@ small {
   }
 }
 
+/* Disable transitions during drag resizing for butter-smooth 60fps tracking */
+.app-shell.is-resizing .workspace {
+  transition: none !important;
+}
+
+/* Sidebar Resizer handles */
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 100;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.left-resizer {
+  right: -4px;
+}
+
+.right-resizer {
+  left: -4px;
+}
+
+/* Hover and active states */
+.sidebar-resizer:hover,
+.app-shell.is-resizing .sidebar-resizer {
+  background: rgba(79, 70, 229, 0.04);
+}
+
+.sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.left-resizer::after {
+  right: 3px;
+}
+
+.right-resizer::after {
+  left: 3px;
+}
+
+.sidebar-resizer:hover::after,
+.app-shell.is-resizing .sidebar-resizer::after {
+  background: rgba(79, 70, 229, 0.4);
+}
+
+:host-context(.dark) .sidebar-resizer:hover,
+:host-context(.dark) .app-shell.is-resizing .sidebar-resizer {
+  background: rgba(167, 139, 250, 0.04);
+}
+
+:host-context(.dark) .sidebar-resizer:hover::after,
+:host-context(.dark) .app-shell.is-resizing .sidebar-resizer::after {
+  background: rgba(167, 139, 250, 0.5);
+}

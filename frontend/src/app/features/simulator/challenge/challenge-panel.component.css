@@ -1597,6 +1597,14 @@
   background: var(--c-white-04);
 }
 
+:host-context(.dark) .challenge-card.completed {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+:host-context(.dark) .challenge-card.completed:not(.locked):hover {
+  border-color: rgba(16, 185, 129, 0.55);
+}
+
 :host-context(.dark) .vote-btn {
   background: var(--c-white-04);
 }
