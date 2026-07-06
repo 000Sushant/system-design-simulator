@@ -3,6 +3,8 @@ import { CostService } from './cost.service';
 import { AwsCatalogService } from './aws-catalog.service';
 import { ArchitectureFactoryService } from './architecture-factory.service';
 import { ArchitectureNode, AwsServiceType, Currency } from '../models/architecture.model';
+import * as serviceCostModelData from '../data/service-cost-model.json';
+import * as usEast1Data from '../data/regions/us-east-1.json';
 
 const catalog = new AwsCatalogService();
 const allServiceTypes: AwsServiceType[] = catalog.services.map((s) => s.type);
@@ -67,6 +69,46 @@ describe('CostService', () => {
     const breakdown = cost.getCostBreakdown(ec2, 'us-east-1', [ec2]);
     expect(breakdown.total).toBeCloseTo(cost.calculateNodeCostUsd(ec2, 'us-east-1', [ec2]), 5);
     expect(breakdown.lines.length).toBeGreaterThan(0);
+  });
+
+  describe('Bedrock provider/model pricing', () => {
+    const bedrockNode = (config: Record<string, unknown> = {}): ArchitectureNode => {
+      const n = node('bedrock');
+      return { ...n, config: { ...n.config, ...config } as ArchitectureNode['config'] };
+    };
+
+    it('defaults to Anthropic / Claude Sonnet 5 and prices from the catalog', () => {
+      const n = bedrockNode();
+      expect(n.config['provider']).toBe('anthropic');
+      expect(n.config['model']).toBe('claude-sonnet-5');
+      // 10M in × $2.2/M + 2M out × $11/M = $44
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(44, 5);
+    });
+
+    it('prices every model of every provider with its own catalog rate', () => {
+      const bedrockModel = (serviceCostModelData as any).serviceCostModel.bedrock;
+      const baseline = (usEast1Data as any).services.bedrock;
+      const modelParams = bedrockModel.costParams.filter((p: { key: string }) => p.key === 'model');
+      expect(modelParams.length).toBeGreaterThanOrEqual(15); // one per provider
+
+      for (const param of modelParams) {
+        const provider = /'([a-z0-9]+)'/.exec(param.visibleIf)?.[1];
+        for (const opt of param.options) {
+          const n = bedrockNode({ provider, model: opt.value, inTokensM: 1, outTokensM: 1 });
+          const expected = baseline.inM[opt.value] + baseline.outM[opt.value];
+          expect(expected, `${opt.value} missing from baseline`).toBeGreaterThan(0);
+          expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n]), opt.value).toBeCloseTo(expected, 5);
+        }
+      }
+    });
+
+    it('still prices architectures saved before the provider/model split', () => {
+      // Legacy configs carry model keys like "claude-haiku" and no provider.
+      const n = bedrockNode({ model: 'claude-haiku', inTokensM: 10, outTokensM: 2 });
+      delete (n.config as Record<string, unknown>)['provider'];
+      // 10M × $0.25/M + 2M × $1.25/M = $5
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(5, 5);
+    });
   });
 
   // Broad net over the entire per-service cost switch (~70 cases). This guards

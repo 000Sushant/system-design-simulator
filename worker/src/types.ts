@@ -40,8 +40,18 @@ export interface WorkerProgress {
   cooldownUntil?: number;
   /** Total regions processed in the current weekly run */
   completedCount?: number;
+  /** Build phase (0-based) within the current region; see PHASE_COUNT */
+  phase?: number;
 }
 
 export interface RawPriceResult {
   PriceList?: string[];
+  NextToken?: string;
 }
+
+/**
+ * Standard-tier on-demand token rates for Bedrock models, keyed by the
+ * identifier used in the source offer (model attribute name, or marketplace
+ * servicename). Unit ($/1K or $/1M tokens) depends on the source offer.
+ */
+export type BedrockTokenRates = Record<string, { in?: number; out?: number }>;

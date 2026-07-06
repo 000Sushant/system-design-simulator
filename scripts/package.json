@@ -2,6 +2,9 @@
   "name": "validate-pricing-script",
   "private": true,
   "type": "module",
+  "scripts": {
+    "validate:pricing": "node --env-file=.env validate-pricing.mjs"
+  },
   "dependencies": {
     "@aws-sdk/client-pricing": "^3.0.0"
   }

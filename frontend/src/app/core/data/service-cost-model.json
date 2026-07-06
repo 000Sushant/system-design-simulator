@@ -578,6 +578,42 @@
             {
               "value": "r6g",
               "label": "Memory Optimized ARM (r6g)"
+            },
+            {
+              "value": "m7g",
+              "label": "General Purpose ARM (m7g)"
+            },
+            {
+              "value": "m7i",
+              "label": "General Purpose (m7i)"
+            },
+            {
+              "value": "c7g",
+              "label": "Compute Optimized ARM (c7g)"
+            },
+            {
+              "value": "r7g",
+              "label": "Memory Optimized ARM (r7g)"
+            },
+            {
+              "value": "m8g",
+              "label": "General Purpose ARM (m8g)"
+            },
+            {
+              "value": "i4i",
+              "label": "Storage Optimized (i4i)"
+            },
+            {
+              "value": "g4dn",
+              "label": "GPU Instance (g4dn)"
+            },
+            {
+              "value": "g5",
+              "label": "GPU Instance (g5)"
+            },
+            {
+              "value": "g6",
+              "label": "GPU Instance (g6)"
             }
           ],
           "notes": "Defines the hardware profile: t3=burstable/cheap, m5=general purpose, c5=compute-optimized, r5=memory-optimized. Choose based on workload characteristics."
@@ -616,6 +652,14 @@
             {
               "value": "4xlarge",
               "label": "4xlarge"
+            },
+            {
+              "value": "12xlarge",
+              "label": "12xlarge"
+            },
+            {
+              "value": "48xlarge",
+              "label": "48xlarge"
             }
           ],
           "notes": "Scales vCPU and RAM within the chosen family. Larger sizes cost proportionally more. Match to your actual CPU/memory requirements."
@@ -820,6 +864,22 @@
             {
               "value": "glacier",
               "label": "Glacier Flexible"
+            },
+            {
+              "value": "onezone-ia",
+              "label": "S3 One Zone-IA"
+            },
+            {
+              "value": "glacier-instant",
+              "label": "Glacier Instant Retrieval"
+            },
+            {
+              "value": "deep-archive",
+              "label": "Glacier Deep Archive"
+            },
+            {
+              "value": "express-onezone",
+              "label": "Express One Zone"
             }
           ],
           "notes": "Determines retrieval speed, availability SLA, and cost tier. Standard is instant-access; SIA and Glacier trade retrieval time for lower storage costs."
@@ -1418,7 +1478,44 @@
           "type": "boolean",
           "default": false,
           "group": "networking",
-          "notes": "Multi-region active-active replication. Enables low-latency reads and writes worldwide, but multiplies WCU consumption by the number of replica regions."
+          "notes": "Multi-region active-active replication. Enables low-latency reads and writes worldwide."
+        },
+        {
+          "key": "replicaRegions",
+          "label": "Replica Regions Count",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 10,
+          "group": "networking",
+          "visibleIf": "config.globalTables === true",
+          "notes": "Number of remote replica regions. Write operations are replicated to each region, multiplying write costs."
+        },
+        {
+          "key": "pitrEnabled",
+          "label": "Enable Point-in-Time Recovery",
+          "type": "boolean",
+          "default": false,
+          "group": "storage",
+          "notes": "Enables continuous backups. Billed at ~$0.20 per GB of table storage per month."
+        },
+        {
+          "key": "backupStorageGB",
+          "label": "Backup Storage (GB)",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 100000,
+          "group": "storage",
+          "notes": "On-demand backups stored, in GB. Billed at ~$0.10 per GB per month."
+        },
+        {
+          "key": "streamsEnabled",
+          "label": "Enable DynamoDB Streams",
+          "type": "boolean",
+          "default": false,
+          "group": "compute",
+          "notes": "Enables DynamoDB Streams to capture table changes. Reads are billed at ~$0.02 per 100,000 requests (after free tier)."
         },
         {
           "key": "itemSizeKB",
@@ -1526,12 +1623,28 @@
               "label": "PostgreSQL"
             },
             {
-              "value": "sqlserver-ex",
-              "label": "SQL Server Express"
+              "value": "mariadb",
+              "label": "MariaDB"
+            },
+            {
+              "value": "sqlserver-web",
+              "label": "SQL Server Web Edition"
+            },
+            {
+              "value": "sqlserver-se",
+              "label": "SQL Server Standard Edition"
+            },
+            {
+              "value": "sqlserver-ee",
+              "label": "SQL Server Enterprise Edition"
             },
             {
               "value": "oracle-se2",
               "label": "Oracle SE2"
+            },
+            {
+              "value": "oracle-ee",
+              "label": "Oracle EE"
             }
           ],
           "notes": "The database engine. PostgreSQL and MySQL are open-source and cheapest. Oracle and SQL Server require commercial licenses which add significant cost multipliers."
@@ -1548,16 +1661,32 @@
               "label": "db.t3.medium"
             },
             {
+              "value": "db.t4g.medium",
+              "label": "db.t4g.medium (ARM)"
+            },
+            {
               "value": "db.m5.large",
               "label": "db.m5.large"
+            },
+            {
+              "value": "db.m7g.large",
+              "label": "db.m7g.large (ARM)"
             },
             {
               "value": "db.r5.large",
               "label": "db.r5.large"
             },
             {
+              "value": "db.r7g.large",
+              "label": "db.r7g.large (ARM)"
+            },
+            {
               "value": "db.r6g.large",
               "label": "db.r6g.large (ARM)"
+            },
+            {
+              "value": "db.m6i.large",
+              "label": "db.m6i.large"
             }
           ],
           "notes": "The RDS instance type. Larger instances provide more vCPU, RAM, and network bandwidth. db.t3 is burstable; db.m5/r5 are steady-state workload instances."
@@ -1680,6 +1809,18 @@
       ],
       "costParams": [
         {
+          "key": "deploymentMode",
+          "label": "Deployment Mode",
+          "type": "enum",
+          "default": "node-based",
+          "group": "compute",
+          "options": [
+            { "value": "node-based", "label": "Node-Based" },
+            { "value": "serverless", "label": "Serverless" }
+          ],
+          "notes": "Node-Based provides dedicated instances billed hourly; Serverless scales automatically based on capacity (GB-hr) and request operations (ECPU)."
+        },
+        {
           "key": "engine",
           "label": "Engine",
           "type": "enum",
@@ -1691,11 +1832,15 @@
               "label": "Redis"
             },
             {
+              "value": "valkey",
+              "label": "Valkey"
+            },
+            {
               "value": "memcached",
               "label": "Memcached"
             }
           ],
-          "notes": "Cache engine. Redis adds replication and persistence; Memcached is simpler multi-threaded caching. Pricing is per node-hour and similar across engines."
+          "notes": "Cache engine. Valkey is AWS's recommended default open-source engine, priced ~20% cheaper than Redis node-for-node."
         },
         {
           "key": "nodeType",
@@ -1703,6 +1848,7 @@
           "type": "enum",
           "default": "cache.t3.micro",
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "options": [
             {
               "value": "cache.t3.micro",
@@ -1713,15 +1859,27 @@
               "label": "cache.t3.medium"
             },
             {
+              "value": "cache.t4g.medium",
+              "label": "cache.t4g.medium (ARM)"
+            },
+            {
               "value": "cache.m5.large",
               "label": "cache.m5.large"
             },
             {
+              "value": "cache.m7g.large",
+              "label": "cache.m7g.large (ARM)"
+            },
+            {
               "value": "cache.r6g.large",
               "label": "cache.r6g.large (ARM)"
+            },
+            {
+              "value": "cache.r7g.large",
+              "label": "cache.r7g.large (ARM)"
             }
           ],
-          "notes": "Cache node size (CPU + RAM). Match to your working dataset: too small causes evictions and cache misses; too large wastes money."
+          "notes": "Cache node size (CPU + RAM). Match to your working dataset."
         },
         {
           "key": "count",
@@ -1731,7 +1889,8 @@
           "min": 1,
           "max": 500,
           "group": "compute",
-          "notes": "Number of cache nodes in the cluster. More nodes give higher throughput and availability (cluster mode), each billed at the per-node hourly rate."
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
+          "notes": "Number of cache nodes in the cluster. More nodes give higher throughput and availability."
         },
         {
           "key": "dataTiering",
@@ -1739,7 +1898,30 @@
           "type": "boolean",
           "default": false,
           "group": "storage",
-          "notes": "Extends usable cache capacity to SSD, allowing datasets larger than available RAM. Adds a cost premium but cheaper than equivalently-sized all-RAM nodes."
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
+          "notes": "Extends usable cache capacity to SSD, allowing datasets larger than available RAM."
+        },
+        {
+          "key": "serverlessStorageGB",
+          "label": "Serverless Storage (GB)",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 5000,
+          "group": "storage",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Storage capacity for serverless cache, in GB. Valkey is ~33% cheaper than Redis."
+        },
+        {
+          "key": "serverlessEcpuM",
+          "label": "Serverless ECPUs / Month (M)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "ElastiCache Processing Units consumed per month, in millions."
         }
       ],
       "costEvaluation": {
@@ -2616,6 +2798,42 @@
             {
               "value": "r6g",
               "label": "Memory Optimized ARM (r6g)"
+            },
+            {
+              "value": "m7g",
+              "label": "General Purpose ARM (m7g)"
+            },
+            {
+              "value": "m7i",
+              "label": "General Purpose (m7i)"
+            },
+            {
+              "value": "c7g",
+              "label": "Compute Optimized ARM (c7g)"
+            },
+            {
+              "value": "r7g",
+              "label": "Memory Optimized ARM (r7g)"
+            },
+            {
+              "value": "m8g",
+              "label": "General Purpose ARM (m8g)"
+            },
+            {
+              "value": "i4i",
+              "label": "Storage Optimized (i4i)"
+            },
+            {
+              "value": "g4dn",
+              "label": "GPU Instance (g4dn)"
+            },
+            {
+              "value": "g5",
+              "label": "GPU Instance (g5)"
+            },
+            {
+              "value": "g6",
+              "label": "GPU Instance (g6)"
             }
           ],
           "notes": "EC2 hardware profile: t3=burstable/cheap, m=general purpose, c=compute-optimized, r=memory-optimized; g-suffix = Graviton (cheaper)."
@@ -2654,6 +2872,14 @@
             {
               "value": "4xlarge",
               "label": "4xlarge"
+            },
+            {
+              "value": "12xlarge",
+              "label": "12xlarge"
+            },
+            {
+              "value": "48xlarge",
+              "label": "48xlarge"
             }
           ],
           "notes": "Scales vCPU and RAM within the family. Each size step roughly doubles both capacity and price."
@@ -3061,12 +3287,24 @@
               "label": "db.t3.medium"
             },
             {
+              "value": "db.t4g.medium",
+              "label": "db.t4g.medium (ARM)"
+            },
+            {
               "value": "db.r5.large",
               "label": "db.r5.large"
             },
             {
               "value": "db.r6g.large",
               "label": "db.r6g.large (ARM)"
+            },
+            {
+              "value": "db.m7g.large",
+              "label": "db.m7g.large (ARM)"
+            },
+            {
+              "value": "db.r7g.large",
+              "label": "db.r7g.large (ARM)"
             }
           ],
           "notes": "Provisioned instance size. Larger classes add vCPU/RAM and cost; r-class is memory-optimized for databases."
@@ -3082,6 +3320,18 @@
           "notes": "Cluster storage in GB, billed at ~$0.10/GB-month. Aurora storage grows automatically as data is written."
         },
         {
+          "key": "storageConfig",
+          "label": "Storage Configuration",
+          "type": "enum",
+          "default": "standard",
+          "group": "storage",
+          "options": [
+            { "value": "standard", "label": "Aurora Standard" },
+            { "value": "io-optimized", "label": "Aurora I/O-Optimized" }
+          ],
+          "notes": "Aurora Standard bills for storage and I/O requests separately; I/O-Optimized has higher instance and storage rates but zero I/O charges."
+        },
+        {
           "key": "ioRequestsM",
           "label": "I/O Requests (Millions)",
           "type": "number",
@@ -3089,6 +3339,7 @@
           "min": 0,
           "max": 100000,
           "group": "storage",
+          "visibleIf": "config.storageConfig === 'standard' || !config.storageConfig",
           "notes": "Storage I/O operations per month, in millions, billed at ~$0.20/million (standard mode; I/O-Optimized removes this charge)."
         }
       ],
@@ -3186,6 +3437,18 @@
       ],
       "costParams": [
         {
+          "key": "capacityMode",
+          "label": "Capacity Mode",
+          "type": "enum",
+          "default": "provisioned",
+          "group": "compute",
+          "options": [
+            { "value": "provisioned", "label": "Provisioned" },
+            { "value": "on-demand", "label": "On-Demand" }
+          ],
+          "notes": "Provisioned mode bills hourly per shard and per PUT payload; On-Demand mode scales automatically and bills per stream-hour and data volume."
+        },
+        {
           "key": "shards",
           "label": "Provisioned Shards",
           "type": "number",
@@ -3193,6 +3456,7 @@
           "min": 1,
           "max": 10000,
           "group": "compute",
+          "visibleIf": "config.capacityMode === 'provisioned' || !config.capacityMode",
           "notes": "Provisioned shards, each providing 1 MB/s ingest and 2 MB/s egress. Billed at ~$0.015 per shard-hour."
         },
         {
@@ -3203,7 +3467,49 @@
           "min": 0,
           "max": 100000,
           "group": "compute",
+          "visibleIf": "config.capacityMode === 'provisioned' || !config.capacityMode",
           "notes": "PUT payload units per month (one per 25 KB written), in millions. Billed at ~$0.014 per million units."
+        },
+        {
+          "key": "ingestGB",
+          "label": "Data Ingested (GB/mo)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'on-demand'",
+          "notes": "Estimated gigabytes of data written to the stream per month. Billed at ~$0.08 per GB."
+        },
+        {
+          "key": "egressGB",
+          "label": "Data Retrieved (GB/mo)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'on-demand'",
+          "notes": "Estimated gigabytes of data read from the stream per month. Billed at ~$0.04 per GB."
+        },
+        {
+          "key": "efoEnabled",
+          "label": "Enable Enhanced Fan-Out",
+          "type": "boolean",
+          "default": false,
+          "group": "compute",
+          "notes": "Dedicated egress throughput per consumer. Adds a per-consumer-shard-hour charge plus per-GB retrieval fees."
+        },
+        {
+          "key": "efoConsumers",
+          "label": "EFO Consumers",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 20,
+          "group": "compute",
+          "visibleIf": "config.efoEnabled === true",
+          "notes": "Number of consumers using Enhanced Fan-Out."
         },
         {
           "key": "retentionDays",
@@ -3265,6 +3571,19 @@
       ],
       "costParams": [
         {
+          "key": "deploymentMode",
+          "label": "Deployment Mode",
+          "type": "enum",
+          "default": "node-based",
+          "group": "compute",
+          "options": [
+            { "value": "node-based", "label": "Node-Based" },
+            { "value": "express", "label": "Express" },
+            { "value": "serverless", "label": "Serverless" }
+          ],
+          "notes": "Node-Based provides dedicated instances billed hourly; Express provides higher throughput and lower latencies; Serverless scales automatically based on capacity."
+        },
+        {
           "key": "brokers",
           "label": "Brokers",
           "type": "number",
@@ -3272,6 +3591,7 @@
           "min": 2,
           "max": 30,
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || config.deploymentMode === 'express' || !config.deploymentMode",
           "notes": "Number of Kafka broker nodes in the cluster. Each is billed at its instance-type hourly rate."
         },
         {
@@ -3280,6 +3600,7 @@
           "type": "enum",
           "default": "kafka.m5.large",
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "options": [
             {
               "value": "kafka.t3.small",
@@ -3288,9 +3609,28 @@
             {
               "value": "kafka.m5.large",
               "label": "kafka.m5.large"
+            },
+            {
+              "value": "kafka.m7g.large",
+              "label": "kafka.m7g.large (ARM)"
             }
           ],
           "notes": "Broker instance type. Larger types add throughput and cost; sized by partitions and traffic."
+        },
+        {
+          "key": "expressInstance",
+          "label": "Express Broker Type",
+          "type": "enum",
+          "default": "express.m7g.large",
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'express'",
+          "options": [
+            {
+              "value": "express.m7g.large",
+              "label": "express.m7g.large (ARM)"
+            }
+          ],
+          "notes": "Express broker instance type."
         },
         {
           "key": "storageGB",
@@ -3300,7 +3640,72 @@
           "min": 1,
           "max": 16384,
           "group": "storage",
+          "visibleIf": "config.deploymentMode === 'node-based' || config.deploymentMode === 'express' || !config.deploymentMode",
           "notes": "EBS storage provisioned per broker, in GB, billed monthly per GB."
+        },
+        {
+          "key": "tieredStorageEnabled",
+          "label": "Enable Tiered Storage",
+          "type": "boolean",
+          "default": false,
+          "group": "storage",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
+          "notes": "Enables tiered storage to offload older log data to S3, reducing cost."
+        },
+        {
+          "key": "tieredStorageGB",
+          "label": "Tiered Storage (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "storage",
+          "visibleIf": "config.tieredStorageEnabled === true && (config.deploymentMode === 'node-based' || !config.deploymentMode)",
+          "notes": "Storage allocated for tiered data, in GB."
+        },
+        {
+          "key": "serverlessPartitions",
+          "label": "Serverless Partitions",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Number of active partitions for serverless MSK."
+        },
+        {
+          "key": "serverlessStorageGB",
+          "label": "Serverless Storage (GB)",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 10000,
+          "group": "storage",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Serverless data storage capacity."
+        },
+        {
+          "key": "serverlessIngestGB",
+          "label": "Serverless Ingest (GB/mo)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Total gigabytes of data written per month."
+        },
+        {
+          "key": "serverlessEgressGB",
+          "label": "Serverless Egress (GB/mo)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Total gigabytes of data read per month."
         }
       ],
       "costEvaluation": {
@@ -3924,6 +4329,18 @@
       ],
       "costParams": [
         {
+          "key": "deploymentMode",
+          "label": "Deployment Mode",
+          "type": "enum",
+          "default": "node-based",
+          "group": "compute",
+          "options": [
+            { "value": "node-based", "label": "Node-Based" },
+            { "value": "serverless", "label": "Serverless" }
+          ],
+          "notes": "Node-Based domain runs fixed data nodes; Serverless auto-scales capacity based on OpenSearch Compute Units (OCUs)."
+        },
+        {
           "key": "nodes",
           "label": "Data Nodes",
           "type": "number",
@@ -3931,6 +4348,7 @@
           "min": 1,
           "max": 200,
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "notes": "Number of data nodes in the domain. Each is billed at its instance-type hourly rate."
         },
         {
@@ -3939,6 +4357,7 @@
           "type": "enum",
           "default": "r6g.large",
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "options": [
             {
               "value": "t3.medium",
@@ -3963,7 +4382,61 @@
           "min": 10,
           "max": 300000,
           "group": "storage",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "notes": "EBS storage attached per node, in GB, billed monthly per GB."
+        },
+        {
+          "key": "ultraWarmEnabled",
+          "label": "Enable UltraWarm Storage",
+          "type": "boolean",
+          "default": false,
+          "group": "storage",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
+          "notes": "Enables UltraWarm storage tier for log data, using low-cost S3 backup storage."
+        },
+        {
+          "key": "ultraWarmNodes",
+          "label": "UltraWarm Nodes",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 100,
+          "group": "storage",
+          "visibleIf": "config.ultraWarmEnabled === true && (config.deploymentMode === 'node-based' || !config.deploymentMode)",
+          "notes": "Number of UltraWarm nodes."
+        },
+        {
+          "key": "ultraWarmStorageGB",
+          "label": "UltraWarm Storage (GB)",
+          "type": "number",
+          "default": 500,
+          "min": 10,
+          "max": 1000000,
+          "group": "storage",
+          "visibleIf": "config.ultraWarmEnabled === true && (config.deploymentMode === 'node-based' || !config.deploymentMode)",
+          "notes": "Total warm tier storage size in GB."
+        },
+        {
+          "key": "serverlessOcus",
+          "label": "Serverless OCUs",
+          "type": "number",
+          "default": 4,
+          "min": 2,
+          "max": 200,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Capacity allocated in OpenSearch Compute Units. High-availability requires at least 4 OCUs."
+        },
+        {
+          "key": "serverlessStorageGB",
+          "label": "Serverless Storage (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 10,
+          "max": 100000,
+          "group": "storage",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Total serverless storage allocated, in GB."
         }
       ],
       "costEvaluation": {
@@ -4054,12 +4527,20 @@
           "visibleIf": "config.type === 'provisioned' || !config.type",
           "options": [
             {
+              "value": "ra3.large",
+              "label": "ra3.large"
+            },
+            {
               "value": "ra3.xlplus",
               "label": "ra3.xlplus"
             },
             {
               "value": "ra3.4xlarge",
               "label": "ra3.4xlarge"
+            },
+            {
+              "value": "ra3.16xlarge",
+              "label": "ra3.16xlarge"
             }
           ],
           "notes": "Node type. ra3 separates compute from managed storage; larger nodes add vCPU/RAM."
@@ -4164,6 +4645,18 @@
       "primaryParams": [],
       "costParams": [
         {
+          "key": "deploymentMode",
+          "label": "Deployment Mode",
+          "type": "enum",
+          "default": "node-based",
+          "group": "compute",
+          "options": [
+            { "value": "node-based", "label": "Node-Based" },
+            { "value": "serverless", "label": "Serverless" }
+          ],
+          "notes": "Node-Based domain runs cluster data nodes; Serverless executes queries automatically on elastic virtual server clusters."
+        },
+        {
           "key": "nodes",
           "label": "Cluster Nodes",
           "type": "number",
@@ -4171,6 +4664,7 @@
           "min": 1,
           "max": 1000,
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "notes": "Number of cluster nodes (EC2). Billed at the EC2 instance rate plus a per-node EMR surcharge."
         },
         {
@@ -4179,6 +4673,7 @@
           "type": "enum",
           "default": "m5.xlarge",
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "options": [
             {
               "value": "m5.large",
@@ -4187,6 +4682,10 @@
             {
               "value": "m5.xlarge",
               "label": "m5.xlarge"
+            },
+            {
+              "value": "m7g.xlarge",
+              "label": "m7g.xlarge (ARM)"
             },
             {
               "value": "r5.xlarge",
@@ -4203,7 +4702,41 @@
           "min": 1,
           "max": 730,
           "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
           "notes": "Cluster runtime per month, in hours. EMR bills only while the cluster is running."
+        },
+        {
+          "key": "serverlessCpuHours",
+          "label": "Serverless vCPU Hours",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Compute capacity consumed per month, in vCPU-hours."
+        },
+        {
+          "key": "serverlessMemHours",
+          "label": "Serverless Memory Hours (GB-hr)",
+          "type": "number",
+          "default": 4000,
+          "min": 0,
+          "max": 4000000,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Memory capacity consumed per month, in GB-hours."
+        },
+        {
+          "key": "serverlessStorageHours",
+          "label": "Serverless Storage Hours (GB-hr)",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "group": "storage",
+          "visibleIf": "config.deploymentMode === 'serverless'",
+          "notes": "Ephemeral disk storage consumed per month, in GB-hours."
         }
       ],
       "costEvaluation": {
@@ -4307,14 +4840,28 @@
       ],
       "costParams": [
         {
-          "key": "brokers",
-          "label": "Broker Count",
-          "type": "number",
-          "default": 1,
-          "min": 1,
-          "max": 50,
+          "key": "engine",
+          "label": "Database Engine",
+          "type": "enum",
+          "default": "activemq",
           "group": "compute",
-          "notes": "Number of broker instances. A single-instance broker is cheapest; active/standby doubles cost for high availability."
+          "options": [
+            { "value": "activemq", "label": "ActiveMQ" },
+            { "value": "rabbitmq", "label": "RabbitMQ" }
+          ],
+          "notes": "MQ broker engine. ActiveMQ uses EFS storage; RabbitMQ uses EBS storage."
+        },
+        {
+          "key": "deploymentMode",
+          "label": "Deployment Mode",
+          "type": "enum",
+          "default": "single-instance",
+          "group": "compute",
+          "options": [
+            { "value": "single-instance", "label": "Single Broker" },
+            { "value": "active-standby-multi-az", "label": "Active/Standby (Multi-AZ)" }
+          ],
+          "notes": "Active/Standby doubles the instance hourly cost for ActiveMQ, and RabbitMQ clusters scale up for HA."
         },
         {
           "key": "instance",
@@ -4330,6 +4877,10 @@
             {
               "value": "mq.m5.large",
               "label": "mq.m5.large"
+            },
+            {
+              "value": "mq.m7g.large",
+              "label": "mq.m7g.large (ARM)"
             }
           ],
           "notes": "Broker instance type. Larger types add throughput and connection capacity, billed per instance-hour."
@@ -4342,7 +4893,6 @@
           "min": 1,
           "max": 10000,
           "group": "storage",
-          "costDriver": "ActiveMQ (EFS-backed) storage bills $0.30/GB-month per broker.",
           "notes": "Message store size per broker. Durable/persistent messaging grows this over time."
         }
       ],
@@ -4574,26 +5124,457 @@
       ],
       "costParams": [
         {
-          "key": "model",
-          "label": "Model Tier",
+          "key": "provider",
+          "label": "Model Provider",
           "type": "enum",
-          "default": "claude-haiku",
+          "default": "anthropic",
           "group": "compute",
           "options": [
             {
-              "value": "claude-haiku",
-              "label": "Claude 3 Haiku"
+              "value": "anthropic",
+              "label": "Anthropic"
             },
             {
-              "value": "claude-sonnet",
-              "label": "Claude 3 Sonnet"
+              "value": "amazon",
+              "label": "Amazon"
             },
             {
-              "value": "titan",
-              "label": "Titan Text"
+              "value": "openai",
+              "label": "OpenAI"
+            },
+            {
+              "value": "meta",
+              "label": "Meta"
+            },
+            {
+              "value": "deepseek",
+              "label": "DeepSeek"
+            },
+            {
+              "value": "mistral",
+              "label": "Mistral AI"
+            },
+            {
+              "value": "qwen",
+              "label": "Qwen"
+            },
+            {
+              "value": "google",
+              "label": "Google"
+            },
+            {
+              "value": "cohere",
+              "label": "Cohere"
+            },
+            {
+              "value": "ai21",
+              "label": "AI21 Labs"
+            },
+            {
+              "value": "writer",
+              "label": "Writer"
+            },
+            {
+              "value": "moonshot",
+              "label": "Moonshot AI"
+            },
+            {
+              "value": "minimax",
+              "label": "MiniMax"
+            },
+            {
+              "value": "zai",
+              "label": "Z.ai"
+            },
+            {
+              "value": "nvidia",
+              "label": "NVIDIA"
             }
           ],
-          "notes": "Foundation model tier. Larger/more-capable models cost more per token; pricing differs for input vs. output tokens."
+          "notes": "Foundation-model provider available on Amazon Bedrock. Selecting a provider filters the model list; each model is billed at its own input/output token rate."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'anthropic' || !config.provider",
+          "options": [
+            {
+              "value": "claude-sonnet-5",
+              "label": "Claude Sonnet 5"
+            },
+            {
+              "value": "claude-fable-5",
+              "label": "Claude Fable 5"
+            },
+            {
+              "value": "claude-mythos-5",
+              "label": "Claude Mythos 5"
+            },
+            {
+              "value": "claude-opus-4-8",
+              "label": "Claude Opus 4.8"
+            },
+            {
+              "value": "claude-haiku-4-5",
+              "label": "Claude Haiku 4.5"
+            },
+            {
+              "value": "claude-sonnet-4-6",
+              "label": "Claude Sonnet 4.6"
+            },
+            {
+              "value": "claude-3-7-sonnet",
+              "label": "Claude 3.7 Sonnet"
+            },
+            {
+              "value": "claude-3-5-haiku",
+              "label": "Claude 3.5 Haiku"
+            },
+            {
+              "value": "claude-3-haiku",
+              "label": "Claude 3 Haiku"
+            }
+          ],
+          "notes": "Anthropic models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens.",
+          "default": "claude-sonnet-5"
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'amazon'",
+          "options": [
+            {
+              "value": "nova-2-pro",
+              "label": "Nova 2.0 Pro"
+            },
+            {
+              "value": "nova-2-omni",
+              "label": "Nova 2.0 Omni"
+            },
+            {
+              "value": "nova-2-lite",
+              "label": "Nova 2.0 Lite"
+            },
+            {
+              "value": "nova-premier",
+              "label": "Nova Premier"
+            },
+            {
+              "value": "nova-pro",
+              "label": "Nova Pro"
+            },
+            {
+              "value": "nova-lite",
+              "label": "Nova Lite"
+            },
+            {
+              "value": "nova-micro",
+              "label": "Nova Micro"
+            },
+            {
+              "value": "titan-text-premier",
+              "label": "Titan Text Premier"
+            },
+            {
+              "value": "titan-text-express",
+              "label": "Titan Text Express"
+            },
+            {
+              "value": "titan-text-lite",
+              "label": "Titan Text Lite"
+            }
+          ],
+          "notes": "Amazon models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'openai'",
+          "options": [
+            {
+              "value": "gpt-oss-120b",
+              "label": "GPT-OSS 120B"
+            },
+            {
+              "value": "gpt-oss-20b",
+              "label": "GPT-OSS 20B"
+            }
+          ],
+          "notes": "OpenAI models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'meta'",
+          "options": [
+            {
+              "value": "llama-4-maverick",
+              "label": "Llama 4 Maverick 17B"
+            },
+            {
+              "value": "llama-4-scout",
+              "label": "Llama 4 Scout 17B"
+            },
+            {
+              "value": "llama-3-3-70b",
+              "label": "Llama 3.3 70B"
+            },
+            {
+              "value": "llama-3-2-11b",
+              "label": "Llama 3.2 11B"
+            },
+            {
+              "value": "llama-3-2-3b",
+              "label": "Llama 3.2 3B"
+            },
+            {
+              "value": "llama-3-1-8b",
+              "label": "Llama 3.1 8B"
+            }
+          ],
+          "notes": "Meta models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'deepseek'",
+          "options": [
+            {
+              "value": "deepseek-v3-2",
+              "label": "DeepSeek V3.2"
+            },
+            {
+              "value": "deepseek-r1",
+              "label": "DeepSeek R1"
+            }
+          ],
+          "notes": "DeepSeek models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'mistral'",
+          "options": [
+            {
+              "value": "mistral-large-3",
+              "label": "Mistral Large 3"
+            },
+            {
+              "value": "pixtral-large",
+              "label": "Pixtral Large"
+            },
+            {
+              "value": "mistral-small",
+              "label": "Mistral Small"
+            },
+            {
+              "value": "magistral-small",
+              "label": "Magistral Small 1.2"
+            },
+            {
+              "value": "devstral",
+              "label": "Devstral"
+            },
+            {
+              "value": "ministral-8b",
+              "label": "Ministral 8B"
+            }
+          ],
+          "notes": "Mistral AI models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'qwen'",
+          "options": [
+            {
+              "value": "qwen3-coder-next",
+              "label": "Qwen3 Coder Next"
+            },
+            {
+              "value": "qwen3-vl-235b",
+              "label": "Qwen3 VL 235B"
+            },
+            {
+              "value": "qwen3-coder-30b",
+              "label": "Qwen3 Coder 30B"
+            },
+            {
+              "value": "qwen3-32b",
+              "label": "Qwen3 32B"
+            }
+          ],
+          "notes": "Qwen models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'google'",
+          "options": [
+            {
+              "value": "gemma-3-27b",
+              "label": "Gemma 3 27B"
+            },
+            {
+              "value": "gemma-3-12b",
+              "label": "Gemma 3 12B"
+            },
+            {
+              "value": "gemma-3-4b",
+              "label": "Gemma 3 4B"
+            }
+          ],
+          "notes": "Google models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'cohere'",
+          "options": [
+            {
+              "value": "command-r-plus",
+              "label": "Command R+"
+            },
+            {
+              "value": "command-r",
+              "label": "Command R"
+            }
+          ],
+          "notes": "Cohere models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'ai21'",
+          "options": [
+            {
+              "value": "jamba-1-5-large",
+              "label": "Jamba 1.5 Large"
+            },
+            {
+              "value": "jamba-1-5-mini",
+              "label": "Jamba 1.5 Mini"
+            }
+          ],
+          "notes": "AI21 Labs models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'writer'",
+          "options": [
+            {
+              "value": "palmyra-x5",
+              "label": "Palmyra X5"
+            },
+            {
+              "value": "palmyra-x4",
+              "label": "Palmyra X4"
+            }
+          ],
+          "notes": "Writer models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'moonshot'",
+          "options": [
+            {
+              "value": "kimi-k2-5",
+              "label": "Kimi K2.5"
+            },
+            {
+              "value": "kimi-k2-thinking",
+              "label": "Kimi K2 Thinking"
+            }
+          ],
+          "notes": "Moonshot AI models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'minimax'",
+          "options": [
+            {
+              "value": "minimax-m2-5",
+              "label": "MiniMax M2.5"
+            },
+            {
+              "value": "minimax-m2",
+              "label": "MiniMax M2"
+            }
+          ],
+          "notes": "MiniMax models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'zai'",
+          "options": [
+            {
+              "value": "glm-5",
+              "label": "GLM 5"
+            },
+            {
+              "value": "glm-4-7",
+              "label": "GLM 4.7"
+            },
+            {
+              "value": "glm-4-7-flash",
+              "label": "GLM 4.7 Flash"
+            }
+          ],
+          "notes": "Z.ai models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
+        },
+        {
+          "key": "model",
+          "label": "Model",
+          "type": "enum",
+          "group": "compute",
+          "visibleIf": "config.provider === 'nvidia'",
+          "options": [
+            {
+              "value": "nemotron-3-super",
+              "label": "Nemotron 3 Super 120B"
+            },
+            {
+              "value": "nemotron-nano-3",
+              "label": "Nemotron Nano 3 30B"
+            },
+            {
+              "value": "nemotron-nano-2-vl",
+              "label": "Nemotron Nano 2 VL"
+            }
+          ],
+          "notes": "NVIDIA models served on-demand via Amazon Bedrock. Larger/more-capable models cost more per token; output tokens are billed at a higher rate than input tokens."
         },
         {
           "key": "inTokensM",
@@ -4622,18 +5603,20 @@
           {
             "id": "input",
             "name": "Input Token Ingestion",
-            "formula": "inputM × priceInput",
+            "formula": "inputM × priceInput(provider, model)",
             "variables": [
-              "modelType",
+              "provider",
+              "model",
               "inputTokensMillion"
             ]
           },
           {
             "id": "output",
             "name": "Output Token Generation",
-            "formula": "outputM × priceOutput",
+            "formula": "outputM × priceOutput(provider, model)",
             "variables": [
-              "modelType",
+              "provider",
+              "model",
               "outputTokensMillion"
             ]
           }
@@ -4694,16 +5677,124 @@
           "visibleIf": "config.type === 'instance' || !config.type",
           "options": [
             {
-              "value": "ml.t3.medium",
-              "label": "ml.t3.medium"
-            },
-            {
               "value": "ml.m5.large",
               "label": "ml.m5.large"
             },
             {
-              "value": "ml.p3.2xlarge",
-              "label": "ml.p3.2xlarge (GPU)"
+              "value": "ml.m5.xlarge",
+              "label": "ml.m5.xlarge"
+            },
+            {
+              "value": "ml.m5.2xlarge",
+              "label": "ml.m5.2xlarge"
+            },
+            {
+              "value": "ml.m5.4xlarge",
+              "label": "ml.m5.4xlarge"
+            },
+            {
+              "value": "ml.m6g.large",
+              "label": "ml.m6g.large (ARM)"
+            },
+            {
+              "value": "ml.m6g.xlarge",
+              "label": "ml.m6g.xlarge (ARM)"
+            },
+            {
+              "value": "ml.m6g.2xlarge",
+              "label": "ml.m6g.2xlarge (ARM)"
+            },
+            {
+              "value": "ml.m6g.4xlarge",
+              "label": "ml.m6g.4xlarge (ARM)"
+            },
+            {
+              "value": "ml.g4dn.xlarge",
+              "label": "ml.g4dn.xlarge (GPU)"
+            },
+            {
+              "value": "ml.g4dn.2xlarge",
+              "label": "ml.g4dn.2xlarge (GPU)"
+            },
+            {
+              "value": "ml.g4dn.12xlarge",
+              "label": "ml.g4dn.12xlarge (GPU)"
+            },
+            {
+              "value": "ml.g5.xlarge",
+              "label": "ml.g5.xlarge (GPU)"
+            },
+            {
+              "value": "ml.g5.2xlarge",
+              "label": "ml.g5.2xlarge (GPU)"
+            },
+            {
+              "value": "ml.g5.12xlarge",
+              "label": "ml.g5.12xlarge (GPU)"
+            },
+            {
+              "value": "ml.g5.48xlarge",
+              "label": "ml.g5.48xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6.xlarge",
+              "label": "ml.g6.xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6.2xlarge",
+              "label": "ml.g6.2xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6.12xlarge",
+              "label": "ml.g6.12xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6.48xlarge",
+              "label": "ml.g6.48xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6e.xlarge",
+              "label": "ml.g6e.xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6e.2xlarge",
+              "label": "ml.g6e.2xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6e.12xlarge",
+              "label": "ml.g6e.12xlarge (GPU)"
+            },
+            {
+              "value": "ml.g6e.48xlarge",
+              "label": "ml.g6e.48xlarge (GPU)"
+            },
+            {
+              "value": "ml.inf2.xlarge",
+              "label": "ml.inf2.xlarge (Inferentia)"
+            },
+            {
+              "value": "ml.inf2.8xlarge",
+              "label": "ml.inf2.8xlarge (Inferentia)"
+            },
+            {
+              "value": "ml.inf2.24xlarge",
+              "label": "ml.inf2.24xlarge (Inferentia)"
+            },
+            {
+              "value": "ml.trn1.2xlarge",
+              "label": "ml.trn1.2xlarge (Trainium)"
+            },
+            {
+              "value": "ml.trn1.32xlarge",
+              "label": "ml.trn1.32xlarge (Trainium)"
+            },
+            {
+              "value": "ml.p4d.24xlarge",
+              "label": "ml.p4d.24xlarge (GPU)"
+            },
+            {
+              "value": "ml.p5.48xlarge",
+              "label": "ml.p5.48xlarge (GPU)"
             }
           ],
           "notes": "Endpoint instance type. ml.p/g GPU types are far more expensive than ml.t/m CPU types."
@@ -4892,6 +5983,20 @@
       "primaryParams": [],
       "costParams": [
         {
+          "key": "apiType",
+          "label": "API Operation",
+          "type": "enum",
+          "default": "image",
+          "group": "compute",
+          "options": [
+            { "value": "image", "label": "Image Processing ($1/1k)" },
+            { "value": "videoArchivedMin", "label": "Archived Video ($0.10/min)" },
+            { "value": "videoLiveMin", "label": "Live Video ($0.12/min)" },
+            { "value": "faceVectorM", "label": "Face Vector Storage ($10/M)" }
+          ],
+          "notes": "Rekognition API operation type. Processing images is standard; archived and live video analysis are billed per minute."
+        },
+        {
           "key": "imagesM",
           "label": "Images Processed (M)",
           "type": "number",
@@ -4899,7 +6004,41 @@
           "min": 0,
           "max": 10000,
           "group": "compute",
-          "notes": "Images analyzed per month, in millions. Billed per image on a tiered rate (~$1.00 per 1,000 for the first tier)."
+          "visibleIf": "config.apiType === 'image' || !config.apiType",
+          "notes": "Images analyzed per month, in millions."
+        },
+        {
+          "key": "videoArchivedMin",
+          "label": "Archived Video Minutes",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "visibleIf": "config.apiType === 'videoArchivedMin'",
+          "notes": "Total minutes of archived video analyzed per month."
+        },
+        {
+          "key": "videoLiveMin",
+          "label": "Live Video Minutes",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "visibleIf": "config.apiType === 'videoLiveMin'",
+          "notes": "Total minutes of live stream video analyzed per month."
+        },
+        {
+          "key": "faceVectors",
+          "label": "Face Vectors Stored (M)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 1000,
+          "group": "storage",
+          "visibleIf": "config.apiType === 'faceVectorM'",
+          "notes": "Average number of face vectors stored, in millions."
         }
       ],
       "costEvaluation": {
@@ -4950,6 +6089,34 @@
             {
               "value": "formsTables",
               "label": "Analyze: Forms + Tables ($65/1k)"
+            },
+            {
+              "value": "queries",
+              "label": "Analyze: Queries ($15/1k)"
+            },
+            {
+              "value": "layout",
+              "label": "Analyze: Layout ($4/1k)"
+            },
+            {
+              "value": "expense",
+              "label": "Analyze: Expense ($10/1k)"
+            },
+            {
+              "value": "identity",
+              "label": "Analyze: Identity ($25/1k)"
+            },
+            {
+              "value": "lending",
+              "label": "Analyze: Lending ($70/1k)"
+            },
+            {
+              "value": "signatures",
+              "label": "Detect: Signatures ($3.50/1k)"
+            },
+            {
+              "value": "customQueries",
+              "label": "Analyze: Custom Queries ($25/1k)"
             }
           ],
           "costDriver": "Operation choice spans a 40× price range: DetectText $1.50/1k pages vs Forms+Tables $65/1k.",
@@ -4983,14 +6150,53 @@
       "primaryParams": [],
       "costParams": [
         {
-          "key": "minutesHD",
-          "label": "HD Output Minutes",
+          "key": "tier",
+          "label": "Transcoding Tier",
+          "type": "enum",
+          "default": "basic",
+          "group": "compute",
+          "options": [
+            { "value": "basic", "label": "Basic Tier" },
+            { "value": "professional", "label": "Professional Tier" }
+          ],
+          "notes": "Basic offers standard AVC codecs; Professional adds advanced codecs (HEVC, AV1, ProRes) and 4K resolution support."
+        },
+        {
+          "key": "codec",
+          "label": "Video Codec",
+          "type": "enum",
+          "default": "avc",
+          "group": "compute",
+          "options": [
+            { "value": "avc", "label": "MPEG-4 AVC" },
+            { "value": "hevc", "label": "MPEG-H HEVC" },
+            { "value": "av1", "label": "AV1" },
+            { "value": "prores", "label": "Apple ProRes" }
+          ],
+          "notes": "Video codec used for compression. Professional codecs cost more."
+        },
+        {
+          "key": "resolution",
+          "label": "Output Resolution",
+          "type": "enum",
+          "default": "sd",
+          "group": "compute",
+          "options": [
+            { "value": "sd", "label": "SD" },
+            { "value": "hd", "label": "HD" },
+            { "value": "4k", "label": "4K" }
+          ],
+          "notes": "Output resolution of transcoded video. SD is cheapest; 4K and Professional HEVC/AV1 are most expensive."
+        },
+        {
+          "key": "minutes",
+          "label": "Output Minutes",
           "type": "number",
           "default": 100,
           "min": 0,
           "max": 1000000,
           "group": "compute",
-          "notes": "HD output minutes transcoded per month, billed per output-minute by resolution and codec."
+          "notes": "Output minutes transcoded per month, billed per output-minute by resolution and codec."
         }
       ],
       "costEvaluation": {
@@ -5225,6 +6431,42 @@
             {
               "value": "r6g",
               "label": "Memory Optimized ARM (r6g)"
+            },
+            {
+              "value": "m7g",
+              "label": "General Purpose ARM (m7g)"
+            },
+            {
+              "value": "m7i",
+              "label": "General Purpose (m7i)"
+            },
+            {
+              "value": "c7g",
+              "label": "Compute Optimized ARM (c7g)"
+            },
+            {
+              "value": "r7g",
+              "label": "Memory Optimized ARM (r7g)"
+            },
+            {
+              "value": "m8g",
+              "label": "General Purpose ARM (m8g)"
+            },
+            {
+              "value": "i4i",
+              "label": "Storage Optimized (i4i)"
+            },
+            {
+              "value": "g4dn",
+              "label": "GPU Instance (g4dn)"
+            },
+            {
+              "value": "g5",
+              "label": "GPU Instance (g5)"
+            },
+            {
+              "value": "g6",
+              "label": "GPU Instance (g6)"
             }
           ],
           "notes": "EC2 hardware profile for the environment: t3=burstable/cheap, m=general, c=compute, r=memory-optimized (g=Graviton)."
@@ -5263,6 +6505,14 @@
             {
               "value": "4xlarge",
               "label": "4xlarge"
+            },
+            {
+              "value": "12xlarge",
+              "label": "12xlarge"
+            },
+            {
+              "value": "48xlarge",
+              "label": "48xlarge"
             }
           ],
           "notes": "Scales vCPU and RAM within the family. Beanstalk itself is free; you pay for the underlying EC2."

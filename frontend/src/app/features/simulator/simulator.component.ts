@@ -3034,6 +3034,32 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+    // Bedrock: the model list is scoped to the selected provider, so switching
+    // provider must also reset the model to that provider's first option —
+    // otherwise config.model keeps pricing the previous provider's model.
+    if (selectedType === 'bedrock' && key === 'provider') {
+      const bedrockParams =
+        (serviceCostModelData.serviceCostModel as any).bedrock?.costParams ?? [];
+      const modelParam = bedrockParams.find(
+        (p: any) => p.key === 'model' && p.visibleIf?.includes(`'${value}'`),
+      );
+      const firstModel = modelParam?.default ?? modelParam?.options?.[0]?.value;
+      this.nodes = this.nodes.map((node) =>
+        this.selectedNodeIds.includes(node.id)
+          ? {
+              ...node,
+              config: {
+                ...node.config,
+                provider: value,
+                ...(firstModel !== undefined ? { model: firstModel } : {}),
+              },
+            }
+          : node,
+      );
+      this.onConfigChange();
+      return;
+    }
+
     this.nodes = this.nodes.map((node) =>
       this.selectedNodeIds.includes(node.id)
         ? { ...node, config: { ...node.config, [key]: value } }

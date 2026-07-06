@@ -3197,8 +3197,9 @@ export const SERVICE_DOCS: Record<
 
           <!-- Foundation models -->
           <g transform="translate(322, 45)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Claude</text></g>
-          <g transform="translate(322, 90)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Titan</text></g>
+          <g transform="translate(322, 90)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Nova</text></g>
           <g transform="translate(322, 135)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Llama</text></g>
+          <text x="322" y="163" font-size="5.5" text-anchor="middle" font-weight="700" fill="#065f46">+ 12 more providers</text>
         </svg>
       `,
     },

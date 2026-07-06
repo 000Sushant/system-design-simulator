@@ -920,7 +920,7 @@
     "recommendedAvoiding": "Avoid Bedrock for traditional rule-based algorithms, standard database queries, or workloads that don't involve unstructured language or media understanding.",
     "practicalScenario": "A customer support site routes incoming queries to Bedrock, which uses a language model to generate helpful, context-aware answers based on company docs.",
     "keyCharacteristics": [
-      "Provides API access to top foundation models (Claude, Llama, Titan).",
+      "Provides API access to foundation models from 15+ providers (Anthropic Claude, Amazon Nova/Titan, OpenAI, Meta Llama, Mistral, DeepSeek, Qwen, Cohere, and more).",
       "Serverless—no infrastructure to host or scale for model endpoints.",
       "Enables private model customization using RAG and fine-tuning.",
       "Ensures customer data is encrypted and not used to train base models."

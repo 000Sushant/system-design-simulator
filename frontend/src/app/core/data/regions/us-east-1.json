@@ -2,575 +2,371 @@
   "regionCode": "us-east-1",
   "regionName": "US East (N. Virginia)",
   "services": {
-    "client": {
-      "dataTransferGB": 0.09
-    },
-    "route53": {
-      "zoneMonthly": 0.5,
-      "standardM": 0.4
-    },
+    "client": { "dataTransferGB": 0.09 },
+    "route53": { "zoneMonthly": 0.50, "standardM": 0.40 },
     "cloudfront": {
-      "dtOut": {
-        "us-eu": 0.085,
-        "ap": 0.12,
-        "sa": 0.16,
-        "au": 0.114,
-        "me-af": 0.11
-      },
-      "requestsM": {
-        "us-eu": 1,
-        "ap": 1.2,
-        "sa": 1.6,
-        "au": 1.2,
-        "me-af": 1.2
-      },
-      "wafBase": 5,
-      "wafRequestM": 0.6
+      "dtOut": { "us-eu": 0.085, "ap": 0.12, "sa": 0.16, "au": 0.114, "me-af": 0.11 },
+      "requestsM": { "us-eu": 1.0, "ap": 1.20, "sa": 1.60, "au": 1.20, "me-af": 1.20 },
+      "wafBase": 5.0,
+      "wafRequestM": 0.60
     },
     "apiGateway": {
       "requestsM": {
-        "http": {
-          "tier1": 1,
-          "tier2": 0.9
-        },
-        "rest": {
-          "tier1": 3.5,
-          "tier2": 2.8,
-          "tier3": 2.38,
-          "tier4": 1.51
-        },
-        "websocket": {
-          "tier1": 1,
-          "tier2": 0.8
-        }
+        "http": { "tier1": 1.00, "tier2": 0.90 },
+        "rest": { "tier1": 3.50, "tier2": 2.80, "tier3": 2.38, "tier4": 1.51 },
+        "websocket": { "tier1": 1.00, "tier2": 0.80 }
       },
       "cacheRates": {
-        "0": 0,
-        "0.5": 14.6,
+        "0": 0.0,
+        "0.5": 14.60,
         "1.6": 27.74,
-        "6.1": 146,
-        "13.5": 182.5,
-        "28.4": 365,
-        "58.2": 730,
-        "118.0": 1343.2,
-        "237.0": 2555
+        "6.1": 146.00,
+        "13.5": 182.50,
+        "28.4": 365.00,
+        "58.2": 730.00,
+        "118.0": 1343.20,
+        "237.0": 2555.00
       },
       "wsConnectionMinuteM": 0.25
     },
     "elb": {
       "types": {
-        "alb": {
-          "hourly": 0.0225,
-          "lcuHour": 0.008
-        },
-        "nlb": {
-          "hourly": 0.0225,
-          "lcuHour": 0.006
-        },
-        "clb": {
-          "hourly": 0.025,
-          "dataGB": 0.008
-        },
-        "gwlb": {
-          "hourly": 0.0125,
-          "lcuHour": 0.004
-        }
+        "alb": { "hourly": 0.0225, "lcuHour": 0.008 },
+        "nlb": { "hourly": 0.0225, "lcuHour": 0.006 },
+        "clb": { "hourly": 0.0250, "dataGB": 0.008 },
+        "gwlb": { "hourly": 0.0125, "lcuHour": 0.004 }
       }
     },
-    "vpc": {
-      "endpointHourly": 0.01,
-      "endpointGB": 0.01,
-      "publicIpv4Hourly": 0.005
-    },
+    "vpc": { "endpointHourly": 0.01, "endpointGB": 0.01, "publicIpv4Hourly": 0.005 },
     "ec2": {
-      "familyRatesLarge": {
-        "t3": 0.0832,
-        "m5": 0.096,
-        "m6g": 0.077,
-        "c5": 0.085,
-        "c6g": 0.068,
-        "r5": 0.126,
-        "r6g": 0.1008
-      },
-      "sizeMultipliers": {
-        "nano": 0.0625,
-        "micro": 0.125,
-        "small": 0.25,
-        "medium": 0.5,
-        "large": 1,
-        "xlarge": 2,
-        "2xlarge": 4,
-        "4xlarge": 8,
-        "8xlarge": 16,
-        "12xlarge": 24,
-        "16xlarge": 32,
-        "24xlarge": 48,
-        "metal": 96
-      },
-      "purchaseDiscounts": {
-        "on-demand": 0,
-        "reserved-1yr": 0.4,
-        "reserved-3yr": 0.6,
-        "spot": 0.7
-      },
-      "ebsRates": {
-        "gp2": 0.1,
-        "gp3": 0.08,
-        "io2": 0.125
-      },
+      "familyRatesLarge": { "t3": 0.0832, "m5": 0.096, "m6g": 0.077, "c5": 0.085, "c6g": 0.068, "r5": 0.126, "r6g": 0.1008, "m7g": 0.096, "m7i": 0.10, "c7g": 0.072, "r7g": 0.136, "m8g": 0.10, "i4i": 0.17 },
+      "sizeMultipliers": { "nano": 0.0625, "micro": 0.125, "small": 0.25, "medium": 0.5, "large": 1.0, "xlarge": 2.0, "2xlarge": 4.0, "4xlarge": 8.0, "8xlarge": 16.0, "12xlarge": 24.0, "16xlarge": 32.0, "24xlarge": 48.0, "metal": 96.0 },
+      "purchaseDiscounts": { "on-demand": 0, "spot": 0.70, "reserved-1yr": 0.40, "reserved-3yr": 0.60 },
+      "ebsRates": { "gp2": 0.10, "gp3": 0.08, "io2": 0.125 },
       "dataTransferGB": 0.09,
-      "windowsMultiplier": 1.45
+      "windowsMultiplier": 1.45,
+      "gpuInstances": {
+        "g4dn.xlarge": 0.736,
+        "g4dn.2xlarge": 0.752,
+        "g4dn.12xlarge": 4.352,
+        "g5.xlarge": 1.408,
+        "g5.2xlarge": 1.624,
+        "g5.12xlarge": 7.09,
+        "g5.48xlarge": 28.00,
+        "g6.xlarge": 1.127,
+        "g6.2xlarge": 1.334,
+        "g6.12xlarge": 5.922,
+        "g6.48xlarge": 23.00
+      }
     },
     "ecs": {
       "cpuHour": 0.04048,
       "memHour": 0.004445,
       "armCpuHour": 0.03238,
       "armMemHour": 0.00356,
-      "windowsCpuPremium": 0.046,
-      "windowsMemPremium": 0.004,
-      "spotDiscount": 0.7,
       "ephemeralGBHour": 0.000111,
-      "publicIpHour": 0.005,
-      "instances": {
-        "t3.medium": 0.0416,
-        "m5.large": 0.096,
-        "m6g.large": 0.077
-      },
-      "ebsGBMonth": 0.08,
-      "reservedDiscount": 0.4,
+      "spotDiscount": 0.70,
       "dataTransferGB": 0.09,
       "crossAzGB": 0.01,
       "elbHourly": 0.0225,
-      "logsGB": 0.5
+      "logsGB": 0.50,
+      "windowsCpuPremium": 0.046,
+      "windowsMemPremium": 0.004,
+      "publicIpHour": 0.005,
+      "instances": { "t3.medium": 0.0416, "m5.large": 0.096, "m6g.large": 0.077, "m7g.large": 0.096, "g5.xlarge": 1.408 },
+      "ebsGBMonth": 0.08,
+      "reservedDiscount": 0.40
     },
     "autoScalingGroup": {
-      "familyRatesLarge": {
-        "t3": 0.0832,
-        "m5": 0.096,
-        "m6g": 0.077,
-        "c5": 0.085,
-        "c6g": 0.068,
-        "r5": 0.126,
-        "r6g": 0.1008
-      },
-      "sizeMultipliers": {
-        "nano": 0.0625,
-        "micro": 0.125,
-        "small": 0.25,
-        "medium": 0.5,
-        "large": 1,
-        "xlarge": 2,
-        "2xlarge": 4,
-        "4xlarge": 8,
-        "8xlarge": 16,
-        "12xlarge": 24,
-        "16xlarge": 32,
-        "24xlarge": 48,
-        "metal": 96
-      },
-      "purchaseDiscounts": {
-        "on-demand": 0,
-        "reserved-1yr": 0.4,
-        "reserved-3yr": 0.6,
-        "spot": 0.7
-      },
-      "ebsRates": {
-        "gp2": 0.1,
-        "gp3": 0.08,
-        "io2": 0.125
-      },
+      "familyRatesLarge": { "t3": 0.0832, "m5": 0.096, "m6g": 0.077, "c5": 0.085, "c6g": 0.068, "r5": 0.126, "r6g": 0.1008, "m7g": 0.096, "m7i": 0.10, "c7g": 0.072, "r7g": 0.136, "m8g": 0.10, "i4i": 0.17 },
+      "sizeMultipliers": { "nano": 0.0625, "micro": 0.125, "small": 0.25, "medium": 0.5, "large": 1.0, "xlarge": 2.0, "2xlarge": 4.0, "4xlarge": 8.0, "8xlarge": 16.0, "12xlarge": 24.0, "16xlarge": 32.0, "24xlarge": 48.0, "metal": 96.0 },
+      "purchaseDiscounts": { "on-demand": 0, "spot": 0.70, "reserved-1yr": 0.40, "reserved-3yr": 0.60 },
+      "ebsRates": { "gp2": 0.10, "gp3": 0.08, "io2": 0.125 },
       "dataTransferGB": 0.09,
-      "windowsMultiplier": 1.45
+      "windowsMultiplier": 1.45,
+      "gpuInstances": {
+        "g4dn.xlarge": 0.736,
+        "g4dn.2xlarge": 0.752,
+        "g4dn.12xlarge": 4.352,
+        "g5.xlarge": 1.408,
+        "g5.2xlarge": 1.624,
+        "g5.12xlarge": 7.09,
+        "g5.48xlarge": 28.00,
+        "g6.xlarge": 1.127,
+        "g6.2xlarge": 1.334,
+        "g6.12xlarge": 5.922,
+        "g6.48xlarge": 23.00
+      }
     },
-    "lambda": {
-      "requestM": 0.2,
-      "gbSec_x86": 0.0000166667,
-      "gbSec_arm": 0.0000133334,
-      "ephemeralGB_Sec": 3.09e-8,
-      "provConcurrency_x86": 0.015,
-      "provConcurrency_arm": 0.012
-    },
-    "sqs": {
-      "standard": 0.4,
-      "fifo": 0.5
-    },
-    "sns": {
-      "publish": 0.5,
-      "http": 0.6,
-      "email": 20
-    },
+    "lambda": { "requestM": 0.20, "gbSec_x86": 0.0000166667, "gbSec_arm": 0.0000133334, "ephemeralGB_Sec": 0.0000000309, "provConcurrency_x86": 0.015, "provConcurrency_arm": 0.012, "streamingGB": 0.008, "snapStartCacheGBsec": 0.0000015, "snapStartRestoreGBM": 0.00014 },
+    "sqs": { "standard": 0.40, "fifo": 0.50 },
+    "sns": { "publish": 0.50, "http": 0.60, "email": 20.00 },
     "s3": {
-      "storage": {
-        "standard": 0.023,
-        "intelligent": 0.023,
-        "sia": 0.0125,
-        "glacier": 0.0036
-      },
-      "puts": {
-        "standard": 5,
-        "intelligent": 5,
-        "sia": 10,
-        "glacier": 30
-      },
-      "gets": {
-        "standard": 0.4,
-        "intelligent": 0.4,
-        "sia": 1,
-        "glacier": 10
-      },
+      "storage": { "standard": 0.023, "intelligent": 0.023, "sia": 0.0125, "glacier": 0.0036, "onezone-ia": 0.01, "glacier-instant": 0.004, "deep-archive": 0.00099, "express-onezone": 0.11 },
+      "puts": { "standard": 5.0, "intelligent": 5.0, "sia": 10.0, "glacier": 30.0, "onezone-ia": 10.0, "glacier-instant": 20.0, "deep-archive": 50.0, "express-onezone": 2.5 },
+      "gets": { "standard": 0.40, "intelligent": 0.40, "sia": 1.00, "glacier": 10.0, "onezone-ia": 1.0, "glacier-instant": 10.0, "deep-archive": 50.0, "express-onezone": 0.25 },
       "dataTransferGB": 0.09
     },
     "rds": {
-      "engines": {
-        "mysql": 1,
-        "postgresql": 1.05,
-        "mariadb": 1,
-        "sqlserver-ex": 1.2,
-        "oracle-se2": 1.8
+      "instanceRates": {
+        "mysql": { "db.t3.medium": 0.068, "db.t4g.medium": 0.05, "db.m5.large": 0.171, "db.m7g.large": 0.165, "db.r5.large": 0.240, "db.r7g.large": 0.216, "db.r6g.large": 0.216, "db.m6i.large": 0.171 },
+        "postgresql": { "db.t3.medium": 0.071, "db.t4g.medium": 0.052, "db.m5.large": 0.180, "db.m7g.large": 0.173, "db.r5.large": 0.252, "db.r7g.large": 0.227, "db.r6g.large": 0.227, "db.m6i.large": 0.180 },
+        "mariadb": { "db.t3.medium": 0.068, "db.t4g.medium": 0.05, "db.m5.large": 0.171, "db.m7g.large": 0.165, "db.r5.large": 0.240, "db.r7g.large": 0.216, "db.r6g.large": 0.216, "db.m6i.large": 0.171 },
+        "sqlserver-web": { "db.m6i.large": 0.26, "db.r6g.large": 0.32 },
+        "sqlserver-se": { "db.m6i.large": 0.85, "db.r6g.large": 1.05 },
+        "sqlserver-ee": { "db.m6i.large": 3.50, "db.r6g.large": 4.20 },
+        "oracle-se2": { "db.r7g.large": 0.40 },
+        "oracle-ee": { "db.r7g.large": 3.20 }
       },
-      "instances": {
-        "db.t3.medium": 0.068,
-        "db.m5.large": 0.171,
-        "db.r5.large": 0.24,
-        "db.r6g.large": 0.216
-      },
-      "multiAzMultiplier": 2,
-      "storage": {
-        "gp2": 0.115,
-        "gp3": 0.115,
-        "io1": 0.125
-      },
+      "multiAzMultiplier": 2.0,
+      "storage": { "gp2": 0.115, "gp3": 0.115, "io1": 0.125 },
       "backupGB": 0.095
     },
     "elastiCache": {
-      "instances": {
-        "cache.t3.micro": 0.016,
-        "cache.t3.medium": 0.068,
-        "cache.m5.large": 0.156,
-        "cache.r6g.large": 0.211
+      "instances": { "cache.t3.micro": 0.016, "cache.t3.medium": 0.068, "cache.m5.large": 0.156, "cache.r6g.large": 0.211, "cache.t4g.medium": 0.034, "cache.m7g.large": 0.126, "cache.r7g.large": 0.175 },
+      "valkeyNodeMultiplier": 0.8,
+      "serverless": {
+        "redis": { "storageGBHour": 0.125, "ecpuM": 0.0034 },
+        "valkey": { "storageGBHour": 0.084, "ecpuM": 0.0023 }
       },
       "tieringPremium": 1.15
     },
     "dynamoDb": {
-      "std": {
-        "readM": 0.125,
-        "writeM": 0.625,
-        "wcuHr": 0.00065,
-        "rcuHr": 0.00013,
-        "storageGB": 0.25
-      },
-      "ia": {
-        "readM": 0.15625,
-        "writeM": 0.78125,
-        "wcuHr": 0.0008125,
-        "rcuHr": 0.0001625,
-        "storageGB": 0.1
-      },
+      "std": { "readM": 0.125, "writeM": 0.625, "storageGB": 0.25, "wcuHr": 0.00065, "rcuHr": 0.000130 },
+      "ia": { "readM": 0.15625, "writeM": 0.78125, "storageGB": 0.10, "wcuHr": 0.0008125, "rcuHr": 0.0001625 },
+      "pitrStorageGB": 0.20,
+      "backupStorageGB": 0.10,
+      "restoreGB": 0.15,
+      "streamsRequestsM": 0.20,
+      "exportGB": 0.10,
       "globalMultiplier": 1.5
     },
     "iam": {},
-    "cloudWatch": {
-      "metricRate": 0.3,
-      "logsGB": 0.5,
-      "dashboard": 3,
-      "alarmMonth": 0.1,
-      "logsStorageGB": 0.03
-    },
-    "stepFunctions": {
-      "standardM": 25,
-      "expressReq": 1,
-      "expressGBsec": 16.67
-    },
-    "natGateway": {
-      "hourly": 0.045,
-      "dataGB": 0.045
-    },
+    "cloudWatch": { "metricRate": 0.30, "logsGB": 0.50, "dashboard": 3.00, "alarmMonth": 0.10, "logsStorageGB": 0.03 },
+    "stepFunctions": { "standardM": 25.00, "expressReq": 1.00, "expressGBsec": 16.67 },
+    "natGateway": { "hourly": 0.045, "dataGB": 0.045 },
     "securityGroup": {},
-    "batch": {
-      "cpuHour": 0.04048,
-      "memHour": 0.004445,
-      "armCpuHour": 0.03238,
-      "armMemHour": 0.00356,
-      "spotDiscount": 0.7,
-      "dataTransferGB": 0.09,
-      "crossAzGB": 0.01,
-      "elbHourly": 0.0225,
-      "logsGB": 0.5
-    },
-    "eks": {
-      "clusterHourlyStandard": 0.1,
-      "clusterHourlyExtended": 0.6,
-      "cpuHour": 0.04048,
-      "memHour": 0.004445,
-      "armCpuHour": 0.03238,
-      "armMemHour": 0.00356,
-      "spotDiscount": 0.7,
-      "ephemeralGBHour": 0.000111,
-      "instances": {
-        "t3.medium": 0.0416,
-        "t3.large": 0.0832,
-        "m5.large": 0.096,
-        "m5.xlarge": 0.192,
-        "m6g.large": 0.077
-      },
-      "ebsGBMonth": 0.08,
-      "reservedDiscount": 0.4,
-      "elbHourly": 0.0225,
-      "crossAzGB": 0.01,
-      "natHourly": 0.045,
-      "natDataGB": 0.045,
-      "dataTransferGB": 0.09,
-      "logsGB": 0.5,
-      "containerInsightsPerNode": 2.5
-    },
-    "aurora": {
-      "serverlessAcuHour": 0.12,
-      "instances": {
-        "db.t3.medium": 0.082,
-        "db.r5.large": 0.29,
-        "db.r6g.large": 0.26
-      },
-      "storageGB": 0.1,
-      "ioRequestPerM": 0.2
-    },
-    "eventBridge": {
-      "eventM": 1
-    },
-    "kinesis": {
-      "shardHour": 0.015,
-      "putM": 0.014,
-      "retentionGB": 0.023
-    },
-    "msk": {
-      "instances": {
-        "kafka.t3.small": 0.0456,
-        "kafka.m5.large": 0.21
-      },
-      "storageGB": 0.1
-    },
-    "cognito": {
-      "freeTier": 50000,
-      "ratePerUser": 0.0055
-    },
-    "waf": {
-      "aclMonth": 5,
-      "ruleMonth": 1,
-      "reqM": 0.6
-    },
-    "efs": {
-      "storage": {
-        "standard": 0.3,
-        "ia": 0.016
-      },
-      "throughputMBps": 6
-    },
-    "athena": {
-      "perTB": 5
-    },
-    "secretsManager": {
-      "secretMonth": 0.4,
-      "callM": 5
-    },
-    "transitGateway": {
-      "attachmentHourly": 0.05,
-      "dataGB": 0.02
-    },
-    "directConnect": {
-      "portRates": {
-        "1g": 0.3,
-        "10g": 2.25,
-        "100g": 22.5
-      },
-      "dataTransferGB": 0.02
-    },
-    "globalAccelerator": {
-      "hourly": 0.025,
-      "dataGB": 0.015
-    },
-    "xray": {
-      "recordM": 5,
-      "scanM": 0.5
-    },
-    "openSearch": {
-      "instances": {
-        "t3.medium": 0.073,
-        "m6g.large": 0.128,
-        "r6g.large": 0.167
-      },
-      "storageGB": 0.122
-    },
-    "redshift": {
-      "instances": {
-        "ra3.xlplus": 1.086,
-        "ra3.4xlarge": 3.26
-      },
-      "rpuHour": 0.375,
-      "storageTB": 24.576
-    },
-    "glue": {
-      "dpuHour": 0.44
-    },
-    "emr": {
-      "instances": {
-        "m5.large": 0.12,
-        "m5.xlarge": 0.24,
-        "r5.xlarge": 0.315
-      }
-    },
-    "kinesisFirehose": {
-      "ingestGB": 0.029,
-      "convertGB": 0.018
-    },
-    "mq": {
-      "instances": {
-        "mq.t3.micro": 0.027,
-        "mq.m5.large": 0.288
-      },
-      "storageGB": 0.3
-    },
-    "kms": {
-      "keyMonth": 1,
-      "reqM": 3
-    },
-    "shield": {
-      "advancedMonth": 3000
-    },
+    "batch": { "cpuHour": 0.04048, "memHour": 0.004445, "armCpuHour": 0.03238, "armMemHour": 0.00356, "spotDiscount": 0.70, "dataTransferGB": 0.09, "crossAzGB": 0.01, "elbHourly": 0.0225, "logsGB": 0.50 },
+    "eks": { "clusterHourlyStandard": 0.10, "clusterHourlyExtended": 0.60, "cpuHour": 0.04048, "memHour": 0.004445, "armCpuHour": 0.03238, "armMemHour": 0.00356, "ephemeralGBHour": 0.000111, "spotDiscount": 0.70, "dataTransferGB": 0.09, "crossAzGB": 0.01, "elbHourly": 0.0225, "natHourly": 0.045, "natDataGB": 0.045, "logsGB": 0.50, "instances": { "t3.medium": 0.0416, "t3.large": 0.0832, "m5.large": 0.096, "m5.xlarge": 0.192, "m6g.large": 0.077, "m7g.large": 0.096, "g5.xlarge": 1.408 }, "ebsGBMonth": 0.08, "reservedDiscount": 0.40, "containerInsightsPerNode": 2.5 },
+    "aurora": { "serverlessAcuHour": 0.12, "instances": { "db.t3.medium": 0.082, "db.r5.large": 0.290, "db.r6g.large": 0.260, "db.t4g.medium": 0.041, "db.m7g.large": 0.13, "db.r7g.large": 0.175 }, "ioOptimizedComputeMultiplier": 1.30, "ioOptimizedStorageRate": 0.225, "storageGB": 0.10, "ioRequestPerM": 0.20 },
+    "eventBridge": { "eventM": 1.00 },
+    "kinesis": { "shardHour": 0.015, "putM": 0.014, "retentionGB": 0.023, "onDemandStreamHour": 0.04, "onDemandIngestGB": 0.08, "onDemandEgressGB": 0.04, "efoEgressGB": 0.05, "consumerShardHour": 0.015, "extendedRetentionGB": 0.10, "longTermRetentionGB": 0.023 },
+    "msk": { "instances": { "kafka.t3.small": 0.0456, "kafka.m5.large": 0.21, "kafka.m7g.large": 0.204 }, "expressInstances": { "express.m7g.large": 0.408 }, "expressStorageGB": 0.10, "serverless": { "clusterHour": 0.75, "partitionHour": 0.0015, "ingestGB": 0.10, "egressGB": 0.05 }, "tieredStorageGB": 0.06, "storageGB": 0.10 },
+    "cognito": { "freeTier": 50000, "ratePerUser": 0.0055 },
+    "waf": { "aclMonth": 5.0, "ruleMonth": 1.0, "reqM": 0.60 },
+    "efs": { "storage": { "standard": 0.30, "ia": 0.016 }, "throughputMBps": 6.0 },
+    "athena": { "perTB": 5.00 },
+    "secretsManager": { "secretMonth": 0.40, "callM": 5.00 },
+    "transitGateway": { "attachmentHourly": 0.05, "dataGB": 0.02 },
+    "directConnect": { "portRates": { "1g": 0.30, "10g": 2.25, "100g": 22.5 }, "dataTransferGB": 0.02 },
+    "globalAccelerator": { "hourly": 0.025, "dataGB": 0.015 },
+    "xray": { "recordM": 5.00, "scanM": 0.50 },
+    "openSearch": { "instances": { "t3.medium": 0.073, "m6g.large": 0.128, "r6g.large": 0.167 }, "serverlessOcuHour": 0.24, "serverlessStorageGB": 0.024, "ultraWarmHour": 0.238, "ultraWarmStorageGB": 0.024, "storageGB": 0.122 },
+    "redshift": { "instances": { "ra3.xlplus": 1.086, "ra3.4xlarge": 3.26, "ra3.large": 0.543, "ra3.16xlarge": 13.04 }, "rpuHour": 0.375, "storageTB": 24.576 },
+    "glue": { "dpuHour": 0.44 },
+    "emr": { "instances": { "m5.large": 0.12, "m5.xlarge": 0.24, "r5.xlarge": 0.315, "m7g.xlarge": 0.1912 }, "serverless": { "cpuHour": 0.052624, "memHour": 0.0057785, "storageHour": 0.000111 } },
+    "kinesisFirehose": { "ingestGB": 0.029, "convertGB": 0.018 },
+    "mq": { "instances": { "mq.t3.micro": 0.027, "mq.m5.large": 0.288, "mq.m7g.large": 0.2734 }, "multiAzActiveMqMultiplier": 2.0, "multiAzRabbitMqMultiplier": 3.0, "storageRates": { "activemq": 0.30, "rabbitmq": 0.10 }, "storageGB": 0.30 },
+    "kms": { "keyMonth": 1.00, "reqM": 3.00 },
+    "shield": { "advancedMonth": 3000 },
     "organizations": {},
-    "codePipeline": {
-      "pipelineMonth": 1
-    },
-    "codeBuild": {
-      "rates": {
-        "general1.small": 0.005,
-        "general1.medium": 0.01,
-        "general1.large": 0.02,
-        "gpu1.large": 0.95
-      }
-    },
-    "codeDeploy": {
-      "updateRate": 0.02
-    },
+    "codePipeline": { "pipelineMonth": 1.00 },
+    "codeBuild": { "rates": { "general1.small": 0.005, "general1.medium": 0.010, "general1.large": 0.020, "gpu1.large": 0.950 } },
+    "codeDeploy": { "updateRate": 0.02 },
     "bedrock": {
       "inM": {
+        "claude-sonnet-5": 2.2,
+        "claude-fable-5": 11,
+        "claude-mythos-5": 11,
+        "claude-opus-4-8": 5.5,
+        "claude-haiku-4-5": 1.1,
+        "claude-sonnet-4-6": 3.3,
+        "claude-3-7-sonnet": 3,
+        "claude-3-5-haiku": 0.8,
+        "claude-3-haiku": 0.25,
+        "nova-2-pro": 1.375,
+        "nova-2-omni": 0.3,
+        "nova-2-lite": 0.33,
+        "nova-premier": 2.5,
+        "nova-pro": 0.8,
+        "nova-lite": 0.06,
+        "nova-micro": 0.035,
+        "titan-text-premier": 0.5,
+        "titan-text-express": 0.2,
+        "titan-text-lite": 0.15,
+        "gpt-oss-120b": 0.15,
+        "gpt-oss-20b": 0.07,
+        "llama-4-maverick": 0.24,
+        "llama-4-scout": 0.17,
+        "llama-3-3-70b": 0.72,
+        "llama-3-2-11b": 0.16,
+        "llama-3-2-3b": 0.15,
+        "llama-3-1-8b": 0.22,
+        "deepseek-v3-2": 0.62,
+        "deepseek-r1": 1.35,
+        "mistral-large-3": 0.5,
+        "pixtral-large": 2,
+        "mistral-small": 1,
+        "magistral-small": 0.5,
+        "devstral": 0.4,
+        "ministral-8b": 0.15,
+        "qwen3-coder-next": 0.5,
+        "qwen3-vl-235b": 0.53,
+        "qwen3-coder-30b": 0.15,
+        "qwen3-32b": 0.15,
+        "gemma-3-27b": 0.23,
+        "gemma-3-12b": 0.09,
+        "gemma-3-4b": 0.04,
+        "command-r-plus": 3,
+        "command-r": 0.5,
+        "jamba-1-5-large": 2,
+        "jamba-1-5-mini": 0.2,
+        "palmyra-x5": 0.6,
+        "palmyra-x4": 2.5,
+        "kimi-k2-5": 0.6,
+        "kimi-k2-thinking": 0.6,
+        "minimax-m2-5": 0.3,
+        "minimax-m2": 0.3,
+        "glm-5": 1,
+        "glm-4-7": 0.6,
+        "glm-4-7-flash": 0.07,
+        "nemotron-3-super": 0.15,
+        "nemotron-nano-3": 0.06,
+        "nemotron-nano-2-vl": 0.2,
         "claude-haiku": 0.25,
         "claude-sonnet": 3,
         "claude-opus": 15,
-        "llama-70b": 0.99,
+        "llama-70b": 0.72,
         "titan": 0.15
       },
       "outM": {
+        "claude-sonnet-5": 11,
+        "claude-fable-5": 55,
+        "claude-mythos-5": 55,
+        "claude-opus-4-8": 27.5,
+        "claude-haiku-4-5": 5.5,
+        "claude-sonnet-4-6": 16.5,
+        "claude-3-7-sonnet": 15,
+        "claude-3-5-haiku": 4,
+        "claude-3-haiku": 1.25,
+        "nova-2-pro": 11,
+        "nova-2-omni": 2.8,
+        "nova-2-lite": 2.75,
+        "nova-premier": 12.5,
+        "nova-pro": 3.2,
+        "nova-lite": 0.24,
+        "nova-micro": 0.14,
+        "titan-text-premier": 1.5,
+        "titan-text-express": 0.6,
+        "titan-text-lite": 0.2,
+        "gpt-oss-120b": 0.6,
+        "gpt-oss-20b": 0.3,
+        "llama-4-maverick": 0.97,
+        "llama-4-scout": 0.66,
+        "llama-3-3-70b": 0.72,
+        "llama-3-2-11b": 0.16,
+        "llama-3-2-3b": 0.15,
+        "llama-3-1-8b": 0.22,
+        "deepseek-v3-2": 1.85,
+        "deepseek-r1": 5.4,
+        "mistral-large-3": 1.5,
+        "pixtral-large": 6,
+        "mistral-small": 3,
+        "magistral-small": 1.5,
+        "devstral": 2,
+        "ministral-8b": 0.15,
+        "qwen3-coder-next": 1.2,
+        "qwen3-vl-235b": 2.66,
+        "qwen3-coder-30b": 0.6,
+        "qwen3-32b": 0.6,
+        "gemma-3-27b": 0.38,
+        "gemma-3-12b": 0.29,
+        "gemma-3-4b": 0.08,
+        "command-r-plus": 15,
+        "command-r": 1.5,
+        "jamba-1-5-large": 8,
+        "jamba-1-5-mini": 0.4,
+        "palmyra-x5": 6,
+        "palmyra-x4": 10,
+        "kimi-k2-5": 3,
+        "kimi-k2-thinking": 2.5,
+        "minimax-m2-5": 1.2,
+        "minimax-m2": 1.2,
+        "glm-5": 3.2,
+        "glm-4-7": 2.2,
+        "glm-4-7-flash": 0.4,
+        "nemotron-3-super": 0.65,
+        "nemotron-nano-3": 0.24,
+        "nemotron-nano-2-vl": 0.6,
         "claude-haiku": 1.25,
         "claude-sonnet": 15,
         "claude-opus": 75,
-        "llama-70b": 1.2,
+        "llama-70b": 0.72,
         "titan": 0.2
       }
     },
     "sageMaker": {
       "instances": {
-        "ml.t3.medium": 0.056,
-        "ml.m5.large": 0.134,
-        "ml.m5.xlarge": 0.269,
-        "ml.p3.2xlarge": 4.284
+        "ml.m5.large": 0.115, "ml.m5.xlarge": 0.23, "ml.m5.2xlarge": 0.46, "ml.m5.4xlarge": 0.92,
+        "ml.m6g.large": 0.101, "ml.m6g.xlarge": 0.202, "ml.m6g.2xlarge": 0.404, "ml.m6g.4xlarge": 0.808,
+        "ml.g4dn.xlarge": 0.736, "ml.g4dn.2xlarge": 0.752, "ml.g4dn.12xlarge": 4.352,
+        "ml.g5.xlarge": 1.408, "ml.g5.2xlarge": 1.624, "ml.g5.12xlarge": 7.09, "ml.g5.48xlarge": 28.00,
+        "ml.g6.xlarge": 1.127, "ml.g6.2xlarge": 1.334, "ml.g6.12xlarge": 5.922, "ml.g6.48xlarge": 23.00,
+        "ml.g6e.xlarge": 2.605, "ml.g6e.2xlarge": 3.00, "ml.g6e.12xlarge": 13.00, "ml.g6e.48xlarge": 52.00,
+        "ml.inf2.xlarge": 0.99, "ml.inf2.8xlarge": 3.96, "ml.inf2.24xlarge": 11.88,
+        "ml.trn1.2xlarge": 1.55, "ml.trn1.32xlarge": 24.80,
+        "ml.p4d.24xlarge": 25.25,
+        "ml.p5.48xlarge": 63.30
       },
-      "serverlessGBsec": 0.00002,
-      "serverlessReqM": 0.2,
-      "trainingHourly": 1.5
+      "trainingHourly": 1.50,
+      "serverlessGBsec": 0.000020,
+      "serverlessReqM": 0.20
     },
-    "appSync": {
-      "reqM": 4,
-      "dtGB": 0.09
-    },
-    "iotCore": {
-      "msgM": 1,
-      "ruleM": 0.15
-    },
-    "rekognition": {
-      "imageM": 1000
-    },
-    "textract": {
-      "pageM": 1500,
-      "pageRates": {
-        "detect": 1500,
-        "tables": 15000,
-        "forms": 50000,
-        "formsTables": 65000
+    "appSync": { "reqM": 4.00, "dtGB": 0.09 },
+    "iotCore": { "msgM": 1.00, "ruleM": 0.15 },
+    "rekognition": { "imageM": 1000, "videoArchivedMin": 0.10, "videoLiveMin": 0.12, "faceVectorM": 10.0 },
+    "textract": { "pageM": 1500, "pageRates": { "detect": 1500, "tables": 15000, "forms": 50000, "formsTables": 65000, "queries": 15000, "layout": 4000, "expense": 10000, "identity": 25000, "lending": 70000, "signatures": 3500, "customQueries": 25000 } },
+    "mediaConvert": {
+      "rates": {
+        "basic": {
+          "avc": { "sd": 0.0075, "hd": 0.015 }
+        },
+        "professional": {
+          "avc": { "sd": 0.012, "hd": 0.024, "4k": 0.048 },
+          "hevc": { "sd": 0.0225, "hd": 0.045, "4k": 0.09 },
+          "av1": { "sd": 0.0375, "hd": 0.075, "4k": 0.15 },
+          "prores": { "sd": 0.025, "hd": 0.05, "4k": 0.10 }
+        }
       }
     },
-    "mediaConvert": {
-      "minHD": 0.017
-    },
-    "cloudTrail": {
-      "eventM": 1
-    },
-    "backup": {
-      "warmGB": 0.05,
-      "coldGB": 0.01
-    },
-    "appRunner": {
-      "cpuHour": 0.064,
-      "memHour": 0.007
-    },
+    "cloudTrail": { "eventM": 1.00 },
+    "backup": { "warmGB": 0.05, "coldGB": 0.01 },
+    "appRunner": { "cpuHour": 0.064, "memHour": 0.007 },
     "elasticBeanstalk": {
-      "familyRatesLarge": {
-        "t3": 0.0832,
-        "m5": 0.096,
-        "m6g": 0.077,
-        "c5": 0.085,
-        "c6g": 0.068,
-        "r5": 0.126,
-        "r6g": 0.1008
-      },
-      "sizeMultipliers": {
-        "nano": 0.0625,
-        "micro": 0.125,
-        "small": 0.25,
-        "medium": 0.5,
-        "large": 1,
-        "xlarge": 2,
-        "2xlarge": 4,
-        "4xlarge": 8,
-        "8xlarge": 16,
-        "12xlarge": 24,
-        "16xlarge": 32,
-        "24xlarge": 48,
-        "metal": 96
-      },
-      "purchaseDiscounts": {
-        "on-demand": 0,
-        "reserved-1yr": 0.4,
-        "reserved-3yr": 0.6,
-        "spot": 0.7
-      },
-      "ebsRates": {
-        "gp2": 0.1,
-        "gp3": 0.08,
-        "io2": 0.125
-      },
+      "familyRatesLarge": { "t3": 0.0832, "m5": 0.096, "m6g": 0.077, "c5": 0.085, "c6g": 0.068, "r5": 0.126, "r6g": 0.1008, "m7g": 0.096, "m7i": 0.10, "c7g": 0.072, "r7g": 0.136, "m8g": 0.10, "i4i": 0.17 },
+      "sizeMultipliers": { "nano": 0.0625, "micro": 0.125, "small": 0.25, "medium": 0.5, "large": 1.0, "xlarge": 2.0, "2xlarge": 4.0, "4xlarge": 8.0, "8xlarge": 16.0, "12xlarge": 24.0, "16xlarge": 32.0, "24xlarge": 48.0, "metal": 96.0 },
+      "purchaseDiscounts": { "on-demand": 0, "spot": 0.70, "reserved-1yr": 0.40, "reserved-3yr": 0.60 },
+      "ebsRates": { "gp2": 0.10, "gp3": 0.08, "io2": 0.125 },
       "dataTransferGB": 0.09,
-      "windowsMultiplier": 1.45
+      "windowsMultiplier": 1.45,
+      "gpuInstances": {
+        "g4dn.xlarge": 0.736,
+        "g4dn.2xlarge": 0.752,
+        "g4dn.12xlarge": 4.352,
+        "g5.xlarge": 1.408,
+        "g5.2xlarge": 1.624,
+        "g5.12xlarge": 7.09,
+        "g5.48xlarge": 28.00,
+        "g6.xlarge": 1.127,
+        "g6.2xlarge": 1.334,
+        "g6.12xlarge": 5.922,
+        "g6.48xlarge": 23.00
+      }
     },
-    "fsx": {
-      "windowsSingle": 0.13,
-      "windowsMulti": 0.23,
-      "lustreSingle": 0.14,
-      "lustreMulti": 0.14,
-      "ontapSingle": 0.13,
-      "ontapMulti": 0.26,
-      "throughputRate": 1.18
-    },
+    "fsx": { "windowsSingle": 0.13, "windowsMulti": 0.23, "lustreSingle": 0.14, "lustreMulti": 0.14, "ontapSingle": 0.13, "ontapMulti": 0.26, "throughputRate": 1.18 },
     "certificateManager": {},
-    "systemsManager": {
-      "instHour": 0.00695,
-      "callM": 5
-    },
-    "ecr": {
-      "storageGB": 0.1,
-      "dataTransferGB": 0.09
-    },
-    "privateLink": {
-      "endpointHourly": 0.01,
-      "dataGB": 0.01
-    }
+    "systemsManager": { "instHour": 0.00695, "callM": 5.00 },
+    "ecr": { "storageGB": 0.10, "dataTransferGB": 0.09 },
+    "privateLink": { "endpointHourly": 0.01, "dataGB": 0.01 }
   }
 }

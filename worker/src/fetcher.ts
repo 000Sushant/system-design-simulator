@@ -1,5 +1,5 @@
 import { AwsClient } from 'aws4fetch';
-import { RawPriceResult } from './types';
+import { BedrockTokenRates, RawPriceResult } from './types';
 
 /** Milliseconds between consecutive AWS Pricing API calls. 200ms = 5 req/sec (well under 10/sec limit). */
 const RATE_LIMIT_DELAY_MS = 200;
@@ -25,20 +25,24 @@ function sleep(ms: number): Promise<void> {
  */
 export function extractMaxPrice(raw: string): number | null {
   try {
-    const parsed = JSON.parse(raw);
-    const onDemand = parsed.terms?.OnDemand;
-    if (!onDemand) return null;
-    const offer: any = Object.values(onDemand)[0];
-    const dimensions: Record<string, any> = offer?.priceDimensions ?? {};
-    let max = -1;
-    for (const dim of Object.values(dimensions)) {
-      const v = parseFloat(dim?.pricePerUnit?.USD ?? '-1');
-      if (v > max) max = v;
-    }
-    return max >= 0 ? max : null;
+    return extractMaxPriceParsed(JSON.parse(raw));
   } catch {
     return null;
   }
+}
+
+/** Same as extractMaxPrice but for an already-parsed price list item. */
+export function extractMaxPriceParsed(parsed: any): number | null {
+  const onDemand = parsed?.terms?.OnDemand;
+  if (!onDemand) return null;
+  const offer: any = Object.values(onDemand)[0];
+  const dimensions: Record<string, any> = offer?.priceDimensions ?? {};
+  let max = -1;
+  for (const dim of Object.values(dimensions)) {
+    const v = parseFloat(dim?.pricePerUnit?.USD ?? '-1');
+    if (v > max) max = v;
+  }
+  return max >= 0 ? max : null;
 }
 
 /**
@@ -127,6 +131,165 @@ export class PricingFetcher {
     }
   }
 
+  /**
+   * Fetches ALL price list items matching `filters`, following NextToken
+   * pagination (100 items/page, capped at `maxPages` to bound subrequests).
+   * Returns parsed items; a failed page ends pagination with what was
+   * collected so far rather than discarding earlier pages.
+   */
+  private async queryBulk(
+    serviceCode: string,
+    filters: Filter[],
+    maxPages = 8
+  ): Promise<any[]> {
+    const items: any[] = [];
+    let nextToken: string | undefined;
+
+    for (let page = 0; page < maxPages; page++) {
+      await sleep(RATE_LIMIT_DELAY_MS);
+      this.callCount++;
+
+      const body = JSON.stringify({
+        ServiceCode: serviceCode,
+        Filters: filters,
+        MaxResults: 100,
+        ...(nextToken ? { NextToken: nextToken } : {}),
+      });
+
+      let result: RawPriceResult | null = null;
+      try {
+        const attempt = async (retried: boolean): Promise<RawPriceResult | null> => {
+          const resp = await this.aws.fetch(PRICING_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'X-Amz-Target': 'AWSPriceListService.GetProducts',
+              'Content-Type': 'application/x-amz-json-1.1',
+            },
+            body,
+          });
+          if (resp.status === 429 || resp.status === 400) {
+            const text = await resp.text();
+            if (!retried && (text.includes('ThrottlingException') || text.includes('Rate exceeded'))) {
+              console.warn(`[Fetcher] Throttled on bulk call #${this.callCount} (${serviceCode}). Backing off ${THROTTLE_BACKOFF_MS}ms...`);
+              await sleep(THROTTLE_BACKOFF_MS);
+              return attempt(true);
+            }
+            console.warn(`[Fetcher] HTTP ${resp.status} for ${serviceCode} (bulk):`, text.slice(0, 200));
+            return null;
+          }
+          if (!resp.ok) {
+            console.warn(`[Fetcher] HTTP ${resp.status} for ${serviceCode} (bulk)`);
+            return null;
+          }
+          return resp.json();
+        };
+        result = await attempt(false);
+      } catch (e: any) {
+        console.warn(`[Fetcher] Network error for ${serviceCode} (bulk):`, e?.message ?? e);
+      }
+
+      if (!result) break;
+      for (const raw of result.PriceList ?? []) {
+        try { items.push(JSON.parse(raw)); } catch { /* skip malformed item */ }
+      }
+      nextToken = result.NextToken;
+      if (!nextToken) break;
+    }
+    return items;
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Amazon Bedrock
+  //
+  // Two offer files cover Bedrock model pricing:
+  //  - AmazonBedrock: 1P + openly-licensed models (Nova, Titan, Llama,
+  //    Mistral, DeepSeek, ...) with rich attributes; token prices are $/1K.
+  //  - AmazonBedrockFoundationModels: marketplace-listed models (modern
+  //    Claude, Cohere, AI21, Writer, ...) identified only by `servicename`;
+  //    token prices are $/1M.
+  // ────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Standard-tier on-demand TEXT token rates from the AmazonBedrock offer,
+   * keyed by the `model` (or `titanModel`) attribute. Prices are $ per 1K
+   * tokens. Excludes flex/priority/batch tiers and non-text modalities.
+   */
+  async bedrockOnDemand(regionName: string): Promise<BedrockTokenRates> {
+    const IN_RE = /^(input tokens|text input tokens?)$/i;
+    const OUT_RE = /^(output tokens|text output tokens?)$/i;
+
+    const items = await this.queryBulk('AmazonBedrock', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'feature',  Value: 'On-demand Inference' },
+    ]);
+
+    const rates: BedrockTokenRates = {};
+    for (const parsed of items) {
+      const a = parsed.product?.attributes ?? {};
+      if (a.service_tier && a.service_tier !== 'standard') continue;
+      const model: string | undefined = a.model || a.titanModel;
+      if (!model) continue;
+      const it: string = a.inferenceType ?? '';
+      const dir = IN_RE.test(it) ? 'in' : OUT_RE.test(it) ? 'out' : null;
+      if (!dir) continue;
+      const usd = extractMaxPriceParsed(parsed);
+      if (usd === null) continue;
+      rates[model] = rates[model] ?? {};
+      rates[model][dir] = usd;
+    }
+    return rates;
+  }
+
+  /**
+   * Standard-tier on-demand token rates from the marketplace
+   * (AmazonBedrockFoundationModels) offer, keyed by `servicename`. Prices
+   * are $ per 1M tokens. Prefers regional SKUs; falls back to global
+   * (cross-region) SKUs for models only offered that way in a region.
+   */
+  async bedrockMarketplace(regionName: string): Promise<BedrockTokenRates> {
+    // [direction, priority (0 = regional preferred, 1 = global fallback), usagetype suffix]
+    const SUFFIXES: Array<['in' | 'out', 0 | 1, string]> = [
+      ['in',  0, '_InputTokenCount-Units'],
+      ['in',  0, '_input_tokens_standard-Units'],
+      ['out', 0, '_OutputTokenCount-Units'],
+      ['out', 0, '_output_tokens_standard-Units'],
+      ['in',  1, '_InputTokenCount_Global-Units'],
+      ['in',  1, '_input_tokens_global_standard-Units'],
+      ['out', 1, '_OutputTokenCount_Global-Units'],
+      ['out', 1, '_output_tokens_global_standard-Units'],
+    ];
+
+    const items = await this.queryBulk('AmazonBedrockFoundationModels', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+    ]);
+
+    const acc: Record<string, { in: Array<number | undefined>; out: Array<number | undefined> }> = {};
+    for (const parsed of items) {
+      const a = parsed.product?.attributes ?? {};
+      const name: string | undefined = a.servicename;
+      const usagetype: string = a.usagetype ?? '';
+      if (!name) continue;
+      for (const [dir, tier, suffix] of SUFFIXES) {
+        if (!usagetype.endsWith(suffix)) continue;
+        const usd = extractMaxPriceParsed(parsed);
+        if (usd === null) continue;
+        acc[name] = acc[name] ?? { in: [], out: [] };
+        acc[name][dir][tier] = usd;
+      }
+    }
+
+    const rates: BedrockTokenRates = {};
+    for (const [name, v] of Object.entries(acc)) {
+      const inRate = v.in[0] ?? v.in[1];
+      const outRate = v.out[0] ?? v.out[1];
+      if (inRate === undefined && outRate === undefined) continue;
+      rates[name] = {};
+      if (inRate !== undefined) rates[name].in = inRate;
+      if (outRate !== undefined) rates[name].out = outRate;
+    }
+    return rates;
+  }
+
   // ────────────────────────────────────────────────────────────────────────
   // EC2
   // ────────────────────────────────────────────────────────────────────────
@@ -172,13 +335,23 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   rdsInstance(regionName: string, instanceType: string, engine = 'MySQL'): Promise<number | null> {
-    return this.query('AmazonRDS', [
-      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'instanceType',     Value: instanceType },
-      { Type: 'TERM_MATCH', Field: 'databaseEngine',   Value: engine },
-      { Type: 'TERM_MATCH', Field: 'deploymentOption', Value: 'Single-AZ' },
-      { Type: 'TERM_MATCH', Field: 'licenseModel',     Value: 'No license required' },
-    ]);
+    const filters = [
+      { Type: 'TERM_MATCH' as const, Field: 'location',         Value: regionName },
+      { Type: 'TERM_MATCH' as const, Field: 'instanceType',     Value: instanceType },
+      { Type: 'TERM_MATCH' as const, Field: 'databaseEngine',   Value: engine },
+      { Type: 'TERM_MATCH' as const, Field: 'deploymentOption', Value: 'Single-AZ' },
+    ];
+    if (engine.includes('SQL Server') || engine.includes('Oracle') || engine.includes('se2') || engine.includes('ee') || engine.includes('web')) {
+      filters.push({ Type: 'TERM_MATCH' as const, Field: 'licenseModel', Value: 'License included' });
+    } else {
+      filters.push({ Type: 'TERM_MATCH' as const, Field: 'licenseModel', Value: 'No license required' });
+    }
+    // Pin the plain instance-hour SKU: the same filters also match RDS
+    // Extended Support surcharge SKUs.
+    return this.query('AmazonRDS', filters, p => {
+      const ut = String(p.product?.attributes?.usagetype ?? '');
+      return ut.includes('InstanceUsage') && !ut.includes('ExtendedSupport');
+    }, 100);
   }
 
   rdsStorageGp2(regionName: string): Promise<number | null> {
@@ -194,12 +367,18 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   auroraInstance(regionName: string, instanceType: string): Promise<number | null> {
+    // Pin the Aurora Standard SKU (usagetype "InstanceUsage:<type>"); the same
+    // filters also match the pricier I/O-Optimized SKU ("InstanceUsageIOOptimized:").
+    // The simulator applies ioOptimizedComputeMultiplier separately.
     return this.query('AmazonRDS', [
       { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
       { Type: 'TERM_MATCH', Field: 'instanceType',     Value: instanceType },
       { Type: 'TERM_MATCH', Field: 'databaseEngine',   Value: 'Aurora MySQL' },
       { Type: 'TERM_MATCH', Field: 'deploymentOption', Value: 'Single-AZ' },
-    ]);
+    ], p => {
+      const ut = String(p.product?.attributes?.usagetype ?? '');
+      return ut.includes('InstanceUsage:') && !ut.includes('IOOptimized');
+    }, 100);
   }
 
   auroraServerlessAcu(regionName: string): Promise<number | null> {
@@ -215,11 +394,19 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   elastiCacheInstance(regionName: string, instanceType: string): Promise<number | null> {
+    // Pin the plain node-hour SKU ("NodeUsage:<type>"); the same filters also
+    // match Extended Support surcharges ("ExtendedSupportYr3-NodeUsage:") and
+    // AWS Outposts SKUs ("Outpost-NodeUsage:").
     return this.query('AmazonElastiCache', [
       { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
       { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
       { Type: 'TERM_MATCH', Field: 'cacheEngine',  Value: 'Redis' },
-    ]);
+    ], p => {
+      const a = p.product?.attributes ?? {};
+      const ut = String(a.usagetype ?? '');
+      return ut.includes('NodeUsage:') && !ut.includes('ExtendedSupport')
+        && !ut.includes('Outpost') && a.locationType !== 'AWS Outposts';
+    }, 100);
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -660,5 +847,185 @@ export class PricingFetcher {
     if (regionName.startsWith('Asia Pacific') || regionName.startsWith('Middle East') || regionName.startsWith('Africa')) return 0.11;
     // US, Canada, EU
     return 0.09;
+  }
+
+  async sageMakerHosting(regionName: string): Promise<Record<string, number>> {
+    const items = await this.queryBulk('AmazonSageMaker', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'component', Value: 'Hosting' },
+    ]);
+    const instances: Record<string, number> = {};
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const inst = a.instanceType;
+      if (!inst) continue;
+      const price = extractMaxPriceParsed(item);
+      if (price !== null) {
+        const key = inst.endsWith('-Hosting') ? inst.replace('-Hosting', '') : inst;
+        instances[key] = price;
+      }
+    }
+    return instances;
+  }
+
+  async kinesisBulk(regionName: string): Promise<Record<string, number>> {
+    const items = await this.queryBulk('AmazonKinesis', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ]);
+    const result: Record<string, number> = {};
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const group = a.group;
+      const price = extractMaxPriceParsed(item);
+      if (price === null) continue;
+      if (group === 'Provisioned shard hour') result.shardHour = price;
+      else if (group === 'Payload Units') result.putM = price * 1_000_000;
+      else if (group === 'Stream Hour') result.onDemandStreamHour = price;
+      else if (group === 'Data Ingestion') result.onDemandIngestGB = price;
+      else if (group === 'Data Retrieval') result.onDemandEgressGB = price;
+      else if (group === 'Enhanced Fan-Out retrieval') result.efoEgressGB = price;
+      else if (group === 'Consumer shard hour') result.consumerShardHour = price;
+    }
+    return result;
+  }
+
+  async dynamoDbBulk(regionName: string): Promise<Record<string, any>> {
+    const items = await this.queryBulk('AmazonDynamoDB', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ]);
+    const result: Record<string, any> = {
+      std: {},
+      ia: {}
+    };
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const group = a.group;
+      const operation = a.operation;
+      const volumeType = a.volumeType;
+      const price = extractMaxPriceParsed(item);
+      if (price === null) continue;
+
+      if (group === 'DDB-ReadUnits' && operation === 'PayPerRequestThroughput') {
+        result.std.readM = price * 1_000_000;
+      } else if (group === 'DDB-WriteUnits' && operation === 'PayPerRequestThroughput') {
+        result.std.writeM = price * 1_000_000;
+      } else if (volumeType === 'Amazon DynamoDB - Indexed DataStore') {
+        result.std.storageGB = price;
+      } else if (volumeType === 'Amazon DynamoDB - Infrequent Access Indexed DataStore') {
+        result.ia.storageGB = price;
+      } else if (group === 'DDB-ReadUnitsIA' && operation === 'PayPerRequestThroughputIA') {
+        result.ia.readM = price * 1_000_000;
+      } else if (group === 'DDB-WriteUnitsIA' && operation === 'PayPerRequestThroughputIA') {
+        result.ia.writeM = price * 1_000_000;
+      } else if (operation === 'PITRBackupStorage') {
+        result.pitrStorageGB = price;
+      } else if (operation === 'OnDemandBackupStorage') {
+        result.backupStorageGB = price;
+      } else if (operation === 'RestoreTable') {
+        result.restoreGB = price;
+      } else if (operation === 'GetRecords') {
+        result.streamsRequestsM = price * 100_000;
+      } else if (operation === 'ExportTableToS3') {
+        result.exportGB = price;
+      }
+    }
+    return result;
+  }
+
+  async mskBulk(regionName: string): Promise<Record<string, any>> {
+    const items = await this.queryBulk('AmazonMSK', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ]);
+    const result: Record<string, any> = {
+      instances: {},
+      expressInstances: {},
+      serverless: {}
+    };
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const group = a.group;
+      const type = a.usagetype;
+      const computeFamily = a.computeFamily;
+      const price = extractMaxPriceParsed(item);
+      if (price === null) continue;
+
+      if (group === 'Broker') {
+        if (computeFamily) {
+          result.instances[`kafka.${computeFamily}`] = price;
+        }
+      } else if (group === 'ExpressBroker') {
+        if (computeFamily) {
+          result.expressInstances[`express.${computeFamily}`] = price;
+        }
+      } else if (type?.includes('KafkaServerless')) {
+        if (type.includes('ClusterPerHour')) result.serverless.clusterHour = price;
+        else if (type.includes('PartitionHour')) result.serverless.partitionHour = price;
+        else if (type.includes('TrafficIn-Bytes')) result.serverless.ingestGB = price;
+        else if (type.includes('TrafficOut-Bytes')) result.serverless.egressGB = price;
+      } else if (group === 'BrokerStorage') {
+        result.storageGB = price;
+      } else if (group === 'TieredStorage') {
+        result.tieredStorageGB = price;
+      }
+    }
+    return result;
+  }
+
+  async rekognitionBulk(regionName: string): Promise<Record<string, number>> {
+    const items = await this.queryBulk('AmazonRekognition', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ]);
+    const result: Record<string, number> = {};
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const operation = a.operation;
+      const group = a.group;
+      const price = extractMaxPriceParsed(item);
+      if (price === null) continue;
+
+      if (operation === 'DetectFaces' || operation === 'DetectLabels') {
+        result.imageM = price * 1000;
+      } else if (operation === 'StartFaceDetection' || operation === 'StartLabelDetection') {
+        result.videoArchivedMin = price;
+      } else if (operation === 'StartFaceSearch') {
+        result.videoLiveMin = price;
+      } else if (group === 'FaceVectors') {
+        result.faceVectorM = price * 1_000_000;
+      }
+    }
+    return result;
+  }
+
+  async mediaConvertBulk(regionName: string): Promise<any[]> {
+    return this.queryBulk('AWSElementalMediaConvert', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ]);
+  }
+
+  async mqBulk(regionName: string): Promise<Record<string, any>> {
+    const items = await this.queryBulk('AmazonMQ', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ]);
+    const result: Record<string, any> = {
+      instances: {},
+      storage: {}
+    };
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const inst = a.instanceType;
+      const engine = a.brokerEngine;
+      const deploy = a.deploymentOption;
+      const storageMedia = a.storageMedia;
+      const price = extractMaxPriceParsed(item);
+      if (price === null) continue;
+
+      if (inst && engine === 'ActiveMQ' && deploy === 'Single-AZ') {
+        result.instances[`mq.${inst}`] = price;
+      }
+      if (storageMedia) {
+        result.storage[storageMedia] = price;
+      }
+    }
+    return result;
   }
 }

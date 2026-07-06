@@ -60,4 +60,32 @@ describe('buildPricingFile', () => {
     expect(a.route53.zoneMonthly).toBe(1.11);
     expect(b.route53.zoneMonthly).toBe(0.5); // unaffected by the first build's override
   });
+
+  it('overrides Bedrock token rates from both offers, scaling od prices ×1000', async () => {
+    const fetcher = new Proxy(
+      {},
+      {
+        get: (_t, prop: string) => async () => {
+          if (prop === 'bedrockOnDemand') {
+            // AmazonBedrock offer: $/1K tokens
+            return { 'Nova Pro': { in: 0.00094, out: 0.00376 } };
+          }
+          if (prop === 'bedrockMarketplace') {
+            // Marketplace offer: $/1M tokens
+            return { 'Claude Sonnet 5 (Amazon Bedrock Edition)': { in: 2.5, out: 12.5 } };
+          }
+          return null;
+        },
+      },
+    ) as unknown as PricingFetcher;
+
+    const svc = await buildPricingFile(region, fetcher);
+    expect(svc.bedrock.inM['nova-pro']).toBe(0.94);
+    expect(svc.bedrock.outM['nova-pro']).toBe(3.76);
+    expect(svc.bedrock.inM['claude-sonnet-5']).toBe(2.5);
+    expect(svc.bedrock.outM['claude-sonnet-5']).toBe(12.5);
+    // Models absent from the region keep their baseline rate
+    expect(svc.bedrock.inM['claude-3-haiku']).toBe(0.25);
+    expect(svc.bedrock.outM['glm-5']).toBe(3.2);
+  });
 });
