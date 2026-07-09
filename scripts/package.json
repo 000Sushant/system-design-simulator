@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "validate:pricing": "node --env-file=.env validate-pricing.mjs"
+    "validate:pricing": "node --env-file=.env validate-pricing.mjs",
+    "generate:dashboards": "node generate-html-reports.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-pricing": "^3.0.0"

@@ -363,6 +363,26 @@ const BASELINE_SERVICES: Record<string, any> = {
   systemsManager: { instHour: 0.00695, callM: 5.00 },
   ecr: { storageGB: 0.10, dataTransferGB: 0.09 },
   privateLink: { endpointHourly: 0.01, dataGB: 0.01 },
+  amplify: { buildMinute: 0.01, buildMinuteLarge: 0.025, buildMinuteXLarge: 0.10, dataServedGB: 0.15, storageGB: 0.023 },
+  ses: { email: 0.0001, inboundEmail: 0.0001, attachmentGB: 0.12, dedicatedIP: 24.95, vdmEmail: 0.00007 },
+  documentDb: {
+    instances: { 'db.t3.medium': 0.078, 'db.r6g.large': 0.2631, 'db.r6g.xlarge': 0.5263 },
+    instancesIO: { 'db.t3.medium': 0.0858, 'db.r6g.large': 0.2895, 'db.r6g.xlarge': 0.5789 },
+    storageGB: 0.10, storageIOGB: 0.30, ioMillion: 0.20,
+  },
+  neptune: {
+    instances: { 'db.t3.medium': 0.098, 'db.r6g.large': 0.3287, 'db.r6g.2xlarge': 1.3149 },
+    storageGB: 0.10, ioMillion: 0.20,
+  },
+  timestream: { ingestGB: 0.50, memoryGBHr: 0.036, magneticGB: 0.03, scannedGB: 0.01 },
+  appConfig: { requestM: 0.20, deployment: 0.0008 },
+  appMesh: {},
+  cloudMap: { resourceMonth: 0.10, queryM: 1.00 },
+  quickSight: { authorPro: 40.0, reader: 3.0, spiceGB: 0.38 },
+  lightsail: {
+    bundles: { '0.5GB': 0.00672, '1GB': 0.0094, '2GB': 0.01612, '4GB': 0.03225, '8GB': 0.05913, '16GB': 0.1129, '32GB': 0.22043 },
+    overageGB: 0.09,
+  },
 };
 
 /**
@@ -771,6 +791,92 @@ export async function buildPricingPhase(
 
     svc.apiGateway.wsConnectionMinuteM = round(BASELINE_SERVICES.apiGateway.wsConnectionMinuteM * ratio, 4)!;
   }
+
+  // ── AWS Amplify ──────────────────────────────────────────────────────────
+  const ampB = await fetcher.amplifyBuild(loc);
+  const ampBL = await fetcher.amplifyBuild(loc, 'Large16GB');
+  const ampBXL = await fetcher.amplifyBuild(loc, 'Xlarge72GB');
+  const ampS = await fetcher.amplifyStorage(loc);
+  const ampD = await fetcher.amplifyDataTransfer(loc);
+  if (ampB !== null) svc.amplify.buildMinute = round(ampB, 4)!;
+  if (ampBL !== null) svc.amplify.buildMinuteLarge = round(ampBL, 4)!;
+  if (ampBXL !== null) svc.amplify.buildMinuteXLarge = round(ampBXL, 4)!;
+  if (ampS !== null) svc.amplify.storageGB = round(ampS, 4)!;
+  if (ampD !== null) svc.amplify.dataServedGB = round(ampD, 4)!;
+
+  // ── Amazon SES ────────────────────────────────────────────────────────────
+  const sesOut = await fetcher.sesOutboundEmail(loc);
+  const sesIn = await fetcher.sesInboundEmail(loc);
+  const sesAtt = await fetcher.sesAttachment(loc);
+  const sesDip = await fetcher.sesDedicatedIp(loc);
+  const sesVdm = await fetcher.sesVdm(loc);
+  if (sesOut !== null) svc.ses.email = round(sesOut, 6)!;
+  if (sesIn !== null) svc.ses.inboundEmail = round(sesIn, 6)!;
+  if (sesAtt !== null) svc.ses.attachmentGB = round(sesAtt, 4)!;
+  if (sesDip !== null) svc.ses.dedicatedIP = round(sesDip, 2)!;
+  if (sesVdm !== null) svc.ses.vdmEmail = round(sesVdm, 6)!;
+
+  // ── Amazon DocumentDB ─────────────────────────────────────────────────────
+  for (const cls of Object.keys(svc.documentDb.instances)) {
+    const std = await fetcher.docDbInstance(loc, cls, false);
+    if (std !== null) svc.documentDb.instances[cls] = round(std, 4)!;
+    const io = await fetcher.docDbInstance(loc, cls, true);
+    if (io !== null) svc.documentDb.instancesIO[cls] = round(io, 4)!;
+  }
+  const docStor = await fetcher.docDbStorage(loc, false);
+  const docStorIO = await fetcher.docDbStorage(loc, true);
+  const docIo = await fetcher.docDbIo(loc);
+  if (docStor !== null) svc.documentDb.storageGB = round(docStor, 4)!;
+  if (docStorIO !== null) svc.documentDb.storageIOGB = round(docStorIO, 4)!;
+  if (docIo !== null) svc.documentDb.ioMillion = round(docIo * 1_000_000, 4)!;
+
+  // ── Amazon Neptune ────────────────────────────────────────────────────────
+  for (const cls of Object.keys(svc.neptune.instances)) {
+    const rate = await fetcher.neptuneInstance(loc, cls);
+    if (rate !== null) svc.neptune.instances[cls] = round(rate, 4)!;
+  }
+  const nepStor = await fetcher.neptuneStorage(loc);
+  const nepIo = await fetcher.neptuneIo(loc);
+  if (nepStor !== null) svc.neptune.storageGB = round(nepStor, 4)!;
+  if (nepIo !== null) svc.neptune.ioMillion = round(nepIo * 1_000_000, 4)!;
+
+  // ── Amazon Timestream (regional availability is limited — nulls keep baseline) ──
+  const tsIngest = await fetcher.timestreamIngest(loc);
+  const tsMem = await fetcher.timestreamMemoryStore(loc);
+  const tsMag = await fetcher.timestreamMagneticStore(loc);
+  const tsScan = await fetcher.timestreamScanned(loc);
+  if (tsIngest !== null) svc.timestream.ingestGB = round(tsIngest, 4)!;
+  if (tsMem !== null) svc.timestream.memoryGBHr = round(tsMem, 4)!;
+  if (tsMag !== null) svc.timestream.magneticGB = round(tsMag, 4)!;
+  if (tsScan !== null) svc.timestream.scannedGB = round(tsScan, 4)!;
+
+  // ── AWS AppConfig ─────────────────────────────────────────────────────────
+  const acReq = await fetcher.appConfigRequests(loc);
+  const acDep = await fetcher.appConfigDeployment(loc);
+  if (acReq !== null) svc.appConfig.requestM = round(acReq * 1_000_000, 4)!;
+  if (acDep !== null) svc.appConfig.deployment = round(acDep, 6)!;
+
+  // ── AWS Cloud Map ─────────────────────────────────────────────────────────
+  const cmRes = await fetcher.cloudMapResource(loc);
+  const cmQry = await fetcher.cloudMapQuery(loc);
+  if (cmRes !== null) svc.cloudMap.resourceMonth = round(cmRes, 4)!;
+  if (cmQry !== null) svc.cloudMap.queryM = round(cmQry * 1_000_000, 4)!;
+
+  // ── Amazon QuickSight ─────────────────────────────────────────────────────
+  const qsAuthor = await fetcher.quickSightAuthorPro(loc);
+  const qsReader = await fetcher.quickSightReader(loc);
+  const qsSpice = await fetcher.quickSightSpice(loc);
+  if (qsAuthor !== null) svc.quickSight.authorPro = round(qsAuthor, 2)!;
+  if (qsReader !== null) svc.quickSight.reader = round(qsReader, 2)!;
+  if (qsSpice !== null) svc.quickSight.spiceGB = round(qsSpice, 4)!;
+
+  // ── Amazon Lightsail ──────────────────────────────────────────────────────
+  const lsBundles = (await fetcher.lightsailBundles(loc, Object.keys(svc.lightsail.bundles))) || {};
+  for (const [size, rate] of Object.entries(lsBundles)) {
+    if (rate !== null) svc.lightsail.bundles[size] = round(rate, 5)!;
+  }
+  const lsOver = await fetcher.lightsailOverage(loc);
+  if (lsOver !== null) svc.lightsail.overageGB = round(lsOver, 4)!;
 
   return svc;
   }

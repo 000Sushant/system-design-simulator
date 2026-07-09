@@ -4,8 +4,8 @@ exports[`SimulationService > matches the recorded metrics for a fixed graph afte
 {
   "nodes": [
     {
-      "avgLatency": 58,
-      "cpuPressure": 73.75,
+      "avgLatency": 46,
+      "cpuPressure": 55.75,
       "errorRate": 0,
       "queueSize": 0,
       "status": "normal",
@@ -13,16 +13,16 @@ exports[`SimulationService > matches the recorded metrics for a fixed graph afte
       "type": "client",
     },
     {
-      "avgLatency": 38,
-      "cpuPressure": 62.5,
+      "avgLatency": 30.01,
+      "cpuPressure": 6.68,
       "errorRate": 0,
       "queueSize": 0,
-      "status": "busy",
+      "status": "normal",
       "throughput": 50,
       "type": "ec2",
     },
     {
-      "avgLatency": 10.14,
+      "avgLatency": 10,
       "cpuPressure": 16.2,
       "errorRate": 0,
       "queueSize": 0,

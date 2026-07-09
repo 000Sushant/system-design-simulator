@@ -93,16 +93,17 @@
     0 4px 24px rgba(0, 0, 0, 0.07),
     inset 0 1px 0 var(--c-white-90);
 
-  /* Smooth morph transition */
+  /* Expand transition (pill -> full bar). One easing/duration for every property
+     so size and color move together — no overshoot, no lag. Matches landing nav. */
   transition:
-    width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-    max-width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-    border-radius 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-    padding 0.4s ease,
-    top 0.4s ease,
-    background 0.4s ease,
-    backdrop-filter 0.4s ease,
-    box-shadow 0.4s ease;
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 
   will-change: width, border-radius;
 }
@@ -115,33 +116,38 @@
   pointer-events: none;
 }
 
-/* Scrolled: Compact Dark Glass Dynamic Island Pill (liquid glass) */
+/* Scrolled: Apple-style Dynamic Island pill (back + logo + search + theme toggle) */
 .docs-nav.nav-scrolled {
   top: 14px;
-  width: auto;
-  max-width: 480px;
-  /* fit back button and search bar */
+  /* Fixed length (not auto/max-content) so `width` animates as a length instead of
+     a discrete keyword swap mid-transition — that swap is the "shrink, then jump"
+     step. The search (flex:1) absorbs the slack, so no gap. */
+  width: 560px;
+  max-width: calc(100vw - 32px);
   border-radius: 999px;
   padding: 0 10px 0 14px;
-  /* Clearer glass: low tint so the refracted content reads through crisply */
-  background: rgba(10, 12, 24, 0.34);
-  /* url(#liquid-glass) warps the page content behind the pill;
-     light blur keeps it clear while saturate/contrast lift the refraction.
-     Chrome/Edge/Safari only — bg + box-shadow below are a graceful fallback. */
-  backdrop-filter: url("#liquid-glass") blur(6px) saturate(180%) contrast(105%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  border-color: var(--c-white-12);
+  /* Near-opaque dark pill (no SVG refraction) — cheap, interpolatable blur means
+     no per-frame re-raster while the pill resizes, so the shrink stays smooth. */
+  background: rgba(9, 9, 12, 0.82);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.08);
   box-shadow:
-    /* outer depth */
-    0 4px 32px var(--c-black-45),
-    0 0 12px rgba(0, 0, 0, 0.15),
-    /* glass edge highlights (ported from the liquid-glass button) */
-    inset 3px 3px 0.5px -3.5px rgba(255, 255, 255, 0.09),
-    inset -3px -3px 0.5px -3.5px var(--c-white-85),
-    inset 1px 1px 1px -0.5px var(--c-white-60),
-    inset -1px -1px 1px -0.5px var(--c-white-60),
-    inset 0 0 6px 6px var(--c-white-12),
-    inset 0 0 2px 2px var(--c-white-06);
+    0 8px 28px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+
+  /* Collapse transition — same easing/duration as expand; symmetric, no overshoot. */
+  transition:
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-left {
@@ -166,6 +172,7 @@
   align-items: center;
   gap: 8px;
   outline: none;
+  flex-shrink: 0;
   box-shadow:
     0 4px 12px var(--c-black-04),
     inset 0 1px 1px var(--c-white-90);
@@ -181,7 +188,7 @@
   color: var(--c-violet);
 }
 
-/* Scrolled back button dark theme style */
+/* Scrolled back button: dark glass to match the pill */
 .docs-nav.nav-scrolled .back-btn {
   background: var(--c-night-90);
   border-color: var(--c-white-12);
@@ -202,12 +209,19 @@
   font-size: 14px;
   font-weight: 900;
   color: var(--c-ink);
-  transition: opacity 0.3s ease, max-width 0.3s ease;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease, opacity 0.2s ease;
+}
+
+.brand-mark:hover {
+  opacity: 0.75;
 }
 
 .brand-mark img {
   width: 28px;
   height: 28px;
+  flex-shrink: 0;
 }
 
 .brand-mark span {
@@ -233,14 +247,33 @@
   letter-spacing: 0.05em;
 }
 
-/* Hide entire brand mark in scrolled mode to make room for Search & Back button */
-.docs-nav.nav-scrolled .brand-mark {
-  opacity: 0;
+/* On shrink keep the logo; collapse only the brand text + DOCS badge (like landing).
+   min-width:0 lets these flex items shrink below content width; padding/border-width
+   are zeroed so the padded DOCS badge doesn't leave a visible sliver. */
+.docs-nav.nav-scrolled .brand-mark span,
+.docs-nav.nav-scrolled .brand-mark small {
+  min-width: 0;
   max-width: 0;
+  padding: 0;
+  border-width: 0;
   overflow: hidden;
-  margin: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease, max-width 0.35s ease, margin 0.35s ease;
+  transition:
+    max-width 0.22s ease,
+    padding 0.22s ease,
+    border-width 0.22s ease;
+}
+
+/* On expand, hold the label fully collapsed (width AND padding/border) until the
+   pill has opened, then reveal — so the DOCS badge never reappears early. */
+.docs-nav:not(.nav-scrolled) .brand-mark span,
+.docs-nav:not(.nav-scrolled) .brand-mark small {
+  min-width: 0;
+  max-width: 200px;
+  overflow: hidden;
+  transition:
+    max-width 0.25s ease 0.22s,
+    padding 0.25s ease 0.22s,
+    border-width 0.25s ease 0.22s;
 }
 
 /* Claymorphic search bar */

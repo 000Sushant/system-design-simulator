@@ -888,7 +888,7 @@
                 <small>{{ selectedOutgoingConnections.length }} targets</small>
               </div>
               <p class="traffic-hint">
-                Share of this node's output sent to each downstream — set per edge.
+                Share of this node's output sent to each downstream, set per edge.
               </p>
               <div class="field-list traffic-rows">
                 @for (item of selectedOutgoingConnections; track trackByConnId($index, item)) {
@@ -910,6 +910,47 @@
                   </label>
                 }
               </div>
+            </div>
+          }
+          <!-- Effective capacity: what the engine actually lets this service absorb.
+               Decoupled from the Requests/Second cost param so billing volume and
+               capacity can't be confused for each other. -->
+          @if (selectedCapacityInfo; as capInfo) {
+            <div
+              class="capacity-banner"
+              [class.overloaded]="capInfo.utilization > 100"
+              [class.hot]="capInfo.utilization > 78 && capInfo.utilization <= 100"
+            >
+              <i class="fas fa-tachometer-alt"></i>
+              <div class="capacity-banner-text">
+                <span class="capacity-banner-value">
+                  Effective capacity:
+                  <strong>
+                    @if (capInfo.capacity >= 100000000) {
+                      Unlimited
+                    } @else {
+                      {{ capInfo.capacity | number: '1.0-0' }} rps
+                    }
+                  </strong>
+                </span>
+                <small>{{ capInfo.sourceLabel }}</small>
+                @if (capInfo.liveRps > 0 && capInfo.capacity < 100000000) {
+                  <span class="capacity-banner-live">
+                    Live load: <strong>{{ capInfo.liveRps | number: '1.0-0' }} rps</strong> ·
+                    <strong>{{ capInfo.utilization | number: '1.0-1' }}%</strong> of capacity
+                  </span>
+                }
+                @if (capInfo.utilization > 100) {
+                  <small class="capacity-banner-warn">{{ capInfo.saturationHint }}</small>
+                }
+              </div>
+              <i
+                class="fas fa-info-circle info-icon"
+                [title]="
+                  'The load the simulation lets this service absorb before it saturates. Derived from sizing parameters (instances, vCPU, RCU/WCU, shards…) or the default AWS quota, NOT from Requests/Second, which only drives the cost estimate. ' +
+                  capInfo.saturationHint
+                "
+              ></i>
             </div>
           }
           @if (!hasJsonModel) {
@@ -965,10 +1006,12 @@
                     @if (field.suffix) {
                       <small>{{ field.suffix }}</small>
                     }
-                    <i
-                      class="fas fa-gauge-high info-icon sim-icon"
-                      title="Simulation parameter — drives the live traffic, latency &amp; utilization simulation."
-                    ></i>
+                    @if (isSimParam(node, field.key)) {
+                      <i
+                        class="fas fa-gauge-high info-icon sim-icon"
+                        title="Simulation parameter, drives the live traffic, latency &amp; utilization simulation."
+                      ></i>
+                    }
                     @if (field.affectsCost && roleMode === 'architect') {
                       <i class="fas fa-coins info-icon cost-icon" title="Affects monthly cost"></i>
                     }
@@ -1021,10 +1064,12 @@
                     [class.cost-field]="field.affectsCost && roleMode === 'architect'"
                   >
                     {{ field.label }}
-                    <i
-                      class="fas fa-gauge-high info-icon sim-icon"
-                      title="Simulation parameter — drives the live traffic, latency &amp; utilization simulation."
-                    ></i>
+                    @if (isSimParam(node, field.key)) {
+                      <i
+                        class="fas fa-gauge-high info-icon sim-icon"
+                        title="Simulation parameter, drives the live traffic, latency &amp; utilization simulation."
+                      ></i>
+                    }
                     @if (field.affectsCost && roleMode === 'architect') {
                       <i
                         class="fas fa-coins info-icon cost-icon"
@@ -1148,10 +1193,16 @@
                               *ngIf, so the rule can't statically see the association; nesting provides it at runtime. -->
                 @for (field of selectedCostParams; track field) {
                   <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-                  <label (mousemove)="onMouseMove($event)" [class.readonly-row]="field.readonly">
-                    <!-- Corner lock icon for readonly fields -->
-                    @if (field.readonly) {
-                      <i class="fas fa-lock readonly-corner-lock"></i>
+                  <label
+                    (mousemove)="onMouseMove($event)"
+                    [class.readonly-row]="isFieldLocked(node, field)"
+                  >
+                    <!-- Corner lock icon for readonly / RPS-synced fields -->
+                    @if (isFieldLocked(node, field)) {
+                      <i
+                        class="fas fa-lock readonly-corner-lock"
+                        [title]="fieldLockTooltip(node, field)"
+                      ></i>
                     }
                     <span class="field-label-with-info cost-field">
                       {{ field.label }}
@@ -1189,7 +1240,10 @@
                       }
                     </span>
                     @if (field.type !== 'enum' && field.type !== 'boolean') {
-                      <div class="number-control" [class.readonly-input-wrap]="field.readonly">
+                      <div
+                        class="number-control"
+                        [class.readonly-input-wrap]="isFieldLocked(node, field)"
+                      >
                         <input
                           type="number"
                           [min]="field.min"
@@ -1202,7 +1256,7 @@
                           "
                           (ngModelChange)="updateConfig(field.key, $event)"
                           [class.input-error]="isFieldInvalid(field)"
-                          [disabled]="field.readonly"
+                          [disabled]="isFieldLocked(node, field)"
                         />
                         @if (isFieldInvalid(field)) {
                           <span class="field-error-text">Min {{ field.min }} required</span>
@@ -1213,7 +1267,7 @@
                       <select
                         [ngModel]="node.config[field.key] || field.default"
                         (ngModelChange)="updateSelectConfig(field.key, $event)"
-                        [disabled]="field.readonly"
+                        [disabled]="isFieldLocked(node, field)"
                       >
                         @if (field.options?.length) {
                           @for (opt of field.options; track opt) {
@@ -1285,7 +1339,7 @@
             }
             @if (roleMode === 'architect' && costEvaluationExpanded && costBreakdown) {
               <div class="cost-evaluation-panel">
-                @for (line of costBreakdown.lines; track line) {
+                @for (line of costBreakdown.lines; track line.label) {
                   <div class="cost-line-item">
                     <div class="cost-line-header">
                       <span class="cost-line-label">{{ line.label }}</span>

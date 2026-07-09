@@ -558,7 +558,18 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     shell?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  /** Back returns to wherever docs was opened from: the playground if the user
+   *  came from there, otherwise the landing page. The origin is stashed in
+   *  sessionStorage by the opener (survives docs' own internal URL updates). */
   goBack(): void {
+    const target = sessionStorage.getItem('docsOrigin') === '/playground' ? '/playground' : '/';
+    window.history.pushState(null, '', target);
+    window.dispatchEvent(new Event('popstate'));
+  }
+
+  /** The logo always returns to the landing page. */
+  goHome(event: Event): void {
+    event.preventDefault();
     window.history.pushState(null, '', '/');
     window.dispatchEvent(new Event('popstate'));
   }

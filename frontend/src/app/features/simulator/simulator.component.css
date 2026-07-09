@@ -9,7 +9,7 @@
   text-size-adjust: 100%;
   --toolbar-height: 64px;
   --run-stats-mobile-collapsed: 56px;
-  --run-stats-mobile-expanded: 148px;
+  --run-stats-mobile-expanded: 104px;
 }
 
 button,
@@ -530,6 +530,7 @@ select {
 .run-stats-desktop-container {
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
   position: relative;
@@ -662,6 +663,7 @@ select {
 .island-expanded {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   width: 100%;
   height: 100%;
@@ -3610,6 +3612,7 @@ small {
   }
 
   .sim-actions {
+    order: 1;
     gap: 4px;
   }
 
@@ -3620,6 +3623,10 @@ small {
   }
 
   .cost-highlight {
+    order: 2;
+    display: flex;
+    justify-content: center;
+    margin-right: 0;
     padding: 2px 8px;
   }
 
@@ -3628,6 +3635,10 @@ small {
   }
 
   .stats-data {
+    order: 3;
+    flex-basis: 100%;
+    display: flex;
+    justify-content: center;
     gap: 6px;
   }
 
@@ -4719,6 +4730,7 @@ small {
 
 .run-stats.developer-mode .island-compact {
   max-width: 140px;
+  justify-content: center;
 }
 
 /* Override: collapse the compact pill fully on hover/open
@@ -5330,6 +5342,87 @@ small {
   font-size: 11px;
   line-height: 1.4;
   color: var(--c-slate-500);
+}
+
+/* Effective-capacity banner: the engine-computed ceiling for the selected
+   service, shown so the Requests/Second cost param isn't read as capacity. */
+.capacity-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  border-radius: 10px;
+  background: rgba(5, 150, 105, 0.07);
+}
+
+.capacity-banner > .fa-tachometer-alt {
+  color: #059669;
+  font-size: 14px;
+}
+
+.capacity-banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.capacity-banner-value {
+  font-size: 12px;
+  color: var(--c-slate-700, #334155);
+}
+
+.capacity-banner-value strong {
+  color: #047857;
+}
+
+.capacity-banner-text small {
+  font-size: 10.5px;
+  color: var(--c-slate-500);
+}
+
+.capacity-banner-live {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--c-slate-700, #334155);
+}
+
+.capacity-banner-live strong {
+  color: #047857;
+}
+
+.capacity-banner-warn {
+  margin-top: 2px;
+  color: #b45309 !important;
+}
+
+/* Approaching capacity (>78%): warm amber. */
+.capacity-banner.hot {
+  border-color: rgba(180, 83, 9, 0.35);
+  background: rgba(217, 119, 6, 0.08);
+}
+
+.capacity-banner.hot > .fa-tachometer-alt,
+.capacity-banner.hot .capacity-banner-live strong {
+  color: #b45309;
+}
+
+/* Past capacity: red, and the saturation hint explains what happens next. */
+.capacity-banner.overloaded {
+  border-color: rgba(190, 18, 60, 0.35);
+  background: rgba(190, 18, 60, 0.07);
+}
+
+.capacity-banner.overloaded > .fa-tachometer-alt,
+.capacity-banner.overloaded .capacity-banner-live strong,
+.capacity-banner.overloaded .capacity-banner-value strong {
+  color: #be123c;
+}
+
+.capacity-banner.overloaded .capacity-banner-warn {
+  color: #be123c !important;
 }
 
 /* Reuse the standard field-row grid (label | 118px control), just tighter — the
@@ -6428,7 +6521,17 @@ small {
 }
 
 :host-context(.dark) .cost-line-item {
-  border-bottom-color: var(--c-white-05);
+  background: var(--c-white-05);
+  border-color: var(--c-white-08);
+}
+
+:host-context(.dark) .cost-line-item:hover {
+  background: var(--c-white-08);
+  border-color: rgba(99, 102, 241, 0.45);
+}
+
+:host-context(.dark) .cost-line-note {
+  color: var(--c-slate-400);
 }
 
 :host-context(.dark) .cost-line-label {
@@ -6451,6 +6554,19 @@ small {
 :host-context(.dark) .traffic-mgmt {
   background: var(--c-s900-40);
   border-color: var(--c-white-08);
+}
+
+:host-context(.dark) .capacity-banner {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.22);
+}
+
+:host-context(.dark) .capacity-banner-value {
+  color: var(--c-slate-300, #cbd5e1);
+}
+
+:host-context(.dark) .capacity-banner-value strong {
+  color: #34d399;
 }
 
 :host-context(.dark) .traffic-heading span {

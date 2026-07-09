@@ -9,10 +9,10 @@ export const SERVICE_DOCS: Record<
   string,
   Partial<Omit<ServiceDoc, 'illustrationSvg'>> & { illustrationSvg?: string }
 > = {
-    client: {
-      practicalExample:
-        'Simulating 5,000 global shoppers accessing your ecommerce website concurrently during a Black Friday flash sale event.',
-      illustrationSvg: `
+  client: {
+    practicalExample:
+      'Simulating 5,000 global shoppers accessing your ecommerce website concurrently during a Black Friday flash sale event.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <path d="M 65 45 L 155 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -75,11 +75,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    route53: {
-      practicalExample:
-        'Resolving `api.shop.com` to a localized Application Load Balancer IP address dynamically, routing users to their nearest server cluster.',
-      illustrationSvg: `
+  },
+  route53: {
+    practicalExample:
+      'Resolving `api.shop.com` to a localized Application Load Balancer IP address dynamically, routing users to their nearest server cluster.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Client query to Route 53 -->
@@ -155,11 +155,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    cloudfront: {
-      practicalExample:
-        'Serving cached product catalog images instantly from an edge location in London to a local UK buyer, bypassing the origin server located in Oregon.',
-      illustrationSvg: `
+  },
+  cloudfront: {
+    practicalExample:
+      'Serving cached product catalog images instantly from an edge location in London to a local UK buyer, bypassing the origin server located in Oregon.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Viewer → nearest edge POP -->
@@ -219,11 +219,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    apiGateway: {
-      practicalExample:
-        "Receiving requests on `/checkout` and verifying the user's Cognito authentication token before routing the request downstream to the Checkout microservice.",
-      illustrationSvg: `
+  },
+  apiGateway: {
+    practicalExample:
+      "Receiving requests on `/checkout` and verifying the user's Cognito authentication token before routing the request downstream to the Checkout microservice.",
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS WITH ANIMATION -->
           <!-- 1. Client to Authorizer -->
@@ -306,11 +306,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    elb: {
-      practicalExample:
-        'Distributing incoming checkout traffic across a pool of 5 EC2 instances. If instance #3 crashes, the ELB automatically detects the health check failure and reroutes new payments to the remaining 4 instances.',
-      illustrationSvg: `
+  },
+  elb: {
+    practicalExample:
+      'Distributing incoming checkout traffic across a pool of 5 EC2 instances. If instance #3 crashes, the ELB automatically detects the health check failure and reroutes new payments to the remaining 4 instances.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Client to Load Balancer -->
@@ -397,11 +397,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    lambda: {
-      practicalExample:
-        'A microservice that activates the instant a customer uploads a profile image to S3, resizing the image into standard sizes and generating database thumbnail URLs.',
-      illustrationSvg: `
+  },
+  lambda: {
+    practicalExample:
+      'A microservice that activates the instant a customer uploads a profile image to S3, resizing the image into standard sizes and generating database thumbnail URLs.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1a. S3 event → Lambda -->
@@ -470,11 +470,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    ec2: {
-      practicalExample:
-        'Running an enterprise Java Spring Boot backend framework with custom network sockets and internal application caches that must remain active 24/7.',
-      illustrationSvg: `
+  },
+  ec2: {
+    practicalExample:
+      'Running an enterprise Java Spring Boot backend framework with custom network sockets and internal application caches that must remain active 24/7.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Traffic → ELB -->
@@ -552,11 +552,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    ecs: {
-      practicalExample:
-        'Packaging an API application inside a Docker container, deploying it as multiple task replicas on Fargate, and auto-scaling task capacity up or down based on CPU load metrics.',
-      illustrationSvg: `
+  },
+  ecs: {
+    practicalExample:
+      'Packaging an API application inside a Docker container, deploying it as multiple task replicas on Fargate, and auto-scaling task capacity up or down based on CPU load metrics.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. ALB → ECS service -->
@@ -634,11 +634,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    s3: {
-      practicalExample:
-        'Storing millions of user-uploaded profile pictures and video clips securely, serving them globally through CloudFront edge caches.',
-      illustrationSvg: `
+  },
+  s3: {
+    practicalExample:
+      'Storing millions of user-uploaded profile pictures and video clips securely, serving them globally through CloudFront edge caches.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Uploader → S3 bucket -->
@@ -698,11 +698,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    rds: {
-      practicalExample:
-        'Storing client accounting balances, customer orders, and transaction ledgers, where data relationships and strict transaction accuracy are critical.',
-      illustrationSvg: `
+  },
+  rds: {
+    practicalExample:
+      'Storing client accounting balances, customer orders, and transaction ledgers, where data relationships and strict transaction accuracy are critical.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. App write path → Primary -->
@@ -771,11 +771,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    dynamoDb: {
-      practicalExample:
-        'Storing millions of active gaming session states or shopping cart list items that require immediate, high-frequency read/write operations.',
-      illustrationSvg: `
+  },
+  dynamoDb: {
+    practicalExample:
+      'Storing millions of active gaming session states or shopping cart list items that require immediate, high-frequency read/write operations.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. App → DynamoDB API -->
@@ -843,11 +843,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    elastiCache: {
-      practicalExample:
-        'Caching the checkout store\'s "Top 5 Hot Products" list on the homepage. Instead of running relational RDS SQL queries thousands of times per second, the server retrieves it instantly from Redis cache memory.',
-      illustrationSvg: `
+  },
+  elastiCache: {
+    practicalExample:
+      'Caching the checkout store\'s "Top 5 Hot Products" list on the homepage. Instead of running relational RDS SQL queries thousands of times per second, the server retrieves it instantly from Redis cache memory.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. App → Cache lookup -->
@@ -903,11 +903,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    sqs: {
-      practicalExample:
-        'Buffering incoming payment orders in a queue. If the payment gateway API goes down temporarily, checkout messages remain safely in SQS and process automatically once the gateway recovers.',
-      illustrationSvg: `
+  },
+  sqs: {
+    practicalExample:
+      'Buffering incoming payment orders in a queue. If the payment gateway API goes down temporarily, checkout messages remain safely in SQS and process automatically once the gateway recovers.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Producers → queue -->
@@ -972,11 +972,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    sns: {
-      practicalExample:
-        'Broadcasting an `OrderCompleted` event to trigger three separate actions: triggering SQS to prepare packing, running Lambda to email the client invoice, and alerting Cognito.',
-      illustrationSvg: `
+  },
+  sns: {
+    practicalExample:
+      'Broadcasting an `OrderCompleted` event to trigger three separate actions: triggering SQS to prepare packing, running Lambda to email the client invoice, and alerting Cognito.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Publisher → SNS Topic -->
@@ -1043,11 +1043,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    eventBridge: {
-      practicalExample:
-        'Routing system error events to a PagerDuty Lambda connector while sending standard operations events to a CloudWatch log stream.',
-      illustrationSvg: `
+  },
+  eventBridge: {
+    practicalExample:
+      'Routing system error events to a PagerDuty Lambda connector while sending standard operations events to a CloudWatch log stream.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Two sources → bus -->
@@ -1107,11 +1107,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    stepFunctions: {
-      practicalExample:
-        'Managing payment checkout steps: (1) Charge bank card, (2) If bank approval succeeds, write order row to database, (3) If charging fails, trigger refund process and alert email.',
-      illustrationSvg: `
+  },
+  stepFunctions: {
+    practicalExample:
+      'Managing payment checkout steps: (1) Charge bank card, (2) If bank approval succeeds, write order row to database, (3) If charging fails, trigger refund process and alert email.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <path d="M 50 90 L 90 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1179,11 +1179,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    cloudWatch: {
-      practicalExample:
-        'Monitoring server CPU levels. If average EC2 CPU pressure exceeds 75% for 3 minutes, CloudWatch triggers an Alarm calling the Auto Scaling policy to add another server.',
-      illustrationSvg: `
+  },
+  cloudWatch: {
+    practicalExample:
+      'Monitoring server CPU levels. If average EC2 CPU pressure exceeds 75% for 3 minutes, CloudWatch triggers an Alarm calling the Auto Scaling policy to add another server.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Services emit metrics/logs → CloudWatch -->
@@ -1256,11 +1256,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    cognito: {
-      practicalExample:
-        'Allowing customers to sign up and authenticate using their email or Google credentials to fetch secure JSON Web Tokens (JWT) for API Authorization.',
-      illustrationSvg: `
+  },
+  cognito: {
+    practicalExample:
+      'Allowing customers to sign up and authenticate using their email or Google credentials to fetch secure JSON Web Tokens (JWT) for API Authorization.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. User → Cognito (auth request with credentials) -->
@@ -1330,11 +1330,11 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    waf: {
-      practicalExample:
-        'Blocking requests coming from malicious blacklisted IP subnet ranges, or automatically blocking a client who fires more than 100 requests per second to the endpoint.',
-      illustrationSvg: `
+  },
+  waf: {
+    practicalExample:
+      'Blocking requests coming from malicious blacklisted IP subnet ranges, or automatically blocking a client who fires more than 100 requests per second to the endpoint.',
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- Three traffic sources arriving at WAF -->
@@ -1412,9 +1412,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    vpc: {
-      illustrationSvg: `
+  },
+  vpc: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- Internet → IGW -->
           <path d="M 40 90 L 78 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1465,9 +1465,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    natGateway: {
-      illustrationSvg: `
+  },
+  natGateway: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- private instances → NAT -->
           <path d="M 70 60 L 150 85" fill="none" stroke="#3b82f6" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1516,9 +1516,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    transitGateway: {
-      illustrationSvg: `
+  },
+  transitGateway: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- spokes → hub -->
           <path d="M 80 45 L 175 82" fill="none" stroke="#0ea5e9" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1565,9 +1565,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    directConnect: {
-      illustrationSvg: `
+  },
+  directConnect: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- on-prem → DX location -->
           <path d="M 75 90 L 140 90" fill="none" stroke="#475569" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1606,9 +1606,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    globalAccelerator: {
-      illustrationSvg: `
+  },
+  globalAccelerator: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- users → anycast IP -->
           <path d="M 55 50 L 150 82" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1661,9 +1661,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    privateLink: {
-      illustrationSvg: `
+  },
+  privateLink: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- consumer app → endpoint -->
           <path d="M 70 90 L 140 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1710,9 +1710,426 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    iam: {
-      illustrationSvg: `
+  },
+  amplify: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- git push → amplify build -->
+          <path d="M 60 90 L 140 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <!-- amplify → hosting CDN -->
+          <path d="M 190 90 L 260 90" fill="none" stroke="#f43f5e" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <!-- amplify → backend resources -->
+          <path d="M 165 110 L 165 140" fill="none" stroke="#a855f7" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-down" />
+
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.7s" repeatCount="indefinite" path="M 60 90 L 140 90" /></circle>
+          <circle r="4" fill="#f43f5e"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 190 90 L 260 90" /></circle>
+          <circle r="4" fill="#a855f7"><animateMotion dur="2.0s" repeatCount="indefinite" path="M 165 110 L 165 140" /></circle>
+
+          <!-- Git Repo -->
+          <g transform="translate(40, 90)">
+            <circle cx="0" cy="0" r="16" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+            <path d="M -6 0 L 6 0 M -6 -6 L -6 6 M 6 -6 L 6 6" stroke="#1d4ed8" stroke-width="1.6" stroke-linecap="round" />
+            <text x="0" y="28" font-size="7" text-anchor="middle" font-weight="800" fill="#1d4ed8">Git Push</text>
+          </g>
+
+          <!-- AWS Amplify Console -->
+          <g transform="translate(165, 90)">
+            <rect x="-24" y="-20" width="48" height="40" rx="5" fill="#fff1f2" stroke="#f43f5e" stroke-width="2" />
+            <text x="0" y="-4" font-size="6.5" text-anchor="middle" font-weight="800" fill="#e11d48">Amplify</text>
+            <text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#be123c">CI/CD Build</text>
+          </g>
+
+          <!-- Hosting CDN -->
+          <g transform="translate(290, 90)">
+            <rect x="-26" y="-14" width="52" height="28" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="0" y="-1" font-size="6.5" text-anchor="middle" font-weight="800" fill="#047857">Global CDN</text>
+            <text x="0" y="7" font-size="5.5" text-anchor="middle" font-weight="700" fill="#065f46">Hosting</text>
+          </g>
+
+          <!-- Backend Resources -->
+          <g transform="translate(165, 155)">
+            <rect x="-35" y="-10" width="70" height="20" rx="3" fill="#f3e8ff" stroke="#a855f7" stroke-width="1.5" />
+            <text x="0" y="2" font-size="6" text-anchor="middle" font-weight="800" fill="#6b21a8">Cognito / S3 / DB</text>
+          </g>
+        </svg>
+      `,
+  },
+  ses: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- app → SES → inbox; events → SNS -->
+          <path d="M 70 75 L 145 75" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 215 75 L 300 75" fill="none" stroke="#0ea5e9" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 180 100 L 180 135" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-down" />
+
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.6s" repeatCount="indefinite" path="M 70 75 L 145 75" /></circle>
+          <circle r="4" fill="#0ea5e9"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 215 75 L 300 75" /></circle>
+          <circle r="3.5" fill="#f59e0b"><animateMotion dur="2.1s" repeatCount="indefinite" path="M 180 100 L 180 135" /></circle>
+
+          <!-- Sending app -->
+          <g transform="translate(48, 75)">
+            <rect x="-22" y="-14" width="44" height="28" rx="4" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#4338ca">App / λ</text>
+          </g>
+
+          <!-- SES relay -->
+          <g transform="translate(180, 75)">
+            <rect x="-32" y="-22" width="64" height="44" rx="5" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="2" />
+            <path d="M -18 -8 L 0 4 L 18 -8" fill="none" stroke="#0369a1" stroke-width="1.6" />
+            <rect x="-18" y="-8" width="36" height="20" rx="2" fill="none" stroke="#0369a1" stroke-width="1.6" />
+            <text x="0" y="-27" font-size="7" text-anchor="middle" font-weight="800" fill="#0369a1">SES Relay</text>
+            <text x="0" y="18" font-size="5.5" text-anchor="middle" font-weight="700" fill="#075985">DKIM / SPF</text>
+          </g>
+
+          <!-- Recipient inbox -->
+          <g transform="translate(330, 75)">
+            <rect x="-26" y="-14" width="52" height="28" rx="4" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="0" y="-1" font-size="6.5" text-anchor="middle" font-weight="800" fill="#047857">Recipient</text>
+            <text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#065f46">Inbox</text>
+          </g>
+
+          <!-- Bounce events -->
+          <g transform="translate(180, 152)">
+            <rect x="-42" y="-12" width="84" height="24" rx="3" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" />
+            <text x="0" y="-1" font-size="6" text-anchor="middle" font-weight="800" fill="#b45309">Bounces / Complaints</text>
+            <text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#92400e">→ SNS / SQS</text>
+          </g>
+        </svg>
+      `,
+  },
+  documentDb: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- services → instances → shared volume -->
+          <path d="M 70 60 L 140 60" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 70 110 L 140 110" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 205 60 Q 250 60 275 82" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 205 110 Q 250 110 275 96" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.7s" repeatCount="indefinite" path="M 70 60 L 140 60" /></circle>
+          <circle r="4" fill="#6366f1"><animateMotion dur="2.0s" repeatCount="indefinite" path="M 70 110 L 140 110" /></circle>
+          <circle r="4" fill="#8b5cf6"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 205 60 Q 250 60 275 82" /></circle>
+
+          <!-- Microservices -->
+          <g transform="translate(48, 60)">
+            <rect x="-22" y="-12" width="44" height="24" rx="4" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#4338ca">ECS Task</text>
+          </g>
+          <g transform="translate(48, 110)">
+            <rect x="-22" y="-12" width="44" height="24" rx="4" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#4338ca">Lambda</text>
+          </g>
+
+          <!-- Compute instances -->
+          <g transform="translate(172, 60)">
+            <rect x="-32" y="-14" width="64" height="28" rx="4" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2" />
+            <text x="0" y="-1" font-size="6.5" text-anchor="middle" font-weight="800" fill="#6d28d9">Primary</text>
+            <text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#5b21b6">writes</text>
+          </g>
+          <g transform="translate(172, 110)">
+            <rect x="-32" y="-14" width="64" height="28" rx="4" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="3 2" />
+            <text x="0" y="-1" font-size="6.5" text-anchor="middle" font-weight="800" fill="#6d28d9">Replica ×15</text>
+            <text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#5b21b6">reads</text>
+          </g>
+
+          <!-- Shared cluster volume -->
+          <g transform="translate(320, 89)">
+            <ellipse cx="0" cy="-16" rx="34" ry="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6" />
+            <path d="M -34 -16 L -34 16 A 34 8 0 0 0 34 16 L 34 -16" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6" />
+            <text x="0" y="4" font-size="6" text-anchor="middle" font-weight="800" fill="#047857">Cluster Volume</text>
+            <text x="0" y="13" font-size="5.5" text-anchor="middle" font-weight="700" fill="#065f46">JSON · 64 TiB</text>
+          </g>
+        </svg>
+      `,
+  },
+  neptune: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- app → neptune → graph -->
+          <path d="M 75 90 L 145 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.7s" repeatCount="indefinite" path="M 75 90 L 145 90" /></circle>
+
+          <!-- Query app -->
+          <g transform="translate(50, 90)">
+            <rect x="-24" y="-14" width="48" height="28" rx="4" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <text x="0" y="-1" font-size="6.5" text-anchor="middle" font-weight="800" fill="#4338ca">Gremlin /</text>
+            <text x="0" y="8" font-size="6.5" text-anchor="middle" font-weight="800" fill="#4338ca">SPARQL</text>
+          </g>
+
+          <!-- Neptune engine -->
+          <g transform="translate(185, 90)">
+            <rect x="-36" y="-24" width="72" height="48" rx="5" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2" />
+            <text x="0" y="-10" font-size="7" text-anchor="middle" font-weight="800" fill="#6d28d9">Neptune</text>
+            <text x="0" y="2" font-size="5.5" text-anchor="middle" font-weight="700" fill="#5b21b6">graph engine</text>
+            <text x="0" y="14" font-size="5.5" text-anchor="middle" font-weight="700" fill="#5b21b6">buffer cache</text>
+          </g>
+
+          <!-- Graph: vertices and edges -->
+          <g stroke="#a78bfa" stroke-width="1.4">
+            <line x1="265" y1="60" x2="315" y2="45" />
+            <line x1="265" y1="60" x2="320" y2="95" />
+            <line x1="320" y1="95" x2="315" y2="45" />
+            <line x1="320" y1="95" x2="290" y2="140" />
+            <line x1="265" y1="60" x2="290" y2="140" />
+            <line x1="320" y1="95" x2="365" y2="120" />
+          </g>
+          <circle cx="265" cy="60" r="9" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.6" class="ill-pulse" />
+          <circle cx="315" cy="45" r="7" fill="#fdf2f8" stroke="#ec4899" stroke-width="1.5" />
+          <circle cx="320" cy="95" r="11" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.6" />
+          <circle cx="290" cy="140" r="7" fill="#fdf2f8" stroke="#ec4899" stroke-width="1.5" />
+          <circle cx="365" cy="120" r="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+          <text x="318" y="162" font-size="6.5" text-anchor="middle" font-weight="800" fill="#6d28d9">vertices + edges</text>
+        </svg>
+      `,
+  },
+  timestream: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- sensors → memory tier → magnetic tier; queries from top -->
+          <path d="M 70 90 L 135 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 225 90 L 285 90" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.4s" repeatCount="indefinite" path="M 70 90 L 135 90" /></circle>
+          <circle r="4" fill="#0d9488"><animateMotion dur="2.6s" repeatCount="indefinite" path="M 225 90 L 285 90" /></circle>
+
+          <!-- IoT sensors -->
+          <g transform="translate(45, 90)">
+            <circle cx="0" cy="-18" r="8" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <circle cx="-8" cy="6" r="8" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <circle cx="10" cy="20" r="8" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <text x="0" y="42" font-size="7" text-anchor="middle" font-weight="800" fill="#4338ca">IoT / Kinesis</text>
+          </g>
+
+          <!-- Memory store -->
+          <g transform="translate(180, 90)">
+            <rect x="-42" y="-26" width="84" height="52" rx="5" fill="#fff1f2" stroke="#f43f5e" stroke-width="2" />
+            <text x="0" y="-10" font-size="7" text-anchor="middle" font-weight="800" fill="#e11d48">Memory Store</text>
+            <text x="0" y="2" font-size="5.5" text-anchor="middle" font-weight="700" fill="#be123c">recent data</text>
+            <text x="0" y="13" font-size="5.5" text-anchor="middle" font-weight="700" fill="#be123c">ms queries</text>
+          </g>
+
+          <!-- Magnetic store -->
+          <g transform="translate(330, 90)">
+            <rect x="-42" y="-26" width="84" height="52" rx="5" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.6" />
+            <text x="0" y="-10" font-size="7" text-anchor="middle" font-weight="800" fill="#0f766e">Magnetic Store</text>
+            <text x="0" y="2" font-size="5.5" text-anchor="middle" font-weight="700" fill="#115e59">history · $0.03/GB</text>
+            <text x="0" y="13" font-size="5.5" text-anchor="middle" font-weight="700" fill="#115e59">auto-tiered</text>
+          </g>
+
+          <text x="255" y="78" font-size="5.5" text-anchor="middle" font-weight="700" fill="#0f766e">age-out</text>
+        </svg>
+      `,
+  },
+  appConfig: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- config → validate → gradual rollout to fleet -->
+          <path d="M 75 90 L 135 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 225 90 L 285 55" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 225 90 L 285 90" fill="none" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 225 90 L 285 125" fill="none" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3" />
+
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.6s" repeatCount="indefinite" path="M 75 90 L 135 90" /></circle>
+          <circle r="4" fill="#10b981"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 225 90 L 285 55" /></circle>
+          <circle r="4" fill="#10b981"><animateMotion dur="1.9s" repeatCount="indefinite" path="M 225 90 L 285 90" /></circle>
+
+          <!-- Config profile -->
+          <g transform="translate(52, 90)">
+            <rect x="-22" y="-16" width="44" height="32" rx="3" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <line x1="-14" y1="-7" x2="14" y2="-7" stroke="#6366f1" stroke-width="1.4" />
+            <line x1="-14" y1="0" x2="14" y2="0" stroke="#6366f1" stroke-width="1.4" />
+            <line x1="-14" y1="7" x2="6" y2="7" stroke="#6366f1" stroke-width="1.4" />
+            <text x="0" y="30" font-size="7" text-anchor="middle" font-weight="800" fill="#4338ca">Flag / Config</text>
+          </g>
+
+          <!-- AppConfig validate + deploy -->
+          <g transform="translate(180, 90)">
+            <rect x="-42" y="-24" width="84" height="48" rx="5" fill="#fef2f2" stroke="#9f1239" stroke-width="2" />
+            <text x="0" y="-9" font-size="7" text-anchor="middle" font-weight="800" fill="#9f1239">AppConfig</text>
+            <text x="0" y="3" font-size="5.5" text-anchor="middle" font-weight="700" fill="#881337">validate → deploy</text>
+            <text x="0" y="14" font-size="5.5" text-anchor="middle" font-weight="700" fill="#881337">alarm = rollback</text>
+          </g>
+
+          <!-- Fleet -->
+          <g transform="translate(320, 55)">
+            <rect x="-28" y="-11" width="56" height="22" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6" text-anchor="middle" font-weight="800" fill="#047857">Fleet 5% ✓</text>
+          </g>
+          <g transform="translate(320, 90)">
+            <rect x="-28" y="-11" width="56" height="22" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6" text-anchor="middle" font-weight="800" fill="#047857">Fleet 50%</text>
+          </g>
+          <g transform="translate(320, 125)">
+            <rect x="-28" y="-11" width="56" height="22" rx="3" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6" text-anchor="middle" font-weight="800" fill="#64748b">waiting…</text>
+          </g>
+        </svg>
+      `,
+  },
+  appMesh: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- control plane pushes routes down to sidecars; traffic flows between services -->
+          <path d="M 200 48 L 120 88" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" />
+          <path d="M 200 48 L 280 88" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" />
+          <path d="M 152 112 L 248 112" fill="none" stroke="#f97316" stroke-width="2" stroke-dasharray="5 3" class="ill-flow-right" />
+
+          <circle r="3.5" fill="#64748b"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 200 48 L 120 88" /></circle>
+          <circle r="3.5" fill="#64748b"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 200 48 L 280 88" /></circle>
+          <circle r="4.5" fill="#f97316"><animateMotion dur="1.4s" repeatCount="indefinite" path="M 152 112 L 248 112" /></circle>
+
+          <!-- Control plane -->
+          <g transform="translate(200, 38)">
+            <rect x="-52" y="-16" width="104" height="32" rx="5" fill="#fff7ed" stroke="#f97316" stroke-width="2" />
+            <text x="0" y="-2" font-size="7" text-anchor="middle" font-weight="800" fill="#c2410c">App Mesh Control Plane</text>
+            <text x="0" y="9" font-size="5.5" text-anchor="middle" font-weight="700" fill="#9a3412">routing rules (free)</text>
+          </g>
+
+          <!-- Service A with envoy sidecar -->
+          <g transform="translate(110, 112)">
+            <rect x="-38" y="-24" width="76" height="48" rx="5" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6" />
+            <text x="0" y="-10" font-size="6.5" text-anchor="middle" font-weight="800" fill="#4338ca">Service A</text>
+            <rect x="16" y="-2" width="26" height="18" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" />
+            <text x="29" y="10" font-size="5" text-anchor="middle" font-weight="800" fill="#c2410c">envoy</text>
+          </g>
+
+          <!-- Service B with envoy sidecar -->
+          <g transform="translate(290, 112)">
+            <rect x="-38" y="-24" width="76" height="48" rx="5" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6" />
+            <text x="0" y="-10" font-size="6.5" text-anchor="middle" font-weight="800" fill="#4338ca">Service B</text>
+            <rect x="-42" y="-2" width="26" height="18" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" />
+            <text x="-29" y="10" font-size="5" text-anchor="middle" font-weight="800" fill="#c2410c">envoy</text>
+          </g>
+
+          <text x="200" y="103" font-size="5.5" text-anchor="middle" font-weight="700" fill="#c2410c">mTLS · retries · weighted routes</text>
+          <text x="200" y="168" font-size="6" text-anchor="middle" font-weight="700" fill="#64748b">sidecars keep routing from cached rules if the control plane is down</text>
+        </svg>
+      `,
+  },
+  cloudMap: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- register → registry ← discover -->
+          <path d="M 90 60 L 160 82" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 90 120 L 160 98" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 310 90 L 245 90" fill="none" stroke="#6366f1" stroke-width="1.8" stroke-dasharray="4 3" />
+
+          <circle r="4" fill="#10b981"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 90 60 L 160 82" /></circle>
+          <circle r="4" fill="#10b981"><animateMotion dur="2.1s" repeatCount="indefinite" path="M 90 120 L 160 98" /></circle>
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 310 90 L 245 90" /></circle>
+
+          <!-- Registering tasks -->
+          <g transform="translate(62, 60)">
+            <rect x="-26" y="-12" width="52" height="24" rx="4" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6" text-anchor="middle" font-weight="800" fill="#047857">task 10.0.1.5</text>
+          </g>
+          <g transform="translate(62, 120)">
+            <rect x="-26" y="-12" width="52" height="24" rx="4" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6" text-anchor="middle" font-weight="800" fill="#047857">task 10.0.2.8</text>
+          </g>
+          <text x="112" y="52" font-size="5.5" text-anchor="middle" font-weight="700" fill="#047857">register</text>
+
+          <!-- Registry -->
+          <g transform="translate(202, 90)">
+            <rect x="-42" y="-30" width="84" height="60" rx="5" fill="#f8fafc" stroke="#475569" stroke-width="2" />
+            <text x="0" y="-16" font-size="7" text-anchor="middle" font-weight="800" fill="#334155">Cloud Map</text>
+            <line x1="-30" y1="-8" x2="30" y2="-8" stroke="#94a3b8" stroke-width="1" />
+            <text x="0" y="0" font-size="5.5" text-anchor="middle" font-weight="700" fill="#475569">inventory → 10.0.1.5</text>
+            <text x="0" y="10" font-size="5.5" text-anchor="middle" font-weight="700" fill="#475569">inventory → 10.0.2.8</text>
+            <text x="0" y="21" font-size="5" text-anchor="middle" font-weight="700" fill="#94a3b8">health-checked</text>
+          </g>
+
+          <!-- Consumer -->
+          <g transform="translate(340, 90)">
+            <rect x="-28" y="-14" width="56" height="28" rx="4" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" />
+            <text x="0" y="-1" font-size="6" text-anchor="middle" font-weight="800" fill="#4338ca">Consumer</text>
+            <text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#4338ca">DNS / API</text>
+          </g>
+          <text x="278" y="80" font-size="5.5" text-anchor="middle" font-weight="700" fill="#4338ca">discover</text>
+        </svg>
+      `,
+  },
+  quickSight: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- sources → SPICE → dashboards -->
+          <path d="M 85 60 L 145 82" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 85 120 L 145 98" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 235 90 L 295 90" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5 3" class="ill-flow-right" />
+
+          <circle r="4" fill="#0ea5e9"><animateMotion dur="2.0s" repeatCount="indefinite" path="M 85 60 L 145 82" /></circle>
+          <circle r="4" fill="#0ea5e9"><animateMotion dur="2.3s" repeatCount="indefinite" path="M 85 120 L 145 98" /></circle>
+          <circle r="4.5" fill="#8b5cf6"><animateMotion dur="1.3s" repeatCount="indefinite" path="M 235 90 L 295 90" /></circle>
+
+          <!-- Sources -->
+          <g transform="translate(58, 60)">
+            <rect x="-26" y="-12" width="52" height="24" rx="4" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6" text-anchor="middle" font-weight="800" fill="#0369a1">Redshift</text>
+          </g>
+          <g transform="translate(58, 120)">
+            <rect x="-26" y="-12" width="52" height="24" rx="4" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.5" />
+            <text x="0" y="3" font-size="6" text-anchor="middle" font-weight="800" fill="#0369a1">S3 / Athena</text>
+          </g>
+
+          <!-- SPICE engine -->
+          <g transform="translate(190, 90)">
+            <rect x="-44" y="-26" width="88" height="52" rx="5" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2" />
+            <text x="0" y="-11" font-size="7" text-anchor="middle" font-weight="800" fill="#6d28d9">SPICE</text>
+            <text x="0" y="1" font-size="5.5" text-anchor="middle" font-weight="700" fill="#5b21b6">in-memory engine</text>
+            <text x="0" y="12" font-size="5.5" text-anchor="middle" font-weight="700" fill="#5b21b6">$0.38/GB-mo</text>
+          </g>
+
+          <!-- Dashboard -->
+          <g transform="translate(335, 90)">
+            <rect x="-38" y="-28" width="76" height="56" rx="4" fill="#fefce8" stroke="#ca8a04" stroke-width="1.6" />
+            <rect x="-28" y="-16" width="12" height="30" fill="#fde047" />
+            <rect x="-10" y="-6" width="12" height="20" fill="#facc15" />
+            <rect x="8" y="-20" width="12" height="34" fill="#eab308" />
+            <text x="0" y="24" font-size="6" text-anchor="middle" font-weight="800" fill="#a16207">Dashboards</text>
+          </g>
+        </svg>
+      `,
+  },
+  lightsail: {
+    illustrationSvg: `
+        <svg viewBox="0 0 400 180" class="illustration-svg">
+          <!-- user → bundle; bundle contains compute + ssd + transfer -->
+          <path d="M 70 90 L 135 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <circle r="4" fill="#ec4899"><animateMotion dur="1.6s" repeatCount="indefinite" path="M 70 90 L 135 90" /></circle>
+
+          <!-- User -->
+          <g transform="translate(48, 90)">
+            <circle cx="0" cy="-8" r="7" fill="none" stroke="#475569" stroke-width="1.8" />
+            <path d="M -10 12 Q 0 2 10 12" fill="none" stroke="#475569" stroke-width="1.8" />
+            <text x="0" y="28" font-size="7" text-anchor="middle" font-weight="800" fill="#475569">Visitors</text>
+          </g>
+
+          <!-- Flat-rate bundle -->
+          <g transform="translate(245, 90)">
+            <rect x="-100" y="-52" width="200" height="104" rx="8" fill="#fff1f2" stroke="#be123c" stroke-width="2" />
+            <text x="0" y="-38" font-size="7.5" text-anchor="middle" font-weight="800" fill="#be123c">Lightsail Bundle, flat $12/mo</text>
+
+            <g transform="translate(-60, 4)">
+              <rect x="-26" y="-18" width="52" height="36" rx="4" fill="#ffffff" stroke="#f43f5e" stroke-width="1.5" />
+              <text x="0" y="-4" font-size="6" text-anchor="middle" font-weight="800" fill="#e11d48">2 vCPU</text>
+              <text x="0" y="7" font-size="6" text-anchor="middle" font-weight="800" fill="#e11d48">2 GB RAM</text>
+            </g>
+            <g transform="translate(0, 4)">
+              <rect x="-26" y="-18" width="52" height="36" rx="4" fill="#ffffff" stroke="#f43f5e" stroke-width="1.5" />
+              <text x="0" y="-4" font-size="6" text-anchor="middle" font-weight="800" fill="#e11d48">60 GB</text>
+              <text x="0" y="7" font-size="6" text-anchor="middle" font-weight="800" fill="#e11d48">SSD</text>
+            </g>
+            <g transform="translate(60, 4)">
+              <rect x="-26" y="-18" width="52" height="36" rx="4" fill="#ffffff" stroke="#f43f5e" stroke-width="1.5" />
+              <text x="0" y="-4" font-size="6" text-anchor="middle" font-weight="800" fill="#e11d48">3 TB</text>
+              <text x="0" y="7" font-size="6" text-anchor="middle" font-weight="800" fill="#e11d48">transfer</text>
+            </g>
+            <text x="0" y="42" font-size="5.5" text-anchor="middle" font-weight="700" fill="#9f1239">burstable CPU, credits throttle to baseline</text>
+          </g>
+        </svg>
+      `,
+  },
+  iam: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- principal → IAM eval -->
           <path d="M 65 90 L 130 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1761,9 +2178,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    securityGroup: {
-      illustrationSvg: `
+  },
+  securityGroup: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- inbound traffic → SG -->
           <path d="M 50 60 L 150 82" fill="none" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1814,9 +2231,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    secretsManager: {
-      illustrationSvg: `
+  },
+  secretsManager: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- app requests secret -->
           <path d="M 65 90 L 135 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1863,9 +2280,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    kms: {
-      illustrationSvg: `
+  },
+  kms: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- plaintext → KMS -->
           <path d="M 65 90 L 140 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1905,9 +2322,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    shield: {
-      illustrationSvg: `
+  },
+  shield: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- attack flood → shield -->
           <path d="M 50 50 L 150 80" fill="none" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -1944,9 +2361,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    certificateManager: {
-      illustrationSvg: `
+  },
+  certificateManager: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- ACM → validate via DNS -->
           <path d="M 130 70 L 130 38" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 2" />
@@ -1989,9 +2406,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    autoScalingGroup: {
-      illustrationSvg: `
+  },
+  autoScalingGroup: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- CW metric → ASG -->
           <path d="M 65 90 L 120 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2041,9 +2458,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    batch: {
-      illustrationSvg: `
+  },
+  batch: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- jobs submitted → queue -->
           <path d="M 55 90 L 110 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2090,9 +2507,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    appRunner: {
-      illustrationSvg: `
+  },
+  appRunner: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- source → app runner -->
           <path d="M 60 90 L 130 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2134,9 +2551,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    elasticBeanstalk: {
-      illustrationSvg: `
+  },
+  elasticBeanstalk: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- code upload → beanstalk -->
           <path d="M 60 90 L 120 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2185,9 +2602,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    eks: {
-      illustrationSvg: `
+  },
+  eks: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- ingress → control plane -->
           <path d="M 55 90 L 105 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2230,9 +2647,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(265, 125)"><rect x="-30" y="-14" width="60" height="28" rx="3" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" /><circle cx="-18" cy="0" r="6" fill="none" stroke="#0369a1" stroke-width="1.4" /><text x="6" y="3" font-size="6.5" font-weight="800" fill="#0369a1">pod · job</text></g>
         </svg>
       `,
-    },
-    ecr: {
-      illustrationSvg: `
+  },
+  ecr: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- docker push → ECR -->
           <path d="M 60 90 L 130 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2272,9 +2689,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(340, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fffbeb" stroke="#ff9900" stroke-width="1.5" /><text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#7c2d12">Lambda</text></g>
         </svg>
       `,
-    },
-    aurora: {
-      illustrationSvg: `
+  },
+  aurora: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- app write → writer endpoint -->
           <path d="M 50 70 L 115 70" fill="none" stroke="#ef4444" stroke-width="1.7" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2322,9 +2739,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    openSearch: {
-      illustrationSvg: `
+  },
+  openSearch: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- ingest → cluster -->
           <path d="M 55 60 L 130 82" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2368,9 +2785,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    redshift: {
-      illustrationSvg: `
+  },
+  redshift: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- data load → leader -->
           <path d="M 55 90 L 115 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2414,9 +2831,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    kinesis: {
-      illustrationSvg: `
+  },
+  kinesis: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- producers → stream -->
           <path d="M 50 55 L 120 82" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2453,9 +2870,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(345, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#f5f3ff" stroke="#5b21b6" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#5b21b6">Firehose</text></g>
         </svg>
       `,
-    },
-    msk: {
-      illustrationSvg: `
+  },
+  msk: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- producers → brokers -->
           <path d="M 50 60 L 125 82" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2488,9 +2905,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(345, 125)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fffbeb" stroke="#ff9900" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">Lambda</text></g>
         </svg>
       `,
-    },
-    athena: {
-      illustrationSvg: `
+  },
+  athena: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- SQL query → athena -->
           <path d="M 60 90 L 130 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2535,9 +2952,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    glue: {
-      illustrationSvg: `
+  },
+  glue: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- source → crawler → catalog -->
           <path d="M 50 90 L 100 90" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2587,9 +3004,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    emr: {
-      illustrationSvg: `
+  },
+  emr: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- S3 data → EMR -->
           <path d="M 50 90 L 110 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2633,9 +3050,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    kinesisFirehose: {
-      illustrationSvg: `
+  },
+  kinesisFirehose: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- source → firehose -->
           <path d="M 50 90 L 105 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2677,9 +3094,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(325, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#ecfeff" stroke="#0891b2" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0e7490">OpenSearch</text></g>
         </svg>
       `,
-    },
-    efs: {
-      illustrationSvg: `
+  },
+  efs: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- instances → mount targets → EFS -->
           <path d="M 70 50 L 185 82" fill="none" stroke="#0f766e" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2709,9 +3126,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    fsx: {
-      illustrationSvg: `
+  },
+  fsx: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- compute clients → FSx -->
           <path d="M 70 60 L 175 85" fill="none" stroke="#0f766e" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2742,9 +3159,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    backup: {
-      illustrationSvg: `
+  },
+  backup: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- resources → backup -->
           <path d="M 60 50 L 155 82" fill="none" stroke="#0f766e" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2783,9 +3200,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    mq: {
-      illustrationSvg: `
+  },
+  mq: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- producers → broker -->
           <path d="M 50 60 L 130 82" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2821,9 +3238,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(350, 125)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#7c2d12">ECS task</text></g>
         </svg>
       `,
-    },
-    organizations: {
-      illustrationSvg: `
+  },
+  organizations: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- management → OUs -->
           <path d="M 130 75 L 130 50" fill="none" stroke="#9f1239" stroke-width="0" />
@@ -2858,9 +3275,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(335, 140)"><rect x="-24" y="-10" width="48" height="20" rx="3" fill="#fff1f2" stroke="#be123c" stroke-width="1.3" /><text x="0" y="3" font-size="6" text-anchor="middle" font-weight="700" fill="#9f1239">acct D</text></g>
         </svg>
       `,
-    },
-    cloudTrail: {
-      illustrationSvg: `
+  },
+  cloudTrail: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- API calls → CloudTrail -->
           <path d="M 50 60 L 130 82" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2896,9 +3313,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(340, 135)"><rect x="-28" y="-13" width="56" height="26" rx="3" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#6b21a8">EventBridge</text></g>
         </svg>
       `,
-    },
-    systemsManager: {
-      illustrationSvg: `
+  },
+  systemsManager: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- SSM → managed fleet -->
           <path d="M 145 75 L 235 50" fill="none" stroke="#9f1239" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2935,9 +3352,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(300, 130)"><rect x="-26" y="-13" width="52" height="26" rx="3" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0369a1">ECS</text></g>
         </svg>
       `,
-    },
-    appSync: {
-      illustrationSvg: `
+  },
+  appSync: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- client graphql → appsync -->
           <path d="M 55 90 L 120 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -2973,9 +3390,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(330, 132)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#ecfeff" stroke="#0891b2" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0e7490">OpenSearch</text></g>
         </svg>
       `,
-    },
-    iotCore: {
-      illustrationSvg: `
+  },
+  iotCore: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- devices → IoT Core -->
           <path d="M 50 55 L 130 82" fill="none" stroke="#0f766e" stroke-width="1.6" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3013,9 +3430,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(345, 130)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#f5f3ff" stroke="#5b21b6" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#5b21b6">Kinesis</text></g>
         </svg>
       `,
-    },
-    xray: {
-      illustrationSvg: `
+  },
+  xray: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- traced request flows across services -->
           <path d="M 45 90 L 95 90" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3047,9 +3464,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    codePipeline: {
-      illustrationSvg: `
+  },
+  codePipeline: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- stage chain -->
           <path d="M 78 90 L 108 90" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3087,9 +3504,9 @@ export const SERVICE_DOCS: Record<
           <text x="200" y="148" font-size="7.5" text-anchor="middle" font-weight="800" fill="#0369a1">CodePipeline · continuous delivery</text>
         </svg>
       `,
-    },
-    codeBuild: {
-      illustrationSvg: `
+  },
+  codeBuild: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- source → build env -->
           <path d="M 60 90 L 125 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3124,9 +3541,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(330, 132)"><rect x="-30" y="-13" width="60" height="26" rx="3" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#0369a1">ECR image</text></g>
         </svg>
       `,
-    },
-    codeDeploy: {
-      illustrationSvg: `
+  },
+  codeDeploy: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- artifact → codedeploy -->
           <path d="M 55 90 L 115 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3162,9 +3579,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(320, 132)"><rect x="-30" y="-14" width="60" height="28" rx="4" fill="#f0fdf4" stroke="#10b981" stroke-width="1.6" /><text x="0" y="-1" font-size="6.5" text-anchor="middle" font-weight="800" fill="#047857">GREEN v2</text><text x="0" y="8" font-size="5.5" text-anchor="middle" font-weight="700" fill="#065f46">new</text></g>
         </svg>
       `,
-    },
-    bedrock: {
-      illustrationSvg: `
+  },
+  bedrock: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- prompt → bedrock -->
           <path d="M 60 90 L 125 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3202,9 +3619,9 @@ export const SERVICE_DOCS: Record<
           <text x="322" y="163" font-size="5.5" text-anchor="middle" font-weight="700" fill="#065f46">+ 12 more providers</text>
         </svg>
       `,
-    },
-    sageMaker: {
-      illustrationSvg: `
+  },
+  sageMaker: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- training data → training job -->
           <path d="M 55 90 L 105 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3255,9 +3672,9 @@ export const SERVICE_DOCS: Record<
           </g>
         </svg>
       `,
-    },
-    rekognition: {
-      illustrationSvg: `
+  },
+  rekognition: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- image → rekognition -->
           <path d="M 70 90 L 135 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3293,9 +3710,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(340, 135)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Text / OCR</text></g>
         </svg>
       `,
-    },
-    textract: {
-      illustrationSvg: `
+  },
+  textract: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- document → textract -->
           <path d="M 70 90 L 135 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3328,9 +3745,9 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(340, 135)"><rect x="-32" y="-12" width="64" height="24" rx="3" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#065f46">Tables</text></g>
         </svg>
       `,
-    },
-    mediaConvert: {
-      illustrationSvg: `
+  },
+  mediaConvert: {
+    illustrationSvg: `
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- input video → mediaconvert -->
           <path d="M 70 90 L 135 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
@@ -3367,587 +3784,623 @@ export const SERVICE_DOCS: Record<
           <g transform="translate(338, 140)"><rect x="-30" y="-11" width="60" height="22" rx="3" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.4" /><text x="0" y="3" font-size="6.5" text-anchor="middle" font-weight="800" fill="#92400e">480p MP4</text></g>
         </svg>
       `,
-    },
+  },
 };
 
 /** Version history shown on the Release Notes tab. */
 export const RELEASE_NOTES: ReleaseNote[] = [
-    {
-      version: '1.3.0',
-      current: true,
-      title: 'Themes, Dashboards & System Design Challenges',
-      summary:
-        'Light and dark themes, an Architect dashboard, refined challenges, and polish throughout.',
-      items: [
-        {
-          icon: 'fas fa-circle-half-stroke',
-          text: 'Light & Dark Themes: a polished theme toggle across the whole app',
-        },
-        {
-          icon: 'fas fa-gauge-high',
-          text: 'Architect Dashboard: your whole design cost summarized at a glance',
-        },
-        {
-          icon: 'fas fa-graduation-cap',
-          text: 'System Design Challenges: Introduced common interview challanges for practice',
-        },
-        {
-          icon: 'fas fa-ranking-star',
-          text: 'Rubix Engine: evaluates and scores your system design against best practices',
-        },
-        {
-          icon: 'fas fa-arrows-left-right',
-          text: 'Quick Mode Switch: a dropdown to jump between Developer and Architect modes',
-        },
-        {
-          icon: 'fas fa-keyboard',
-          text: 'Keyboard Shortcuts: a dedicated panel plus new canvas hotkeys',
-        },
-        {
-          icon: 'fas fa-shield-halved',
-          text: 'Exit Warning: never lose an unsaved architecture by accident',
-        },
-        {
-          icon: 'fas fa-users',
-          text: 'Top Contributors: recognition for the people shaping the project',
-        },
-        {
-          icon: 'fas fa-magnifying-glass-chart',
-          text: 'SEO & GEO: better discoverability across search and AI engines',
-        },
-        {
-          icon: 'fas fa-lock',
-          text: 'Security & Community Standards: hardened security and full open source docs',
-        },
-        { icon: 'fas fa-bug-slash', text: 'Bug fixes and code quality improvements' },
-      ],
-    },
-    {
-      version: '1.2',
-      title: 'Playground & Real-Time Cost',
-      date: '2026-06-15',
-      summary:
-        'A developer- and architect-focused playground with 60+ services and live AWS pricing.',
-      items: [
-        {
-          icon: 'fas fa-layer-group',
-          text: 'Expanded AWS Service Catalog: Model architectures with 60+ hand-crafted AWS services, each with custom properties, input/output port definitions, and visual flow mappings',
-        },
-        {
-          icon: 'fas fa-gamepad',
-          text: 'Dual-Mode Workspace: Transition seamlessly between Developer Mode (simplified sandbox for learning cloud concepts) and Architect Mode (professional designer with detailed hardware classes and pricing options)',
-        },
-        {
-          icon: 'fas fa-book-open',
-          text: 'Interactive Documentation: Comprehensive, in-app guides for all 64 services detailing Conceptual Models, animated Architectural Workings, Recommended Practices, and common Failure Modes',
-        },
-        {
-          icon: 'fas fa-sack-dollar',
-          text: 'Live AWS Cost Estimation: Accurate monthly cost updates driven by real AWS pricing rates fetched weekly from the live AWS Pricing API and updated on the fly',
-        },
-        {
-          icon: 'fas fa-clone',
-          text: 'Multi-Canvas Configuration Support: Create, manage, and design multiple independent cloud architectures side-by-side using tabs',
-        },
-        {
-          icon: 'fas fa-wave-square',
-          text: 'Variable Traffic Modeling: Model realistic user traffic behavior by configuring minimum/maximum traffic bounds with live, randomized fluctuations',
-        },
-        {
-          icon: 'fas fa-code-branch',
-          text: 'Traffic Distribution Manager: Route and manage traffic flows between multiple downstream nodes with custom routing weights or percentages',
-        },
-        {
-          icon: 'fas fa-keyboard',
-          text: 'Canvas Keyboard Hotkeys: Accelerate design iterations with shortcuts (e.g., Ctrl+Z/Ctrl+Y for Undo/Redo, Ctrl+S to save, and Delete/Backspace to remove elements)',
-        },
-        {
-          icon: 'fas fa-triangle-exclamation',
-          text: 'Realistic Bottleneck Modeling: Advanced multi-factor resource-bound modeling (evaluating queue depths, CPU pressure, and concurrent execution limits) featuring load-shedding and server collapse',
-        },
-        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' },
-      ],
-    },
-    {
-      version: '1.1',
-      date: '2026-05-21',
-      title: 'Cost Transparency',
-      summary: 'Deeper, more transparent cost modeling and a responsive stats layout.',
-      items: [
-        { icon: 'fas fa-sliders', text: 'Added in-depth cost calculation parameters' },
-        { icon: 'fas fa-magnifying-glass-dollar', text: 'Added cost calculation transparency' },
-        {
-          icon: 'fas fa-mobile-screen',
-          text: 'Compact, responsive run stats for all screen sizes',
-        },
-        { icon: 'fas fa-circle-info', text: 'Restructured and expanded the About section' },
-        { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' },
-      ],
-    },
-    {
-      version: '1.0',
-      date: 'Initial release',
-      title: 'Foundation',
-      summary:
-        'The first release: drag-and-drop design backed by a deterministic traffic & cost engine.',
-      items: [
-        {
-          icon: 'fas fa-diagram-project',
-          text: 'Drag-and-drop AWS architecture design on a live canvas',
-        },
-        { icon: 'fas fa-bolt', text: 'Real-time deterministic traffic simulation' },
-        {
-          icon: 'fas fa-gauge-high',
-          text: 'Per-node latency, throughput, error-rate & utilization metrics',
-        },
-        { icon: 'fas fa-coins', text: 'Monthly cost estimation from simulated load' },
-        { icon: 'fas fa-circle-check', text: 'Built-in AWS connectivity validation' },
-      ],
-    },
+  {
+    version: '1.3.1',
+    current: true,
+    title: 'Expanded AWS Catalog, Accurate Cost Models & Security Hardening',
+    summary:
+      'Added 10 new AWS services, overhauled cost calculators for realistic billing, refactored codebase structure with Vitest unit tests, and resolved security vulnerabilities.',
+    items: [
+      {
+        icon: 'fas fa-cubes',
+        text: '10 New AWS Services: Added Amplify, SES, DocumentDB, Neptune, Timestream, AppConfig, AppMesh, CloudMap, QuickSight, and Lightsail to the service palette.',
+      },
+      {
+        icon: 'fas fa-calculator',
+        text: 'Enhanced Cost Accuracy: Granular pricing overrides and secondary configuration parameters for Aurora, Rekognition, MediaConvert, OpenSearch, EMR, MQ, Bedrock, Kinesis, MSK, DynamoDB, RDS, ElastiCache, Lambda, and EC2.',
+      },
+      {
+        icon: 'fas fa-code',
+        text: 'Repository Refactoring: Restructured core canvas and graph utilities into clean modules, and introduced comprehensive Vitest unit test suites for all services and utilities.',
+      },
+      {
+        icon: 'fas fa-shield-halved',
+        text: 'Security Hardening: Integrated constant-time token verification to prevent timing attacks, strict origin CORS validation, and clamped vote delta ranges on API requests.',
+      },
+      {
+        icon: 'fas fa-bug-slash',
+        text: 'Minor Bug Fixes: Implemented resizable canvas sidebars, improved viewport mobile responsiveness, and enhanced unsaved changes warning dialogs.',
+      },
+    ],
+  },
+  {
+    version: '1.3.0',
+    title: 'Themes, Dashboards & System Design Challenges',
+    summary:
+      'Light and dark themes, an Architect dashboard, refined challenges, and polish throughout.',
+    items: [
+      {
+        icon: 'fas fa-circle-half-stroke',
+        text: 'Light & Dark Themes: a polished theme toggle across the whole app',
+      },
+      {
+        icon: 'fas fa-gauge-high',
+        text: 'Architect Dashboard: your whole design cost summarized at a glance',
+      },
+      {
+        icon: 'fas fa-graduation-cap',
+        text: 'System Design Challenges: Introduced common interview challanges for practice',
+      },
+      {
+        icon: 'fas fa-ranking-star',
+        text: 'Rubix Engine: evaluates and scores your system design against best practices',
+      },
+      {
+        icon: 'fas fa-arrows-left-right',
+        text: 'Quick Mode Switch: a dropdown to jump between Developer and Architect modes',
+      },
+      {
+        icon: 'fas fa-keyboard',
+        text: 'Keyboard Shortcuts: a dedicated panel plus new canvas hotkeys',
+      },
+      {
+        icon: 'fas fa-shield-halved',
+        text: 'Exit Warning: never lose an unsaved architecture by accident',
+      },
+      {
+        icon: 'fas fa-users',
+        text: 'Top Contributors: recognition for the people shaping the project',
+      },
+      {
+        icon: 'fas fa-magnifying-glass-chart',
+        text: 'SEO & GEO: better discoverability across search and AI engines',
+      },
+      {
+        icon: 'fas fa-lock',
+        text: 'Security & Community Standards: hardened security and full open source docs',
+      },
+      { icon: 'fas fa-bug-slash', text: 'Bug fixes and code quality improvements' },
+    ],
+  },
+  {
+    version: '1.2',
+    title: 'Playground & Real-Time Cost',
+    date: '2026-06-15',
+    summary:
+      'A developer- and architect-focused playground with 70+ services and live AWS pricing.',
+    items: [
+      {
+        icon: 'fas fa-layer-group',
+        text: 'Expanded AWS Service Catalog: Model architectures with 70+ hand-crafted AWS services, each with custom properties, input/output port definitions, and visual flow mappings',
+      },
+      {
+        icon: 'fas fa-gamepad',
+        text: 'Dual-Mode Workspace: Transition seamlessly between Developer Mode (simplified sandbox for learning cloud concepts) and Architect Mode (professional designer with detailed hardware classes and pricing options)',
+      },
+      {
+        icon: 'fas fa-book-open',
+        text: 'Interactive Documentation: Comprehensive, in-app guides for all 64 services detailing Conceptual Models, animated Architectural Workings, Recommended Practices, and common Failure Modes',
+      },
+      {
+        icon: 'fas fa-sack-dollar',
+        text: 'Live AWS Cost Estimation: Accurate monthly cost updates driven by real AWS pricing rates fetched weekly from the live AWS Pricing API and updated on the fly',
+      },
+      {
+        icon: 'fas fa-clone',
+        text: 'Multi-Canvas Configuration Support: Create, manage, and design multiple independent cloud architectures side-by-side using tabs',
+      },
+      {
+        icon: 'fas fa-wave-square',
+        text: 'Variable Traffic Modeling: Model realistic user traffic behavior by configuring minimum/maximum traffic bounds with live, randomized fluctuations',
+      },
+      {
+        icon: 'fas fa-code-branch',
+        text: 'Traffic Distribution Manager: Route and manage traffic flows between multiple downstream nodes with custom routing weights or percentages',
+      },
+      {
+        icon: 'fas fa-keyboard',
+        text: 'Canvas Keyboard Hotkeys: Accelerate design iterations with shortcuts (e.g., Ctrl+Z/Ctrl+Y for Undo/Redo, Ctrl+S to save, and Delete/Backspace to remove elements)',
+      },
+      {
+        icon: 'fas fa-triangle-exclamation',
+        text: 'Realistic Bottleneck Modeling: Advanced multi-factor resource-bound modeling (evaluating queue depths, CPU pressure, and concurrent execution limits) featuring load-shedding and server collapse',
+      },
+      { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' },
+    ],
+  },
+  {
+    version: '1.1',
+    date: '2026-05-21',
+    title: 'Cost Transparency',
+    summary: 'Deeper, more transparent cost modeling and a responsive stats layout.',
+    items: [
+      { icon: 'fas fa-sliders', text: 'Added in-depth cost calculation parameters' },
+      { icon: 'fas fa-magnifying-glass-dollar', text: 'Added cost calculation transparency' },
+      {
+        icon: 'fas fa-mobile-screen',
+        text: 'Compact, responsive run stats for all screen sizes',
+      },
+      { icon: 'fas fa-circle-info', text: 'Restructured and expanded the About section' },
+      { icon: 'fas fa-bug-slash', text: 'Minor bug fixes' },
+    ],
+  },
+  {
+    version: '1.0',
+    date: 'Initial release',
+    title: 'Foundation',
+    summary:
+      'The first release: drag-and-drop design backed by a deterministic traffic & cost engine.',
+    items: [
+      {
+        icon: 'fas fa-diagram-project',
+        text: 'Drag-and-drop AWS architecture design on a live canvas',
+      },
+      { icon: 'fas fa-bolt', text: 'Real-time deterministic traffic simulation' },
+      {
+        icon: 'fas fa-gauge-high',
+        text: 'Per-node latency, throughput, error-rate & utilization metrics',
+      },
+      { icon: 'fas fa-coins', text: 'Monthly cost estimation from simulated load' },
+      { icon: 'fas fa-circle-check', text: 'Built-in AWS connectivity validation' },
+    ],
+  },
 ];
 
 /** Long-form documentation articles grouped by category. */
 export const ARTICLES: DocArticle[] = [
-    // --- OVERVIEW ---
-    {
-      id: 'ov-intro',
-      title: 'What is Sr. Architect?',
-      category: 'overview',
-      icon: 'fas fa-info-circle',
-      summary:
-        'A high-fidelity system design simulator that brings static cloud architecture diagrams to life.',
-      content: [
-        'Sr. Architect is an interactive, visual system design sandbox that lets you <span class="text-purple">model and simulate AWS cloud architectures</span> in real time without provisioning resources.',
-        'Simply drag-and-drop components (like servers, queues, databases, API gateways), connect them, and watch simulated traffic flow through your conduits like glowing packets.',
-        'It translates abstract architectural principles into interactive visuals, letting you adjust sliders for traffic load, instance configurations, and replica rates to instantly observe how your topology responds to stress.',
-      ],
-      tips: [
-        'Tap the play button to start generating real-time traffic, and watch the Sandbox Console for transaction logs.',
-      ],
-    },
-    {
-      id: 'ov-pulseflow',
-      title: 'PulseFlow: Reactive Traffic Simulation Engine',
-      category: 'engines',
-      icon: 'fas fa-heart-pulse',
-      summary:
-        'The deterministic heartbeat of Sr. Architect that powers real-time traffic flow, queues, and latency degradation.',
-      content: [
-        'At the core of the simulator is <span class="text-purple"><strong>PulseFlow</strong></span>, our custom-built, reactive simulation engine. PulseFlow resolves the entire system state about five times a second, translating simple diagram lines into live, dynamic networks.',
-        '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
-          '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
-          '    <defs>' +
-          '      <linearGradient id="pulseflowGrad" x1="0%" y1="0%" x2="100%" y2="0%">' +
-          '        <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.8" />' +
-          '        <stop offset="100%" stop-color="#ec4899" stop-opacity="0.8" />' +
-          '      </linearGradient>' +
-          '      <filter id="glow-pf" x="-20%" y="-20%" width="140%" height="140%">' +
-          '        <feGaussianBlur stdDeviation="3" result="blur" />' +
-          '        <feMerge>' +
-          '          <feMergeNode in="blur" />' +
-          '          <feMergeNode in="SourceGraphic" />' +
-          '        </feMerge>' +
-          '      </filter>' +
-          '    </defs>' +
-          '    <path d="M 60 90 L 220 50" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
-          '    <path d="M 60 90 L 220 130" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
-          '    <path d="M 280 50 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
-          '    <path d="M 280 130 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
-          '    <circle r="4.5" fill="#ec4899" filter="url(#glow-pf)">' +
-          '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 60 90 L 220 50" />' +
-          '    </circle>' +
-          '    <circle r="4.5" fill="#a78bfa" filter="url(#glow-pf)">' +
-          '      <animateMotion dur="2.8s" repeatCount="indefinite" path="M 60 90 L 220 130" />' +
-          '    </circle>' +
-          '    <circle r="3.5" fill="#94a3b8" opacity="0.6">' +
-          '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 280 50 L 440 90" />' +
-          '    </circle>' +
-          '    <g transform="translate(60, 90)">' +
-          '      <circle r="22" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.5" />' +
-          '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#a78bfa" font-family="monospace">USERS</text>' +
-          '    </g>' +
-          '    <g transform="translate(250, 50)">' +
-          '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" />' +
-          '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#22c55e" font-family="monospace">EC2: OK</text>' +
-          '    </g>' +
-          '    <g transform="translate(250, 130)">' +
-          '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" />' +
-          '      <circle cx="-20" cy="-10" r="3" fill="#ef4444">' +
-          '        <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite" />' +
-          '      </circle>' +
-          '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#ef4444" font-family="monospace">EC2: 150%</text>' +
-          '      <rect x="-24" y="8" width="48" height="4" rx="2" fill="#ef4444" />' +
-          '    </g>' +
-          '    <g transform="translate(470, 90)">' +
-          '      <circle r="22" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" />' +
-          '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#3b82f6" font-family="monospace">RDS</text>' +
-          '    </g>' +
-          '  </svg>' +
-          '</div>',
-        '<ul>' +
-          '<li><span class="text-purple"><strong>Reactive 180ms Tick Loop:</strong></span> Driven by RxJS stream flows, PulseFlow traverses your canvas topology in logical flow order, ensuring that upstream request loads and bottleneck pressures cascade accurately down to child nodes.</li>' +
-          '<li><span class="text-blue"><strong>Compounding Latency & Backlogs:</strong></span> Rather than simple static averages, PulseFlow calculates request queues over time. If a service experiences traffic past its capacity, latency compounds exponentially tick-by-tick, simulating realistic system degradation.</li>' +
-          '<li><span class="text-red"><strong>Hard Server Collapses:</strong></span> Models physical compute failure thresholds (EC2, ECS, RDS). If load exceeds 150% of capacity for over 1 second, PulseFlow shuts down the server into a terminal offline state, forcing user intervention.</li>' +
-          '<li><span class="text-emerald"><strong>Visual Flow Telemetry:</strong></span> Translates mathematical saturation rates into color-coded SVG packets that represent data throughput on the canvas.</li>' +
-          '</ul>',
-      ],
-      tips: [
-        'Toggle the Pause button on the canvas toolbar to freeze PulseFlow mid-tick and trace precise bottlenecks.',
-      ],
-    },
-    {
-      id: 'ov-rubix',
-      title: 'Rubix: Automated Architecture Rubric Engine',
-      category: 'engines',
-      icon: 'fas fa-cubes',
-      summary:
-        'The declarative verification engine that grades system designs, checks connection legality, and tracks milestone progress.',
-      content: [
-        '<span class="text-orange"><strong>Rubix</strong></span> is our custom-designed, declarative validation and grading engine. It reads your visual canvas and evaluates the architectural structural design against complex engineering constraints.',
-        '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
-          '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
-          '    <defs>' +
-          '      <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">' +
-          '        <feGaussianBlur stdDeviation="3" result="blur" />' +
-          '        <feMerge>' +
-          '          <feMergeNode in="blur" />' +
-          '          <feMergeNode in="SourceGraphic" />' +
-          '        </feMerge>' +
-          '      </filter>' +
-          '    </defs>' +
-          '    <line x1="280" y1="90" x2="100" y2="40" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
-          '    <line x1="280" y1="90" x2="100" y2="90" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
-          '    <line x1="280" y1="90" x2="100" y2="140" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
-          '    <line x1="280" y1="90" x2="460" y2="90" stroke="#3b82f6" stroke-width="2" />' +
-          '    <g transform="translate(280, 90)">' +
-          '      <circle r="30" fill="#1e1e38" stroke="#a78bfa" stroke-width="2" />' +
-          '      <polygon points="0,-18 16,-6 10,12 -10,12 -16,-6" fill="none" stroke="#a78bfa" stroke-width="1.5">' +
-          '        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite" />' +
-          '      </polygon>' +
-          '      <text y="4" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" font-family="monospace">RUBIX</text>' +
-          '    </g>' +
-          '    <g transform="translate(100, 40)">' +
-          '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" />' +
-          '      <path d="M -45 -3 L -39 3 M -39 -3 L -45 3" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />' +
-          '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#ef4444" font-family="monospace">hasService (APIGW)</text>' +
-          '    </g>' +
-          '    <g transform="translate(100, 90)">' +
-          '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
-          '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
-          '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">hasEdge (ELB->EC2)</text>' +
-          '    </g>' +
-          '    <g transform="translate(100, 140)">' +
-          '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
-          '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
-          '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">countAtLeast (EC2>=2)</text>' +
-          '    </g>' +
-          '    <g transform="translate(460, 90)">' +
-          '      <rect x="-40" y="-25" width="80" height="50" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />' +
-          '      <text y="-8" text-anchor="middle" font-size="8" font-weight="800" fill="#94a3b8" font-family="sans-serif">GRADE REPORT</text>' +
-          '      <text y="15" text-anchor="middle" font-size="20" font-weight="950" fill="#3b82f6" font-family="monospace" filter="url(#glow-orange)">85/100</text>' +
-          '    </g>' +
-          '  </svg>' +
-          '</div>',
-        '<ul>' +
-          '<li><span class="text-orange"><strong>Declarative Rule Grammar:</strong></span> Rubix parses a custom JSON rule language (supporting <code>hasService</code>, <code>hasEdge</code>, <code>configAtLeast</code>, <code>countAtLeast</code>, and <code>noOverload</code>) to validate designs without any procedural code modifications.</li>' +
-          '<li><span class="text-purple"><strong>Automated Live Grading:</strong></span> Instantly computes a 0-100 score based on weighted check criteria, automatically isolating bonus points (such as configuring read replicas) and applying score penalties for overloaded components.</li>' +
-          '<li><span class="text-blue"><strong>Milestone Tracking:</strong></span> Evaluates progress against ordered checkpoints in real time as you draw, providing immediate hints and guidance to lead the user toward optimal design goals.</li>' +
-          '<li><span class="text-emerald"><strong>Connection Legality Checker:</strong></span> Rubix scans your active connections against AWS service specifications (defined in <code>aws-services.json</code>) to immediately flag illegal port connections (like wiring a public client directly to an internal DB).</li>' +
-          '</ul>',
-      ],
-      tips: [
-        'Run `npm run validate:challenges` in the frontend directory to run the Rubix engine locally and verify all design challenges.',
-      ],
-    },
-    {
-      id: 'ov-gaps',
-      title: 'Problems Solved & Gaps Filled',
-      category: 'overview',
-      icon: 'fas fa-puzzle-piece',
-      summary:
-        'Fills the massive gap between static draw boards and expensive live deployment testing.',
-      content: [
-        '<ul>' +
-          '<li><span class="text-purple"><strong>Static Diagrams vs. Dynamic Reality</strong></span><br>' +
-          'Traditional tools like Draw.io create nice pictures, but they cannot tell you when a server will crash, when a database queue will bottleneck, or how much latency your users will experience. Sr. Architect solves this by running a custom tick-based traffic engine that dynamically calculates bottlenecks, drop rates, and server overload state in real time.</li>' +
-          '<li><span class="text-orange"><strong>The Cost and Complexity of Testing</strong></span><br>' +
-          'Provisioning real AWS environments to run load tests is incredibly slow, expensive, and risky. Sr. Architect fills this gap by giving you a zero-cost sandbox to experiment instantly. Validate failure-recovery scenarios (like SQS decoupling or RDS replica scaling) in seconds, with absolutely zero AWS bills.</li>' +
-          '<li><span class="text-blue"><strong>Hidden Billing Surprises</strong></span><br>' +
-          'Traditional tools do not connect drawing with financial realities. Sr. Architect integrates live cost estimators that factor in instance classes, database EBS IOPS, and serverless invocations with real-world regional modifiers, protecting developers from costly architecture designs.</li>' +
-          '</ul>',
-      ],
-    },
-    {
-      id: 'ov-roadmap',
-      title: 'Upcoming Features & Future Roadmap',
-      category: 'overview',
-      icon: 'fas fa-rocket',
-      summary: 'A sneak peek into our game-changing upcoming updates and next-gen capabilities.',
-      content: [
-        'We are building revolutionary capabilities to close the gap between drawing architectures, validating cost, and finding the most optimized solution for your organization. Here is a sneak peek at what is coming:',
-        '<ul>' +
-          '<li><span class="text-purple"><strong>1. Terraform State Imports (Coming Soon)</strong></span><br>' +
-          'What it offers: Upload any <code>.tf</code> configuration or <code>terraform.tfstate</code> file, and watch Sr. Architect automatically parse, map, and draw the entire AWS infrastructure onto the canvas instantly. No manual dragging required get a fully composed, stress-testable simulation environment in under 5 seconds!</li>' +
-          '<li><span class="text-orange"><strong>2. AI-Powered Architecture Suggestions (Game Changer!)</strong></span><br>' +
-          'What it offers: Input your personalized business usecase, and our integrated AI agent will analyze your visual canvas topology. It provides tailored cost-performance optimizations such as recommending Lambda serverless transitions, adjusting database IOPS queues, or scaling ECS container replica thresholds to fit your usecase perfectly.</li>' +
-          '<li><span class="text-blue"><strong>3. AI Multi-Cloud Builder & Comparative Benchmarking</strong></span><br>' +
-          'What it offers: Ever wondered if GCP or Azure would be better for your usecase? Our AI engine translates your active AWS blueprint into exact equivalent architectures on <code>Google Cloud Platform (GCP)</code> and <code>Microsoft Azure</code>. It runs side-by-side cost and performance comparisons, advising you which cloud provider delivers the absolute best value and scalability for your business.</li>' +
-          '</ul>',
-      ],
-    },
-    // --- GETTING STARTED ---
-    {
-      id: 'gs-builder',
-      title: 'Guided Visual Builder',
-      category: 'start',
-      icon: 'fas fa-project-diagram',
-      summary: 'Learn how to compose architectures easily using drag-and-drop mechanics.',
-      content: [
-        'Welcome to Sr. Architect! Building AWS architectures starts with the <strong>Left Service Palette</strong>.',
-        'To build your first topology, follow these simple steps:',
-        '<ul>' +
-          '<li><strong>Drag and Drop:</strong> Pull any available AWS service onto the high-tech 2D visual canvas to instantiate it.</li>' +
-          '<li><strong>Make Connections:</strong> Each service has input and output ports. Hover over an output port (colored circle) and drag a link directly to an input port on another service.</li>' +
-          '<li><strong>Validation Check:</strong> The builder automatically runs architectural validation rules. If a link or service configuration is invalid, a red health card will warn you exactly what is wrong.</li>' +
-          '<li><strong>Delete Elements:</strong> To delete a service or link, simply select it and press the <code>Backspace</code> or <code>Delete</code> key.</li>' +
-          '</ul>',
-      ],
-      tips: [
-        'Pressing the Ctrl / Command key allows you to multi-select nodes on the canvas.',
-        'You can double-click on empty canvas space to place custom annotations/sticky notes.',
-      ],
-    },
-    {
-      id: 'gs-modes',
-      title: 'Developer vs. Architect Modes',
-      category: 'start',
-      icon: 'fas fa-user-gear',
-      summary:
-        'Understand the difference between the beginner-friendly Developer mode and the advanced Architect mode.',
-      content: [
-        'Sr. Architect supports two experience modes tailored for different experience levels:',
-        '<ul>' +
-          '<li><span class="text-emerald"><strong>Developer Mode:</strong></span> Focused on system design learning. It simplifies the palette to 24+ core AWS services, simplifies configuration sliders, and disables granular billing complexity. Ideal for learning system behaviors and traffic flow dynamics.</li>' +
-          '<li><span class="text-purple"><strong>Architect Mode:</strong></span> Focused on professional production-scale design. It exposes 65+ AWS services, adds deep configuration fields (LCU factors, compute classes, EBS types), and opens full cost breakdowns.</li>' +
-          '</ul>',
-        'Toggle modes on the launch dashboard. Your progress is synced and saved in your browser storage so you never lose your designs.',
-      ],
-    },
-    {
-      id: 'gs-hotkeys',
-      title: 'Keyboard Shortcuts',
-      category: 'start',
-      icon: 'fas fa-keyboard',
-      summary:
-        'Work faster on the canvas with undo/redo, quick save, multi-select, and deletion hotkeys.',
-      content: [
-        'The simulator canvas supports keyboard shortcuts for the most common actions. On macOS, use <code>⌘ Cmd</code> wherever <code>Ctrl</code> is listed.',
-        '<table class="hotkey-table">' +
-          '<thead><tr><th>Shortcut</th><th>Action</th></tr></thead>' +
-          '<tbody>' +
-          '<tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo the last change (add, delete, connect, move, rename, or config edit)</td></tr>' +
-          '<tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd> <span class="hk-or">or</span> <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo the change you just undid</td></tr>' +
-          '<tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save the current architecture to browser storage</td></tr>' +
-          '<tr><td><kbd>Delete</kbd> <span class="hk-or">or</span> <kbd>Backspace</kbd></td><td>Delete the selected service(s), connection(s), or note(s)</td></tr>' +
-          '<tr><td><kbd>Ctrl</kbd> / <kbd>Shift</kbd> + drag</td><td>Draw a selection box to multi-select nodes and links</td></tr>' +
-          '<tr><td>Scroll / pinch</td><td>Zoom the canvas in and out</td></tr>' +
-          '<tr><td>Double-click a canvas tab</td><td>Rename that canvas; <kbd>Enter</kbd> confirms, <kbd>Esc</kbd> cancels</td></tr>' +
-          '</tbody></table>',
-        'Undo history holds the last 60 changes per canvas and is cleared when you switch tabs or load a different project. Rapid edits (like dragging a slider or moving a node) collapse into a single undo step. Undo and redo are paused while a simulation is running; stop the run first.',
-      ],
-      tips: [
-        'While typing in a text field or note, <kbd>Ctrl</kbd> + <kbd>Z</kbd> performs normal text undo instead of canvas undo.',
-        'The circular undo/redo arrows in the top toolbar do the same thing and show when actions are available.',
-      ],
-    },
+  // --- OVERVIEW ---
+  {
+    id: 'ov-intro',
+    title: 'What is Sr. Architect?',
+    category: 'overview',
+    icon: 'fas fa-info-circle',
+    summary:
+      'A high-fidelity system design simulator that brings static cloud architecture diagrams to life.',
+    content: [
+      'Sr. Architect is an interactive, visual system design sandbox that lets you <span class="text-purple">model and simulate AWS cloud architectures</span> in real time without provisioning resources.',
+      'Simply drag-and-drop components (like servers, queues, databases, API gateways), connect them, and watch simulated traffic flow through your conduits like glowing packets.',
+      'It translates abstract architectural principles into interactive visuals, letting you adjust sliders for traffic load, instance configurations, and replica rates to instantly observe how your topology responds to stress.',
+    ],
+    tips: [
+      'Tap the play button to start generating real-time traffic, and watch the Sandbox Console for transaction logs.',
+    ],
+  },
+  {
+    id: 'ov-pulseflow',
+    title: 'PulseFlow: Reactive Traffic Simulation Engine',
+    category: 'engines',
+    icon: 'fas fa-heart-pulse',
+    summary:
+      'The deterministic heartbeat of Sr. Architect that powers real-time traffic flow, queues, and latency degradation.',
+    content: [
+      'At the core of the simulator is <span class="text-purple"><strong>PulseFlow</strong></span>, our custom-built, reactive simulation engine. PulseFlow resolves the entire system state about five times a second, translating simple diagram lines into live, dynamic networks.',
+      '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
+      '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
+      '    <defs>' +
+      '      <linearGradient id="pulseflowGrad" x1="0%" y1="0%" x2="100%" y2="0%">' +
+      '        <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.8" />' +
+      '        <stop offset="100%" stop-color="#ec4899" stop-opacity="0.8" />' +
+      '      </linearGradient>' +
+      '      <filter id="glow-pf" x="-20%" y="-20%" width="140%" height="140%">' +
+      '        <feGaussianBlur stdDeviation="3" result="blur" />' +
+      '        <feMerge>' +
+      '          <feMergeNode in="blur" />' +
+      '          <feMergeNode in="SourceGraphic" />' +
+      '        </feMerge>' +
+      '      </filter>' +
+      '    </defs>' +
+      '    <path d="M 60 90 L 220 50" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
+      '    <path d="M 60 90 L 220 130" fill="none" stroke="url(#pulseflowGrad)" stroke-width="2.2" stroke-dasharray="4 3" />' +
+      '    <path d="M 280 50 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
+      '    <path d="M 280 130 L 440 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5" />' +
+      '    <circle r="4.5" fill="#ec4899" filter="url(#glow-pf)">' +
+      '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 60 90 L 220 50" />' +
+      '    </circle>' +
+      '    <circle r="4.5" fill="#a78bfa" filter="url(#glow-pf)">' +
+      '      <animateMotion dur="2.8s" repeatCount="indefinite" path="M 60 90 L 220 130" />' +
+      '    </circle>' +
+      '    <circle r="3.5" fill="#94a3b8" opacity="0.6">' +
+      '      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 280 50 L 440 90" />' +
+      '    </circle>' +
+      '    <g transform="translate(60, 90)">' +
+      '      <circle r="22" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.5" />' +
+      '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#a78bfa" font-family="monospace">USERS</text>' +
+      '    </g>' +
+      '    <g transform="translate(250, 50)">' +
+      '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" />' +
+      '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#22c55e" font-family="monospace">EC2: OK</text>' +
+      '    </g>' +
+      '    <g transform="translate(250, 130)">' +
+      '      <rect x="-30" y="-18" width="60" height="36" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" />' +
+      '      <circle cx="-20" cy="-10" r="3" fill="#ef4444">' +
+      '        <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite" />' +
+      '      </circle>' +
+      '      <text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#ef4444" font-family="monospace">EC2: 150%</text>' +
+      '      <rect x="-24" y="8" width="48" height="4" rx="2" fill="#ef4444" />' +
+      '    </g>' +
+      '    <g transform="translate(470, 90)">' +
+      '      <circle r="22" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" />' +
+      '      <text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#3b82f6" font-family="monospace">RDS</text>' +
+      '    </g>' +
+      '  </svg>' +
+      '</div>',
+      '<ul>' +
+      '<li><span class="text-purple"><strong>Reactive 180ms Tick Loop:</strong></span> Driven by RxJS stream flows, PulseFlow traverses your canvas topology in logical flow order, ensuring that upstream request loads and bottleneck pressures cascade accurately down to child nodes.</li>' +
+      '<li><span class="text-blue"><strong>Compounding Latency & Backlogs:</strong></span> Rather than simple static averages, PulseFlow calculates request queues over time. If a service experiences traffic past its capacity, latency compounds exponentially tick-by-tick, simulating realistic system degradation.</li>' +
+      '<li><span class="text-red"><strong>Hard Server Collapses:</strong></span> Models physical compute failure thresholds (EC2, ECS, RDS). If load exceeds 150% of capacity for over 1 second, PulseFlow shuts down the server into a terminal offline state, forcing user intervention.</li>' +
+      '<li><span class="text-emerald"><strong>Visual Flow Telemetry:</strong></span> Translates mathematical saturation rates into color-coded SVG packets that represent data throughput on the canvas.</li>' +
+      '</ul>',
+      '<h3>Realism Modeling & Mathematical Assumptions</h3>' +
+      '<p>To simulate actual cloud hardware limits, the PulseFlow engine uses several mathematical constants and behaviors:</p>' +
+      '<ul>' +
+      '<li><span class="text-purple"><strong>Dynamic Workloads (Random Walk):</strong></span> Client nodes simulate user traffic noise by sampling and varying request rates every 1.08 seconds (6 ticks @ 180ms). Cost metrics adapt to this downstream dynamic rate.</li>' +
+      '<li><span class="text-red"><strong>Sustained Pressure Collapses:</strong></span> Compute resources tolerate short, transient load spikes. However, sustained overload past 1.1s (<code>OFFLINE_SUSTAIN_TICKS = 6</code>) crashes the resource into an offline state.</li>' +
+      '<li><span class="text-emerald"><strong>Auto Scaling Provisioning Delay:</strong></span> Provisioning replacement instances takes time. A collapsed node remains in a booting loop and only recovers if incoming demand is below 72% capacity (<code>RECOVERY_HEADROOM = 0.72</code>) for at least 1.8 seconds (<code>RECOVERY_TICKS = 10</code>).</li>' +
+      '<li><span class="text-orange"><strong>M/M/1 Queue Backlog Bounds:</strong></span> Queues buffer spikes but clamp backlog sizes to 8 ticks-worth of capacity (<code>MAX_QUEUE_TICKS = 8</code>) to prevent infinite queue growth. Once relieved, backlog queues decay exponentially at a 0.6 multiplier per tick (~40% decay rate per 180ms tick).</li>' +
+      '</ul>',
+    ],
+    tips: [
+      'Toggle the Pause button on the canvas toolbar to freeze PulseFlow mid-tick and trace precise bottlenecks.',
+    ],
+  },
+  {
+    id: 'ov-rubix',
+    title: 'Rubix: Automated Architecture Rubric Engine',
+    category: 'engines',
+    icon: 'fas fa-cubes',
+    summary:
+      'The declarative verification engine that grades system designs, checks connection legality, and tracks milestone progress.',
+    content: [
+      '<span class="text-orange"><strong>Rubix</strong></span> is our custom-designed, declarative validation and grading engine. It reads your visual canvas and evaluates the architectural structural design against complex engineering constraints.',
+      '<div class="engine-svg-wrapper" style="margin: 16px 0; max-width: 100%; overflow: hidden; border-radius: 12px;">' +
+      '  <svg viewBox="0 0 560 180" class="engine-illustration-svg" style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; width: 100%; display: block;">' +
+      '    <defs>' +
+      '      <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">' +
+      '        <feGaussianBlur stdDeviation="3" result="blur" />' +
+      '        <feMerge>' +
+      '          <feMergeNode in="blur" />' +
+      '          <feMergeNode in="SourceGraphic" />' +
+      '        </feMerge>' +
+      '      </filter>' +
+      '    </defs>' +
+      '    <line x1="280" y1="90" x2="100" y2="40" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+      '    <line x1="280" y1="90" x2="100" y2="90" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+      '    <line x1="280" y1="90" x2="100" y2="140" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />' +
+      '    <line x1="280" y1="90" x2="460" y2="90" stroke="#3b82f6" stroke-width="2" />' +
+      '    <g transform="translate(280, 90)">' +
+      '      <circle r="30" fill="#1e1e38" stroke="#a78bfa" stroke-width="2" />' +
+      '      <polygon points="0,-18 16,-6 10,12 -10,12 -16,-6" fill="none" stroke="#a78bfa" stroke-width="1.5">' +
+      '        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite" />' +
+      '      </polygon>' +
+      '      <text y="4" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" font-family="monospace">RUBIX</text>' +
+      '    </g>' +
+      '    <g transform="translate(100, 40)">' +
+      '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" />' +
+      '      <path d="M -45 -3 L -39 3 M -39 -3 L -45 3" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />' +
+      '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#ef4444" font-family="monospace">hasService (APIGW)</text>' +
+      '    </g>' +
+      '    <g transform="translate(100, 90)">' +
+      '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
+      '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
+      '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">hasEdge (ELB->EC2)</text>' +
+      '    </g>' +
+      '    <g transform="translate(100, 140)">' +
+      '      <rect x="-55" y="-12" width="110" height="24" rx="12" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" />' +
+      '      <path d="M -45 -1 L -43 2 L -39 -3" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" />' +
+      '      <text x="12" y="3" text-anchor="middle" font-size="8.5" font-weight="700" fill="#22c55e" font-family="monospace">countAtLeast (EC2>=2)</text>' +
+      '    </g>' +
+      '    <g transform="translate(460, 90)">' +
+      '      <rect x="-40" y="-25" width="80" height="50" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />' +
+      '      <text y="-8" text-anchor="middle" font-size="8" font-weight="800" fill="#94a3b8" font-family="sans-serif">GRADE REPORT</text>' +
+      '      <text y="15" text-anchor="middle" font-size="20" font-weight="950" fill="#3b82f6" font-family="monospace" filter="url(#glow-orange)">85/100</text>' +
+      '    </g>' +
+      '  </svg>' +
+      '</div>',
+      '<ul>' +
+      '<li><span class="text-orange"><strong>Declarative Rule Grammar:</strong></span> Rubix parses a custom JSON rule language (supporting <code>hasService</code>, <code>hasEdge</code>, <code>configAtLeast</code>, <code>countAtLeast</code>, and <code>noOverload</code>) to validate designs without any procedural code modifications.</li>' +
+      '<li><span class="text-purple"><strong>Automated Live Grading:</strong></span> Instantly computes a 0-100 score based on weighted check criteria, automatically isolating bonus points (such as configuring read replicas) and applying score penalties for overloaded components.</li>' +
+      '<li><span class="text-blue"><strong>Milestone Tracking:</strong></span> Evaluates progress against ordered checkpoints in real time as you draw, providing immediate hints and guidance to lead the user toward optimal design goals.</li>' +
+      '<li><span class="text-emerald"><strong>Connection Legality Checker:</strong></span> Rubix scans your active connections against AWS service specifications (defined in <code>aws-services.json</code>) to immediately flag illegal port connections (like wiring a public client directly to an internal DB).</li>' +
+      '</ul>',
+    ],
+    tips: [
+      'Run `npm run validate:challenges` in the frontend directory to run the Rubix engine locally and verify all design challenges.',
+    ],
+  },
+  {
+    id: 'ov-gaps',
+    title: 'Problems Solved & Gaps Filled',
+    category: 'overview',
+    icon: 'fas fa-puzzle-piece',
+    summary:
+      'Fills the massive gap between static draw boards and expensive live deployment testing.',
+    content: [
+      '<ul>' +
+      '<li><span class="text-purple"><strong>Static Diagrams vs. Dynamic Reality</strong></span><br>' +
+      'Traditional tools like Draw.io create nice pictures, but they cannot tell you when a server will crash, when a database queue will bottleneck, or how much latency your users will experience. Sr. Architect solves this by running a custom tick-based traffic engine that dynamically calculates bottlenecks, drop rates, and server overload state in real time.</li>' +
+      '<li><span class="text-orange"><strong>The Cost and Complexity of Testing</strong></span><br>' +
+      'Provisioning real AWS environments to run load tests is incredibly slow, expensive, and risky. Sr. Architect fills this gap by giving you a zero-cost sandbox to experiment instantly. Validate failure-recovery scenarios (like SQS decoupling or RDS replica scaling) in seconds, with absolutely zero AWS bills.</li>' +
+      '<li><span class="text-blue"><strong>Hidden Billing Surprises</strong></span><br>' +
+      'Traditional tools do not connect drawing with financial realities. Sr. Architect integrates live cost estimators that factor in instance classes, database EBS IOPS, and serverless invocations with real-world regional modifiers, protecting developers from costly architecture designs.</li>' +
+      '</ul>',
+    ],
+  },
+  {
+    id: 'ov-roadmap',
+    title: 'Upcoming Features & Future Roadmap',
+    category: 'overview',
+    icon: 'fas fa-rocket',
+    summary: 'A sneak peek into our game-changing upcoming updates and next-gen capabilities.',
+    content: [
+      'We are building revolutionary capabilities to close the gap between drawing architectures, validating cost, and finding the most optimized solution for your organization. Here is a sneak peek at what is coming:',
+      '<ul>' +
+      '<li><span class="text-purple"><strong>1. Terraform State Imports (Coming Soon)</strong></span><br>' +
+      'What it offers: Upload any <code>.tf</code> configuration or <code>terraform.tfstate</code> file, and watch Sr. Architect automatically parse, map, and draw the entire AWS infrastructure onto the canvas instantly. No manual dragging required get a fully composed, stress-testable simulation environment in under 5 seconds!</li>' +
+      '<li><span class="text-orange"><strong>2. AI-Powered Architecture Suggestions (Game Changer!)</strong></span><br>' +
+      'What it offers: Input your personalized business usecase, and our integrated AI agent will analyze your visual canvas topology. It provides tailored cost-performance optimizations such as recommending Lambda serverless transitions, adjusting database IOPS queues, or scaling ECS container replica thresholds to fit your usecase perfectly.</li>' +
+      '<li><span class="text-blue"><strong>3. AI Multi-Cloud Builder & Comparative Benchmarking</strong></span><br>' +
+      'What it offers: Ever wondered if GCP or Azure would be better for your usecase? Our AI engine translates your active AWS blueprint into exact equivalent architectures on <code>Google Cloud Platform (GCP)</code> and <code>Microsoft Azure</code>. It runs side-by-side cost and performance comparisons, advising you which cloud provider delivers the absolute best value and scalability for your business.</li>' +
+      '</ul>',
+    ],
+  },
+  // --- GETTING STARTED ---
+  {
+    id: 'gs-builder',
+    title: 'Guided Visual Builder',
+    category: 'start',
+    icon: 'fas fa-project-diagram',
+    summary: 'Learn how to compose architectures easily using drag-and-drop mechanics.',
+    content: [
+      'Welcome to Sr. Architect! Building AWS architectures starts with the <strong>Left Service Palette</strong>.',
+      'To build your first topology, follow these simple steps:',
+      '<ul>' +
+      '<li><strong>Drag and Drop:</strong> Pull any available AWS service onto the high-tech 2D visual canvas to instantiate it.</li>' +
+      '<li><strong>Make Connections:</strong> Each service has input and output ports. Hover over an output port (colored circle) and drag a link directly to an input port on another service.</li>' +
+      '<li><strong>Validation Check:</strong> The builder automatically runs architectural validation rules. If a link or service configuration is invalid, a red health card will warn you exactly what is wrong.</li>' +
+      '<li><strong>Delete Elements:</strong> To delete a service or link, simply select it and press the <code>Backspace</code> or <code>Delete</code> key.</li>' +
+      '</ul>',
+    ],
+    tips: [
+      'Pressing the Ctrl / Command key allows you to multi-select nodes on the canvas.',
+      'You can double-click on empty canvas space to place custom annotations/sticky notes.',
+    ],
+  },
+  {
+    id: 'gs-modes',
+    title: 'Developer vs. Architect Modes',
+    category: 'start',
+    icon: 'fas fa-user-gear',
+    summary:
+      'Understand the difference between the beginner-friendly Developer mode and the advanced Architect mode.',
+    content: [
+      'Sr. Architect supports two experience modes tailored for different experience levels:',
+      '<ul>' +
+      '<li><span class="text-emerald"><strong>Developer Mode:</strong></span> Focused on system design learning. It simplifies the palette to 24+ core AWS services, simplifies configuration sliders, and disables granular billing complexity. Ideal for learning system behaviors and traffic flow dynamics.</li>' +
+      '<li><span class="text-purple"><strong>Architect Mode:</strong></span> Focused on professional production-scale design. It exposes 65+ AWS services, adds deep configuration fields (LCU factors, compute classes, EBS types), and opens full cost breakdowns.</li>' +
+      '</ul>',
+      'Toggle modes on the launch dashboard. Your progress is synced and saved in your browser storage so you never lose your designs.',
+    ],
+  },
+  {
+    id: 'gs-hotkeys',
+    title: 'Keyboard Shortcuts',
+    category: 'start',
+    icon: 'fas fa-keyboard',
+    summary:
+      'Work faster on the canvas with undo/redo, quick save, multi-select, and deletion hotkeys.',
+    content: [
+      'The simulator canvas supports keyboard shortcuts for the most common actions. On macOS, use <code>⌘ Cmd</code> wherever <code>Ctrl</code> is listed.',
+      '<table class="hotkey-table">' +
+      '<thead><tr><th>Shortcut</th><th>Action</th></tr></thead>' +
+      '<tbody>' +
+      '<tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo the last change (add, delete, connect, move, rename, or config edit)</td></tr>' +
+      '<tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd> <span class="hk-or">or</span> <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo the change you just undid</td></tr>' +
+      '<tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save the current architecture to browser storage</td></tr>' +
+      '<tr><td><kbd>Delete</kbd> <span class="hk-or">or</span> <kbd>Backspace</kbd></td><td>Delete the selected service(s), connection(s), or note(s)</td></tr>' +
+      '<tr><td><kbd>Ctrl</kbd> / <kbd>Shift</kbd> + drag</td><td>Draw a selection box to multi-select nodes and links</td></tr>' +
+      '<tr><td>Scroll / pinch</td><td>Zoom the canvas in and out</td></tr>' +
+      '<tr><td>Double-click a canvas tab</td><td>Rename that canvas; <kbd>Enter</kbd> confirms, <kbd>Esc</kbd> cancels</td></tr>' +
+      '</tbody></table>',
+      'Undo history holds the last 60 changes per canvas and is cleared when you switch tabs or load a different project. Rapid edits (like dragging a slider or moving a node) collapse into a single undo step. Undo and redo are paused while a simulation is running; stop the run first.',
+    ],
+    tips: [
+      'While typing in a text field or note, <kbd>Ctrl</kbd> + <kbd>Z</kbd> performs normal text undo instead of canvas undo.',
+      'The circular undo/redo arrows in the top toolbar do the same thing and show when actions are available.',
+    ],
+  },
 
-    // --- SIMULATOR CORE ---
-    {
-      id: 'sim-flow',
-      title: 'Real-Time Traffic flow',
-      category: 'sim',
-      icon: 'fas fa-wave-square',
-      summary: 'Understand how request packets move through your architecture in real time.',
-      content: [
-        'Once you click the Run play button, the Users node starts generating active data packets.',
-        '<ul>' +
-          "<li><strong>Glowing Packets:</strong> Traffic flows down visual paths as glowing packets. The rate of requests is determined by the Users node's <code>Request Rate</code> slider.</li>" +
-          '<li><strong>Simulation Ticks:</strong> The engine updates at a steady 60 FPS, resolving queues, packet transfers, and database queries dynamically.</li>' +
-          "<li><strong>Degradation:</strong> If a server gets overloaded (exceeding its capacity limit), you'll watch packets stack up, latency climb, or requests fail and drop on the live dashboard.</li>" +
-          '</ul>',
-      ],
-      tips: [
-        'Toggle the Pause button to freeze the data packets mid-conduit for fine-grained tracing.',
-        'Watch the sparkline graph in the telemetry overlay to see real-time latency fluctuations.',
-      ],
-    },
-    {
-      id: 'sim-telemetry',
-      title: 'Sandbox Consoles & Logs',
-      category: 'sim',
-      icon: 'fas fa-terminal',
-      summary: 'Utilize active console logs and telemetry dials to diagnose backend bottlenecks.',
-      content: [
-        'The Sandbox Console logs all operational transactions in real time at the bottom-left.',
-        '<ul>' +
-          '<li><span class="text-emerald">Success Logs (Green):</span> Indicate healthy <code>HTTP 200</code> transactions reaching databases or consumers.</li>' +
-          '<li><span class="text-orange">Error Logs (Red):</span> Display overload failures, connection timeouts, or service integration faults.</li>' +
-          '<li><span class="text-purple">Telemetry Feed (Top-Right):</span> Acts as your real-time cloud dashboard. It charts Latency, Requests Per Second (RPS), and total Error count across your cloud blueprint.</li>' +
-          '</ul>',
-      ],
-    },
-    {
-      id: 'sim-bottlenecks',
-      title: 'Bottlenecks & Collapses',
-      category: 'sim',
-      icon: 'fas fa-skull-crossbones',
-      summary:
-        'Understand the multi-factor bottleneck simulation, load shedding, and failure modes.',
-      content: [
-        'Rather than checking raw Requests-per-Second (RPS) thresholds, Sr. Architect simulates resource bottlenecks based on actual hardware limits and architecture behavior:',
-        '<ul>' +
-          '<li><span class="text-purple"><strong>Multi-Factor Saturation:</strong></span> Nodes saturate when concurrent query queues, CPU pressure, or physical limits (like DB parallel queries, EC2 vCPU threads, or Lambda reserved concurrency) are exceeded.</li>' +
-          '<li><span class="text-orange"><strong>Load Shedding & Throttling:</strong></span> Fully managed or serverless services (such as API Gateway, SQS, or DynamoDB) shed excess load. They return transient <code>HTTP 429 Too Many Requests</code> or <code>503 Service Unavailable</code> errors but remain online and recover immediately when traffic drops.</li>' +
-          '<li><span class="text-red"><strong>Hard Collapse (Offline States):</strong></span> Compute-bound resources (like EC2 instances, ECS container tasks, or RDS database connections) model physical failure. If sustained overload exceeds 150% capacity for over 1 second (6 simulation ticks), the node collapses into a terminal <code>offline</code> state (e.g. CPU exhaustion, connection pool exhaustion) and must be stopped and restarted.</li>' +
-          '<li><span class="text-blue"><strong>Cascading Failures:</strong></span> When an upstream service goes offline or is overloaded, its failed state propagates downstream. Any dependent microservices will lose incoming traffic, visualizing a realistic system-wide collapse.</li>' +
-          '</ul>',
-      ],
-    },
+  // --- SIMULATOR CORE ---
+  {
+    id: 'sim-flow',
+    title: 'Real-Time Traffic flow',
+    category: 'sim',
+    icon: 'fas fa-wave-square',
+    summary: 'Understand how request packets move through your architecture in real time.',
+    content: [
+      'Once you click the Run play button, the Users node starts generating active data packets.',
+      '<ul>' +
+      "<li><strong>Glowing Packets:</strong> Traffic flows down visual paths as glowing packets. The rate of requests is determined by the Users node's <code>Request Rate</code> slider.</li>" +
+      '<li><strong>Simulation Ticks:</strong> The engine updates at a steady 60 FPS, resolving queues, packet transfers, and database queries dynamically.</li>' +
+      "<li><strong>Degradation:</strong> If a server gets overloaded (exceeding its capacity limit), you'll watch packets stack up, latency climb, or requests fail and drop on the live dashboard.</li>" +
+      '</ul>',
+    ],
+    tips: [
+      'Toggle the Pause button to freeze the data packets mid-conduit for fine-grained tracing.',
+      'Watch the sparkline graph in the telemetry overlay to see real-time latency fluctuations.',
+    ],
+  },
+  {
+    id: 'sim-telemetry',
+    title: 'Sandbox Consoles & Logs',
+    category: 'sim',
+    icon: 'fas fa-terminal',
+    summary: 'Utilize active console logs and telemetry dials to diagnose backend bottlenecks.',
+    content: [
+      'The Sandbox Console logs all operational transactions in real time at the bottom-left.',
+      '<ul>' +
+      '<li><span class="text-emerald">Success Logs (Green):</span> Indicate healthy <code>HTTP 200</code> transactions reaching databases or consumers.</li>' +
+      '<li><span class="text-orange">Error Logs (Red):</span> Display overload failures, connection timeouts, or service integration faults.</li>' +
+      '<li><span class="text-purple">Telemetry Feed (Top-Right):</span> Acts as your real-time cloud dashboard. It charts Latency, Requests Per Second (RPS), and total Error count across your cloud blueprint.</li>' +
+      '</ul>',
+    ],
+  },
+  {
+    id: 'sim-bottlenecks',
+    title: 'Bottlenecks & Collapses',
+    category: 'sim',
+    icon: 'fas fa-skull-crossbones',
+    summary:
+      'Understand the multi-factor bottleneck simulation, load shedding, and failure modes.',
+    content: [
+      'Rather than checking raw Requests-per-Second (RPS) thresholds, Sr. Architect simulates resource bottlenecks based on actual hardware limits and architecture behavior:',
+      '<ul>' +
+      '<li><span class="text-purple"><strong>Multi-Factor Saturation:</strong></span> Nodes saturate when concurrent query queues, CPU pressure, or physical limits (like DB parallel queries, EC2 vCPU threads, or Lambda reserved concurrency) are exceeded.</li>' +
+      '<li><span class="text-orange"><strong>Load Shedding & Throttling:</strong></span> Fully managed or serverless services (such as API Gateway, SQS, or DynamoDB) shed excess load. They return transient <code>HTTP 429 Too Many Requests</code> or <code>503 Service Unavailable</code> errors but remain online and recover immediately when traffic drops.</li>' +
+      '<li><span class="text-red"><strong>Hard Collapse (Offline States):</strong></span> Compute-bound resources (like EC2 instances, ECS container tasks, or RDS database connections) model physical failure. If sustained overload exceeds 150% capacity for over 1 second (6 simulation ticks), the node collapses into a terminal <code>offline</code> state (e.g. CPU exhaustion, connection pool exhaustion) and must be stopped and restarted.</li>' +
+      '<li><span class="text-blue"><strong>Cascading Failures:</strong></span> When an upstream service goes offline or is overloaded, its failed state propagates downstream. Any dependent microservices will lose incoming traffic, visualizing a realistic system-wide collapse.</li>' +
+      '</ul>',
+    ],
+  },
 
-    // --- FORMULAS & CALCULATIONS ---
-    {
-      id: 'formula-engine',
-      title: 'The 180ms Heartbeat',
-      category: 'formulas',
-      icon: 'fas fa-heart-pulse',
-      summary: 'How the engine recalculates your entire system about five times a second.',
-      content: [
-        'Every architecture you draw runs on one simple loop. Roughly every <code>180ms</code>, about five times a second, the engine wakes up, walks your whole graph, and recomputes traffic, latency, pressure and cost for every node. Each pass is called a <strong>tick</strong>.',
-        '<ul>' +
-          '<li><span class="text-purple"><strong>Producers before consumers:</strong></span> each tick visits nodes in <em>flow order</em> (a topological sort), so a node always sees its full upstream traffic before it runs. Fan-outs and fan-ins stay accurate.</li>' +
-          '<li><span class="text-blue"><strong>Fresh each tick, but with memory:</strong></span> incoming traffic is recomputed from scratch every tick, yet two things deliberately carry over: each node\'s request <strong>queue</strong> and its accumulated <strong>overload latency</strong>. That memory is what makes congestion build and then drain over time.</li>' +
-          '<li><span class="text-emerald"><strong>Nothing is hand-set:</strong></span> during a run no number is faked. Capacity, demand, latency, CPU and cost are all <em>derived</em> from the formulas in this section.</li>' +
-          '</ul>',
-      ],
-      tips: ['Hit Pause to freeze a single tick and read the exact numbers each node resolved.'],
-    },
-    {
-      id: 'formula-capacity',
-      title: 'Capacity: How Much Can a Node Take?',
-      category: 'formulas',
-      icon: 'fas fa-gauge-high',
-      summary:
-        'The ceiling each service can serve before it struggles, and why it is rarely just "RPS".',
-      content: [
-        'Picture every node as a <strong>kitchen</strong>: capacity is how many orders its cooks can plate per second. Push more than that and orders pile up. Capacity is computed differently per service, because real services bottleneck on different resources:',
-        '<ul>' +
-          '<li><span class="text-purple"><strong>Lambda (concurrency-bound):</strong></span> <code>capacity = reserved concurrency ÷ execution time(s)</code>. A 200ms function with 100 concurrency serves ~500 rps.</li>' +
-          '<li><span class="text-orange"><strong>EC2 / ECS (compute-bound):</strong></span> <code>capacity = tasks × vCPU × concurrency-per-vCPU ÷ request time(s)</code>.</li>' +
-          '<li><span class="text-blue"><strong>RDS (connection-bound):</strong></span> <code>capacity = parallel queries ÷ query time(s)</code>. Parallel queries are capped by CPU cores (not raw max-connections) and lifted by read replicas.</li>' +
-          '<li><span class="text-emerald"><strong>ElastiCache / OpenSearch:</strong></span> scale with <code>node count × per-node op/query rate</code>.</li>' +
-          '<li><strong>S3:</strong> effectively unbounded, so it is never the bottleneck.</li>' +
-          '</ul>',
-        'This is why a slow 500ms function saturates at a far lower request rate than a fast 10ms one, even with identical concurrency. The cooks are simply tied up longer per order.',
-      ],
-    },
-    {
-      id: 'formula-demand',
-      title: 'Demand, Queue & the Overload Ratio',
-      category: 'formulas',
-      icon: 'fas fa-arrow-trend-up',
-      summary:
-        'How incoming traffic, backlog and capacity combine into one "how cooked is this node?" number.',
-      content: [
-        'Each tick a node works out how much it is facing versus how much it can clear:',
-        '<ul>' +
-          '<li><code>total demand = incoming rps + leftover queue</code>: new orders plus the existing backlog.</li>' +
-          '<li><code>processed = min(total demand, capacity)</code>: you can only plate as fast as the cooks allow.</li>' +
-          '<li><code>queue = total demand − processed</code>: whatever could not be served waits in line.</li>' +
-          '<li><span class="text-orange"><code>overload ratio = total demand ÷ capacity</code></span> is the single most important number. <code>1.0</code> = exactly full; <code>2.0</code> = twice what the node can handle.</li>' +
-          '</ul>',
-        'When a node fans out to several children, each edge carries a share set by its <strong>traffic weight</strong>: <code>load = processed × (weight ÷ 100)</code>. That is how you model a 90/10 canary or a 70/30 pool split.',
-        "The queue is deliberately <strong>capped</strong> at a few seconds' worth of capacity. Without a cap, a node that briefly overloaded would hoard an impossible backlog and never look healthy again. The cap lets it recover the instant traffic eases.",
-      ],
-    },
-    {
-      id: 'formula-latency',
-      title: 'Latency: Why Milliseconds Climb to Minutes',
-      category: 'formulas',
-      icon: 'fas fa-stopwatch',
-      summary: 'The exact formula behind the ms / s / min ticking up on an overloaded node.',
-      content: [
-        'Latency is the headline number on every node, and it is just a sum of intuitive parts:',
-        '<code>latency = base + queue-wait + load-penalty + overload-climb − cache-savings</code>',
-        '<ul>' +
-          "<li><strong>Base:</strong> the node's own processing time at rest (its <code>Base Latency</code> param).</li>" +
-          '<li><strong>Queue-wait</strong> <code>= min(500, queue × 0.5)</code> is time spent waiting in line, capped so it never dominates on its own.</li>' +
-          '<li><span class="text-orange"><strong>Load-penalty</strong> <code>= overload ratio × 18</code></span> is a steady tax for running hot.</li>' +
-          '<li><span class="text-emerald"><strong>Cache-savings:</strong></span> CloudFront / ElastiCache / API Gateway subtract <code>cache hit rate × 0.28</code>.</li>' +
-          '</ul>',
-        'The <strong>overload-climb</strong> is the part that makes a stuck node feel real. While a node stays past capacity, this penalty <em>compounds</em> every tick: <code>next = (previous + (overload ratio − 1) × 12) × 1.12</code>. So latency does not plateau. It escalates milliseconds → seconds → minutes the longer overload lasts. The moment load drops back under capacity it decays ~40% per tick and the node visibly recovers.',
-        'It cannot climb forever. It is capped at the <strong>request timeout</strong> (default 60s). Hitting that means requests are timing out, which sheds the backlog and, for real hardware, tips the node offline (see the next article).',
-        '<em>Example:</em> a 50ms node held at <code>2×</code> overload starts around a few hundred ms, then compounds upward through seconds toward the 60s timeout if the pressure is sustained.',
-      ],
-      tips: [
-        'These multipliers (× 0.5, × 18, × 1.12) are tuned for a readable, realistic feel on a 180ms tick. They are a behavioural model, not measured AWS numbers.',
-      ],
-    },
-    {
-      id: 'formula-health',
-      title: 'Health States & the Point of Collapse',
-      category: 'formulas',
-      icon: 'fas fa-heart-crack',
-      summary:
-        'The thresholds that turn a node green → amber → red, and when it goes dark for good.',
-      content: [
-        "A node's colour is decided purely by the numbers above, mainly the overload ratio and CPU pressure:",
-        '<ul>' +
-          '<li><span class="text-emerald"><strong>Normal:</strong></span> overload ratio below ~0.78, comfortable headroom.</li>' +
-          '<li><span class="text-orange"><strong>Busy:</strong></span> ratio above ~0.78 (or CPU > 66%). <em>Exactly at capacity (ratio = 1.0) a node is Busy, not Overloaded.</em></li>' +
-          '<li><span class="text-red"><strong>Overloaded:</strong></span> ratio above ~1.12 (or CPU > 84%), shedding load with latency climbing.</li>' +
-          '<li><span class="text-red"><strong>Offline:</strong></span> sustained collapse, the node goes dark.</li>' +
-          '</ul>',
-        'Pressure gauges have their own formulas: <code>CPU = baseline × 0.45 + overload ratio × 58</code>, while memory rises with the queue (for Lambda it is concurrency utilisation instead).',
-        "Whether a node can actually go <strong>offline</strong> depends on its class, the same split shown in every service's <strong>Bottleneck &amp; Capacity</strong> card:",
-        '<ul>' +
-          '<li><span class="text-orange"><strong>Throttle services</strong></span> (Lambda, API Gateway, SQS, DynamoDB…) shed excess as <code>HTTP 429/503</code> and <strong>stay up</strong>. They return errors and recover, never going dark.</li>' +
-          '<li><span class="text-red"><strong>Resource-bound services</strong></span> (EC2, ECS, RDS…) model real hardware. Stay past the offline threshold for ~1 second (6 ticks), <em>or</em> pin latency at the request timeout, and they <strong>collapse offline</strong>, cascading to everything downstream.</li>' +
-          '</ul>',
-      ],
-    },
-    {
-      id: 'formula-cost',
-      title: 'Cost: The Live Monthly Bill',
-      category: 'formulas',
-      icon: 'fas fa-coins',
-      summary: 'How the side panel turns your design into real dollars using live AWS rates.',
-      content: [
-        'While traffic flows, the same loop prices your architecture from <strong>real AWS Price List API rates</strong> (refreshed weekly). Every service has its own formula; a few favourites:',
-        '<ul>' +
-          '<li><span class="text-purple"><strong>Lambda:</strong></span> <code>(invocations × $/M requests) + (GB-seconds × $/GB-s)</code>, where <code>GB-seconds = invocations × duration(s) × memory(GB)</code>.</li>' +
-          '<li><span class="text-orange"><strong>EC2:</strong></span> <code>instances × hourly rate × 730 hrs</code> (+ EBS storage + data transfer).</li>' +
-          '<li><span class="text-blue"><strong>Requests (API Gateway, etc.):</strong></span> tiered <code>$ per million requests</code>.</li>' +
-          '<li><span class="text-emerald"><strong>Storage:</strong></span> <code>GB × $/GB-month</code>, by storage class.</li>' +
-          '</ul>',
-        'Free-tier allowances are subtracted and shown as a separate green badge, so you can see exactly what you are saving. Switch on <strong>Variable Traffic</strong> and the panel reports both the <em>average</em> and the <em>peak</em> monthly cost.',
-      ],
-    },
+  // --- FORMULAS & CALCULATIONS ---
+  {
+    id: 'formula-engine',
+    title: 'The 180ms Heartbeat',
+    category: 'formulas',
+    icon: 'fas fa-heart-pulse',
+    summary: 'How the engine recalculates your entire system about five times a second.',
+    content: [
+      'Every architecture you draw runs on one simple loop. Roughly every <code>180ms</code>, about five times a second, the engine wakes up, walks your whole graph, and recomputes traffic, latency, pressure and cost for every node. Each pass is called a <strong>tick</strong>.',
+      '<ul>' +
+      '<li><span class="text-purple"><strong>Producers before consumers:</strong></span> each tick visits nodes in <em>flow order</em> (a topological sort), so a node always sees its full upstream traffic before it runs. Fan-outs and fan-ins stay accurate.</li>' +
+      '<li><span class="text-blue"><strong>Fresh each tick, but with memory:</strong></span> incoming traffic is recomputed from scratch every tick, yet two things deliberately carry over: each node\'s request <strong>queue</strong> and its accumulated <strong>overload latency</strong>. That memory is what makes congestion build and then drain over time.</li>' +
+      '<li><span class="text-emerald"><strong>Nothing is hand-set:</strong></span> during a run no number is faked. Capacity, demand, latency, CPU and cost are all <em>derived</em> from the formulas in this section.</li>' +
+      '</ul>',
+    ],
+    tips: ['Hit Pause to freeze a single tick and read the exact numbers each node resolved.'],
+  },
+  {
+    id: 'formula-capacity',
+    title: 'Capacity: How Much Can a Node Take?',
+    category: 'formulas',
+    icon: 'fas fa-gauge-high',
+    summary:
+      'The ceiling each service can serve before it struggles, and why it is rarely just "RPS".',
+    content: [
+      'Picture every node as a <strong>kitchen</strong>: capacity is how many orders its cooks can plate per second. Push more than that and orders pile up. Capacity is computed differently per service, because real services bottleneck on different resources:',
+      '<ul>' +
+      '<li><span class="text-purple"><strong>Lambda (concurrency-bound):</strong></span> <code>capacity = reserved concurrency ÷ execution time(s)</code>. A 200ms function with 100 concurrency serves ~500 rps.</li>' +
+      '<li><span class="text-orange"><strong>EC2 / ECS (compute-bound):</strong></span> <code>capacity = tasks × vCPU × concurrency-per-vCPU ÷ request time(s)</code>.</li>' +
+      '<li><span class="text-blue"><strong>RDS (connection-bound):</strong></span> <code>capacity = parallel queries ÷ query time(s)</code>. Parallel queries are capped by CPU cores (not raw max-connections) and lifted by read replicas.</li>' +
+      '<li><span class="text-emerald"><strong>ElastiCache / OpenSearch:</strong></span> scale with <code>node count × per-node op/query rate</code>.</li>' +
+      '<li><strong>S3:</strong> effectively unbounded, so it is never the bottleneck.</li>' +
+      '</ul>',
+      'This is why a slow 500ms function saturates at a far lower request rate than a fast 10ms one, even with identical concurrency. The cooks are simply tied up longer per order.',
+    ],
+  },
+  {
+    id: 'formula-demand',
+    title: 'Demand, Queue & the Overload Ratio',
+    category: 'formulas',
+    icon: 'fas fa-arrow-trend-up',
+    summary:
+      'How incoming traffic, backlog and capacity combine into one "how cooked is this node?" number.',
+    content: [
+      'Each tick a node works out how much it is facing versus how much it can clear:',
+      '<ul>' +
+      '<li><code>total demand = incoming rps + leftover queue</code>: new orders plus the existing backlog.</li>' +
+      '<li><code>processed = min(total demand, capacity)</code>: you can only plate as fast as the cooks allow.</li>' +
+      '<li><code>queue = total demand − processed</code>: whatever could not be served waits in line.</li>' +
+      '<li><span class="text-orange"><code>overload ratio = total demand ÷ capacity</code></span> is the single most important number. <code>1.0</code> = exactly full; <code>2.0</code> = twice what the node can handle.</li>' +
+      '</ul>',
+      'When a node fans out to several children, each edge carries a share set by its <strong>traffic weight</strong>: <code>load = processed × (weight ÷ 100)</code>. That is how you model a 90/10 canary or a 70/30 pool split.',
+      "The queue is deliberately <strong>capped</strong> at a few seconds' worth of capacity. Without a cap, a node that briefly overloaded would hoard an impossible backlog and never look healthy again. The cap lets it recover the instant traffic eases.",
+    ],
+  },
+  {
+    id: 'formula-latency',
+    title: 'Latency: Why Milliseconds Climb to Minutes',
+    category: 'formulas',
+    icon: 'fas fa-stopwatch',
+    summary: 'The exact formula behind the ms / s / min ticking up on an overloaded node.',
+    content: [
+      'Latency is the headline number on every node, and it is just a sum of intuitive parts:',
+      '<code>latency = base + queue-wait + load-penalty + overload-climb − cache-savings</code>',
+      '<ul>' +
+      "<li><strong>Base:</strong> the node's own processing time at rest (its <code>Base Latency</code> param).</li>" +
+      '<li><strong>Queue-wait</strong> <code>= min(500, queue × 0.5)</code> is time spent waiting in line, capped so it never dominates on its own.</li>' +
+      '<li><span class="text-orange"><strong>Load-penalty</strong> <code>= overload ratio × 18</code></span> is a steady tax for running hot.</li>' +
+      '<li><span class="text-emerald"><strong>Cache-savings:</strong></span> CloudFront / ElastiCache / API Gateway subtract <code>cache hit rate × 0.28</code>.</li>' +
+      '</ul>',
+      'The <strong>overload-climb</strong> is the part that makes a stuck node feel real. While a node stays past capacity, this penalty <em>compounds</em> every tick: <code>next = (previous + (overload ratio − 1) × 12) × 1.12</code>. So latency does not plateau. It escalates milliseconds → seconds → minutes the longer overload lasts. The moment load drops back under capacity it decays ~40% per tick and the node visibly recovers.',
+      'It cannot climb forever. It is capped at the <strong>request timeout</strong> (default 60s). Hitting that means requests are timing out, which sheds the backlog and, for real hardware, tips the node offline (see the next article).',
+      '<em>Example:</em> a 50ms node held at <code>2×</code> overload starts around a few hundred ms, then compounds upward through seconds toward the 60s timeout if the pressure is sustained.',
+    ],
+    tips: [
+      'These multipliers (× 0.5, × 18, × 1.12) are tuned for a readable, realistic feel on a 180ms tick. They are a behavioural model, not measured AWS numbers.',
+    ],
+  },
+  {
+    id: 'formula-health',
+    title: 'Health States & the Point of Collapse',
+    category: 'formulas',
+    icon: 'fas fa-heart-crack',
+    summary:
+      'The thresholds that turn a node green → amber → red, and when it goes dark for good.',
+    content: [
+      "A node's colour is decided purely by the numbers above, mainly the overload ratio and CPU pressure:",
+      '<ul>' +
+      '<li><span class="text-emerald"><strong>Normal:</strong></span> overload ratio below ~0.78, comfortable headroom.</li>' +
+      '<li><span class="text-orange"><strong>Busy:</strong></span> ratio above ~0.78 (or CPU > 66%). <em>Exactly at capacity (ratio = 1.0) a node is Busy, not Overloaded.</em></li>' +
+      '<li><span class="text-red"><strong>Overloaded:</strong></span> ratio above ~1.12 (or CPU > 84%), shedding load with latency climbing.</li>' +
+      '<li><span class="text-red"><strong>Offline:</strong></span> sustained collapse, the node goes dark.</li>' +
+      '</ul>',
+      'Pressure gauges have their own formulas: <code>CPU = baseline × 0.45 + overload ratio × 58</code>, while memory rises with the queue (for Lambda it is concurrency utilisation instead).',
+      "Whether a node can actually go <strong>offline</strong> depends on its class, the same split shown in every service's <strong>Bottleneck &amp; Capacity</strong> card:",
+      '<ul>' +
+      '<li><span class="text-orange"><strong>Throttle services</strong></span> (Lambda, API Gateway, SQS, DynamoDB…) shed excess as <code>HTTP 429/503</code> and <strong>stay up</strong>. They return errors and recover, never going dark.</li>' +
+      '<li><span class="text-red"><strong>Resource-bound services</strong></span> (EC2, ECS, RDS…) model real hardware. Stay past the offline threshold for ~1 second (6 ticks), <em>or</em> pin latency at the request timeout, and they <strong>collapse offline</strong>, cascading to everything downstream.</li>' +
+      '</ul>',
+    ],
+  },
+  {
+    id: 'formula-cost',
+    title: 'Cost: The Live Monthly Bill',
+    category: 'formulas',
+    icon: 'fas fa-coins',
+    summary: 'How the side panel turns your design into real dollars using live AWS rates.',
+    content: [
+      'While traffic flows, the same loop prices your architecture from <strong>real AWS Price List API rates</strong> (refreshed weekly). Every service has its own formula; a few favourites:',
+      '<ul>' +
+      '<li><span class="text-purple"><strong>Lambda:</strong></span> <code>(invocations × $/M requests) + (GB-seconds × $/GB-s)</code>, where <code>GB-seconds = invocations × duration(s) × memory(GB)</code>.</li>' +
+      '<li><span class="text-orange"><strong>EC2:</strong></span> <code>instances × hourly rate × 730 hrs</code> (+ EBS storage + data transfer).</li>' +
+      '<li><span class="text-blue"><strong>Requests (API Gateway, etc.):</strong></span> tiered <code>$ per million requests</code>.</li>' +
+      '<li><span class="text-emerald"><strong>Storage:</strong></span> <code>GB × $/GB-month</code>, by storage class.</li>' +
+      '</ul>',
+      'Free-tier allowances are subtracted and shown as a separate green badge, so you can see exactly what you are saving. Switch on <strong>Variable Traffic</strong> and the panel reports both the <em>average</em> and the <em>peak</em> monthly cost.',
+    ],
+  },
 
-    // --- COST DYNAMICS ---
-    {
-      id: 'cost-estimation',
-      title: 'Regional Costs & Multipliers',
-      category: 'cost',
-      icon: 'fas fa-money-bill-wave',
-      summary: 'Understand AWS regional multipliers, cost breakdowns, and currency conversions.',
-      content: [
-        'The cost simulator maps real AWS billing pricing tables with dynamic geographic adjustments.',
-        '<ul>' +
-          '<li><strong>Fine-Grained Regional Multipliers:</strong> Cloud costs differ heavily based on geography and service type. Instead of a single multiplier, Sr. Architect loads a dedicated JSON configuration file for each region (e.g. <code>us-west-1.json</code>).</li>' +
-          '<li><strong>Per-Service, Per-Parameter Flexibility:</strong> Each region JSON specifies multipliers for all 64+ AWS services and their individual cost-impacting parameters (like requests, CPU cores, GB storage, and data transfer). This allows you to customize and track cost structures with absolute precision.</li>' +
-          '<li><strong>Default Adjustments:</strong> By default, service parameters inherit standard regional multipliers (e.g., <code>us-east-1</code> at 1.0x, <code>us-west-1</code> at 1.10x, <code>sa-east-1</code> at 1.38x).</li>' +
-          '<li><strong>Currency Switching:</strong> Tap currency conversions live (USD, EUR, INR, GBP, JPY) to see local pricing equivalents instantly in the telemetry footer.</li>' +
-          '</ul>',
-      ],
-    },
+  // --- COST DYNAMICS ---
+  {
+    id: 'cost-estimation',
+    title: 'Regional Costs & Multipliers',
+    category: 'cost',
+    icon: 'fas fa-money-bill-wave',
+    summary: 'Understand AWS regional multipliers, cost breakdowns, and currency conversions.',
+    content: [
+      'The cost simulator maps real AWS billing pricing tables with dynamic geographic adjustments.',
+      '<ul>' +
+      '<li><strong>Fine-Grained Regional Multipliers:</strong> Cloud costs differ heavily based on geography and service type. Instead of a single multiplier, Sr. Architect loads a dedicated JSON configuration file for each region (e.g. <code>us-west-1.json</code>).</li>' +
+      '<li><strong>Per-Service, Per-Parameter Flexibility:</strong> Each region JSON specifies multipliers for all 64+ AWS services and their individual cost-impacting parameters (like requests, CPU cores, GB storage, and data transfer). This allows you to customize and track cost structures with absolute precision.</li>' +
+      '<li><strong>Default Adjustments:</strong> By default, service parameters inherit standard regional multipliers (e.g., <code>us-east-1</code> at 1.0x, <code>us-west-1</code> at 1.10x, <code>sa-east-1</code> at 1.38x).</li>' +
+      '<li><strong>Currency Switching:</strong> Tap currency conversions live (USD, EUR, INR, GBP, JPY) to see local pricing equivalents instantly in the telemetry footer.</li>' +
+      '</ul>',
+    ],
+  },
 ];

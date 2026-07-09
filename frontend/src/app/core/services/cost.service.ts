@@ -200,6 +200,9 @@ export class CostService {
       case 'lambda':
         return this.costLambda(pf, config, lines);
 
+      case 'amplify':
+        return this.costAmplify(pf, config, lines);
+
       case 'ec2':
       case 'autoScalingGroup':
       case 'elasticBeanstalk':
@@ -365,6 +368,33 @@ export class CostService {
       case 'privateLink':
         return this.costPrivateLink(pf, config, lines);
 
+      case 'ses':
+        return this.costSes(pf, config, lines);
+
+      case 'documentDb':
+        return this.costDocumentDb(pf, config, lines);
+
+      case 'neptune':
+        return this.costNeptune(pf, config, lines);
+
+      case 'timestream':
+        return this.costTimestream(pf, config, lines);
+
+      case 'appConfig':
+        return this.costAppConfig(pf, config, lines);
+
+      case 'appMesh':
+        return this.costAppMesh(lines);
+
+      case 'cloudMap':
+        return this.costCloudMap(pf, config, lines);
+
+      case 'quickSight':
+        return this.costQuickSight(pf, config, lines);
+
+      case 'lightsail':
+        return this.costLightsail(pf, config, lines);
+
       // The client node (end users) and zero-cost security primitives are not
       // billable — no cost lines, so the Cost panel stays hidden for these.
       case 'client':
@@ -517,8 +547,8 @@ export class CostService {
     lines.push({
       label: 'SQS Requests',
       formula: billM > 0
-        ? throughput + ' RPS → ' + reqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M — ' + billM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + rate.toFixed(2) + '/M'
-        : throughput + ' RPS → ' + reqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo — within free allowance',
+        ? throughput + ' RPS → ' + reqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M, ' +billM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + rate.toFixed(2) + '/M'
+        : throughput + ' RPS → ' + reqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo, within free allowance',
       value: cost,
       freeSaving: Math.min(reqM, 1).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M req free (Always Free tier)'
     });
@@ -537,8 +567,8 @@ export class CostService {
     lines.push({
       label: 'Publish',
       formula: billPubM > 0
-        ? throughput + ' RPS → ' + pubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M — ' + billPubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + (pf.publish || 0.50).toFixed(2) + '/M'
-        : throughput + ' RPS → ' + pubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo — within free allowance',
+        ? throughput + ' RPS → ' + pubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M, ' +billPubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + (pf.publish || 0.50).toFixed(2) + '/M'
+        : throughput + ' RPS → ' + pubM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo, within free allowance',
       value: costPub,
       freeSaving: Math.min(pubM, 1).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M publishes free (Always Free tier)'
     });
@@ -1478,6 +1508,319 @@ export class CostService {
     return total;
   }
 
+  private costAmplify(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    let total = 0;
+    const buildMinutes = this.getVal(config, 'amplify', 'buildMinutes', 500);
+    const buildInstanceType = this.getVal(config, 'amplify', 'buildInstanceType', 'standard');
+    const buildRates: Record<string, { rate: number; label: string }> = {
+      standard: { rate: pf.buildMinute || 0.01, label: 'Standard' },
+      large: { rate: pf.buildMinuteLarge || 0.025, label: 'Large' },
+      xlarge: { rate: pf.buildMinuteXLarge || 0.10, label: 'XLarge' }
+    };
+    const build = buildRates[buildInstanceType] || buildRates['standard'];
+    const buildCost = buildMinutes * build.rate;
+    lines.push({
+      label: 'Build & Deploy (' + build.label + ')',
+      formula: buildMinutes + ' minutes × $' + build.rate.toFixed(3) + '/min',
+      value: buildCost
+    });
+
+    const dataServedGB = this.getVal(config, 'amplify', 'dataServedGB', 100);
+    const dataServedCost = dataServedGB * (pf.dataServedGB || 0.15);
+    lines.push({
+      label: 'Hosting Data Served',
+      formula: dataServedGB + ' GB × $' + (pf.dataServedGB || 0.15).toFixed(2) + '/GB',
+      value: dataServedCost
+    });
+
+    const storageGB = this.getVal(config, 'amplify', 'storageGB', 10);
+    const storageCost = storageGB * (pf.storageGB || 0.023);
+    lines.push({
+      label: 'Hosting Data Storage',
+      formula: storageGB + ' GB × $' + (pf.storageGB || 0.023).toFixed(3) + '/GB-mo',
+      value: storageCost
+    });
+
+    total = buildCost + dataServedCost + storageCost;
+    return total;
+  }
+
+  private costSes(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const dailyVolume = this.getVal(config, 'ses', 'dailyVolume', 1000);
+    const monthlyEmails = dailyVolume * 30;
+    const emailRate = pf.email || 0.0001;
+    const outboundCost = monthlyEmails * emailRate;
+    lines.push({
+      label: 'Outbound Email',
+      formula: dailyVolume + '/day × 30 days × $' + (emailRate * 1000).toFixed(2) + '/1k emails',
+      value: outboundCost
+    });
+
+    let vdmCost = 0;
+    if (this.getVal(config, 'ses', 'vdmEnabled', false)) {
+      const vdmRate = pf.vdmEmail || 0.00007;
+      vdmCost = monthlyEmails * vdmRate;
+      lines.push({
+        label: 'Virtual Deliverability Manager',
+        formula: monthlyEmails + ' emails × $' + (vdmRate * 1000).toFixed(2) + '/1k processed',
+        value: vdmCost
+      });
+    }
+
+    const inboundDaily = this.getVal(config, 'ses', 'inboundDailyVolume', 0);
+    const inboundRate = pf.inboundEmail || 0.0001;
+    const inboundCost = inboundDaily * 30 * inboundRate;
+    if (inboundCost > 0) {
+      lines.push({
+        label: 'Inbound Email',
+        formula: inboundDaily + '/day × 30 days × $' + (inboundRate * 1000).toFixed(2) + '/1k emails',
+        value: inboundCost
+      });
+    }
+
+    const attachmentGB = this.getVal(config, 'ses', 'attachmentGB', 1);
+    const attachCost = attachmentGB * (pf.attachmentGB || 0.12);
+    lines.push({
+      label: 'Attachment Egress',
+      formula: attachmentGB + ' GB × $' + (pf.attachmentGB || 0.12).toFixed(2) + '/GB',
+      value: attachCost
+    });
+
+    const dedicatedIPs = this.getVal(config, 'ses', 'dedicatedIPs', 0);
+    const ipCost = dedicatedIPs * (pf.dedicatedIP || 24.95);
+    if (ipCost > 0) {
+      lines.push({
+        label: 'Dedicated IPs',
+        formula: dedicatedIPs + ' IPs × $' + (pf.dedicatedIP || 24.95).toFixed(2) + '/mo',
+        value: ipCost
+      });
+    }
+
+    return outboundCost + vdmCost + inboundCost + attachCost + ipCost;
+  }
+
+  private costDocumentDb(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const instClass = this.getVal(config, 'documentDb', 'instanceClass', 'db.r6g.large');
+    const count = this.getVal(config, 'documentDb', 'instanceCount', 2);
+    const storageType = this.getVal(config, 'documentDb', 'storageType', 'standard');
+    const ioOptimized = storageType === 'io-optimized';
+
+    const rateMap = ioOptimized ? (pf.instancesIO || {}) : (pf.instances || {});
+    const rate = rateMap[instClass] || (ioOptimized ? 0.2895 : 0.2631);
+    const instCost = count * rate * 730;
+    lines.push({
+      label: `Cluster Instances (${instClass}${ioOptimized ? ', I/O-Opt' : ''})`,
+      formula: count + ' instances × $' + rate.toFixed(4) + '/hr × 730 hrs',
+      value: instCost
+    });
+
+    const storageGB = this.getVal(config, 'documentDb', 'storageGB', 100);
+    const storageRate = ioOptimized ? (pf.storageIOGB || 0.30) : (pf.storageGB || 0.10);
+    const storageCost = storageGB * storageRate;
+    lines.push({
+      label: `Cluster Storage (${storageType})`,
+      formula: storageGB + ' GB × $' + storageRate.toFixed(2) + '/GB-mo',
+      value: storageCost
+    });
+
+    let ioCost = 0;
+    if (!ioOptimized) {
+      const ioM = this.getVal(config, 'documentDb', 'ioRequestsMillion', 100);
+      ioCost = ioM * (pf.ioMillion || 0.20);
+      lines.push({
+        label: 'I/O Requests',
+        formula: ioM + 'M I/Os × $' + (pf.ioMillion || 0.20).toFixed(2) + '/M',
+        value: ioCost
+      });
+    }
+
+    return instCost + storageCost + ioCost;
+  }
+
+  private costNeptune(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const instClass = this.getVal(config, 'neptune', 'instanceClass', 'db.r6g.large');
+    const count = this.getVal(config, 'neptune', 'instanceCount', 2);
+    const rate = pf.instances?.[instClass] || 0.3287;
+    const instCost = count * rate * 730;
+    lines.push({
+      label: `Cluster Instances (${instClass})`,
+      formula: count + ' instances × $' + rate.toFixed(4) + '/hr × 730 hrs',
+      value: instCost
+    });
+
+    const storageGB = this.getVal(config, 'neptune', 'storageGB', 100);
+    const storageCost = storageGB * (pf.storageGB || 0.10);
+    lines.push({
+      label: 'Graph Storage',
+      formula: storageGB + ' GB × $' + (pf.storageGB || 0.10).toFixed(2) + '/GB-mo',
+      value: storageCost
+    });
+
+    const ioM = this.getVal(config, 'neptune', 'ioRequestsMillion', 50);
+    const ioCost = ioM * (pf.ioMillion || 0.20);
+    lines.push({
+      label: 'I/O Requests',
+      formula: ioM + 'M I/Os × $' + (pf.ioMillion || 0.20).toFixed(2) + '/M',
+      value: ioCost
+    });
+
+    return instCost + storageCost + ioCost;
+  }
+
+  private costTimestream(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const ingestedGB = this.getVal(config, 'timestream', 'ingestedGB', 100);
+    const ingestCost = ingestedGB * (pf.ingestGB || 0.50);
+    lines.push({
+      label: 'Data Ingestion',
+      formula: ingestedGB + ' GB × $' + (pf.ingestGB || 0.50).toFixed(2) + '/GB',
+      value: ingestCost
+    });
+
+    const memoryGB = this.getVal(config, 'timestream', 'memoryStorageGB', 10);
+    const memRate = pf.memoryGBHr || 0.036;
+    const memCost = memoryGB * memRate * 730;
+    lines.push({
+      label: 'Memory Store',
+      formula: memoryGB + ' GB × $' + memRate.toFixed(3) + '/GB-hr × 730 hrs',
+      value: memCost
+    });
+
+    const magneticGB = this.getVal(config, 'timestream', 'magneticStorageGB', 100);
+    const magCost = magneticGB * (pf.magneticGB || 0.03);
+    lines.push({
+      label: 'Magnetic Store',
+      formula: magneticGB + ' GB × $' + (pf.magneticGB || 0.03).toFixed(2) + '/GB-mo',
+      value: magCost
+    });
+
+    const scannedGB = this.getVal(config, 'timestream', 'scannedQueryGB', 1000);
+    const scanCost = scannedGB * (pf.scannedGB || 0.01);
+    lines.push({
+      label: 'Query Scans',
+      formula: scannedGB + ' GB scanned × $' + (pf.scannedGB || 0.01).toFixed(2) + '/GB',
+      value: scanCost
+    });
+
+    return ingestCost + memCost + magCost + scanCost;
+  }
+
+  private costAppConfig(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const requestsM = this.getVal(config, 'appConfig', 'configRequestsM', 10);
+    const reqCost = requestsM * (pf.requestM || 0.20);
+    lines.push({
+      label: 'Configuration Requests',
+      formula: requestsM + 'M requests × $' + (pf.requestM || 0.20).toFixed(2) + '/M',
+      value: reqCost
+    });
+
+    const targets = this.getVal(config, 'appConfig', 'deploymentTargets', 100);
+    const deploys = this.getVal(config, 'appConfig', 'deploymentsPerMonth', 10);
+    const depRate = pf.deployment || 0.0008;
+    const depCost = targets * deploys * depRate;
+    lines.push({
+      label: 'Configurations Received',
+      formula: targets + ' targets × ' + deploys + ' deploys × $' + depRate.toFixed(4) + ' each',
+      value: depCost
+    });
+
+    return reqCost + depCost;
+  }
+
+  private costAppMesh(lines: CostBreakdownLine[]): number {
+    lines.push({
+      label: 'Control Plane',
+      formula: 'Routing configuration and distribution, not billed',
+      value: 0,
+      note: 'You pay only for the EC2/Fargate compute running the Envoy sidecars, billed on those services.'
+    });
+    return 0;
+  }
+
+  private costCloudMap(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const resources = this.getVal(config, 'cloudMap', 'registeredResources', 50);
+    const regCost = resources * (pf.resourceMonth || 0.10);
+    lines.push({
+      label: 'Resource Registry',
+      formula: resources + ' resources × $' + (pf.resourceMonth || 0.10).toFixed(2) + '/mo',
+      value: regCost
+    });
+
+    const queriesM = this.getVal(config, 'cloudMap', 'discoveryQueriesM', 10);
+    const queryCost = queriesM * (pf.queryM || 1.00);
+    lines.push({
+      label: 'Discovery API Calls',
+      formula: queriesM + 'M calls × $' + (pf.queryM || 1.00).toFixed(2) + '/M',
+      value: queryCost
+    });
+
+    return regCost + queryCost;
+  }
+
+  private costQuickSight(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const authors = this.getVal(config, 'quickSight', 'authors', 5);
+    const authorCost = authors * (pf.authorPro || 40.0);
+    lines.push({
+      label: 'Author Pro Licenses',
+      formula: authors + ' authors × $' + (pf.authorPro || 40.0).toFixed(2) + '/user-mo',
+      value: authorCost
+    });
+
+    const readers = this.getVal(config, 'quickSight', 'readers', 20);
+    const readerCost = readers * (pf.reader || 3.0);
+    lines.push({
+      label: 'Reader Licenses',
+      formula: readers + ' readers × $' + (pf.reader || 3.0).toFixed(2) + '/user-mo',
+      value: readerCost
+    });
+
+    const spiceGB = this.getVal(config, 'quickSight', 'spiceStorageGB', 100);
+    const spiceCost = spiceGB * (pf.spiceGB || 0.38);
+    lines.push({
+      label: 'SPICE Storage',
+      formula: spiceGB + ' GB × $' + (pf.spiceGB || 0.38).toFixed(2) + '/GB-mo',
+      value: spiceCost
+    });
+
+    return authorCost + readerCost + spiceCost;
+  }
+
+  /** Data-transfer allowance included in each Lightsail bundle (GB/month). */
+  private static readonly LIGHTSAIL_ALLOWANCE_GB: Record<string, number> = {
+    '0.5GB': 1024,
+    '1GB': 2048,
+    '2GB': 3072,
+    '4GB': 4096,
+    '8GB': 5120,
+    '16GB': 6144,
+    '32GB': 7168
+  };
+
+  private costLightsail(pf: any, config: any, lines: CostBreakdownLine[]): number {
+    const bundle = this.getVal(config, 'lightsail', 'bundleSize', '2GB');
+    const hourly = pf.bundles?.[bundle] || pf.bundles?.['2GB'] || 0.01612;
+    const bundleCost = hourly * 730;
+    lines.push({
+      label: `Instance Bundle (${bundle})`,
+      formula: '$' + hourly.toFixed(5) + '/hr × 730 hrs (flat-rate bundle)',
+      value: bundleCost
+    });
+
+    const bandwidthGB = this.getVal(config, 'lightsail', 'bandwidthGB', 100);
+    const allowance = CostService.LIGHTSAIL_ALLOWANCE_GB[bundle] ?? 3072;
+    const overageGB = Math.max(0, bandwidthGB - allowance);
+    const overageCost = overageGB * (pf.overageGB || 0.09);
+    lines.push({
+      label: 'Data Transfer',
+      formula: overageGB > 0
+        ? overageGB + ' GB over ' + allowance + ' GB allowance × $' + (pf.overageGB || 0.09).toFixed(2) + '/GB'
+        : bandwidthGB + ' GB within ' + allowance + ' GB bundle allowance',
+      value: overageCost,
+      freeSaving: overageGB > 0 ? undefined : allowance + ' GB transfer included in bundle'
+    });
+
+    return bundleCost + overageCost;
+  }
+
   private costCloudWatch(pf: any, config: any, lines: CostBreakdownLine[]): number {
     let total = 0;
     // Always Free tier (perpetual): 10 custom metrics, 10 alarms, 5 GB logs ingestion, 3 dashboards.
@@ -1693,7 +2036,7 @@ export class CostService {
     lines.push({
       label: 'Requests',
       formula: billableReqM > 0
-        ? `${throughputRps} RPS → ${invocationsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M/mo — ${billableReqM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${(pf.requestM || 0.20).toFixed(2)}/M`
+        ? `${throughputRps} RPS → ${invocationsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M/mo, ${billableReqM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M × $${(pf.requestM || 0.20).toFixed(2)}/M`
         : `${throughputRps} RPS → ${invocationsM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M/mo invocations`,
       value: reqCost,
       freeSaving: `${savedReqM.toLocaleString(undefined, { maximumFractionDigits: 2 })}M req free (Always Free tier)`
@@ -1972,7 +2315,7 @@ export class CostService {
       label: 'Data Transfer Out',
       formula: billableDtGb > 0
         ? billableDtGb.toLocaleString() + ' GB × $' + dtRate + '/GB (' + region + ' class)'
-        : dtOut.toLocaleString() + ' GB — within free allowance',
+        : dtOut.toLocaleString() + ' GB, within free allowance',
       value: dtCost,
       freeSaving: savedDtGb.toLocaleString() + ' GB free (Always Free tier)'
     });
@@ -1986,8 +2329,8 @@ export class CostService {
     lines.push({
       label: 'Requests',
       formula: billableReqM > 0
-        ? throughput + ' RPS → ' + reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M — ' + billableReqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + reqRate + '/M'
-        : throughput + ' RPS → ' + reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo — within free allowance',
+        ? throughput + ' RPS → ' + reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M, ' +billableReqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M × $' + reqRate + '/M'
+        : throughput + ' RPS → ' + reqsM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M/mo, within free allowance',
       value: reqCost,
       freeSaving: savedReqM.toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M req free (Always Free tier)'
     });

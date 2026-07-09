@@ -20,7 +20,7 @@ Learn cloud engineering and system design by solving real-world challenges direc
 
 ### 📐 Interactive Architecture Dashboard
 Model production-grade topologies with a comprehensive, interactive service palette:
-- **60+ Hand-Crafted AWS Services**: Exposes compute, database, networking, serverless, storage, analytics, and security services.
+- **70+ Hand-Crafted AWS Services**: Exposes compute, database, networking, serverless, storage, analytics, and security services.
 - **Hardware-Level Configurations**: Customize instance sizes (e.g. EC2 `t3.medium` vs `c6g.xlarge`), storage volumes (gp3/io2), DB engine families, read replicas, and caching states.
 - **Multi-Canvas Workspace**: Organize your architectures using tabbed views, enabling you to design and compare alternative topologies side-by-side.
 
@@ -43,10 +43,23 @@ Design cost-efficient architectures with a real-time billing dashboard:
 Sr. Architect's interactive simulator runs on two custom, deterministic engines:
 
 ### 💓 PulseFlow: Reactive Traffic Simulation Engine
-PulseFlow is the reactive heartbeat of the visual workspace, running about 5 times a second (at a steady ~180ms tick interval):
+PulseFlow is the reactive heartbeat of the visual workspace, running about 5 times a second (at a steady ~180ms tick interval). It is designed to mimic realistic production environment characteristics:
 - **Reactive Stream Traversal**: Traverses your active canvas node graph in logical topological flow order using RxJS, ensuring upstream loads accurately cascade down to child nodes.
 - **Compounding Backlog Latency**: Rather than simple static metrics, it simulates request queues over time. If a service experiences traffic past its capacity, queue delays build up and latency compounds exponentially tick-by-tick.
-- **Hard Server Collapses**: Models physical compute limitations (EC2, ECS, RDS). If load exceeds 150% capacity for more than 1 second, PulseFlow triggers a server crash, forcing the node into a terminal `offline` state.
+- **Cascading Backpressure**: Bottlenecks propagate backward up the stack. If a database is slow, it blocks database connection pools, which in turn blocks app servers, degrading API Gateway response times tick-by-tick.
+- **Dynamic Workloads**: Clients sample new request rates using random walk intervals to simulate real-world user traffic spikes and noise.
+- **Sustained Pressure Collapses**: Compute nodes (EC2, ECS, RDS) tolerate short, transient load spikes, but trigger a hard offline crash if they remain overloaded past a sustained duration.
+- **Auto Scaling & Provisioning Delay**: A crashed node undergoes a boot/provisioning loop, only recovering once incoming load stays below safe limits for a set duration.
+
+#### ⚙️ Realism Modeling & Mathematical Assumptions
+To model actual hardware and network constraints, PulseFlow enforces the following constants:
+*   **Tick Interval (`180ms`)**: The discrete time step at which all queues and network states are recalculated.
+*   **Overload Crash Threshold (`150%`)**: The compute utilization limit where sustained load leads to node crashes.
+*   **Crash Sustain Limit (`OFFLINE_SUSTAIN_TICKS = 6` / `~1.1s`)**: The number of consecutive overloaded ticks required to crash a server.
+*   **Auto Scaling Boot Delay (`RECOVERY_TICKS = 10` / `~1.8s`)**: The provisioning window required for a collapsed server to initialize and come back online.
+*   **Auto Scaling Safe Utilization (`RECOVERY_HEADROOM = 0.72`)**: The target node utilization (72% capacity) required to safely allow a node to recover.
+*   **Max Queue Buffer (`MAX_QUEUE_TICKS = 8`)**: Bounded queue size of 8 ticks-worth of request capacity to prevent infinite queue growth.
+*   **Backlog Queue Decay (`0.6`)**: Once relieved, request queues drain exponentially at a rate of 0.6 per tick (~40% decay per 180ms tick).
 
 ### 🧩 Rubix: Automated Architecture Rubric Engine
 Rubix is a declarative verification and grading engine that analyzes your visual topologies against design challenges:

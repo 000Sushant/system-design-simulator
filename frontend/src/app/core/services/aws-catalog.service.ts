@@ -45,7 +45,17 @@ const serviceDescriptions: Partial<Record<AwsServiceType, string>> = {
   stepFunctions: 'Step Functions coordinates multi-step workflows across AWS services with state tracking, branching, retries, and error handling.',
   eventBridge: 'EventBridge provides a serverless event bus that routes application and AWS service events to matching downstream targets.',
   cognito: 'Cognito manages user sign-up, sign-in, identity federation, and access tokens for web and mobile applications.',
-  waf: 'AWS WAF filters web traffic before it reaches applications, helping block common attacks, abusive requests, and unwanted patterns.'
+  waf: 'AWS WAF filters web traffic before it reaches applications, helping block common attacks, abusive requests, and unwanted patterns.',
+  amplify: 'AWS Amplify simplifies frontend web and mobile deployment with automated CI/CD builds, global CDN hosting, and easy serverless integrations.',
+  ses: 'Amazon SES sends and receives application email at scale, including transactional mail, notifications, and campaigns, with bounce and complaint tracking.',
+  documentDb: 'Amazon DocumentDB provides a managed, MongoDB-compatible document database with decoupled compute and storage for JSON workloads.',
+  neptune: 'Amazon Neptune is a managed graph database for highly connected datasets, supporting Gremlin, openCypher, and SPARQL queries.',
+  timestream: 'Amazon Timestream is a serverless time-series database that tiers recent data in memory and history on magnetic storage for IoT and ops analytics.',
+  appConfig: 'AWS AppConfig manages feature flags and dynamic configuration, validating changes and rolling them out gradually to running applications.',
+  appMesh: 'AWS App Mesh is a service mesh control plane that distributes routing rules to Envoy sidecar proxies for service-to-service traffic.',
+  cloudMap: 'AWS Cloud Map is a service discovery registry where microservices register endpoints and resolve each other via DNS or API calls.',
+  quickSight: 'Amazon QuickSight is a cloud BI service delivering interactive dashboards backed by the SPICE in-memory analytics engine.',
+  lightsail: 'Amazon Lightsail offers simple flat-rate VPS bundles of compute, SSD storage, and data transfer for small applications and websites.'
 };
 
 const iconBase = 'https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main';
@@ -113,7 +123,17 @@ const iconUrls: Record<AwsServiceType, string> = {
   certificateManager: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Security-Identity-Compliance/48/Arch_AWS-Certificate-Manager_48.svg`,
   systemsManager: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Management-Governance/48/Arch_AWS-Systems-Manager_48.svg`,
   ecr: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Containers/48/Arch_Amazon-Elastic-Container-Registry_48.svg`,
-  privateLink: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Networking-Content-Delivery/48/Arch_AWS-PrivateLink_48.svg`
+  privateLink: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Networking-Content-Delivery/48/Arch_AWS-PrivateLink_48.svg`,
+  amplify: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Front-End-Web-Mobile/48/Arch_AWS-Amplify_48.svg`,
+  ses: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Business-Applications/48/Arch_Amazon-Simple-Email-Service_48.svg`,
+  documentDb: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Database/48/Arch_Amazon-DocumentDB_48.svg`,
+  neptune: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Database/48/Arch_Amazon-Neptune_48.svg`,
+  timestream: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Database/48/Arch_Amazon-Timestream_48.svg`,
+  appConfig: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Management-Governance/48/Arch_AWS-AppConfig_48.svg`,
+  appMesh: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Networking-Content-Delivery/48/Arch_AWS-App-Mesh_48.svg`,
+  cloudMap: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Networking-Content-Delivery/48/Arch_AWS-Cloud-Map_48.svg`,
+  quickSight: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Analytics/48/Arch_Amazon-QuickSight_48.svg`,
+  lightsail: `${iconBase}/Architecture-Service-Icons_02072025/Arch_Compute/48/Arch_Amazon-Lightsail_48.svg`
 };
 
 @Injectable({ providedIn: 'root' })
@@ -217,8 +237,8 @@ export class AwsCatalogService {
       ],
       defaults: { ...baseDefaults, ...defaults, ...modelDefaults },
       behavior: {
-        scalable: ['lambda', 'ecs', 'autoScalingGroup', 'sqs', 'sns', 'dynamoDb', 'cloudfront', 'batch', 'eks', 'aurora', 'appRunner', 'appSync', 'kinesisFirehose', 'glue', 'emr', 'kinesis', 'msk', 'openSearch', 'redshift', 'sageMaker', 'ecr', 'privateLink'].includes(type),
-        stateful: ['rds', 'elastiCache', 's3', 'dynamoDb', 'aurora', 'efs', 'openSearch', 'redshift', 'fsx', 'backup', 'ecr'].includes(type),
+        scalable: ['lambda', 'ecs', 'autoScalingGroup', 'sqs', 'sns', 'dynamoDb', 'cloudfront', 'batch', 'eks', 'aurora', 'appRunner', 'appSync', 'kinesisFirehose', 'glue', 'emr', 'kinesis', 'msk', 'openSearch', 'redshift', 'sageMaker', 'ecr', 'privateLink', 'amplify', 'ses', 'timestream', 'appConfig', 'appMesh', 'cloudMap'].includes(type),
+        stateful: ['rds', 'elastiCache', 's3', 'dynamoDb', 'aurora', 'efs', 'openSearch', 'redshift', 'fsx', 'backup', 'ecr', 'documentDb', 'neptune', 'timestream'].includes(type),
         fanOut: ['sns', 'stepFunctions', 'apiGateway', 'eventBridge', 'kinesis', 'msk', 'mq', 'appSync', 'transitGateway'].includes(type),
         boundary: type === 'vpc',
         mandatoryInput: config?.mandatoryInput ?? true,

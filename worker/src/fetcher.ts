@@ -90,7 +90,7 @@ export class PricingFetcher {
 
     const body = JSON.stringify({ ServiceCode: serviceCode, Filters: filters, MaxResults: maxResults });
 
-    const attempt = async (): Promise<number | null> => {
+    const attempt = async (retried = false): Promise<number | null> => {
       const resp = await this.aws.fetch(PRICING_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -103,10 +103,10 @@ export class PricingFetcher {
       if (resp.status === 429 || resp.status === 400) {
         // 429 = ThrottlingException; 400 can also be used for throttling
         const text = await resp.text();
-        if (text.includes('ThrottlingException') || text.includes('Rate exceeded')) {
+        if (!retried && (text.includes('ThrottlingException') || text.includes('Rate exceeded'))) {
           console.warn(`[Fetcher] Throttled on call #${this.callCount} (${serviceCode}). Backing off ${THROTTLE_BACKOFF_MS}ms...`);
           await sleep(THROTTLE_BACKOFF_MS);
-          return attempt(); // single retry
+          return attempt(true); // single retry
         }
         console.warn(`[Fetcher] HTTP ${resp.status} for ${serviceCode}:`, text.slice(0, 200));
         return null;
@@ -1027,5 +1027,266 @@ export class PricingFetcher {
       }
     }
     return result;
+  }
+
+  async amplifyBuild(regionName: string, instanceType: string = 'Standard8GB'): Promise<number | null> {
+    return this.query('AWSAmplify', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      const inst = p.product?.attributes?.instancetype ?? '';
+      // Standard SKU usagetype ends with plain "BuildDuration"; Large16GB /
+      // Xlarge72GB SKUs end with "BuildDuration-Large16GB" / "-XLarge72GB",
+      // so match on the instancetype attribute instead.
+      return u.includes('BuildDuration') && inst === instanceType;
+    });
+  }
+
+  async amplifyStorage(regionName: string): Promise<number | null> {
+    return this.query('AWSAmplify', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      return u.endsWith('DataStorage');
+    });
+  }
+
+  async amplifyDataTransfer(regionName: string): Promise<number | null> {
+    return this.query('AWSAmplify', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      return u.endsWith('DataTransferOut');
+    });
+  }
+
+  // ── Amazon SES ───────────────────────────────────────────────────────────
+
+  /** $/recipient for outbound SendEmail. Regional usagetype is "Recipients" or "<PFX>-Recipients". */
+  async sesOutboundEmail(regionName: string): Promise<number | null> {
+    return this.query('AmazonSES', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Sending Email' }
+    ], p => /(^|-)Recipients$/.test(p.product?.attributes?.usagetype ?? ''), 100);
+  }
+
+  /** $/message received. Excludes the per-chunk SKU that shares the product family. */
+  async sesInboundEmail(regionName: string): Promise<number | null> {
+    return this.query('AmazonSES', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Receiving Email' }
+    ], p => /(^|-)Message$/.test(p.product?.attributes?.usagetype ?? ''), 100);
+  }
+
+  async sesAttachment(regionName: string): Promise<number | null> {
+    return this.query('AmazonSES', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Sending Attachments' }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('AttachmentsSize-Bytes'), 100);
+  }
+
+  async sesDedicatedIp(regionName: string): Promise<number | null> {
+    return this.query('AmazonSES', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Sending Email' }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('DIP-Hours'), 100);
+  }
+
+  /** VDM outbound processing $/email. Tiered SKU — extractMaxPrice picks the tier-0 (highest) rate. */
+  async sesVdm(regionName: string): Promise<number | null> {
+    return this.query('AmazonSES', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('Recipients-VirtDelivMgr'), 100);
+  }
+
+  // ── Amazon DocumentDB ────────────────────────────────────────────────────
+
+  /** Instance-hour rate. Standard usagetype "InstanceUsage:db.x"; I/O-Optimized "InstanceUsageIOOptimized:db.x". */
+  async docDbInstance(regionName: string, instanceType: string, ioOptimized = false): Promise<number | null> {
+    return this.query('AmazonDocDB', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      return ioOptimized ? u.includes('InstanceUsageIOOptimized:') : (u.includes('InstanceUsage:') && !u.includes('IOOptimized'));
+    }, 100);
+  }
+
+  async docDbStorage(regionName: string, ioOptimized = false): Promise<number | null> {
+    return this.query('AmazonDocDB', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Database Storage' }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      if (u.includes('Elastic')) return false;
+      return ioOptimized ? u.endsWith('IO-OptimizedStorageUsage') : (u.endsWith('StorageUsage') && !u.includes('IO-Optimized'));
+    }, 100);
+  }
+
+  /** $/IO — callers scale ×1,000,000 for the per-million rate. */
+  async docDbIo(regionName: string): Promise<number | null> {
+    return this.query('AmazonDocDB', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'System Operation' }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('StorageIOUsage'), 100);
+  }
+
+  // ── Amazon Neptune ───────────────────────────────────────────────────────
+
+  async neptuneInstance(regionName: string, instanceType: string): Promise<number | null> {
+    return this.query('AmazonNeptune', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      return u.includes('InstanceUsage:') && !u.includes('IOOptimized');
+    }, 100);
+  }
+
+  async neptuneStorage(regionName: string): Promise<number | null> {
+    return this.query('AmazonNeptune', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Database Storage' }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      return u.endsWith('StorageUsage') && !u.includes('IO-Optimized');
+    }, 100);
+  }
+
+  /** $/IO — callers scale ×1,000,000 for the per-million rate. */
+  async neptuneIo(regionName: string): Promise<number | null> {
+    return this.query('AmazonNeptune', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'System Operation' }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('StorageIOUsage'), 100);
+  }
+
+  // ── Amazon Timestream ────────────────────────────────────────────────────
+
+  async timestreamIngest(regionName: string): Promise<number | null> {
+    return this.query('AmazonTimestream', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Data Payload' }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('DataIngestion-Bytes'), 100);
+  }
+
+  async timestreamMemoryStore(regionName: string): Promise<number | null> {
+    return this.query('AmazonTimestream', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Database Storage' }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('MemoryStore-ByteHrs'), 100);
+  }
+
+  async timestreamMagneticStore(regionName: string): Promise<number | null> {
+    return this.query('AmazonTimestream', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Database Storage' }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('MagneticStore-ByteHrs'), 100);
+  }
+
+  async timestreamScanned(regionName: string): Promise<number | null> {
+    // The productFamily for scanned-query billing varies by region, so match on
+    // usagetype alone. The predicate is still strict (only a DataScanned-Bytes SKU
+    // is accepted, never a wrong one), so this only ever helps find it — if the
+    // region genuinely doesn't expose it, the baseline is used.
+    return this.query('AmazonTimestream', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('DataScanned-Bytes'), 100);
+  }
+
+  // ── AWS AppConfig (billed under the AWSSystemsManager offer) ────────────
+
+  /** $/request — callers scale ×1,000,000 for the per-million rate. */
+  async appConfigRequests(regionName: string): Promise<number | null> {
+    return this.query('AWSSystemsManager', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('AppConfig-Requests'), 100);
+  }
+
+  async appConfigDeployment(regionName: string): Promise<number | null> {
+    return this.query('AWSSystemsManager', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('AppConfig-Deployments'), 100);
+  }
+
+  // ── AWS Cloud Map ────────────────────────────────────────────────────────
+
+  async cloudMapResource(regionName: string): Promise<number | null> {
+    return this.query('AWSCloudMap', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('Cloud-Map-Resources'), 100);
+  }
+
+  /** $/call — callers scale ×1,000,000. Excludes the DIR-prefixed duplicate SKU. */
+  async cloudMapQuery(regionName: string): Promise<number | null> {
+    return this.query('AWSCloudMap', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      return u.endsWith('Cloud-Map-API-Calls') && !u.includes('DIR');
+    }, 100);
+  }
+
+  // ── Amazon QuickSight ────────────────────────────────────────────────────
+
+  async quickSightAuthorPro(regionName: string): Promise<number | null> {
+    return this.query('AmazonQuickSight', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => {
+      const a = p.product?.attributes ?? {};
+      return a.group === 'Author Pro Subscription' && !(a.usagetype ?? '').includes('Free-Trial');
+    }, 100);
+  }
+
+  async quickSightReader(regionName: string): Promise<number | null> {
+    return this.query('AmazonQuickSight', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => {
+      const a = p.product?.attributes ?? {};
+      return a.group === 'Reader Subscription' && !(a.usagetype ?? '').includes('Free-Trial');
+    }, 100);
+  }
+
+  async quickSightSpice(regionName: string): Promise<number | null> {
+    return this.query('AmazonQuickSight', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('QS-Enterprise-SPICE'), 100);
+  }
+
+  // ── Amazon Lightsail ─────────────────────────────────────────────────────
+
+  /**
+   * Hourly rates for the Linux dual-stack (IPv4) instance bundles, keyed by
+   * bundle RAM size (e.g. "2GB"). One bulk scan of the "Lightsail Instance"
+   * family resolves every size; general-purpose bundle usagetypes end with
+   * "BundleUsage:<size>" — the regex excludes _IPv6/_win variants and the
+   * Compute/Memory-optimized families whose usagetype embeds a different prefix.
+   */
+  async lightsailBundles(regionName: string, sizes: string[]): Promise<Record<string, number | null>> {
+    const items = await this.queryBulk('AmazonLightsail', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Lightsail Instance' }
+    ]);
+    const out: Record<string, number | null> = {};
+    for (const size of sizes) {
+      const re = new RegExp(`(^|-)BundleUsage:${size.replace('.', '\\.')}$`);
+      const match = items.find(p => re.test(p.product?.attributes?.usagetype ?? ''));
+      out[size] = match ? extractMaxPriceParsed(match) : null;
+    }
+    return out;
+  }
+
+  /**
+   * $/GB for data transfer out beyond the bundle allowance. The overage SKUs
+   * carry data-transfer attributes (`fromLocation`), not `location`.
+   */
+  async lightsailOverage(regionName: string): Promise<number | null> {
+    return this.query('AmazonLightsail', [
+      { Type: 'TERM_MATCH', Field: 'fromLocation', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Lightsail Networking' }
+    ], p => {
+      const u = p.product?.attributes?.usagetype ?? '';
+      return u.endsWith('DataXfer-Out-Overage-Bytes') && !u.includes('Storage');
+    }, 100);
   }
 }

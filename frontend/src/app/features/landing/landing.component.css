@@ -144,16 +144,17 @@
   align-items: center;
   justify-content: space-between;
 
-  /* Expansion transition — spring bounce when pill grows back to full bar */
+  /* Expand transition (scrolled -> full bar). One easing, one duration for every
+     property so size and color move together — no overshoot, no lag. */
   transition:
-    width 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
-    max-width 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
-    border-radius 0.5s cubic-bezier(0.25, 1, 0.5, 1),
-    padding 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-    top 0.45s ease,
-    background 0.45s ease,
-    backdrop-filter 0.45s ease,
-    box-shadow 0.45s ease;
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 
   will-change: width, border-radius, max-width;
 }
@@ -161,9 +162,12 @@
 /* ── Scrolled: Dynamic Island pill ────────────────────────── */
 .landing-nav.nav-scrolled {
   top: 14px;
-  width: max-content;
-  max-width: 440px;
-  min-width: 180px;
+  /* Fixed length (not max-content) so `width` animates as a length instead of a
+     discrete keyword swap mid-transition — that swap was the "shrink, jump smaller"
+     second step. Now the pill collapses in one smooth motion. Sized to hug the
+     content (logo + actions ≈ 351px) so space-between leaves only a small gap. */
+  width: 360px;
+  max-width: calc(100vw - 32px);
   border-radius: 999px;
   padding: 7px 10px 7px 14px;
   background: rgba(5, 8, 18, 0.88);
@@ -175,37 +179,18 @@
     0 0 0 1px var(--c-white-05),
     inset 0 1px 0 var(--c-white-06);
 
-  /* Collapse transition — smooth ease-out, no spring overshoot */
+  /* Collapse transition (full bar -> pill). Same easing/duration as expand so the
+     motion is symmetric with no overshoot; the label collapses faster (below), so
+     it's gone before the pill finishes closing. */
   transition:
-    width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    min-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    top 0.4s ease,
-    background 0.4s ease,
-    backdrop-filter 0.4s ease,
-    box-shadow 0.4s ease;
-}
-
-/* Hide brand text label in island mode, keep logo */
-.landing-nav.nav-scrolled .brand-mark span,
-.landing-nav.nav-scrolled .brand-mark small {
-  opacity: 0;
-  max-width: 0;
-  overflow: hidden;
-  transition:
-    opacity 0.25s ease,
-    max-width 0.35s ease;
-}
-
-.landing-nav:not(.nav-scrolled) .brand-mark span,
-.landing-nav:not(.nav-scrolled) .brand-mark small {
-  opacity: 1;
-  max-width: 200px;
-  transition:
-    opacity 0.3s ease 0.15s,
-    max-width 0.3s ease 0.15s;
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Default (full-width): light glass ─────────────────────── */
@@ -219,27 +204,22 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* ── Scrolled: dark Dynamic Island (liquid glass) ─────────── */
+/* ── Scrolled: Apple-style Dynamic Island ─────────────────── */
 .landing-nav.nav-scrolled {
-  /* Clearer glass: low tint so the refracted content reads through crisply */
-  background: rgba(10, 12, 24, 0.34);
-  /* url(#liquid-glass) warps the page content behind the pill;
-     light blur keeps it clear while saturate/contrast lift the refraction.
-     Chrome/Edge/Safari only — bg + box-shadow below are a graceful fallback. */
-  backdrop-filter: url("#liquid-glass") blur(6px) saturate(180%) contrast(105%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  border-color: var(--c-white-12);
+  /* Near-opaque dark pill (no SVG refraction). Being mostly opaque means the
+     backdrop-filter is a cheap, interpolatable blur — no per-frame re-raster of
+     an SVG filter while the pill resizes, so the shrink stays smooth. */
+  background: rgba(9, 9, 12, 0.82);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.08);
   box-shadow:
-    /* outer depth */
-    0 4px 32px var(--c-black-45),
-    0 0 12px rgba(0, 0, 0, 0.15),
-    /* glass edge highlights (ported from the liquid-glass button) */
-    inset 3px 3px 0.5px -3.5px rgba(255, 255, 255, 0.09),
-    inset -3px -3px 0.5px -3.5px var(--c-white-85),
-    inset 1px 1px 1px -0.5px var(--c-white-60),
-    inset -1px -1px 1px -0.5px var(--c-white-60),
-    inset 0 0 6px 6px var(--c-white-12),
-    inset 0 0 2px 2px var(--c-white-06);
+    /* soft floating depth */
+    0 8px 28px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    /* subtle top edge highlight, like the real Dynamic Island */
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.05);
 }
 
 /* Brand: dark on light, light on dark */
@@ -281,24 +261,38 @@
   background: rgba(8, 11, 22, 0.98);
 }
 
-/* Hide brand text in island mode */
+/* Hide brand text in island mode — collapses in 0.22s (faster than the pill's
+   0.45s), so it's gone before the pill finishes closing. No opacity animation;
+   the label just clears. min-width:0 is required so these flex items can shrink
+   below their content width (flex defaults to min-width:auto, keeping them shown). */
 .landing-nav.nav-scrolled .brand-mark span,
 .landing-nav.nav-scrolled .brand-mark small {
-  opacity: 0;
+  min-width: 0;
   max-width: 0;
+  /* The version <small> is a padded, bordered badge — zero those too, or its
+     padding+border leaves a ~16px sliver visible even at max-width:0. */
+  padding: 0;
+  border-width: 0;
   overflow: hidden;
   transition:
-    opacity 0.2s ease,
-    max-width 0.3s ease;
+    max-width 0.22s ease,
+    padding 0.22s ease,
+    border-width 0.22s ease;
 }
 
 .landing-nav:not(.nav-scrolled) .brand-mark span,
 .landing-nav:not(.nav-scrolled) .brand-mark small {
-  opacity: 1;
+  /* min-width:0 must persist here too: on expand it would otherwise revert to
+     `auto` and the badge would flash at full width while max-width is still 0. */
+  min-width: 0;
   max-width: 200px;
+  overflow: hidden;
+  /* On expand, hold the label fully collapsed (width AND padding/border) until
+     the pill has opened, then reveal — so the version badge never reappears early. */
   transition:
-    opacity 0.3s ease 0.12s,
-    max-width 0.3s ease 0.12s;
+    max-width 0.25s ease 0.22s,
+    padding 0.25s ease 0.22s,
+    border-width 0.25s ease 0.22s;
 }
 
 .brand-mark,

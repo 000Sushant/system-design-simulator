@@ -104,6 +104,46 @@ describe('SimulationService', () => {
     expect(sim.snapshot$.value.packets).toEqual([]);
   });
 
+  describe('dynamic RPS helpers', () => {
+    function connect(a: ArchitectureNode, b: ArchitectureNode): ArchitectureConnection {
+      const out = a.ports.find((p) => p.direction === 'output')!;
+      const inp = b.ports.find((p) => p.direction === 'input') ?? b.ports[0];
+      return factory.createConnection(a.id, out.id, b.id, inp ? inp.id : 'in', out.type);
+    }
+
+    it('estimateDemand propagates rate through weights and cache offload', () => {
+      const client = factory.createNode('client', 0, 0);
+      client.config.requestRate = 1000;
+      const cdn = factory.createNode('cloudfront', 300, 0);
+      cdn.config.cacheHitRate = 80;
+      const ecs = factory.createNode('ecs', 600, 0);
+      const connections = [connect(client, cdn), connect(cdn, ecs)];
+      const demand = sim.estimateDemand([client, cdn, ecs], connections);
+      expect(demand.get(cdn.id)).toBe(1000);
+      // Only the 20% cache misses reach the origin, further shaped by the
+      // engine's 0.72 CDN edge factor (mirrors propagateNodeOutput).
+      expect(demand.get(ecs.id)).toBeCloseTo(1000 * 0.2 * 0.72, 5);
+    });
+
+    it('autoSizeForDemand sizes ECS so the demand runs without overload', () => {
+      const client = factory.createNode('client', 0, 0);
+      client.config.requestRate = 1000;
+      client.config['variableTraffic'] = false;
+      const ecs = factory.createNode('ecs', 300, 0);
+      const updates = sim.autoSizeForDemand(ecs, 1000)!;
+      expect(updates).toBeTruthy();
+      expect(Number(updates['tasks'])).toBeGreaterThan(Number(ecs.config['tasks']) || 2);
+      Object.assign(ecs.config, updates);
+
+      sim.start([client, ecs], [connect(client, ecs)]);
+      sim.pause();
+      for (let i = 0; i < 25; i++) (sim as any).step('running');
+      const node = (sim as any).nodes.find((n: ArchitectureNode) => n.id === ecs.id)!;
+      expect(['normal', 'busy']).toContain(node.status);
+      expect(node.metrics.errorRate).toBe(0);
+    });
+  });
+
   /**
    * Golden test: locks in the exact per-tick node metrics for a fixed graph.
    * The metrics path is deterministic when no client uses Variable Traffic, so

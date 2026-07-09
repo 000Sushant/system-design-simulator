@@ -27,7 +27,7 @@ describe('CostService', () => {
 
   const node = (type: AwsServiceType): ArchitectureNode => factory.createNode(type, 0, 0);
   // Types that should always carry a non-zero monthly cost on their defaults.
-  const billableTypes: AwsServiceType[] = ['ec2', 's3', 'lambda', 'rds', 'dynamoDb', 'apiGateway'];
+  const billableTypes: AwsServiceType[] = ['ec2', 's3', 'lambda', 'rds', 'dynamoDb', 'apiGateway', 'amplify'];
 
   it('returns a currency symbol for every supported currency', () => {
     const currencies: Currency[] = ['USD', 'EUR', 'GBP', 'INR', 'JPY'];
@@ -108,6 +108,132 @@ describe('CostService', () => {
       delete (n.config as Record<string, unknown>)['provider'];
       // 10M × $0.25/M + 2M × $1.25/M = $5
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(5, 5);
+    });
+  });
+
+  describe('Amplify pricing', () => {
+    const amplifyNode = (config: Record<string, unknown> = {}): ArchitectureNode => {
+      const n = node('amplify');
+      return { ...n, config: { ...n.config, ...config } as ArchitectureNode['config'] };
+    };
+
+    it('prices the defaults from the cost-model params (build + served + storage)', () => {
+      const n = amplifyNode();
+      // 500 min × $0.01 + 100 GB × $0.15 + 10 GB × $0.023 = $20.23
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(20.23, 5);
+    });
+
+    it('itemizes all three billable dimensions with readable labels and formulas', () => {
+      const n = amplifyNode();
+      const breakdown = cost.getCostBreakdown(n, 'us-east-1', [n]);
+      const labels = breakdown.lines.map((l) => l.label);
+      expect(labels).toEqual([
+        'Build & Deploy (Standard)',
+        'Hosting Data Served',
+        'Hosting Data Storage',
+      ]);
+      for (const line of breakdown.lines) {
+        expect(line.formula.length).toBeGreaterThan(0);
+        expect(Number.isFinite(line.value)).toBe(true);
+      }
+      expect(breakdown.freeTierNote).toBeTruthy();
+    });
+
+    it('scales each dimension with its cost param', () => {
+      const n = amplifyNode({ buildMinutes: 1000, dataServedGB: 200, storageGB: 100 });
+      // 1000 × $0.01 + 200 × $0.15 + 100 × $0.023 = $42.30
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(42.3, 5);
+    });
+
+    it('bills build minutes at the selected build instance size rate', () => {
+      // Non-build dimensions stay fixed: 100 GB × $0.15 + 10 GB × $0.023 = $15.23
+      const large = amplifyNode({ buildInstanceType: 'large' });
+      expect(cost.calculateNodeCostUsd(large, 'us-east-1', [large])).toBeCloseTo(500 * 0.025 + 15.23, 5);
+
+      const xlarge = amplifyNode({ buildInstanceType: 'xlarge' });
+      expect(cost.calculateNodeCostUsd(xlarge, 'us-east-1', [xlarge])).toBeCloseTo(500 * 0.1 + 15.23, 5);
+
+      const label = cost.getCostBreakdown(xlarge, 'us-east-1', [xlarge]).lines[0].label;
+      expect(label).toBe('Build & Deploy (XLarge)');
+    });
+
+    it('falls back to the standard rate for an unknown instance type', () => {
+      const n = amplifyNode({ buildInstanceType: 'bogus' });
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(20.23, 5);
+    });
+  });
+
+  describe('missing-services batch pricing (report v2)', () => {
+    const withConfig = (type: AwsServiceType, config: Record<string, unknown> = {}): ArchitectureNode => {
+      const n = node(type);
+      return { ...n, config: { ...n.config, ...config } as ArchitectureNode['config'] };
+    };
+
+    it('prices SES defaults and doubles up correctly with VDM + dedicated IP', () => {
+      // 1000/day × 30 × $0.0001 + 1 GB × $0.12 = $3.12
+      const n = withConfig('ses');
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(3.12, 5);
+      // + VDM 30000 × 0.00007 = 2.10, + 1 IP 24.95, + inbound 100/day × 30 × 0.0001 = 0.30
+      const loaded = withConfig('ses', { vdmEnabled: true, dedicatedIPs: 1, inboundDailyVolume: 100 });
+      expect(cost.calculateNodeCostUsd(loaded, 'us-east-1', [loaded])).toBeCloseTo(3.12 + 2.1 + 24.95 + 0.3, 5);
+    });
+
+    it('prices DocumentDB standard vs I/O-Optimized storage correctly', () => {
+      // 2 × $0.2631 × 730 + 100 × $0.10 + 100M × $0.20 = 384.126 + 10 + 20
+      const std = withConfig('documentDb');
+      expect(cost.calculateNodeCostUsd(std, 'us-east-1', [std])).toBeCloseTo(2 * 0.2631 * 730 + 10 + 20, 5);
+      // I/O-Optimized: higher instance + storage rate, no I/O line
+      const io = withConfig('documentDb', { storageType: 'io-optimized' });
+      expect(cost.calculateNodeCostUsd(io, 'us-east-1', [io])).toBeCloseTo(2 * 0.2895 * 730 + 100 * 0.30, 5);
+    });
+
+    it('prices Neptune instances, storage, and I/O', () => {
+      // 2 × $0.3287 × 730 + 100 × $0.10 + 50 × $0.20 = 479.902 + 10 + 10
+      const n = withConfig('neptune');
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(2 * 0.3287 * 730 + 10 + 10, 5);
+      const big = withConfig('neptune', { instanceClass: 'db.r6g.2xlarge', instanceCount: 1 });
+      expect(cost.calculateNodeCostUsd(big, 'us-east-1', [big])).toBeCloseTo(1.3149 * 730 + 10 + 10, 5);
+    });
+
+    it('prices Timestream across all four dimensions', () => {
+      // 100 × $0.50 + 10 × $0.036 × 730 + 100 × $0.03 + 1000 × $0.01 = 50 + 262.8 + 3 + 10
+      const n = withConfig('timestream');
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(50 + 262.8 + 3 + 10, 5);
+    });
+
+    it('prices AppConfig requests and per-target deployments', () => {
+      // 10M × $0.20 + 100 targets × 10 deploys × $0.0008 = 2 + 0.8
+      const n = withConfig('appConfig');
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(2.8, 5);
+    });
+
+    it('keeps App Mesh free but itemized', () => {
+      const n = withConfig('appMesh');
+      const breakdown = cost.getCostBreakdown(n, 'us-east-1', [n]);
+      expect(breakdown.total).toBe(0);
+      expect(breakdown.lines.length).toBe(1);
+      expect(breakdown.lines[0].label).toBe('Control Plane');
+    });
+
+    it('prices Cloud Map registry and discovery calls', () => {
+      // 50 × $0.10 + 10M × $1.00 = 5 + 10
+      const n = withConfig('cloudMap');
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(15, 5);
+    });
+
+    it('prices QuickSight licenses and SPICE', () => {
+      // 5 × $40 + 20 × $3 + 100 × $0.38 = 200 + 60 + 38
+      const n = withConfig('quickSight');
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(298, 5);
+    });
+
+    it('prices Lightsail bundles flat and bills only transfer overage', () => {
+      // 2GB bundle: $0.01612 × 730 ≈ $11.77, 100 GB within 3 TB allowance → $0 overage
+      const n = withConfig('lightsail');
+      expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(0.01612 * 730, 5);
+      // 0.5GB bundle with 1500 GB used: allowance 1024 GB → 476 GB × $0.09
+      const over = withConfig('lightsail', { bundleSize: '0.5GB', bandwidthGB: 1500 });
+      expect(cost.calculateNodeCostUsd(over, 'us-east-1', [over])).toBeCloseTo(0.00672 * 730 + 476 * 0.09, 5);
     });
   });
 

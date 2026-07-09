@@ -1,7 +1,7 @@
 {
   "client": {
     "overview": "Represents the external users, browsers, mobile applications, or IoT devices that generate request traffic and latency benchmarks for system design simulation.",
-    "conceptualModel": "Think of the client as the origin of all system activity—the actual end-users sending requests across the network boundary to consume application features.",
+    "conceptualModel": "Think of the client as the origin of all system activity - the actual end-users sending requests across the network boundary to consume application features.",
     "recommendedUsing": "Always include client nodes to model real-world user demand, load test architecture bottlenecks, and analyze end-to-end response latency under variable request rates.",
     "recommendedAvoiding": "Never omit the client component if you want to simulate dynamic transactions, as it is the primary driver of traffic in the simulation environment.",
     "practicalScenario": "A mobile application generates 5,000 HTTPS requests per second to search for inventory and checkout items on an e-commerce website.",
@@ -178,7 +178,7 @@
     "recommendedAvoiding": "Avoid Lambda for long-running processes (over 15 minutes), legacy applications with large custom codebases, or steady, high-throughput web sockets.",
     "practicalScenario": "A user uploads an invoice to an S3 bucket, which immediately triggers a Lambda function to parse the document and insert a row into a DynamoDB table.",
     "keyCharacteristics": [
-      "Serverless—no infrastructure management or patching.",
+      "Serverless: no infrastructure management or patching.",
       "Scales automatically with request concurrency.",
       "Charged per invocation and GB-seconds of execution time.",
       "Supports cold starts but executes fast once active."
@@ -292,7 +292,7 @@
     "recommendedAvoiding": "Avoid DynamoDB if your application requires complex multi-table joins, transactions across highly relational datasets, or flexible query patterns on non-indexed fields.",
     "practicalScenario": "A gaming application stores active player profiles, inventories, and scores in a DynamoDB table, fetching record structures in 2 milliseconds.",
     "keyCharacteristics": [
-      "Serverless—no database servers or patching to manage.",
+      "Serverless: no database servers or patching to manage.",
       "Provides predictable, single-digit millisecond read/write latency.",
       "Scales read and write throughput automatically to match traffic.",
       "Supports document (JSON) and key-value data structures."
@@ -447,7 +447,7 @@
     "recommendedAvoiding": "Never leave security group rules wide open (like port 22 or 3306 to 0.0.0.0/0) in production environments; always apply least-privilege rules.",
     "practicalScenario": "A database security group is configured to only allow inbound traffic on port 5432 coming from the web server security group, blocking all other connections.",
     "keyCharacteristics": [
-      "Stateful—inbound responses are automatically allowed outbound.",
+      "Stateful: inbound responses are automatically allowed outbound.",
       "Supports permit-only rules (cannot specify explicit deny rules).",
       "Evaluates all rules before deciding to allow traffic.",
       "Applies directly to network interfaces (ENIs) of individual resources."
@@ -579,7 +579,7 @@
     "recommendedAvoiding": "Avoid Athena for transactional database workloads (OLTP) or high-speed UI queries that require sub-second page rendering.",
     "practicalScenario": "An administrator queries web server access logs in S3 using Athena SQL to find which IP addresses returned the most 404 errors today.",
     "keyCharacteristics": [
-      "Serverless—no data warehouses to build or manage.",
+      "Serverless: no data warehouses to build or manage.",
       "Queries raw S3 files directly (JSON, CSV, Parquet, ORC).",
       "Charged only for the gigabytes of data scanned by queries.",
       "Integrates with Amazon QuickSight for reports and BI."
@@ -765,7 +765,7 @@
     "overview": "Amazon Data Firehose is the easiest way to reliably load streaming data into data lakes, warehouses, and analytics services, with automatic scaling.",
     "conceptualModel": "Think of Firehose as a large, automatic water pipe. You pour high-frequency log events into the input, and it packages and deposits them in an S3 bucket or data warehouse.",
     "recommendedUsing": "Use Firehose to stream application logs, transaction records, and IoT data directly into S3, Redshift, OpenSearch, or external endpoints without writing code.",
-    "recommendedAvoiding": "Avoid Firehose if you need sub-second real-time streaming consumption; Firehose buffers data in batches (usually 1–5 minutes) to optimize storage storage writes.",
+    "recommendedAvoiding": "Avoid Firehose if you need sub-second real-time streaming consumption; Firehose buffers data in batches (usually 1 to 5 minutes) to optimize storage storage writes.",
     "practicalScenario": "A web application writes user click streams into Firehose. Firehose buffers the data for 60 seconds, compresses it to GZIP, and saves it into an S3 bucket.",
     "keyCharacteristics": [
       "Provides serverless ingestion scaling automatically with traffic.",
@@ -921,7 +921,7 @@
     "practicalScenario": "A customer support site routes incoming queries to Bedrock, which uses a language model to generate helpful, context-aware answers based on company docs.",
     "keyCharacteristics": [
       "Provides API access to foundation models from 15+ providers (Anthropic Claude, Amazon Nova/Titan, OpenAI, Meta Llama, Mistral, DeepSeek, Qwen, Cohere, and more).",
-      "Serverless—no infrastructure to host or scale for model endpoints.",
+      "Serverless: no infrastructure to host or scale for model endpoints.",
       "Enables private model customization using RAG and fine-tuning.",
       "Ensures customer data is encrypted and not used to train base models."
     ],
@@ -1001,7 +1001,7 @@
       "Provides pre-trained image and video analysis APIs.",
       "Detects objects, scenes, faces, text, and unsafe content.",
       "Supports facial search and verification databases.",
-      "Serverless—scales compute capacity automatically."
+      "Serverless: scales compute capacity automatically."
     ],
     "commonIntegrationPatterns": [
       "Analyze image uploads stored inside S3 buckets.",
@@ -1018,7 +1018,7 @@
     "keyCharacteristics": [
       "Extracts structured tables, form fields, and text document data.",
       "Supports printed text, handwriting, and layout analysis.",
-      "Serverless—automatically handles varying document volumes.",
+      "Serverless: automatically handles varying document volumes.",
       "Ensures high-accuracy extraction using custom document models."
     ],
     "commonIntegrationPatterns": [
@@ -1036,7 +1036,7 @@
     "keyCharacteristics": [
       "Transcodes master video files into delivery formats (HLS, DASH, MP4).",
       "Provides broadcast-grade video quality and audio settings.",
-      "Serverless—handles video jobs dynamically without server clusters.",
+      "Serverless: handles video jobs dynamically without server clusters.",
       "Supports digital rights management (DRM) and dynamic packaging."
     ],
     "commonIntegrationPatterns": [
@@ -1091,7 +1091,7 @@
     "recommendedAvoiding": "Avoid AppRunner for complex, multi-container architectures that require custom network overlays, mesh control, or Kubernetes configurations (use EKS instead).",
     "practicalScenario": "A developer connects AppRunner to their GitHub repo. Every time they commit code, AppRunner rebuilds the container and deploys it behind an SSL balancer.",
     "keyCharacteristics": [
-      "Fully managed—abstracts load balancers, ECS cluster hosts, and SSL.",
+      "Fully managed: abstracts load balancers, ECS cluster hosts, and SSL.",
       "Integrates directly with GitHub repositories or ECR images.",
       "Scales application container count automatically to match traffic.",
       "Provides private VPC endpoint routing configurations."
@@ -1214,6 +1214,196 @@
       "Connect private VPC resources securely to Amazon S3 and DynamoDB.",
       "Expose APIs hosted on internal load balancers to client VPCs.",
       "Interface private subnets with AWS Secrets Manager."
+    ]
+  },
+  "amplify": {
+    "overview": "AWS Amplify is a set of purpose-built frontend tools and features that lets developers quickly and easily build full-stack applications on AWS.",
+    "conceptualModel": "Think of AWS Amplify as a managed serverless hosting and backend generator. You connect a repository, and it automatically builds the client app, deploys it to a CDN, and provisions AWS backend resources (Cognito, AppSync, DynamoDB, S3) from your configuration.",
+    "recommendedUsing": "Use AWS Amplify for frontend-driven web and mobile applications (React, Angular, iOS, Android) that need rapid backend generation and automated CI/CD deployment from git.",
+    "recommendedAvoiding": "Avoid AWS Amplify for complex backend architectures with custom networking (VPC), containerized services, or legacy databases that need precise control.",
+    "practicalScenario": "A mobile startup builds a React Native app and uses Amplify to quickly add email/password signup (via Cognito), store user profile data (via DynamoDB), and host their admin web portal (via Amplify Hosting).",
+    "keyCharacteristics": [
+      "Provides automated CI/CD git-based builds and hosting on global CDNs.",
+      "Generates serverless backend resources from simple CLI declarations.",
+      "Offers client-side libraries for easy Cognito, AppSync, and S3 integration.",
+      "Supports Next.js SSR (Server-Side Rendering) hosting deployments."
+    ],
+    "commonIntegrationPatterns": [
+      "Deploy static or SSR frontend client applications from git repository pushes.",
+      "Provide user identity and authentication through Cognito User Pools.",
+      "Interact with structured data via AWS AppSync and DynamoDB.",
+      "Store user-uploaded static media files inside Amazon S3 buckets."
+    ]
+  },
+  "ses": {
+    "overview": "Amazon Simple Email Service (SES) is a cost-effective, flexible, and scalable email service that enables developers to send and receive mail from within any application.",
+    "conceptualModel": "Think of SES as a managed email relay server. Applications hand it mail over SMTP or the API; SES handles authentication (DKIM, SPF, DMARC), delivery to recipient inboxes, and reports bounces and complaints back as events.",
+    "recommendedUsing": "Use SES for transactional email (signup confirmations, password resets, receipts), operational notifications, and high-volume marketing campaigns where per-email cost matters.",
+    "recommendedAvoiding": "Avoid SES for low-volume internal alerting that SNS email subscriptions already cover, or as a mailbox service, since SES sends and receives but does not host inboxes like WorkMail.",
+    "practicalScenario": "An e-commerce platform's order service publishes an OrderPlaced event; a Lambda function renders the receipt and sends it through SES, while bounce notifications flow to an SNS topic that flags invalid customer addresses.",
+    "keyCharacteristics": [
+      "Bills per message ($0.10 per 1,000 emails) plus $0.12/GB for attachments.",
+      "Enforces an approved sending rate (TPS) and a rolling 24-hour sending quota.",
+      "Suspends sending if bounce rates exceed 5% or complaint rates exceed 0.1%.",
+      "Supports dedicated IPs, DKIM/SPF authentication, and configuration-set event streams."
+    ],
+    "commonIntegrationPatterns": [
+      "Send transactional mail from Lambda functions, ECS services, or external SMTP clients.",
+      "Route bounce, complaint, and delivery events to SNS topics or SQS queues.",
+      "Track sending reputation and volume metrics in CloudWatch dashboards.",
+      "Isolate sender reputation for high-volume streams with dedicated IP pools."
+    ]
+  },
+  "documentDb": {
+    "overview": "Amazon DocumentDB (with MongoDB compatibility) is a fully managed JSON document database service that supports MongoDB workloads at enterprise scale.",
+    "conceptualModel": "Think of DocumentDB as a managed document store where compute and storage are decoupled: query traffic hits replaceable compute instances while data lives on a shared, self-healing cluster volume that grows automatically to 64 TiB.",
+    "recommendedUsing": "Use DocumentDB for JSON document workloads with flexible schemas (user profiles, content catalogs, session data) where teams already speak the MongoDB API and need managed scaling and backups.",
+    "recommendedAvoiding": "Avoid DocumentDB for simple key-value lookups (DynamoDB is cheaper and faster), for workloads needing full MongoDB feature parity (it emulates the API, not the engine), or for strict multi-table ACID transactions (use RDS/Aurora).",
+    "practicalScenario": "A content platform stores article documents with nested authors, tags, and revision history in DocumentDB; ECS microservices query by tag with MongoDB drivers while the cluster volume scales storage automatically as content grows.",
+    "keyCharacteristics": [
+      "MongoDB 4.0/5.0-compatible API over a cloud-native storage engine.",
+      "Decouples compute instances from a shared cluster volume (up to 64 TiB).",
+      "Offers standard storage with per-I/O billing or I/O-Optimized flat-rate storage.",
+      "Supports up to 15 low-latency read replicas sharing the same storage."
+    ],
+    "commonIntegrationPatterns": [
+      "Serve document data to ECS/EKS microservices or Lambda APIs inside private VPC subnets.",
+      "Export cluster snapshots to S3 for archival and cross-account sharing.",
+      "Publish instance metrics and slow-query telemetry to CloudWatch.",
+      "Stream change events to Lambda via change streams for downstream processing."
+    ]
+  },
+  "neptune": {
+    "overview": "Amazon Neptune is a fast, reliable, fully managed graph database service optimized for storing and querying highly connected datasets.",
+    "conceptualModel": "Think of Neptune as a relationship engine: instead of joining tables, it walks edges between vertices. It speaks Property Graph (Gremlin, openCypher) and RDF (SPARQL), keeping traversals fast by caching the neighborhood of hot vertices in memory.",
+    "recommendedUsing": "Use Neptune for relationship-first queries (fraud rings, social graphs, recommendation engines, knowledge graphs, network topology) where SQL joins would explode combinatorially.",
+    "recommendedAvoiding": "Avoid Neptune for tabular reporting, document storage, or simple lookups; if your queries rarely traverse more than one relationship hop, a relational or document database is simpler and cheaper.",
+    "practicalScenario": "A payments company loads accounts, devices, and transactions into Neptune; a fraud-scoring Lambda traverses 'shares-device-with' and 'transacts-with' edges three hops deep to flag rings of colluding accounts in milliseconds.",
+    "keyCharacteristics": [
+      "Supports Gremlin, openCypher, and SPARQL over the same managed cluster.",
+      "Separates compute instances from an auto-scaling storage volume (to 64 TiB).",
+      "Performance hinges on buffer-cache hit ratio; super-vertices degrade traversals.",
+      "Default 2-minute query timeout guards against runaway graph scans."
+    ],
+    "commonIntegrationPatterns": [
+      "Query graph relationships from Lambda functions, ECS services, or EC2 applications.",
+      "Bulk-load vertices and edges from S3 using the Neptune loader endpoint.",
+      "Export snapshots to S3 and publish query metrics to CloudWatch.",
+      "Pair with OpenSearch for full-text entry points into graph traversals."
+    ]
+  },
+  "timestream": {
+    "overview": "Amazon Timestream is a fast, scalable, serverless time-series database service for IoT telemetry and operational monitoring applications.",
+    "conceptualModel": "Think of Timestream as a two-tier time-series ledger: fresh measurements land in a memory store optimized for fast point-in-time queries, then age automatically into a cheap magnetic store for historical analytics with no servers or shards to manage.",
+    "recommendedUsing": "Use Timestream for high-frequency measurements with timestamps (IoT sensor fleets, DevOps metrics, clickstream telemetry), especially when queries aggregate recent windows and retention policies should manage data lifecycle automatically.",
+    "recommendedAvoiding": "Avoid Timestream for general-purpose OLTP, relational joins, or small datasets a Postgres table handles fine; also avoid unbounded historical scans, as cost scales with bytes scanned per query.",
+    "practicalScenario": "A logistics fleet streams GPS and engine telemetry through Kinesis into Timestream; dashboards query the last hour from the memory store in milliseconds while monthly efficiency reports scan the magnetic store.",
+    "keyCharacteristics": [
+      "Serverless: capacity scales with ingest and query load automatically.",
+      "Tiers data between a memory store (~$26/GB-mo) and magnetic store ($0.03/GB-mo).",
+      "Bills ingestion per GB ($0.50) and queries per GB scanned ($0.01).",
+      "Default regional ingest quota (~20 MB/s) throttles writes with HTTP 429 beyond it."
+    ],
+    "commonIntegrationPatterns": [
+      "Ingest device telemetry directly from AWS IoT Core rules or Kinesis streams.",
+      "Write application metrics from Lambda functions on a schedule or event.",
+      "Visualize time-series dashboards in Grafana or Amazon QuickSight.",
+      "Alarm on ingestion throttles and query latency through CloudWatch."
+    ]
+  },
+  "appConfig": {
+    "overview": "AWS AppConfig is a feature-flag and dynamic configuration management service that validates and safely deploys configuration changes to running applications.",
+    "conceptualModel": "Think of AppConfig as a configuration control tower: it stores versioned config profiles, validates them syntactically and semantically, then rolls them out gradually to fleets, with automatic rollback if a CloudWatch alarm fires mid-deployment.",
+    "recommendedUsing": "Use AppConfig for feature flags, operational tunables (throttle limits, log levels), and A/B rollouts that must change at runtime without redeploying code.",
+    "recommendedAvoiding": "Avoid AppConfig for secrets (use Secrets Manager), for static build-time configuration, or for per-request personalization, as it distributes fleet-level configuration, not user-level state.",
+    "practicalScenario": "A streaming service wraps its new recommendation algorithm in an AppConfig feature flag, deploys it to 5% of ECS tasks, watches error-rate alarms, and lets AppConfig auto-rollback when latency spikes without a redeploy involved.",
+    "keyCharacteristics": [
+      "Validates configurations before deployment (JSON Schema or Lambda validators).",
+      "Rolls out gradually with configurable growth curves and bake times.",
+      "Rolls back automatically when linked CloudWatch alarms trigger.",
+      "Bills per configuration request ($0.20/M) and per configuration received ($0.0008)."
+    ],
+    "commonIntegrationPatterns": [
+      "Poll GetLatestConfiguration from Lambda (via the AppConfig extension layer), EC2, or ECS.",
+      "Cache configuration client-side to stay within API rate limits.",
+      "Source configuration profiles from SSM Parameter Store, S3, or inline documents.",
+      "Gate deployments on CloudWatch alarms for automatic rollback."
+    ]
+  },
+  "appMesh": {
+    "overview": "AWS App Mesh is a service mesh that provides application-level networking so your services can communicate with consistent routing, retries, and observability.",
+    "conceptualModel": "Think of App Mesh as a centralized traffic-control room: it holds the routing rules (virtual services, routers, and nodes) and pushes them to Envoy sidecar proxies that ride alongside every container, so traffic policy lives outside application code.",
+    "recommendedUsing": "Use App Mesh when many ECS/EKS microservices need uniform traffic shaping (canary releases, weighted routing, retries, mTLS) without embedding that logic in every service.",
+    "recommendedAvoiding": "Avoid App Mesh for monoliths, simple two-service architectures, or Lambda-based systems; the Envoy sidecar per task adds compute cost and operational complexity that small meshes don't repay.",
+    "practicalScenario": "A retailer runs 40 ECS microservices; App Mesh shifts 10% of checkout traffic to v2 via weighted routes, Envoy retries transient failures, and per-hop latency metrics land in CloudWatch, all without code changes.",
+    "keyCharacteristics": [
+      "Control plane is free; you pay only for compute running Envoy sidecars.",
+      "Data plane keeps serving from cached routes if the control plane is unreachable.",
+      "Provides weighted routing, retries, timeouts, and mTLS between services.",
+      "Routing-update propagation slows as mesh node density grows."
+    ],
+    "commonIntegrationPatterns": [
+      "Inject Envoy sidecars into ECS task definitions and EKS pods.",
+      "Resolve virtual-service endpoints through Cloud Map service discovery.",
+      "Export Envoy traffic metrics and access logs to CloudWatch and X-Ray.",
+      "Shift traffic gradually between service versions with weighted routes."
+    ]
+  },
+  "cloudMap": {
+    "overview": "AWS Cloud Map is a service discovery service that lets you name application resources and have services discover each other's endpoints dynamically.",
+    "conceptualModel": "Think of Cloud Map as a live phone book for microservices: instances register their IP/port (or URL) under a service name on startup, health checks prune dead entries, and consumers look up healthy endpoints via DNS or the DiscoverInstances API.",
+    "recommendedUsing": "Use Cloud Map when dynamic fleets (ECS tasks, EKS pods, EC2 instances) need to find each other by logical name as instances churn, especially alongside App Mesh or custom service-to-service calls.",
+    "recommendedAvoiding": "Avoid Cloud Map when a load balancer already fronts the service (ELB is the discovery mechanism), or for static, rarely-changing endpoints that plain Route 53 records cover.",
+    "practicalScenario": "An ECS cluster runs a fleet of inventory-service tasks that register in Cloud Map on launch; the ordering service calls DiscoverInstances to fetch healthy endpoints, caching results to stay under API rate limits.",
+    "keyCharacteristics": [
+      "Registers resources in HTTP or DNS namespaces at $0.10 per resource-month.",
+      "Serves discovery via DNS records or the DiscoverInstances API ($1.00/M calls).",
+      "Health checks automatically remove unhealthy endpoints from answers.",
+      "API discovery throttles past account rate limits, so clients should cache resolutions."
+    ],
+    "commonIntegrationPatterns": [
+      "Register ECS tasks automatically through ECS service discovery integration.",
+      "Back App Mesh virtual nodes with Cloud Map service registries.",
+      "Resolve service endpoints from EKS pods via DNS namespaces.",
+      "Monitor discovery query volume and health-check status in CloudWatch."
+    ]
+  },
+  "quickSight": {
+    "overview": "Amazon QuickSight is a cloud-powered business intelligence (BI) service that delivers interactive dashboards and visual analytics to teams at scale.",
+    "conceptualModel": "Think of QuickSight as a managed analytics front-end: authors model datasets and build dashboards, SPICE (an in-memory engine) caches the data for fast slicing, and readers consume interactive visuals from any browser without touching the source databases.",
+    "recommendedUsing": "Use QuickSight for business dashboards over warehouses and data lakes (Redshift, Athena/S3, RDS, Timestream), and for embedding analytics into customer-facing applications.",
+    "recommendedAvoiding": "Avoid QuickSight for real-time operational monitoring (CloudWatch dashboards fit better), heavy data transformation (do that in Glue/dbt upstream), or pixel-perfect paginated reporting needs beyond its report features.",
+    "practicalScenario": "A sales organization ingests its Redshift mart into SPICE nightly; regional managers filter interactive revenue dashboards each morning, while the same visuals are embedded read-only into the partner portal.",
+    "keyCharacteristics": [
+      "SPICE in-memory engine serves visuals without hitting source databases.",
+      "Licenses per user: Author Pro $40/user-month, Reader $3/user-month (Enterprise).",
+      "SPICE capacity bills at $0.38 per GB-month on Enterprise edition.",
+      "Datasets exceeding SPICE capacity fall back to direct queries against sources."
+    ],
+    "commonIntegrationPatterns": [
+      "Query Redshift, RDS, Athena-over-S3, and Timestream as dashboard data sources.",
+      "Schedule SPICE ingestion refreshes to keep dashboards current.",
+      "Embed dashboards into web applications with row-level security.",
+      "Alert on SPICE capacity and ingestion failures via CloudWatch."
+    ]
+  },
+  "lightsail": {
+    "overview": "Amazon Lightsail offers easy-to-use virtual private server (VPS) instances, containers, databases, and CDN bundles at simple flat-rate prices.",
+    "conceptualModel": "Think of Lightsail as AWS with training wheels: each bundle is a fixed monthly price that packages compute, SSD storage, and a data-transfer allowance, so you size by picking a tier instead of assembling EC2, EBS, and bandwidth line items.",
+    "recommendedUsing": "Use Lightsail for small websites, blogs, dev/test servers, and simple applications where predictable flat-rate pricing and one-click stacks (WordPress, LAMP) beat fine-grained EC2 control.",
+    "recommendedAvoiding": "Avoid Lightsail for sustained high-CPU workloads (burst credits throttle to baseline), autoscaling architectures, or systems needing deep VPC customization, and graduate to EC2/ECS for those.",
+    "practicalScenario": "An agency hosts a client's WordPress site on a $12 Lightsail bundle: the instance, 60 GB SSD, and 3 TB of transfer are one line item, DNS points at a static IP, and nightly snapshots cost $0.05/GB-month.",
+    "keyCharacteristics": [
+      "Flat-rate bundles billed hourly up to a monthly cap (512 MB ≈ $5 to 32 GB ≈ $164).",
+      "Runs on burstable CPUs; exhausted credits throttle performance to baseline.",
+      "Each bundle includes a data-transfer allowance; overage bills $0.09/GB.",
+      "VPC peering connects Lightsail to standard AWS resources like RDS and S3."
+    ],
+    "commonIntegrationPatterns": [
+      "Serve web traffic behind Route 53 domains and Lightsail static IPs or load balancers.",
+      "Reach S3 buckets and RDS databases through VPC peering.",
+      "Publish CPU and burst-capacity metrics to CloudWatch for alerting.",
+      "Snapshot instances and disks for backup and instance-size upgrades."
     ]
   }
 }

@@ -367,6 +367,16 @@
     "certificateManager": {},
     "systemsManager": { "instHour": 0.00695, "callM": 5.00 },
     "ecr": { "storageGB": 0.10, "dataTransferGB": 0.09 },
-    "privateLink": { "endpointHourly": 0.01, "dataGB": 0.01 }
+    "privateLink": { "endpointHourly": 0.01, "dataGB": 0.01 },
+    "amplify": { "buildMinute": 0.01, "buildMinuteLarge": 0.025, "buildMinuteXLarge": 0.10, "dataServedGB": 0.15, "storageGB": 0.023 },
+    "ses": { "email": 0.0001, "inboundEmail": 0.0001, "attachmentGB": 0.12, "dedicatedIP": 24.95, "vdmEmail": 0.00007 },
+    "documentDb": { "instances": { "db.t3.medium": 0.078, "db.r6g.large": 0.2631, "db.r6g.xlarge": 0.5263 }, "instancesIO": { "db.t3.medium": 0.0858, "db.r6g.large": 0.2895, "db.r6g.xlarge": 0.5789 }, "storageGB": 0.10, "storageIOGB": 0.30, "ioMillion": 0.20 },
+    "neptune": { "instances": { "db.t3.medium": 0.098, "db.r6g.large": 0.3287, "db.r6g.2xlarge": 1.3149 }, "storageGB": 0.10, "ioMillion": 0.20 },
+    "timestream": { "ingestGB": 0.50, "memoryGBHr": 0.036, "magneticGB": 0.03, "scannedGB": 0.01 },
+    "appConfig": { "requestM": 0.20, "deployment": 0.0008 },
+    "appMesh": {},
+    "cloudMap": { "resourceMonth": 0.10, "queryM": 1.00 },
+    "quickSight": { "authorPro": 40.0, "reader": 3.0, "spiceGB": 0.38 },
+    "lightsail": { "bundles": { "0.5GB": 0.00672, "1GB": 0.0094, "2GB": 0.01612, "4GB": 0.03225, "8GB": 0.05913, "16GB": 0.1129, "32GB": 0.22043 }, "overageGB": 0.09 }
   }
 }

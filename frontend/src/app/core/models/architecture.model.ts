@@ -62,7 +62,17 @@ export type AwsServiceType =
   | 'certificateManager'
   | 'systemsManager'
   | 'ecr'
-  | 'privateLink';
+  | 'privateLink'
+  | 'amplify'
+  | 'ses'
+  | 'documentDb'
+  | 'neptune'
+  | 'timestream'
+  | 'appConfig'
+  | 'appMesh'
+  | 'cloudMap'
+  | 'quickSight'
+  | 'lightsail';
 
 
 export type PortDirection = 'input' | 'output';

@@ -8,14 +8,14 @@
   <!-- Polished Liquid-Glass Header -->
   <nav class="docs-nav glass-panel" [class.nav-scrolled]="navScrolled">
     <div class="nav-left">
-      <button class="back-btn" (click)="goBack()">
+      <button class="back-btn" (click)="goBack()" aria-label="Go back">
         <i class="fas fa-arrow-left"></i> <span>Back</span>
       </button>
-      <div class="brand-mark">
+      <a class="brand-mark" href="/" (click)="goHome($event)" aria-label="Go to home">
         <img src="favicon.svg" alt="Sr. Architect" />
         <span>Sr<span class="brand-dot">.</span> Architect</span>
         <small>DOCS</small>
-      </div>
+      </a>
     </div>
 
     <div class="nav-search glass-pill">
@@ -567,7 +567,7 @@
                           >
                           <p>
                             Sr. Architect grows with everyone who pitches in. Pick whichever way
-                            fits you best — code or no code.
+                            fits you best, code or no code.
                           </p>
                         </div>
                         <div class="contribute-grid">

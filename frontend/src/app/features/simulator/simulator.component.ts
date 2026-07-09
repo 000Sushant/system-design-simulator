@@ -138,6 +138,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   // The refs live inside *ngIf overlays, so the setters fire on open (element present) and close
   // (undefined). Dialogs are mutually exclusive, so a single stored return target is sufficient.
   private modalReturnFocus: HTMLElement | null = null;
+  private runStatsTouchListener?: (e: Event) => void;
   @ViewChild('unsupportedCard') set unsupportedCard(ref: ElementRef<HTMLElement> | undefined) {
     this.onDialogToggle(ref);
   }
@@ -164,12 +165,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly commonConfigFields: ConfigField[] = [
     {
       key: 'throughput',
-      label: 'Capacity',
+      label: 'Requests/Second',
       min: 1,
       max: 3000,
       step: 10,
       suffix: 'rps',
-      description: 'Max rps before degradation. Acts as cost fallback if no request rate is set.',
+      description:
+        'Traffic volume used for the cost estimate. Capacity is separate, it comes from the service sizing parameters and AWS quotas (see Effective capacity above).',
       affectsCost: true,
     },
     {
@@ -297,11 +299,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       {
         key: 'timeoutMs',
         label: 'Idle timeout',
-        min: 1,
-        max: 4000,
-        step: 10,
-        suffix: 's',
-        description: 'Idle time before connection close.',
+        min: 1000,
+        max: 4000000,
+        step: 1000,
+        suffix: 'ms',
+        description: 'Idle time before connection close (ALB default 60,000 ms).',
       },
     ],
     ec2: [
@@ -1264,6 +1266,17 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       });
       toolbarActions.addEventListener('touchend', stopTouch, { passive: true });
     }
+
+    // Setup capture-phase touch and click event listeners to collapse the run stats panel on click-away
+    this.runStatsTouchListener = (e: Event) => {
+      if (!this.isMobileViewport || !this.runStatsExpanded) return;
+      const target = e.target as HTMLElement;
+      if (target && !target.closest('.run-stats')) {
+        this.runStatsExpanded = false;
+      }
+    };
+    document.addEventListener('touchstart', this.runStatsTouchListener, { capture: true, passive: true });
+    document.addEventListener('mousedown', this.runStatsTouchListener, { capture: true });
   }
 
   ngOnDestroy(): void {
@@ -1276,6 +1289,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mobileMediaQuery?.removeEventListener('change', this.onMobileViewportChange);
     this.clearMinimapHideTimer();
     this.simulation.stop();
+    if (this.runStatsTouchListener) {
+      document.removeEventListener('touchstart', this.runStatsTouchListener, { capture: true });
+      document.removeEventListener('mousedown', this.runStatsTouchListener, { capture: true });
+    }
   }
   private calculateNodeHealth(node: ArchitectureNode): NodeHealth {
     return evaluateNodeHealth(node, this.connections, this.awsCatalog.getByType(node.type));
@@ -1435,7 +1452,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   fieldLockTooltip(node: ArchitectureNode, field: any): string {
     if (field?.key === 'throughput' && node.config?.['_designThroughput'] !== undefined) {
-      return 'Requests/Second is synced from the Users node. Disable "Sync RPS to all connected services" on the Users node to edit.';
+      return 'Requests/Second follows the traffic estimated by Dynamic RPS. Disable "Dynamic RPS (auto-size services)" on the Users node to edit.';
     }
     return (
       'Synced from: ' +
@@ -1455,6 +1472,38 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   openDocsForService(type: string): void {
     const docsUrl = `${window.location.origin}/docs?service=${type}`;
     window.open(docsUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  /**
+   * Whether the engine actually reads this config key for this node — gates
+   * the gauge icon so a cost-only knob can't claim to drive the simulation.
+   */
+  isSimParam(node: ArchitectureNode, key: string | number | symbol): boolean {
+    return this.simulation.isSimulationParam(node, String(key));
+  }
+
+  /**
+   * Effective capacity the simulation engine uses for the selected node, with
+   * its source. Shown in the inspector so the Requests/Second cost param can't
+   * be mistaken for a capacity ceiling (capacity comes from sizing params and
+   * AWS quotas, not from traffic volume).
+   */
+  get selectedCapacityInfo(): {
+    capacity: number;
+    source: string;
+    sourceLabel: string;
+    saturation: string;
+    saturationHint: string;
+    liveRps: number;
+    utilization: number;
+  } | null {
+    const node = this.selectedNode;
+    if (!node || node.type === 'client') return null;
+    const info = this.simulation.capacityInfo(node);
+    const liveRps = node.metrics?.received ?? 0;
+    const utilization =
+      info.capacity > 0 ? Math.round((liveRps / info.capacity) * 1000) / 10 : 0;
+    return { ...info, liveRps, utilization };
   }
 
   get selectedConfigFields(): ConfigField[] {
@@ -1535,9 +1584,48 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return model?.costEvaluation || null;
   }
 
+  // Memoised so repeated reads within/across change-detection passes (e.g. every
+  // mousemove-triggered CD cycle) return the SAME breakdown reference instead of a
+  // freshly computed one. getCostBreakdown() builds brand-new line objects on every
+  // call; without caching, Angular's `@for (... track line)` sees an entirely new
+  // collection each pass (NG0956, forced DOM destroy/recreate) and dev-mode's
+  // double-check can observe two different label strings for the same binding in
+  // one cycle (NG0100). Keyed on a cheap JSON signature of config rather than
+  // object identity because some services (cloudfront/elb) mutate node.config
+  // in place as a side effect of the cost-params getter.
+  private _costBreakdownCache: {
+    nodeId: string;
+    configSignature: string;
+    region: string;
+    nodesRef: ArchitectureNode[];
+    value: CostBreakdown | null;
+  } | null = null;
+
   get costBreakdown(): CostBreakdown | null {
-    if (!this.selectedNode) return null;
-    return this.costService.getCostBreakdown(this.selectedNode, this.globalRegion, this.nodes);
+    const node = this.selectedNode;
+    if (!node) return null;
+
+    const configSignature = JSON.stringify(node.config);
+    const cache = this._costBreakdownCache;
+    if (
+      cache &&
+      cache.nodeId === node.id &&
+      cache.configSignature === configSignature &&
+      cache.region === this.globalRegion &&
+      cache.nodesRef === this.nodes
+    ) {
+      return cache.value;
+    }
+
+    const value = this.costService.getCostBreakdown(node, this.globalRegion, this.nodes);
+    this._costBreakdownCache = {
+      nodeId: node.id,
+      configSignature,
+      region: this.globalRegion,
+      nodesRef: this.nodes,
+      value,
+    };
+    return value;
   }
 
   // Memoised so the getter returns a STABLE array reference across change-detection
@@ -1663,6 +1751,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       'bedrock',
       'kinesis',
       'kinesisFirehose',
+      'amplify',
     ]);
 
     if (this.roleMode === 'developer') {
@@ -2115,6 +2204,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   goDocs(): void {
+    // Record origin so the docs "Back" button returns to the playground.
+    sessionStorage.setItem('docsOrigin', '/playground');
     window.history.pushState(null, '', '/docs');
     window.dispatchEvent(new Event('popstate'));
   }
@@ -2711,6 +2802,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   openDocs(): void {
     this.simulation.stop();
+    // Record origin so the docs "Back" button returns to the playground.
+    sessionStorage.setItem('docsOrigin', '/playground');
     window.history.pushState(null, '', '/docs');
     window.dispatchEvent(new Event('popstate'));
   }
@@ -2920,11 +3013,34 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.collapsedCategories.has(category);
   }
 
+  /** min/max bounds for a config key, from whichever field list defines it. */
+  private fieldBoundsFor(key: any): { min?: number; max?: number } {
+    const lists: any[][] = [
+      this.selectedConfigFields,
+      this.selectedPrimaryParams,
+      this.selectedCostParams,
+      this.selectedAdvancedParams,
+    ];
+    for (const list of lists) {
+      const field = list.find((f: any) => f.key === key);
+      if (field) return { min: field.min, max: field.max };
+    }
+    return {};
+  }
+
   updateConfig(key: any, value: number): void {
     if (!this.selectedNode) {
       return;
     }
-    const numValue = Number(value);
+    let numValue = Number(value);
+    // Typed input bypasses the HTML max attribute — clamp here so a 50,000ms
+    // latency can't be typed into a 100ms-bounded managed service. Min is left
+    // to the existing "Min X required" validation so we don't fight the user
+    // while they're still typing.
+    if (Number.isFinite(numValue)) {
+      const { max } = this.fieldBoundsFor(key);
+      if (typeof max === 'number' && numValue > max) numValue = max;
+    }
     const selectedType = this.selectedNode.type;
     const selectedId = this.selectedNode.id;
     this.pushHistory(`config:${selectedId}:${key}`);
@@ -2955,7 +3071,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
             n.id === selectedId ? { ...n, config: { ...n.config, requestRate: propagateRps } } : n,
           );
         }
-        this.propagateRpsToDownstream(selectedId, propagateRps);
+        this.dynamicSizeDownstream(selectedId, propagateRps);
       }
     }
 
@@ -2975,14 +3091,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       const clientNode = this.nodes.find((n) => n.id === selectedId);
       if (clientNode) {
         if (value === true) {
-          this.snapshotDownstreamThroughput(selectedId);
           const rps = clientNode.config['variableTraffic']
             ? this.clientMidpoint(clientNode)
             : clientNode.config['requestRate'] || 100;
           this.nodes = this.nodes.map((n) =>
             n.id === selectedId ? { ...n, config: { ...n.config, [key]: true } } : n,
           );
-          this.propagateRpsToDownstream(selectedId, rps);
+          this.dynamicSizeDownstream(selectedId, rps, true);
           this.onConfigChange();
           return;
         } else {
@@ -3020,7 +3135,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
               : n,
           );
           if (clientNode.config['syncRpsToServices']) {
-            this.propagateRpsToDownstream(selectedId, mid);
+            this.dynamicSizeDownstream(selectedId, mid);
           }
           this.onConfigChange();
           return;
@@ -3078,50 +3193,66 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return downstreamNodeIds(sourceId, this.connections);
   }
 
-  private snapshotDownstreamThroughput(clientId: string): void {
+  /**
+   * Dynamic RPS: estimate each downstream service's real arrival rate from the
+   * graph (fan-out weights, cache offload), auto-size its sizing parameters to
+   * carry that load at ~65% utilization, and write the per-node demand into
+   * `throughput` for the cost panel. `captureSnapshot` (toggle-on) records the
+   * pre-sizing values so toggling off restores them exactly.
+   */
+  private dynamicSizeDownstream(clientId: string, rps: number, captureSnapshot = false): void {
     const downstream = this.getDownstreamNodeIds(clientId);
-    const snapshot: Record<string, number> = {};
-    for (const node of this.nodes) {
-      if (downstream.has(node.id) && typeof node.config['throughput'] === 'number') {
-        snapshot[node.id] = node.config['throughput'];
-      }
-    }
-    // Store the originals on the client for restore-on-toggle-off. The stable
-    // capacity reference (_designThroughput) is set by propagateRpsToDownstream to
-    // the synced RPS, so the simulation actually uses the pushed value.
-    this.nodes = this.nodes.map((n) =>
-      n.id === clientId ? { ...n, config: { ...n.config, _syncSnapshot: snapshot } } : n,
+    const graph = this.nodes.map((n) =>
+      n.id === clientId ? { ...n, config: { ...n.config, requestRate: rps } } : n,
     );
+    const demand = this.simulation.estimateDemand(graph, this.connections);
+    const snapshot: Record<string, Record<string, unknown>> = {};
+    this.nodes = this.nodes.map((n) => {
+      if (!downstream.has(n.id)) return n;
+      const nodeDemand = Math.max(1, Math.round((demand.get(n.id) ?? 0) * 100) / 100);
+      const sizing = this.simulation.autoSizeForDemand(n, nodeDemand) ?? {};
+      const updates: Record<string, unknown> = {
+        ...sizing,
+        throughput: nodeDemand,
+        _designThroughput: nodeDemand,
+        _dynFactor: rps > 0 ? Math.round((nodeDemand / rps) * 10000) / 10000 : 1,
+      };
+      if (captureSnapshot) {
+        const snap: Record<string, unknown> = {};
+        for (const key of Object.keys(updates)) {
+          if (!key.startsWith('_')) snap[key] = n.config[key];
+        }
+        snapshot[n.id] = snap;
+      }
+      return { ...n, config: { ...n.config, ...updates } };
+    });
+    if (captureSnapshot) {
+      this.nodes = this.nodes.map((n) =>
+        n.id === clientId ? { ...n, config: { ...n.config, _syncSnapshot: snapshot } } : n,
+      );
+    }
   }
 
   private restoreDownstreamThroughput(clientId: string): void {
     const client = this.nodes.find((n) => n.id === clientId);
-    const snapshot: Record<string, number> = client?.config['_syncSnapshot'] || {};
+    const snapshot: Record<string, unknown> = client?.config['_syncSnapshot'] || {};
     this.nodes = this.nodes.map((n) => {
-      if (snapshot[n.id] !== undefined) {
-        const { _designThroughput, ...rest } = n.config;
-        return { ...n, config: { ...rest, throughput: snapshot[n.id] } };
+      const snap = snapshot[n.id];
+      if (snap === undefined) return n;
+      const { _designThroughput, _dynFactor, ...rest } = n.config;
+      const cfg: Record<string, unknown> = { ...rest };
+      // Legacy snapshots stored a bare throughput number; new ones store the
+      // full map of keys Dynamic RPS changed.
+      const restored: Record<string, unknown> =
+        typeof snap === 'number' ? { throughput: snap } : (snap as Record<string, unknown>);
+      for (const [key, value] of Object.entries(restored)) {
+        if (value === undefined) delete cfg[key];
+        else cfg[key] = value;
       }
-      return n;
+      return { ...n, config: cfg } as ArchitectureNode;
     });
     this.nodes = this.nodes.map((n) =>
       n.id === clientId ? { ...n, config: { ...n.config, _syncSnapshot: {} } } : n,
-    );
-  }
-
-  private propagateRpsToDownstream(clientId: string, rps: number): void {
-    const downstream = this.getDownstreamNodeIds(clientId);
-    const rounded = Math.max(1, Math.round(rps * 100) / 100);
-    this.nodes = this.nodes.map((n) =>
-      downstream.has(n.id)
-        ? {
-            ...n,
-            // throughput drives the cost panel; _designThroughput is the capacity
-            // the simulation reads, so both must reflect the synced RPS for the
-            // pushed value to actually change latency/utilization.
-            config: { ...n.config, throughput: rounded, _designThroughput: rounded },
-          }
-        : n,
     );
   }
 
@@ -3235,7 +3366,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.simulation.stop();
     this.challengeService.exit();
     this.applyProject(this.presets.ecommercePreset());
-    this.setMessage('Free practice — sandbox loaded.', 'success');
+    this.setMessage('Free practice, sandbox loaded.', 'success');
   }
 
   /** Panel → replay the onboarding tour. */
@@ -3250,7 +3381,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMessage(
       result.passed
         ? `Passed! Scored ${result.score}/100.`
-        : `Scored ${result.score}/100 — see suggestions to improve.`,
+        : `Scored ${result.score}/100, see suggestions to improve.`,
       result.passed ? 'success' : 'neutral',
     );
   }
@@ -3264,7 +3395,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     );
     this.applyProject({
       id: `reference-${challenge.id}`,
-      name: `${challenge.title} — Reference`,
+      name: `${challenge.title} Reference`,
       nodes,
       connections,
       annotations: [],

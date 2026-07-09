@@ -100,7 +100,7 @@ export function evaluateNodeHealth(
     return {
       tone: 'error',
       short: 'Overloaded',
-      message: `Overloaded: ${node.name} is past its capacity — excess requests are being throttled or dropped.`,
+      message: `Overloaded: ${node.name} is past its capacity, excess requests are being throttled or dropped.`,
     };
   }
   if (node.status === 'busy') {

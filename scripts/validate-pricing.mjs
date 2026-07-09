@@ -11,7 +11,7 @@
  *   STATIC   — param is never queried (hardcoded in baseline only)
  *
  * Usage (Node 18+):
- *   # Default: ap-south-1 (Mumbai)
+ *   # Default: us-east-1 (validates the shipped baseline; expect ~0 mismatches)
  *   AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs
  *
  *   # Specific region
@@ -40,7 +40,7 @@ if (process.argv[2] === '--help' || process.argv[2] === '-h') {
     AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs [region] [region_name]
 
   Examples:
-    # Mumbai (default)
+    # us-east-1 (default — validates the shipped baseline)
     AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs
 
     # Other regions
@@ -48,7 +48,7 @@ if (process.argv[2] === '--help' || process.argv[2] === '-h') {
     AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs us-west-2 "US West (Oregon)"
 
   Arguments:
-    region          AWS region code (default: ap-south-1)
+    region          AWS region code (default: us-east-1)
     region_name     Full region name for API queries (auto-detected if omitted)
 
   Supported regions: ap-south-1, eu-west-1, us-west-2, us-east-1, eu-central-1, ap-southeast-1
@@ -92,8 +92,12 @@ try {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-const REGION_CODE = process.argv[2] || 'ap-south-1';
-let REGION_NAME = process.argv[3] || 'Asia Pacific (Mumbai)';
+// Default to us-east-1 — the region the bundled baseline (us-east-1.json) represents,
+// so a no-arg run validates the shipped baseline itself (expect ~0 mismatches).
+// Pass a region code to spot-check any other region's live prices, e.g.
+//   node validate-pricing.mjs ap-south-1
+const REGION_CODE = process.argv[2] || 'us-east-1';
+let REGION_NAME = process.argv[3] || 'US East (N. Virginia)';
 
 // AWS region name → full name mapping
 const REGION_MAP = {
@@ -155,7 +159,7 @@ function round(n, d = 10) { return n === null ? null : parseFloat(n.toFixed(d));
 
 function extractMaxPrice(raw) {
   try {
-    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const parsed = (typeof raw === 'string' || raw instanceof String) ? JSON.parse(raw.toString()) : raw;
     const onDemand = parsed.terms?.OnDemand;
     if (!onDemand) return null;
     const offer = Object.values(onDemand)[0];
@@ -185,7 +189,7 @@ async function query(serviceCode, filters, predicate = null, maxResults = 25) {
       if (!resp.PriceList?.length) return null;
       if (predicate) {
         const match = resp.PriceList.find(raw => {
-          try { return predicate(JSON.parse(raw)); } catch { return false; }
+          try { return predicate(JSON.parse(raw.toString())); } catch { return false; }
         }) ?? resp.PriceList[0];
         return extractMaxPrice(match);
       }
@@ -210,10 +214,12 @@ function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
 function deepGet(obj, path) {
   const parts = path.split('.');
-  if (parts.length > 2 && parts[1] === 'instances') {
+  // Nested maps whose keys themselves contain dots (db.r6g.large, 0.5GB):
+  // resolve service + map name, then re-join the remainder as one key.
+  if (parts.length > 2 && ['instances', 'instancesIO', 'bundles'].includes(parts[1])) {
     const service = parts[0];
     const key = parts.slice(2).join('.');
-    return obj?.[service]?.instances?.[key];
+    return obj?.[service]?.[parts[1]]?.[key];
   }
   if (parts.length > 3 && parts[1] === 'instanceRates') {
     const service = parts[0];
@@ -612,6 +618,26 @@ const BASELINE = {
   systemsManager: { instHour: 0.00695, callM: 5.00 },
   ecr: { storageGB: 0.10, dataTransferGB: 0.09 },
   privateLink: { endpointHourly: 0.01, dataGB: 0.01 },
+  amplify: { buildMinute: 0.01, buildMinuteLarge: 0.025, buildMinuteXLarge: 0.10, dataServedGB: 0.15, storageGB: 0.023 },
+  ses: { email: 0.0001, inboundEmail: 0.0001, attachmentGB: 0.12, dedicatedIP: 24.95, vdmEmail: 0.00007 },
+  documentDb: {
+    instances: { 'db.t3.medium': 0.078, 'db.r6g.large': 0.2631, 'db.r6g.xlarge': 0.5263 },
+    instancesIO: { 'db.t3.medium': 0.0858, 'db.r6g.large': 0.2895, 'db.r6g.xlarge': 0.5789 },
+    storageGB: 0.10, storageIOGB: 0.30, ioMillion: 0.20,
+  },
+  neptune: {
+    instances: { 'db.t3.medium': 0.098, 'db.r6g.large': 0.3287, 'db.r6g.2xlarge': 1.3149 },
+    storageGB: 0.10, ioMillion: 0.20,
+  },
+  timestream: { ingestGB: 0.50, memoryGBHr: 0.036, magneticGB: 0.03, scannedGB: 0.01 },
+  appConfig: { requestM: 0.20, deployment: 0.0008 },
+  appMesh: {},
+  cloudMap: { resourceMonth: 0.10, queryM: 1.00 },
+  quickSight: { authorPro: 40.0, reader: 3.0, spiceGB: 0.38 },
+  lightsail: {
+    bundles: { '0.5GB': 0.00672, '1GB': 0.0094, '2GB': 0.01612, '4GB': 0.03225, '8GB': 0.05913, '16GB': 0.1129, '32GB': 0.22043 },
+    overageGB: 0.09,
+  },
 }
 
 const svc = deepClone(BASELINE);
@@ -651,7 +677,9 @@ const albHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field:
 const albLcu = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Application' }, { Field: 'operation', Value: 'LoadBalancing:Application' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Used Application Load Balancer capacity units-hr' }]);
 const nlbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Network' }, { Field: 'operation', Value: 'LoadBalancing:Network' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'LoadBalancer hourly usage by Network Load Balancer' }]);
 const nlbLcu = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Network' }, { Field: 'operation', Value: 'LoadBalancing:Network' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Used Network Load Balancer capacity units-hr' }]);
-const clbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer' }, { Field: 'operation', Value: 'LoadBalancing' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'LoadBalancer hourly usage' }]);
+// The CLB hourly SKU no longer carries the old groupDescription; select by
+// usagetype instead (matches worker fetcher.clbHourly).
+const clbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer' }, { Field: 'operation', Value: 'LoadBalancing' }, { Field: 'locationType', Value: 'AWS Region' }], p => String(p.product?.attributes?.usagetype ?? '').endsWith('LoadBalancerUsage'), 100);
 const clbData = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer' }, { Field: 'operation', Value: 'LoadBalancing' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Data processed by Classic Load Balancer' }]);
 const gwlbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Gateway' }, { Field: 'operation', Value: 'LoadBalancing:Gateway' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'LoadBalancer hourly usage by Gateway Load Balancer' }]);
 const gwlbLcu = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Gateway' }, { Field: 'operation', Value: 'LoadBalancing:Gateway' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Used Gateway Load Balancer capacity units-hr' }]);
@@ -848,8 +876,11 @@ console.log(' done');
 
 // ── DynamoDB ──────────────────────────────────────────────────────────────────
 process.stdout.write('  [DynamoDB]     read, write, storage...');
-const ddbR = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-ReadUnits' }]);
-const ddbW = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-WriteUnits' }]);
+// The bare group filter matches BOTH the on-demand request-unit SKU and the
+// provisioned capacity-unit-hour SKU; pin PayPerRequestThroughput so we read the
+// on-demand request price (matches worker fetcher.dynamoDbRead/Write).
+const ddbR = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-ReadUnits' }, { Field: 'operation', Value: 'PayPerRequestThroughput' }]);
+const ddbW = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-WriteUnits' }, { Field: 'operation', Value: 'PayPerRequestThroughput' }]);
 const ddbS = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }, { Field: 'volumeType', Value: 'Amazon DynamoDB - Indexed DataStore' }]);
 if (ddbR !== null) { const rm = round(ddbR * 1_000_000, 4); svc.dynamoDb.std.readM = rm; svc.dynamoDb.ia.readM = round(rm * 1.25, 4); }
 if (ddbW !== null) { const wm = round(ddbW * 1_000_000, 4); svc.dynamoDb.std.writeM = wm; svc.dynamoDb.ia.writeM = round(wm * 1.25, 4); }
@@ -890,9 +921,17 @@ console.log(' done');
 
 // ── EMR ────────────────────────────────────────────────────────────────────────
 process.stdout.write('  [EMR]          m5.large, m5.xlarge, r5.xlarge...');
-const emrM5x = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'm5.xlarge' }]);
-const emrR5x = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'r5.xlarge' }]);
-const emrM5l = emrM5x !== null ? emrM5x * 0.5 : null; // m5.large = 50% of m5.xlarge (same as fetcher fallback)
+// ElasticMapReduce prices ONLY the EMR service fee (~25% of the EC2 rate). The
+// simulator bills the whole node, so all-in = EC2 Linux on-demand + EMR fee
+// (matches worker fetcher.emrInstance). EC2 large-size rates were fetched live
+// above into svc.ec2.familyRatesLarge; xlarge = large × 2.
+const emrM5xFee = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'm5.xlarge' }]);
+const emrR5xFee = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'r5.xlarge' }]);
+const ec2M5Large = svc.ec2.familyRatesLarge.m5;
+const ec2R5Large = svc.ec2.familyRatesLarge.r5;
+const emrM5x = emrM5xFee !== null ? ec2M5Large * 2 + emrM5xFee : null;       // m5.xlarge = EC2 xlarge + fee
+const emrR5x = emrR5xFee !== null ? ec2R5Large * 2 + emrR5xFee : null;       // r5.xlarge = EC2 xlarge + fee
+const emrM5l = emrM5xFee !== null ? ec2M5Large + emrM5xFee * 0.5 : null;     // m5.large = EC2 large + half the xlarge fee
 if (emrM5l !== null) svc.emr.instances['m5.large'] = round(emrM5l, 4);
 if (emrM5x !== null) svc.emr.instances['m5.xlarge'] = round(emrM5x, 4);
 if (emrR5x !== null) svc.emr.instances['r5.xlarge'] = round(emrR5x, 4);
@@ -950,7 +989,12 @@ console.log(' done');
 
 // ── API Gateway ───────────────────────────────────────────────────────────────
 process.stdout.write('  [API Gateway]  REST (scales tiers + cache)...');
-const apiGw = await query('AmazonApiGateway', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'API Calls' }]);
+// 'API Calls' also contains HTTP-API and $0 SKUs, so pin the REST request SKU by
+// usagetype (matches worker fetcher.apiGatewayRest). The API returns a PER-REQUEST
+// price (~0.0000035 in us-east-1); scale ×1,000,000 to compare against the
+// per-million baseline tiers.
+const apiGwRaw = await query('AmazonApiGateway', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'API Calls' }], p => String(p.product?.attributes?.usagetype ?? '').endsWith('ApiGatewayRequest'), 100);
+const apiGw = apiGwRaw !== null ? apiGwRaw * 1_000_000 : null;
 if (apiGw !== null) {
   const ratio = apiGw / 3.50;
   svc.apiGateway.requestsM.rest.tier1 = round(3.50 * ratio, 4);
@@ -969,6 +1013,232 @@ if (apiGw !== null) {
 track('apiGateway.requestsM.rest.tier1', apiGw !== null ? round(3.50 * (apiGw / 3.50), 4) : null, svc.apiGateway.requestsM.rest.tier1);
 track('apiGateway.requestsM.http.tier1', apiGw !== null ? round(1.00 * (apiGw / 3.50), 4) : null, svc.apiGateway.requestsM.http.tier1);
 track('apiGateway.wsConnectionMinuteM', apiGw !== null ? round(BASELINE.apiGateway.wsConnectionMinuteM * (apiGw / 3.50), 4) : null, svc.apiGateway.wsConnectionMinuteM);
+console.log(' done');
+
+// ── AWS Amplify ──────────────────────────────────────────────────────────────
+process.stdout.write('  [Amplify]      build, storage, dataTransfer...');
+const amplifyBuildQuery = (instanceType) => query('AWSAmplify', [{ Field: 'location', Value: loc }], p => {
+  const u = p.product?.attributes?.usagetype ?? '';
+  const inst = p.product?.attributes?.instancetype ?? '';
+  // Standard SKU usagetype ends with plain "BuildDuration"; Large16GB / Xlarge72GB
+  // SKUs end with "BuildDuration-Large16GB" / "-XLarge72GB", so match instancetype.
+  return u.includes('BuildDuration') && inst === instanceType;
+});
+const ampB = await amplifyBuildQuery('Standard8GB');
+const ampBL = await amplifyBuildQuery('Large16GB');
+const ampBXL = await amplifyBuildQuery('Xlarge72GB');
+const ampS = await query('AWSAmplify', [{ Field: 'location', Value: loc }], p => {
+  const u = p.product?.attributes?.usagetype ?? '';
+  return u.endsWith('DataStorage');
+});
+const ampD = await query('AWSAmplify', [{ Field: 'location', Value: loc }], p => {
+  const u = p.product?.attributes?.usagetype ?? '';
+  return u.endsWith('DataTransferOut');
+});
+if (ampB !== null) svc.amplify.buildMinute = round(ampB, 4);
+if (ampBL !== null) svc.amplify.buildMinuteLarge = round(ampBL, 4);
+if (ampBXL !== null) svc.amplify.buildMinuteXLarge = round(ampBXL, 4);
+if (ampS !== null) svc.amplify.storageGB = round(ampS, 4);
+if (ampD !== null) svc.amplify.dataServedGB = round(ampD, 4);
+track('amplify.buildMinute', ampB !== null ? round(ampB, 4) : null, svc.amplify.buildMinute);
+track('amplify.buildMinuteLarge', ampBL !== null ? round(ampBL, 4) : null, svc.amplify.buildMinuteLarge);
+track('amplify.buildMinuteXLarge', ampBXL !== null ? round(ampBXL, 4) : null, svc.amplify.buildMinuteXLarge);
+track('amplify.storageGB', ampS !== null ? round(ampS, 4) : null, svc.amplify.storageGB);
+track('amplify.dataServedGB', ampD !== null ? round(ampD, 4) : null, svc.amplify.dataServedGB);
+console.log(' done');
+
+// ── Helpers for the missing-services batch (strict: no first-item fallback) ─
+// The shared query() falls back to PriceList[0] when the predicate matches
+// nothing, which would silently validate the wrong SKU. These mirror the
+// worker's strict extractMatchingPrice semantics instead.
+async function queryStrict(serviceCode, filters, predicate, maxResults = 100) {
+  await sleep(RATE_LIMIT_MS);
+  callCount++;
+  const attempt = async () => {
+    try {
+      const resp = await client.send(new GetProductsCommand({
+        ServiceCode: serviceCode,
+        Filters: filters.map(f => ({ Type: 'TERM_MATCH', Field: f.Field, Value: f.Value })),
+        MaxResults: maxResults,
+      }));
+      if (!resp.PriceList?.length) return null;
+      const match = resp.PriceList.find(raw => {
+        try { return predicate(JSON.parse(raw.toString())); } catch { return false; }
+      });
+      return match === undefined ? null : extractMaxPrice(match);
+    } catch (e) {
+      const name = e.name ?? '';
+      if (name.includes('Throttl') || name.includes('RateExceeded')) {
+        process.stdout.write(` [throttle — waiting ${THROTTLE_WAIT}ms]`);
+        await sleep(THROTTLE_WAIT);
+        return attempt();
+      }
+      process.stdout.write(` [SDK error: ${e.message?.slice(0, 60)}]`);
+      return null;
+    }
+  };
+  return attempt();
+}
+
+/** Paginated fetch of every product matching `filters` (parsed). Mirrors worker queryBulk. */
+async function queryBulkAll(serviceCode, filters, maxPages = 8) {
+  const items = [];
+  let nextToken;
+  for (let page = 0; page < maxPages; page++) {
+    await sleep(RATE_LIMIT_MS);
+    callCount++;
+    try {
+      const resp = await client.send(new GetProductsCommand({
+        ServiceCode: serviceCode,
+        Filters: filters.map(f => ({ Type: 'TERM_MATCH', Field: f.Field, Value: f.Value })),
+        MaxResults: 100,
+        ...(nextToken ? { NextToken: nextToken } : {}),
+      }));
+      for (const raw of resp.PriceList ?? []) {
+        try { items.push(JSON.parse(raw.toString())); } catch { /* skip */ }
+      }
+      nextToken = resp.NextToken;
+      if (!nextToken) break;
+    } catch (e) {
+      const name = e.name ?? '';
+      if (name.includes('Throttl') || name.includes('RateExceeded')) {
+        process.stdout.write(` [throttle — waiting ${THROTTLE_WAIT}ms]`);
+        await sleep(THROTTLE_WAIT);
+        page--; // retry this page
+        continue;
+      }
+      process.stdout.write(` [SDK error: ${e.message?.slice(0, 60)}]`);
+      break;
+    }
+  }
+  return items;
+}
+
+const ut = (p) => p.product?.attributes?.usagetype ?? '';
+
+// ── Amazon SES ───────────────────────────────────────────────────────────────
+process.stdout.write('  [SES]          email, inbound, attachments, DIP, VDM...');
+const sesOut = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Sending Email' }], p => /(^|-)Recipients$/.test(ut(p)));
+const sesIn = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Receiving Email' }], p => /(^|-)Message$/.test(ut(p)));
+const sesAtt = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Sending Attachments' }], p => ut(p).endsWith('AttachmentsSize-Bytes'));
+const sesDip = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Sending Email' }], p => ut(p).endsWith('DIP-Hours'));
+const sesVdm = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('Recipients-VirtDelivMgr'));
+if (sesOut !== null) svc.ses.email = round(sesOut, 6);
+if (sesIn !== null) svc.ses.inboundEmail = round(sesIn, 6);
+if (sesAtt !== null) svc.ses.attachmentGB = round(sesAtt, 4);
+if (sesDip !== null) svc.ses.dedicatedIP = round(sesDip, 2);
+if (sesVdm !== null) svc.ses.vdmEmail = round(sesVdm, 6);
+track('ses.email', sesOut !== null ? round(sesOut, 6) : null, svc.ses.email);
+track('ses.inboundEmail', sesIn !== null ? round(sesIn, 6) : null, svc.ses.inboundEmail);
+track('ses.attachmentGB', sesAtt !== null ? round(sesAtt, 4) : null, svc.ses.attachmentGB);
+track('ses.dedicatedIP', sesDip !== null ? round(sesDip, 2) : null, svc.ses.dedicatedIP);
+track('ses.vdmEmail', sesVdm !== null ? round(sesVdm, 6) : null, svc.ses.vdmEmail);
+console.log(' done');
+
+// ── Amazon DocumentDB ────────────────────────────────────────────────────────
+process.stdout.write('  [DocumentDB]   instances, storage, I/O...');
+for (const cls of Object.keys(svc.documentDb.instances)) {
+  const std = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: cls }], p => ut(p).includes('InstanceUsage:') && !ut(p).includes('IOOptimized'));
+  if (std !== null) svc.documentDb.instances[cls] = round(std, 4);
+  track(`documentDb.instances.${cls}`, std !== null ? round(std, 4) : null, svc.documentDb.instances[cls]);
+  const io = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: cls }], p => ut(p).includes('InstanceUsageIOOptimized:'));
+  if (io !== null) svc.documentDb.instancesIO[cls] = round(io, 4);
+  track(`documentDb.instancesIO.${cls}`, io !== null ? round(io, 4) : null, svc.documentDb.instancesIO[cls]);
+}
+const docStor = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => !ut(p).includes('Elastic') && ut(p).endsWith('StorageUsage') && !ut(p).includes('IO-Optimized'));
+const docStorIO = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => !ut(p).includes('Elastic') && ut(p).endsWith('IO-OptimizedStorageUsage'));
+const docIo = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'System Operation' }], p => ut(p).endsWith('StorageIOUsage'));
+if (docStor !== null) svc.documentDb.storageGB = round(docStor, 4);
+if (docStorIO !== null) svc.documentDb.storageIOGB = round(docStorIO, 4);
+if (docIo !== null) svc.documentDb.ioMillion = round(docIo * 1_000_000, 4);
+track('documentDb.storageGB', docStor !== null ? round(docStor, 4) : null, svc.documentDb.storageGB);
+track('documentDb.storageIOGB', docStorIO !== null ? round(docStorIO, 4) : null, svc.documentDb.storageIOGB);
+track('documentDb.ioMillion', docIo !== null ? round(docIo * 1_000_000, 4) : null, svc.documentDb.ioMillion);
+console.log(' done');
+
+// ── Amazon Neptune ───────────────────────────────────────────────────────────
+process.stdout.write('  [Neptune]      instances, storage, I/O...');
+for (const cls of Object.keys(svc.neptune.instances)) {
+  const rate = await queryStrict('AmazonNeptune', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: cls }], p => ut(p).includes('InstanceUsage:') && !ut(p).includes('IOOptimized'));
+  if (rate !== null) svc.neptune.instances[cls] = round(rate, 4);
+  track(`neptune.instances.${cls}`, rate !== null ? round(rate, 4) : null, svc.neptune.instances[cls]);
+}
+const nepStor = await queryStrict('AmazonNeptune', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => ut(p).endsWith('StorageUsage') && !ut(p).includes('IO-Optimized'));
+const nepIo = await queryStrict('AmazonNeptune', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'System Operation' }], p => ut(p).endsWith('StorageIOUsage'));
+if (nepStor !== null) svc.neptune.storageGB = round(nepStor, 4);
+if (nepIo !== null) svc.neptune.ioMillion = round(nepIo * 1_000_000, 4);
+track('neptune.storageGB', nepStor !== null ? round(nepStor, 4) : null, svc.neptune.storageGB);
+track('neptune.ioMillion', nepIo !== null ? round(nepIo * 1_000_000, 4) : null, svc.neptune.ioMillion);
+console.log(' done');
+
+// ── Amazon Timestream ────────────────────────────────────────────────────────
+process.stdout.write('  [Timestream]   ingest, memory, magnetic, scans...');
+const tsIngest = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Data Payload' }], p => ut(p).endsWith('DataIngestion-Bytes'));
+const tsMem = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => ut(p).endsWith('MemoryStore-ByteHrs'));
+const tsMag = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => ut(p).endsWith('MagneticStore-ByteHrs'));
+// The productFamily for scanned-query billing varies by region, so match on
+// usagetype alone — the strict predicate still guarantees we only accept a
+// DataScanned-Bytes SKU (never a wrong one). If the region genuinely doesn't
+// expose it, this stays null (a real regional gap, not a query bug).
+const tsScan = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('DataScanned-Bytes'));
+if (tsIngest !== null) svc.timestream.ingestGB = round(tsIngest, 4);
+if (tsMem !== null) svc.timestream.memoryGBHr = round(tsMem, 4);
+if (tsMag !== null) svc.timestream.magneticGB = round(tsMag, 4);
+if (tsScan !== null) svc.timestream.scannedGB = round(tsScan, 4);
+track('timestream.ingestGB', tsIngest !== null ? round(tsIngest, 4) : null, svc.timestream.ingestGB);
+track('timestream.memoryGBHr', tsMem !== null ? round(tsMem, 4) : null, svc.timestream.memoryGBHr);
+track('timestream.magneticGB', tsMag !== null ? round(tsMag, 4) : null, svc.timestream.magneticGB);
+track('timestream.scannedGB', tsScan !== null ? round(tsScan, 4) : null, svc.timestream.scannedGB);
+console.log(' done');
+
+// ── AWS AppConfig (AWSSystemsManager offer) ──────────────────────────────────
+process.stdout.write('  [AppConfig]    requests, deployments...');
+const acReq = await queryStrict('AWSSystemsManager', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('AppConfig-Requests'));
+const acDep = await queryStrict('AWSSystemsManager', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('AppConfig-Deployments'));
+if (acReq !== null) svc.appConfig.requestM = round(acReq * 1_000_000, 4);
+if (acDep !== null) svc.appConfig.deployment = round(acDep, 6);
+track('appConfig.requestM', acReq !== null ? round(acReq * 1_000_000, 4) : null, svc.appConfig.requestM);
+track('appConfig.deployment', acDep !== null ? round(acDep, 6) : null, svc.appConfig.deployment);
+console.log(' done');
+
+// ── AWS Cloud Map ────────────────────────────────────────────────────────────
+process.stdout.write('  [CloudMap]     resources, API calls...');
+const cmRes = await queryStrict('AWSCloudMap', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('Cloud-Map-Resources'));
+const cmQry = await queryStrict('AWSCloudMap', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('Cloud-Map-API-Calls') && !ut(p).includes('DIR'));
+if (cmRes !== null) svc.cloudMap.resourceMonth = round(cmRes, 4);
+if (cmQry !== null) svc.cloudMap.queryM = round(cmQry * 1_000_000, 4);
+track('cloudMap.resourceMonth', cmRes !== null ? round(cmRes, 4) : null, svc.cloudMap.resourceMonth);
+track('cloudMap.queryM', cmQry !== null ? round(cmQry * 1_000_000, 4) : null, svc.cloudMap.queryM);
+console.log(' done');
+
+// ── Amazon QuickSight ────────────────────────────────────────────────────────
+process.stdout.write('  [QuickSight]   author pro, reader, SPICE...');
+const qsGroup = (p) => p.product?.attributes?.group ?? '';
+const qsAuthor = await queryStrict('AmazonQuickSight', [{ Field: 'location', Value: loc }], p => qsGroup(p) === 'Author Pro Subscription' && !ut(p).includes('Free-Trial'));
+const qsReader = await queryStrict('AmazonQuickSight', [{ Field: 'location', Value: loc }], p => qsGroup(p) === 'Reader Subscription' && !ut(p).includes('Free-Trial'));
+const qsSpice = await queryStrict('AmazonQuickSight', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('QS-Enterprise-SPICE'));
+if (qsAuthor !== null) svc.quickSight.authorPro = round(qsAuthor, 2);
+if (qsReader !== null) svc.quickSight.reader = round(qsReader, 2);
+if (qsSpice !== null) svc.quickSight.spiceGB = round(qsSpice, 4);
+track('quickSight.authorPro', qsAuthor !== null ? round(qsAuthor, 2) : null, svc.quickSight.authorPro);
+track('quickSight.reader', qsReader !== null ? round(qsReader, 2) : null, svc.quickSight.reader);
+track('quickSight.spiceGB', qsSpice !== null ? round(qsSpice, 4) : null, svc.quickSight.spiceGB);
+console.log(' done');
+
+// ── Amazon Lightsail ─────────────────────────────────────────────────────────
+process.stdout.write('  [Lightsail]    bundles (bulk), overage...');
+const lsItems = await queryBulkAll('AmazonLightsail', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Lightsail Instance' }]);
+for (const size of Object.keys(svc.lightsail.bundles)) {
+  const re = new RegExp(`(^|-)BundleUsage:${size.replace('.', '\\.')}$`);
+  const match = lsItems.find(p => re.test(ut(p)));
+  const rate = match ? extractMaxPrice(match) : null;
+  if (rate !== null) svc.lightsail.bundles[size] = round(rate, 5);
+  track(`lightsail.bundles.${size}`, rate !== null ? round(rate, 5) : null, svc.lightsail.bundles[size]);
+}
+// Overage SKUs carry data-transfer attributes (`fromLocation`), not `location`.
+const lsOver = await queryStrict('AmazonLightsail', [{ Field: 'fromLocation', Value: loc }, { Field: 'productFamily', Value: 'Lightsail Networking' }], p => ut(p).endsWith('DataXfer-Out-Overage-Bytes') && !ut(p).includes('Storage'));
+if (lsOver !== null) svc.lightsail.overageGB = round(lsOver, 4);
+track('lightsail.overageGB', lsOver !== null ? round(lsOver, 4) : null, svc.lightsail.overageGB);
 console.log(' done');
 
 console.log('\n  All queries complete. Total API calls: ' + callCount + '\n');

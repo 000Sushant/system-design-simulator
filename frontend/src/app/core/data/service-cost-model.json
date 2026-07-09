@@ -5,18 +5,6 @@
     "apiGateway": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 20000,
-          "affectsCost": true,
-          "costDriver": "Maximum requests per second before degradation.",
-          "notes": "Maximum requests per second this API can handle before request throttling kicks in. Set this to match your expected peak traffic."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -37,9 +25,7 @@
           "max": 29000,
           "costDriver": "Maximum wait time for backend response before failing.",
           "notes": "How long the API waits for a backend response before returning a 504 Gateway Timeout. Match this to your downstream service SLA."
-        }
-      ],
-      "costParams": [
+        },
         {
           "key": "type",
           "label": "API Type",
@@ -60,7 +46,9 @@
               "label": "WebSocket API"
             }
           ],
-          "notes": "Selects the API Gateway product tier. HTTP APIs are cheaper and faster; REST APIs offer advanced features like caching, request validation, and usage plans."
+          "notes": "Selects the API Gateway product tier. HTTP APIs are cheaper and faster; REST APIs offer advanced features like caching, request validation, and usage plans.",
+          "affectsCost": true,
+          "costDriver": "Selects the API Gateway product tier. HTTP APIs are cheaper and faster; REST APIs offer advanced features like caching, request validation, and usage plans."
         },
         {
           "key": "cacheGB",
@@ -107,7 +95,23 @@
               "label": "237.0 GB"
             }
           ],
-          "notes": "Dedicated in-memory cache for REST API responses. Reduces backend calls for repeated identical requests, improving latency and cutting downstream costs."
+          "notes": "Dedicated in-memory cache for REST API responses. Reduces backend calls for repeated identical requests, improving latency and cutting downstream costs.",
+          "affectsCost": true,
+          "costDriver": "Dedicated in-memory cache for REST API responses. Reduces backend calls for repeated identical requests, improving latency and cutting downstream costs."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 20000,
+          "affectsCost": true,
+          "costDriver": "Maximum requests per second before degradation.",
+          "notes": "Maximum requests per second this API can handle before request throttling kicks in. Set this to match your expected peak traffic."
         },
         {
           "key": "wsConnMinutesM",
@@ -168,18 +172,6 @@
     "route53": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 10000,
-          "affectsCost": true,
-          "costDriver": "Maximum requests per second before degradation. DNS queries are billed based on this volume.",
-          "notes": "Estimated DNS queries per second your zone receives. Determines the DNS query cost tier."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -233,17 +225,6 @@
     "cloudfront": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 50000,
-          "affectsCost": true,
-          "costDriver": "Billed per request: RPS × 2.628 = millions of requests/month. Drives the CloudFront Requests cost line (rate set by the Users node's region)."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -266,6 +247,17 @@
       ],
       "costParams": [
         {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 50000,
+          "affectsCost": true,
+          "costDriver": "Billed per request: RPS × 2.628 = millions of requests/month. Drives the CloudFront Requests cost line (rate set by the Users node's region)."
+        },
+        {
           "key": "region",
           "label": "Traffic Region",
           "type": "enum",
@@ -273,7 +265,7 @@
           "syncSource": "Users node (Request Region)",
           "default": "global",
           "group": "networking",
-          "costDriver": "Sets the CloudFront edge price class for both data transfer and requests. Locked to the Users node's Request Region — change it there.",
+          "costDriver": "Sets the CloudFront edge price class for both data transfer and requests. Locked to the Users node's Request Region, change it there.",
           "notes": "Locked to the Users node's Request Region. CloudFront bills by edge geography, so this region determines the per-GB transfer and per-request rates.",
           "options": []
         },
@@ -350,18 +342,6 @@
     "lambda": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 50000,
-          "affectsCost": true,
-          "costDriver": "RPS × 2,628,000 sec/mo = monthly invocations billed. Directly drives request and GB-second costs.",
-          "notes": "Maximum requests per second this function handles. Combined with concurrency and duration to determine actual throughput cap. Also used to compute monthly invocation count for billing."
-        },
-        {
           "key": "latency",
           "label": "Avg Execution Time (ms)",
           "type": "number",
@@ -380,11 +360,23 @@
           "default": 100,
           "min": 1,
           "max": 3000,
-          "costDriver": "Hard cap on simultaneous executions — throttles requests beyond this limit.",
+          "costDriver": "Hard cap on simultaneous executions, throttles requests beyond this limit.",
           "notes": "Maximum simultaneous in-flight executions. Acts as a hard ceiling: effective max RPS = concurrency ÷ (executionTime/1000). Throttled requests return 429 TooManyRequests."
         }
       ],
       "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 50000,
+          "affectsCost": true,
+          "costDriver": "RPS × 2,628,000 sec/mo = monthly invocations billed. Directly drives request and GB-second costs.",
+          "notes": "Maximum requests per second this function handles. Combined with concurrency and duration to determine actual throughput cap. Also used to compute monthly invocation count for billing."
+        },
         {
           "key": "architecture",
           "label": "Architecture",
@@ -503,16 +495,6 @@
     "ec2": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 10000,
-          "costDriver": "Maximum requests per second before degradation."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -541,6 +523,66 @@
           "min": 10,
           "max": 10000,
           "costDriver": "Maximum concurrent TCP connections."
+        },
+        {
+          "key": "instanceSize",
+          "label": "Instance Size",
+          "type": "enum",
+          "default": "medium",
+          "group": "compute",
+          "options": [
+            {
+              "value": "micro",
+              "label": "micro"
+            },
+            {
+              "value": "small",
+              "label": "small"
+            },
+            {
+              "value": "medium",
+              "label": "medium"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            },
+            {
+              "value": "xlarge",
+              "label": "xlarge"
+            },
+            {
+              "value": "2xlarge",
+              "label": "2xlarge"
+            },
+            {
+              "value": "4xlarge",
+              "label": "4xlarge"
+            },
+            {
+              "value": "12xlarge",
+              "label": "12xlarge"
+            },
+            {
+              "value": "48xlarge",
+              "label": "48xlarge"
+            }
+          ],
+          "notes": "Scales vCPU and RAM within the chosen family. Larger sizes cost proportionally more. Match to your actual CPU/memory requirements.",
+          "affectsCost": true,
+          "costDriver": "Scales vCPU and RAM within the chosen family. Larger sizes cost proportionally more. Match to your actual CPU/memory requirements."
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "group": "compute",
+          "notes": "Number of EC2 instances running in parallel. Each instance is billed independently at the hourly rate.",
+          "affectsCost": true,
+          "costDriver": "Number of EC2 instances running in parallel. Each instance is billed independently at the hourly rate."
         }
       ],
       "costParams": [
@@ -617,62 +659,6 @@
             }
           ],
           "notes": "Defines the hardware profile: t3=burstable/cheap, m5=general purpose, c5=compute-optimized, r5=memory-optimized. Choose based on workload characteristics."
-        },
-        {
-          "key": "instanceSize",
-          "label": "Instance Size",
-          "type": "enum",
-          "default": "medium",
-          "group": "compute",
-          "options": [
-            {
-              "value": "micro",
-              "label": "micro"
-            },
-            {
-              "value": "small",
-              "label": "small"
-            },
-            {
-              "value": "medium",
-              "label": "medium"
-            },
-            {
-              "value": "large",
-              "label": "large"
-            },
-            {
-              "value": "xlarge",
-              "label": "xlarge"
-            },
-            {
-              "value": "2xlarge",
-              "label": "2xlarge"
-            },
-            {
-              "value": "4xlarge",
-              "label": "4xlarge"
-            },
-            {
-              "value": "12xlarge",
-              "label": "12xlarge"
-            },
-            {
-              "value": "48xlarge",
-              "label": "48xlarge"
-            }
-          ],
-          "notes": "Scales vCPU and RAM within the chosen family. Larger sizes cost proportionally more. Match to your actual CPU/memory requirements."
-        },
-        {
-          "key": "count",
-          "label": "Instance Count",
-          "type": "number",
-          "default": 2,
-          "min": 1,
-          "max": 1000,
-          "group": "compute",
-          "notes": "Number of EC2 instances running in parallel. Each instance is billed independently at the hourly rate."
         },
         {
           "key": "purchaseOption",
@@ -758,7 +744,7 @@
               "label": "Windows"
             }
           ],
-          "costDriver": "Windows includes the license in the hourly rate — roughly 1.45× the Linux price for general-purpose families.",
+          "costDriver": "Windows includes the license in the hourly rate, roughly 1.45× the Linux price for general-purpose families.",
           "notes": "Instance operating system. Windows pricing bundles the OS license, which raises the hourly rate substantially."
         }
       ],
@@ -820,16 +806,6 @@
     },
     "s3": {
       "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 20000,
-          "costDriver": "Maximum requests per second before degradation."
-        },
         {
           "key": "latency",
           "label": "Base Latency (ms)",
@@ -982,18 +958,6 @@
     "elb": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 100000,
-          "affectsCost": true,
-          "costDriver": "RPS drives the New Connections LCU dimension (RPS × newConnectionsPercent ÷ 25). Higher RPS = more LCUs billed.",
-          "notes": "Maximum requests per second this load balancer routes. Used as the baseline for LCU dimension calculations."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -1003,9 +967,7 @@
           "max": 1000,
           "costDriver": "Processing delay.",
           "notes": "Processing overhead added by the load balancer. Helps simulate realistic end-to-end request latency."
-        }
-      ],
-      "costParams": [
+        },
         {
           "key": "lbType",
           "label": "Load Balancer Type",
@@ -1031,7 +993,43 @@
               "label": "Gateway Load Balancer (GWLB)"
             }
           ],
-          "notes": "The AWS load balancer product to use. ALB is recommended for HTTP/HTTPS microservices; NLB for ultra-low latency TCP; CLB for legacy apps; GWLB for inline security appliances."
+          "notes": "The AWS load balancer product to use. ALB is recommended for HTTP/HTTPS microservices; NLB for ultra-low latency TCP; CLB for legacy apps; GWLB for inline security appliances.",
+          "affectsCost": true
+        },
+        {
+          "key": "routingAlgorithm",
+          "label": "Routing Algorithm",
+          "type": "enum",
+          "default": "round-robin",
+          "options": [
+            {
+              "value": "round-robin",
+              "label": "Round Robin"
+            },
+            {
+              "value": "least-connection",
+              "label": "Least Connections"
+            },
+            {
+              "value": "consistent-hash",
+              "label": "Consistent Hash"
+            }
+          ],
+          "notes": "How targets are picked. Least-connections squeezes ~12% more effective capacity from the fleet; consistent hash helps cache locality."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 100000,
+          "affectsCost": true,
+          "costDriver": "RPS drives the New Connections LCU dimension (RPS × newConnectionsPercent ÷ 25). Higher RPS = more LCUs billed.",
+          "notes": "Maximum requests per second this load balancer routes. Used as the baseline for LCU dimension calculations."
         },
         {
           "key": "count",
@@ -1115,19 +1113,7 @@
       }
     },
     "vpc": {
-      "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Bandwidth (Mbps)",
-          "type": "number",
-          "unit": "Mbps",
-          "default": 100,
-          "min": 1,
-          "max": 100000,
-          "costDriver": "Network throughput.",
-          "notes": "Simulated bandwidth capacity of this VPC segment in the traffic flow model."
-        }
-      ],
+      "primaryParams": [],
       "costParams": [
         {
           "key": "endpoints",
@@ -1157,7 +1143,7 @@
           "min": 0,
           "max": 1000,
           "group": "networking",
-          "costDriver": "Every public IPv4 costs $0.005/hr (~$3.65/mo) since February 2024 — including those attached to EC2, NAT gateways, and load balancers.",
+          "costDriver": "Every public IPv4 costs $0.005/hr (~$3.65/mo) since February 2024, including those attached to EC2, NAT gateways, and load balancers.",
           "notes": "Count of public IPv4 addresses across this VPC (instance EIPs, NAT gateways, load balancer nodes). AWS has charged for all public IPv4s since Feb 2024."
         }
       ],
@@ -1194,23 +1180,13 @@
     "natGateway": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 10000,
-          "costDriver": "Impacts data transfer."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
           "unit": "ms",
           "default": 1,
           "min": 1,
-          "max": 10000,
+          "max": 1000,
           "costDriver": "Processing delay added per request in the simulation.",
           "notes": "NAT adds sub-millisecond forwarding overhead."
         }
@@ -1234,7 +1210,7 @@
           "min": 0,
           "max": 100000,
           "group": "networking",
-          "notes": "Data processed through the NAT Gateway monthly. This is often the dominant NAT cost — use VPC endpoints for S3/DynamoDB to bypass NAT entirely."
+          "notes": "Data processed through the NAT Gateway monthly. This is often the dominant NAT cost, use VPC endpoints for S3/DynamoDB to bypass NAT entirely."
         }
       ],
       "costEvaluation": {
@@ -1260,7 +1236,18 @@
       }
     },
     "cloudWatch": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "batchSize",
+          "label": "Ingestion Batch Size",
+          "type": "number",
+          "unit": "items",
+          "default": 10,
+          "min": 1,
+          "max": 100,
+          "notes": "Metrics/log events per PutMetricData/PutLogEvents call. Batching raises effective ingestion capacity."
+        }
+      ],
       "costParams": [
         {
           "key": "metrics",
@@ -1280,7 +1267,7 @@
           "min": 0,
           "max": 100000,
           "group": "compute",
-          "notes": "Log data ingested into CloudWatch Logs monthly. This is often the largest CloudWatch cost driver — use log sampling or S3 export to reduce it."
+          "notes": "Log data ingested into CloudWatch Logs monthly. This is often the largest CloudWatch cost driver, use log sampling or S3 export to reduce it."
         },
         {
           "key": "dashboards",
@@ -1300,7 +1287,7 @@
           "min": 0,
           "max": 5000,
           "costDriver": "Standard-resolution alarms bill $0.10/alarm/month.",
-          "notes": "Metric alarms watching your stack. Every production architecture carries dozens — they add up quietly.",
+          "notes": "Metric alarms watching your stack. Every production architecture carries dozens, they add up quietly.",
           "group": "compute"
         },
         {
@@ -1310,7 +1297,7 @@
           "default": 10,
           "min": 0,
           "max": 100000,
-          "costDriver": "Stored (compressed) log data bills $0.03/GB/month — separate from the $0.50/GB ingestion charge.",
+          "costDriver": "Stored (compressed) log data bills $0.03/GB/month, separate from the $0.50/GB ingestion charge.",
           "notes": "Cumulative retained log volume. Ingestion and storage are different line items on a real AWS bill.",
           "group": "compute"
         }
@@ -1360,17 +1347,6 @@
     "dynamoDb": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 1000000,
-          "costDriver": "Requested operations per second. In provisioned mode the simulation caps this at what your RCU/WCU can serve.",
-          "notes": "On-demand mode scales automatically. In provisioned mode the real ceiling is RCU/WCU — under-provisioning shows as throttling in the simulation."
-        },
-        {
           "key": "latency",
           "label": "Latency (ms)",
           "type": "number",
@@ -1379,9 +1355,7 @@
           "min": 1,
           "max": 100,
           "costDriver": "DynamoDB provides single-digit ms latency."
-        }
-      ],
-      "costParams": [
+        },
         {
           "key": "capacityMode",
           "label": "Capacity Mode",
@@ -1398,8 +1372,50 @@
               "label": "Provisioned"
             }
           ],
-          "notes": "On-Demand scales automatically (pay per request); Provisioned gives a steady capacity allocation at lower per-unit cost but requires capacity planning."
+          "notes": "On-Demand scales automatically (pay per request); Provisioned gives a steady capacity allocation at lower per-unit cost but requires capacity planning.",
+          "affectsCost": true,
+          "costDriver": "On-Demand scales automatically (pay per request); Provisioned gives a steady capacity allocation at lower per-unit cost but requires capacity planning."
         },
+        {
+          "key": "wcu",
+          "label": "Provisioned WCU",
+          "type": "number",
+          "default": 25,
+          "min": 1,
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'provisioned'",
+          "notes": "Provisioned Write Capacity Units (steady-state). 1 WCU = one write/sec for items up to 1KB. The highest DynamoDB cost driver.",
+          "affectsCost": true,
+          "costDriver": "Provisioned Write Capacity Units (steady-state). 1 WCU = one write/sec for items up to 1KB. The highest DynamoDB cost driver."
+        },
+        {
+          "key": "rcu",
+          "label": "Provisioned RCU",
+          "type": "number",
+          "default": 25,
+          "min": 1,
+          "max": 100000,
+          "group": "compute",
+          "visibleIf": "config.capacityMode === 'provisioned'",
+          "notes": "Provisioned Read Capacity Units (steady-state). 1 RCU = one strongly consistent read/sec for items up to 4KB. Over-provision for predictable latency.",
+          "affectsCost": true,
+          "costDriver": "Provisioned Read Capacity Units (steady-state). 1 RCU = one strongly consistent read/sec for items up to 4KB. Over-provision for predictable latency."
+        },
+        {
+          "key": "itemSizeKB",
+          "label": "Avg Item Size (KB)",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 400,
+          "costDriver": "Capacity-unit math: a read consumes ceil(size/4KB) RCUs/RRUs, a write consumes ceil(size/1KB) WCUs/WRUs.",
+          "notes": "Average item size. Items over 4 KB consume multiple read units; over 1 KB, multiple write units. The AWS calculator requires this, cost is wrong without it.",
+          "group": "compute",
+          "affectsCost": true
+        }
+      ],
+      "costParams": [
         {
           "key": "storageClass",
           "label": "Table Class",
@@ -1439,28 +1455,6 @@
           "group": "compute",
           "visibleIf": "config.capacityMode === 'on-demand' || !config.capacityMode",
           "notes": "Millions of write requests per month (on-demand mode). Write request units are 5× more expensive than read units."
-        },
-        {
-          "key": "wcu",
-          "label": "Provisioned WCU",
-          "type": "number",
-          "default": 25,
-          "min": 1,
-          "max": 100000,
-          "group": "compute",
-          "visibleIf": "config.capacityMode === 'provisioned'",
-          "notes": "Provisioned Write Capacity Units (steady-state). 1 WCU = one write/sec for items up to 1KB. The highest DynamoDB cost driver."
-        },
-        {
-          "key": "rcu",
-          "label": "Provisioned RCU",
-          "type": "number",
-          "default": 25,
-          "min": 1,
-          "max": 100000,
-          "group": "compute",
-          "visibleIf": "config.capacityMode === 'provisioned'",
-          "notes": "Provisioned Read Capacity Units (steady-state). 1 RCU = one strongly consistent read/sec for items up to 4KB. Over-provision for predictable latency."
         },
         {
           "key": "storageGB",
@@ -1516,17 +1510,6 @@
           "default": false,
           "group": "compute",
           "notes": "Enables DynamoDB Streams to capture table changes. Reads are billed at ~$0.02 per 100,000 requests (after free tier)."
-        },
-        {
-          "key": "itemSizeKB",
-          "label": "Avg Item Size (KB)",
-          "type": "number",
-          "default": 1,
-          "min": 1,
-          "max": 400,
-          "costDriver": "Capacity-unit math: a read consumes ceil(size/4KB) RCUs/RRUs, a write consumes ceil(size/1KB) WCUs/WRUs.",
-          "notes": "Average item size. Items over 4 KB consume multiple read units; over 1 KB, multiple write units. The AWS calculator requires this — cost is wrong without it.",
-          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -1602,8 +1585,20 @@
           "default": 1000,
           "min": 10,
           "max": 16000,
-          "costDriver": "Connection-pool ceiling — the classic RDS bottleneck. Effective max RPS ≈ connections ÷ query time.",
-          "notes": "Instance-class connection limit (db.m5.large ≈ 800–1,000 for PostgreSQL). The simulation caps throughput at connections ÷ (latency in seconds)."
+          "costDriver": "Connection-pool ceiling, the classic RDS bottleneck. Effective max RPS ≈ connections ÷ query time.",
+          "notes": "Instance-class connection limit (db.m5.large ≈ 800 to 1,000 for PostgreSQL). The simulation caps throughput at connections ÷ (latency in seconds)."
+        },
+        {
+          "key": "readReplicas",
+          "label": "Read Replicas",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 15,
+          "costDriver": "Each replica bills as a single-AZ instance of the same class and serves read traffic.",
+          "notes": "Read replicas scale read throughput and bill like additional single-AZ instances. The simulation routes a share of reads to them.",
+          "group": "compute",
+          "affectsCost": true
         }
       ],
       "costParams": [
@@ -1746,17 +1741,6 @@
           "max": 65000,
           "group": "storage",
           "notes": "Snapshot backup retention in GB. AWS provides free backup storage equal to your total database size. Additional backup storage beyond that is billed."
-        },
-        {
-          "key": "readReplicas",
-          "label": "Read Replicas",
-          "type": "number",
-          "default": 0,
-          "min": 0,
-          "max": 15,
-          "costDriver": "Each replica bills as a single-AZ instance of the same class and serves read traffic.",
-          "notes": "Read replicas scale read throughput and bill like additional single-AZ instances. The simulation routes a share of reads to them.",
-          "group": "compute"
         }
       ],
       "costEvaluation": {
@@ -1804,7 +1788,20 @@
           "min": 0,
           "max": 100,
           "costDriver": "Percent of reads served from memory. Higher hit rate boosts effective capacity and cuts latency.",
-          "notes": "Share of requests answered from cache. Misses fall through to the database behind it — a low hit rate means your DB still takes most of the load."
+          "notes": "Share of requests answered from cache. Misses fall through to the database behind it, a low hit rate means your DB still takes most of the load."
+        },
+        {
+          "key": "count",
+          "label": "Node Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 500,
+          "group": "compute",
+          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
+          "notes": "Number of cache nodes in the cluster. More nodes give higher throughput and availability.",
+          "affectsCost": true,
+          "costDriver": "Number of cache nodes in the cluster. More nodes give higher throughput and availability."
         }
       ],
       "costParams": [
@@ -1815,8 +1812,14 @@
           "default": "node-based",
           "group": "compute",
           "options": [
-            { "value": "node-based", "label": "Node-Based" },
-            { "value": "serverless", "label": "Serverless" }
+            {
+              "value": "node-based",
+              "label": "Node-Based"
+            },
+            {
+              "value": "serverless",
+              "label": "Serverless"
+            }
           ],
           "notes": "Node-Based provides dedicated instances billed hourly; Serverless scales automatically based on capacity (GB-hr) and request operations (ECPU)."
         },
@@ -1880,17 +1883,6 @@
             }
           ],
           "notes": "Cache node size (CPU + RAM). Match to your working dataset."
-        },
-        {
-          "key": "count",
-          "label": "Node Count",
-          "type": "number",
-          "default": 2,
-          "min": 1,
-          "max": 500,
-          "group": "compute",
-          "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
-          "notes": "Number of cache nodes in the cluster. More nodes give higher throughput and availability."
         },
         {
           "key": "dataTiering",
@@ -1958,25 +1950,6 @@
           "min": 1,
           "max": 10000,
           "costDriver": "Task latency."
-        }
-      ],
-      "costParams": [
-        {
-          "key": "launchType",
-          "label": "Launch Type",
-          "type": "enum",
-          "default": "fargate",
-          "options": [
-            {
-              "value": "fargate",
-              "label": "AWS Fargate"
-            },
-            {
-              "value": "ec2",
-              "label": "Amazon EC2"
-            }
-          ],
-          "notes": "Execution model: Fargate removes server management (pay per task); EC2 mode uses your own instances (more control, potentially cheaper at scale)."
         },
         {
           "key": "tasks",
@@ -1987,7 +1960,9 @@
           "min": 1,
           "max": 1000,
           "visibleIf": "config.launchType === 'fargate' || !config.launchType",
-          "notes": "Number of running task replicas. ECS scales tasks up/down automatically. Each task is billed by the vCPU and memory it reserves."
+          "notes": "Number of running task replicas. ECS scales tasks up/down automatically. Each task is billed by the vCPU and memory it reserves.",
+          "affectsCost": true,
+          "costDriver": "Number of running task replicas. ECS scales tasks up/down automatically. Each task is billed by the vCPU and memory it reserves."
         },
         {
           "key": "vCPU",
@@ -2017,7 +1992,28 @@
             }
           ],
           "visibleIf": "config.launchType === 'fargate' || !config.launchType",
-          "notes": "vCPU units reserved per task. Fargate bills per vCPU-hour. More vCPU means faster processing but higher cost."
+          "notes": "vCPU units reserved per task. Fargate bills per vCPU-hour. More vCPU means faster processing but higher cost.",
+          "affectsCost": true,
+          "costDriver": "vCPU units reserved per task. Fargate bills per vCPU-hour. More vCPU means faster processing but higher cost."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "launchType",
+          "label": "Launch Type",
+          "type": "enum",
+          "default": "fargate",
+          "options": [
+            {
+              "value": "fargate",
+              "label": "AWS Fargate"
+            },
+            {
+              "value": "ec2",
+              "label": "Amazon EC2"
+            }
+          ],
+          "notes": "Execution model: Fargate removes server management (pay per task); EC2 mode uses your own instances (more control, potentially cheaper at scale)."
         },
         {
           "key": "memoryGB",
@@ -2038,7 +2034,7 @@
           "default": 100,
           "min": 1,
           "max": 100,
-          "notes": "Average CPU utilization of running tasks. Used for simulation accuracy — doesn't affect billing directly but signals over/under-provisioning."
+          "notes": "Average CPU utilization of running tasks. Used for simulation accuracy, doesn't affect billing directly but signals over/under-provisioning."
         },
         {
           "key": "runtimeHours",
@@ -2204,18 +2200,7 @@
       }
     },
     "batch": {
-      "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 50000,
-          "costDriver": "Batch job processing."
-        }
-      ],
+      "primaryParams": [],
       "costParams": [
         {
           "key": "tasks",
@@ -2290,20 +2275,6 @@
     "sqs": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 100000,
-          "affectsCost": true,
-          "costDriver": "Billed per request: RPS × 2.628 = millions of requests/month. Drives the SQS Requests cost line.",
-          "notes": "Message throughput capacity for simulation. Reflects how many messages/sec this queue can handle before producers back off."
-        }
-      ],
-      "costParams": [
-        {
           "key": "type",
           "label": "Queue Type",
           "type": "enum",
@@ -2319,7 +2290,33 @@
               "label": "FIFO"
             }
           ],
-          "notes": "Standard queues bill $0.40 per million requests; FIFO queues bill $0.50 per million and guarantee ordering with exactly-once processing."
+          "notes": "Standard queues bill $0.40 per million requests; FIFO queues bill $0.50 per million and guarantee ordering with exactly-once processing.",
+          "affectsCost": true,
+          "costDriver": "Standard queues bill $0.40 per million requests; FIFO queues bill $0.50 per million and guarantee ordering with exactly-once processing."
+        },
+        {
+          "key": "batchSize",
+          "label": "Consumer Batch Size",
+          "type": "number",
+          "unit": "msgs",
+          "default": 10,
+          "min": 1,
+          "max": 100,
+          "notes": "Messages per consumer poll. Batching lifts the FIFO throughput cap from 300 to 3,000 msg/s and boosts effective throughput."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 100000,
+          "affectsCost": true,
+          "costDriver": "Billed per request: RPS × 2.628 = millions of requests/month. Drives the SQS Requests cost line.",
+          "notes": "Message throughput capacity for simulation. Reflects how many messages/sec this queue can handle before producers back off."
         }
       ],
       "costEvaluation": {
@@ -2340,6 +2337,19 @@
     "sns": {
       "primaryParams": [
         {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 30,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added per request in the simulation.",
+          "notes": "Publish-to-delivery latency for push-based fan-out."
+        }
+      ],
+      "costParams": [
+        {
           "key": "throughput",
           "label": "Requests/Second",
           "type": "number",
@@ -2351,19 +2361,6 @@
           "costDriver": "Billed per publish: RPS × 2.628 = millions of publishes/month. Drives the SNS Publish cost line.",
           "notes": "Message publish throughput capacity for simulation."
         },
-        {
-          "key": "latency",
-          "label": "Base Latency (ms)",
-          "type": "number",
-          "unit": "ms",
-          "default": 30,
-          "min": 1,
-          "max": 10000,
-          "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "Publish-to-delivery latency for push-based fan-out."
-        }
-      ],
-      "costParams": [
         {
           "key": "httpM",
           "label": "HTTP Deliveries (Millions)",
@@ -2416,19 +2413,7 @@
       }
     },
     "stepFunctions": {
-      "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 10000,
-          "costDriver": "Workflow executions.",
-          "notes": "Workflow executions per second for simulation."
-        }
-      ],
+      "primaryParams": [],
       "costParams": [
         {
           "key": "type",
@@ -2547,17 +2532,17 @@
           "default": 50,
           "min": 1,
           "max": 1000,
-          "costDriver": "Source of simulation traffic. When Sync RPS is on, this value is pushed to every downstream service's Requests/Second.",
+          "costDriver": "Source of simulation traffic. When Dynamic RPS is on, each downstream service is auto-sized for its share of this rate.",
           "notes": "Steady-state traffic from your users. Hidden when Variable Traffic is on (replaced by Min/Max RPS range).",
           "visibleIf": "config.variableTraffic !== true"
         },
         {
           "key": "syncRpsToServices",
-          "label": "Sync RPS to all connected services",
+          "label": "Dynamic RPS (auto-size services)",
           "type": "boolean",
           "default": false,
-          "costDriver": "When enabled, every downstream service's Requests/Second is forced to match the user traffic value. Disable to restore each service's original capacity.",
-          "notes": "Propagates the user traffic value to the throughput of every service reachable from this client. Original capacities are restored on uncheck."
+          "costDriver": "Drives per-service traffic volumes used in the cost estimate while enabled.",
+          "notes": "Sizes every connected service to carry this traffic at ~65% utilization: estimates each service’s real arrival rate from the graph (fan-out weights, cache offload), sets its sizing parameters (tasks, instances, RCU/WCU, shards…) accordingly, and feeds the per-service volume into the cost estimate. Disabling restores the previous values."
         },
         {
           "key": "variableTraffic",
@@ -2761,6 +2746,66 @@
           "min": 1,
           "max": 100,
           "costDriver": "Maximum cluster size."
+        },
+        {
+          "key": "instanceSize",
+          "label": "Instance Size",
+          "type": "enum",
+          "default": "medium",
+          "group": "compute",
+          "options": [
+            {
+              "value": "micro",
+              "label": "micro"
+            },
+            {
+              "value": "small",
+              "label": "small"
+            },
+            {
+              "value": "medium",
+              "label": "medium"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            },
+            {
+              "value": "xlarge",
+              "label": "xlarge"
+            },
+            {
+              "value": "2xlarge",
+              "label": "2xlarge"
+            },
+            {
+              "value": "4xlarge",
+              "label": "4xlarge"
+            },
+            {
+              "value": "12xlarge",
+              "label": "12xlarge"
+            },
+            {
+              "value": "48xlarge",
+              "label": "48xlarge"
+            }
+          ],
+          "notes": "Scales vCPU and RAM within the family. Each size step roughly doubles both capacity and price.",
+          "affectsCost": true,
+          "costDriver": "Scales vCPU and RAM within the family. Each size step roughly doubles both capacity and price."
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "group": "compute",
+          "notes": "Desired number of running instances. Auto Scaling bills every running instance at its full hourly rate.",
+          "affectsCost": true,
+          "costDriver": "Desired number of running instances. Auto Scaling bills every running instance at its full hourly rate."
         }
       ],
       "costParams": [
@@ -2837,62 +2882,6 @@
             }
           ],
           "notes": "EC2 hardware profile: t3=burstable/cheap, m=general purpose, c=compute-optimized, r=memory-optimized; g-suffix = Graviton (cheaper)."
-        },
-        {
-          "key": "instanceSize",
-          "label": "Instance Size",
-          "type": "enum",
-          "default": "medium",
-          "group": "compute",
-          "options": [
-            {
-              "value": "micro",
-              "label": "micro"
-            },
-            {
-              "value": "small",
-              "label": "small"
-            },
-            {
-              "value": "medium",
-              "label": "medium"
-            },
-            {
-              "value": "large",
-              "label": "large"
-            },
-            {
-              "value": "xlarge",
-              "label": "xlarge"
-            },
-            {
-              "value": "2xlarge",
-              "label": "2xlarge"
-            },
-            {
-              "value": "4xlarge",
-              "label": "4xlarge"
-            },
-            {
-              "value": "12xlarge",
-              "label": "12xlarge"
-            },
-            {
-              "value": "48xlarge",
-              "label": "48xlarge"
-            }
-          ],
-          "notes": "Scales vCPU and RAM within the family. Each size step roughly doubles both capacity and price."
-        },
-        {
-          "key": "count",
-          "label": "Instance Count",
-          "type": "number",
-          "default": 2,
-          "min": 1,
-          "max": 1000,
-          "group": "compute",
-          "notes": "Desired number of running instances. Auto Scaling bills every running instance at its full hourly rate."
         },
         {
           "key": "purchaseOption",
@@ -2978,7 +2967,7 @@
               "label": "Windows"
             }
           ],
-          "costDriver": "Windows includes the license in the hourly rate — roughly 1.45× the Linux price for general-purpose families.",
+          "costDriver": "Windows includes the license in the hourly rate, roughly 1.45× the Linux price for general-purpose families.",
           "notes": "Instance operating system. Windows pricing bundles the OS license, which raises the hourly rate substantially."
         }
       ],
@@ -2993,16 +2982,6 @@
     "eks": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 100000,
-          "costDriver": "Cluster workloads load."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -3012,6 +2991,48 @@
           "max": 10000,
           "costDriver": "Processing delay added per request in the simulation.",
           "notes": "Request latency through services running on the cluster."
+        },
+        {
+          "key": "nodeCount",
+          "label": "Node Count",
+          "type": "number",
+          "unit": "nodes",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "visibleIf": "config.computeType === 'managed' || !config.computeType",
+          "notes": "Number of EC2 worker nodes (managed node groups). Each is billed at its full instance-hour rate.",
+          "affectsCost": true,
+          "costDriver": "Number of EC2 worker nodes (managed node groups). Each is billed at its full instance-hour rate."
+        },
+        {
+          "key": "nodeInstanceType",
+          "label": "Node Instance Type",
+          "type": "enum",
+          "default": "m5.large",
+          "group": "nodes",
+          "options": [
+            {
+              "value": "t3.medium",
+              "label": "t3.medium"
+            },
+            {
+              "value": "m5.large",
+              "label": "m5.large"
+            },
+            {
+              "value": "m5.xlarge",
+              "label": "m5.xlarge"
+            },
+            {
+              "value": "m6g.large",
+              "label": "m6g.large (ARM)"
+            }
+          ],
+          "visibleIf": "config.computeType === 'managed' || !config.computeType",
+          "notes": "EC2 instance type for managed worker nodes. Sets the per-node hourly compute rate.",
+          "affectsCost": true,
+          "costDriver": "EC2 instance type for managed worker nodes. Sets the per-node hourly compute rate."
         }
       ],
       "costParams": [
@@ -3041,17 +3062,6 @@
           "min": 1,
           "max": 10,
           "notes": "Number of EKS clusters. Each control plane costs a flat $0.10/hour (~$73/month) regardless of node count."
-        },
-        {
-          "key": "nodeCount",
-          "label": "Node Count",
-          "type": "number",
-          "unit": "nodes",
-          "default": 3,
-          "min": 1,
-          "max": 100,
-          "visibleIf": "config.computeType === 'managed' || !config.computeType",
-          "notes": "Number of EC2 worker nodes (managed node groups). Each is billed at its full instance-hour rate."
         },
         {
           "key": "tasks",
@@ -3122,33 +3132,6 @@
             }
           ],
           "notes": "Standard support is free during a version's support window; extended support adds ~$0.50/hour per cluster for older Kubernetes versions."
-        },
-        {
-          "key": "nodeInstanceType",
-          "label": "Node Instance Type",
-          "type": "enum",
-          "default": "m5.large",
-          "group": "nodes",
-          "options": [
-            {
-              "value": "t3.medium",
-              "label": "t3.medium"
-            },
-            {
-              "value": "m5.large",
-              "label": "m5.large"
-            },
-            {
-              "value": "m5.xlarge",
-              "label": "m5.xlarge"
-            },
-            {
-              "value": "m6g.large",
-              "label": "m6g.large (ARM)"
-            }
-          ],
-          "visibleIf": "config.computeType === 'managed' || !config.computeType",
-          "notes": "EC2 instance type for managed worker nodes. Sets the per-node hourly compute rate."
         },
         {
           "key": "purchaseOption",
@@ -3224,14 +3207,26 @@
     "aurora": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
+          "key": "count",
+          "label": "Instance Count",
           "type": "number",
-          "unit": "rps",
-          "default": 50,
+          "default": 2,
           "min": 1,
-          "max": 100000,
-          "costDriver": "Maximum requests/second the cluster handles before latency degrades. Sets the simulation capacity ceiling."
+          "max": 15,
+          "group": "compute",
+          "notes": "Number of provisioned DB instances (writer + readers). Each is billed at its instance-class hourly rate.",
+          "affectsCost": true,
+          "costDriver": "Number of provisioned DB instances (writer + readers). Each is billed at its instance-class hourly rate."
+        },
+        {
+          "key": "maxConnections",
+          "label": "Max Connections",
+          "type": "number",
+          "unit": "conns",
+          "default": 2000,
+          "min": 100,
+          "max": 20000,
+          "notes": "Connection-pool ceiling. True parallel queries are bounded by cores; replicas add read capacity."
         }
       ],
       "costParams": [
@@ -3263,16 +3258,6 @@
           "group": "compute",
           "visibleIf": "config.mode === 'serverless-v2' || !config.mode",
           "notes": "Average Aurora Capacity Units consumed (Serverless v2). Each ACU is ~$0.12/hour and bundles ~2 GB RAM with proportional CPU."
-        },
-        {
-          "key": "count",
-          "label": "Instance Count",
-          "type": "number",
-          "default": 2,
-          "min": 1,
-          "max": 15,
-          "group": "compute",
-          "notes": "Number of provisioned DB instances (writer + readers). Each is billed at its instance-class hourly rate."
         },
         {
           "key": "instanceClass",
@@ -3326,8 +3311,14 @@
           "default": "standard",
           "group": "storage",
           "options": [
-            { "value": "standard", "label": "Aurora Standard" },
-            { "value": "io-optimized", "label": "Aurora I/O-Optimized" }
+            {
+              "value": "standard",
+              "label": "Aurora Standard"
+            },
+            {
+              "value": "io-optimized",
+              "label": "Aurora I/O-Optimized"
+            }
           ],
           "notes": "Aurora Standard bills for storage and I/O requests separately; I/O-Optimized has higher instance and storage rates but zero I/O charges."
         },
@@ -3372,18 +3363,6 @@
     "eventBridge": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 100000,
-          "affectsCost": true,
-          "costDriver": "Billed per event: RPS × 2.628 = millions of events/month. Drives the EventBridge Events cost line.",
-          "notes": "Maximum sustained request rate in the simulation. Default event-bus soft limit is ~10,000 events/s per region."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -3395,7 +3374,20 @@
           "notes": "Default event-bus soft limit is ~10,000 events/s per region."
         }
       ],
-      "costParams": [],
+      "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 100000,
+          "affectsCost": true,
+          "costDriver": "Billed per event: RPS × 2.628 = millions of events/month. Drives the EventBridge Events cost line.",
+          "notes": "Maximum sustained request rate in the simulation. Default event-bus soft limit is ~10,000 events/s per region."
+        }
+      ],
       "costEvaluation": {
         "formula": "eventsCost",
         "components": [
@@ -3413,17 +3405,6 @@
     "kinesis": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 100000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Effective ceiling is shards × 1,000 records/s — the simulation caps at that."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -3432,21 +3413,7 @@
           "min": 1,
           "max": 1000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "Effective ceiling is shards × 1,000 records/s — the simulation caps at that."
-        }
-      ],
-      "costParams": [
-        {
-          "key": "capacityMode",
-          "label": "Capacity Mode",
-          "type": "enum",
-          "default": "provisioned",
-          "group": "compute",
-          "options": [
-            { "value": "provisioned", "label": "Provisioned" },
-            { "value": "on-demand", "label": "On-Demand" }
-          ],
-          "notes": "Provisioned mode bills hourly per shard and per PUT payload; On-Demand mode scales automatically and bills per stream-hour and data volume."
+          "notes": "Effective ceiling is shards × 1,000 records/s, the simulation caps at that."
         },
         {
           "key": "shards",
@@ -3457,7 +3424,29 @@
           "max": 10000,
           "group": "compute",
           "visibleIf": "config.capacityMode === 'provisioned' || !config.capacityMode",
-          "notes": "Provisioned shards, each providing 1 MB/s ingest and 2 MB/s egress. Billed at ~$0.015 per shard-hour."
+          "notes": "Provisioned shards, each providing 1 MB/s ingest and 2 MB/s egress. Billed at ~$0.015 per shard-hour.",
+          "affectsCost": true,
+          "costDriver": "Provisioned shards, each providing 1 MB/s ingest and 2 MB/s egress. Billed at ~$0.015 per shard-hour."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "capacityMode",
+          "label": "Capacity Mode",
+          "type": "enum",
+          "default": "provisioned",
+          "group": "compute",
+          "options": [
+            {
+              "value": "provisioned",
+              "label": "Provisioned"
+            },
+            {
+              "value": "on-demand",
+              "label": "On-Demand"
+            }
+          ],
+          "notes": "Provisioned mode bills hourly per shard and per PUT payload; On-Demand mode scales automatically and bills per stream-hour and data volume."
         },
         {
           "key": "putUnitsM",
@@ -3547,17 +3536,6 @@
     "msk": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 500000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Aggregate produce rate across brokers. Scale brokers for more throughput."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -3577,9 +3555,18 @@
           "default": "node-based",
           "group": "compute",
           "options": [
-            { "value": "node-based", "label": "Node-Based" },
-            { "value": "express", "label": "Express" },
-            { "value": "serverless", "label": "Serverless" }
+            {
+              "value": "node-based",
+              "label": "Node-Based"
+            },
+            {
+              "value": "express",
+              "label": "Express"
+            },
+            {
+              "value": "serverless",
+              "label": "Serverless"
+            }
           ],
           "notes": "Node-Based provides dedicated instances billed hourly; Express provides higher throughput and lower latencies; Serverless scales automatically based on capacity."
         },
@@ -3735,17 +3722,6 @@
     "cognito": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 50000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Token issuance/auth flows; default quota is ~120 RPS per user pool for sign-in."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -3795,18 +3771,6 @@
     "waf": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 500000,
-          "affectsCost": true,
-          "costDriver": "Billed per inspected request: RPS × 2.628 = millions of requests/month. Drives the WAF Requests Analyzed cost line.",
-          "notes": "Maximum sustained request rate in the simulation. WAF inspects inline and adds ~1 ms; it rarely bottlenecks before the backend does."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -3819,6 +3783,18 @@
         }
       ],
       "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 500000,
+          "affectsCost": true,
+          "costDriver": "Billed per inspected request: RPS × 2.628 = millions of requests/month. Drives the WAF Requests Analyzed cost line.",
+          "notes": "Maximum sustained request rate in the simulation. WAF inspects inline and adds ~1 ms; it rarely bottlenecks before the backend does."
+        },
         {
           "key": "acls",
           "label": "Web ACLs",
@@ -3874,17 +3850,6 @@
     "efs": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 500000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. NFS adds 1–3 ms per operation; throughput mode caps aggregate MB/s."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -3893,7 +3858,7 @@
           "min": 1,
           "max": 1000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "NFS adds 1–3 ms per operation; throughput mode caps aggregate MB/s."
+          "notes": "NFS adds 1 to 3 ms per operation; throughput mode caps aggregate MB/s."
         }
       ],
       "costParams": [
@@ -3953,17 +3918,6 @@
     },
     "athena": {
       "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 20,
-          "min": 1,
-          "max": 200,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Concurrent query limit is ~20 by default; queries run for seconds."
-        },
         {
           "key": "latency",
           "label": "Base Latency (ms)",
@@ -4051,17 +4005,6 @@
     "transitGateway": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 1000000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. TGW forwards at line rate and adds well under 1 ms."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -4119,17 +4062,6 @@
     },
     "directConnect": {
       "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 1000000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Capacity is bounded by the port speed you provision."
-        },
         {
           "key": "latency",
           "label": "Base Latency (ms)",
@@ -4200,17 +4132,6 @@
     },
     "globalAccelerator": {
       "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 1000000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Anycast edge ingress; typically reduces public-internet latency ~30%."
-        },
         {
           "key": "latency",
           "label": "Base Latency (ms)",
@@ -4324,21 +4245,7 @@
           "min": 1,
           "max": 1000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "Query latency is typically 10–100 ms; indexing-heavy loads reduce query throughput."
-        }
-      ],
-      "costParams": [
-        {
-          "key": "deploymentMode",
-          "label": "Deployment Mode",
-          "type": "enum",
-          "default": "node-based",
-          "group": "compute",
-          "options": [
-            { "value": "node-based", "label": "Node-Based" },
-            { "value": "serverless", "label": "Serverless" }
-          ],
-          "notes": "Node-Based domain runs fixed data nodes; Serverless auto-scales capacity based on OpenSearch Compute Units (OCUs)."
+          "notes": "Query latency is typically 10 to 100 ms; indexing-heavy loads reduce query throughput."
         },
         {
           "key": "nodes",
@@ -4349,7 +4256,29 @@
           "max": 200,
           "group": "compute",
           "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
-          "notes": "Number of data nodes in the domain. Each is billed at its instance-type hourly rate."
+          "notes": "Number of data nodes in the domain. Each is billed at its instance-type hourly rate.",
+          "affectsCost": true,
+          "costDriver": "Number of data nodes in the domain. Each is billed at its instance-type hourly rate."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "deploymentMode",
+          "label": "Deployment Mode",
+          "type": "enum",
+          "default": "node-based",
+          "group": "compute",
+          "options": [
+            {
+              "value": "node-based",
+              "label": "Node-Based"
+            },
+            {
+              "value": "serverless",
+              "label": "Serverless"
+            }
+          ],
+          "notes": "Node-Based domain runs fixed data nodes; Serverless auto-scales capacity based on OpenSearch Compute Units (OCUs)."
         },
         {
           "key": "instance",
@@ -4466,17 +4395,6 @@
     "redshift": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 500,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Analytic queries run seconds-to-minutes; ~50 concurrent queries per cluster."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -4486,6 +4404,19 @@
           "max": 20000,
           "costDriver": "Processing delay added per request in the simulation.",
           "notes": "Analytic queries run seconds-to-minutes; ~50 concurrent queries per cluster."
+        },
+        {
+          "key": "nodes",
+          "label": "Node Count",
+          "type": "number",
+          "default": 2,
+          "min": 2,
+          "max": 128,
+          "group": "compute",
+          "visibleIf": "config.type === 'provisioned' || !config.type",
+          "notes": "Number of compute nodes (provisioned). Each is billed at its node-type hourly rate.",
+          "affectsCost": true,
+          "costDriver": "Number of compute nodes (provisioned). Each is billed at its node-type hourly rate."
         }
       ],
       "costParams": [
@@ -4506,17 +4437,6 @@
             }
           ],
           "notes": "Provisioned bills per node-hour for a fixed cluster; Serverless bills per RPU-hour only while queries run."
-        },
-        {
-          "key": "nodes",
-          "label": "Node Count",
-          "type": "number",
-          "default": 2,
-          "min": 2,
-          "max": 128,
-          "group": "compute",
-          "visibleIf": "config.type === 'provisioned' || !config.type",
-          "notes": "Number of compute nodes (provisioned). Each is billed at its node-type hourly rate."
         },
         {
           "key": "instance",
@@ -4642,20 +4562,7 @@
       }
     },
     "emr": {
-      "primaryParams": [],
-      "costParams": [
-        {
-          "key": "deploymentMode",
-          "label": "Deployment Mode",
-          "type": "enum",
-          "default": "node-based",
-          "group": "compute",
-          "options": [
-            { "value": "node-based", "label": "Node-Based" },
-            { "value": "serverless", "label": "Serverless" }
-          ],
-          "notes": "Node-Based domain runs cluster data nodes; Serverless executes queries automatically on elastic virtual server clusters."
-        },
+      "primaryParams": [
         {
           "key": "nodes",
           "label": "Cluster Nodes",
@@ -4665,7 +4572,9 @@
           "max": 1000,
           "group": "compute",
           "visibleIf": "config.deploymentMode === 'node-based' || !config.deploymentMode",
-          "notes": "Number of cluster nodes (EC2). Billed at the EC2 instance rate plus a per-node EMR surcharge."
+          "notes": "Number of cluster nodes (EC2). Billed at the EC2 instance rate plus a per-node EMR surcharge.",
+          "affectsCost": true,
+          "costDriver": "Number of cluster nodes (EC2). Billed at the EC2 instance rate plus a per-node EMR surcharge."
         },
         {
           "key": "instance",
@@ -4692,7 +4601,29 @@
               "label": "r5.xlarge"
             }
           ],
-          "notes": "EC2 instance type for cluster nodes. Larger types add CPU/RAM and cost."
+          "notes": "EC2 instance type for cluster nodes. Larger types add CPU/RAM and cost.",
+          "affectsCost": true,
+          "costDriver": "EC2 instance type for cluster nodes. Larger types add CPU/RAM and cost."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "deploymentMode",
+          "label": "Deployment Mode",
+          "type": "enum",
+          "default": "node-based",
+          "group": "compute",
+          "options": [
+            {
+              "value": "node-based",
+              "label": "Node-Based"
+            },
+            {
+              "value": "serverless",
+              "label": "Serverless"
+            }
+          ],
+          "notes": "Node-Based domain runs cluster data nodes; Serverless executes queries automatically on elastic virtual server clusters."
         },
         {
           "key": "hours",
@@ -4757,17 +4688,6 @@
     "kinesisFirehose": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 500000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Firehose buffers 60–900 s before delivery — latency here models the buffer window."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -4776,7 +4696,7 @@
           "min": 1,
           "max": 600000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "Firehose buffers 60–900 s before delivery — latency here models the buffer window."
+          "notes": "Firehose buffers 60 to 900 s before delivery, latency here models the buffer window."
         }
       ],
       "costParams": [
@@ -4816,17 +4736,6 @@
     "mq": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 100000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. A single mq.m5.large broker sustains roughly 1–5k msg/s depending on persistence."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -4835,7 +4744,7 @@
           "min": 1,
           "max": 1000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "A single mq.m5.large broker sustains roughly 1–5k msg/s depending on persistence."
+          "notes": "A single mq.m5.large broker sustains roughly 1 to 5k msg/s depending on persistence."
         }
       ],
       "costParams": [
@@ -4846,8 +4755,14 @@
           "default": "activemq",
           "group": "compute",
           "options": [
-            { "value": "activemq", "label": "ActiveMQ" },
-            { "value": "rabbitmq", "label": "RabbitMQ" }
+            {
+              "value": "activemq",
+              "label": "ActiveMQ"
+            },
+            {
+              "value": "rabbitmq",
+              "label": "RabbitMQ"
+            }
           ],
           "notes": "MQ broker engine. ActiveMQ uses EFS storage; RabbitMQ uses EBS storage."
         },
@@ -4858,8 +4773,14 @@
           "default": "single-instance",
           "group": "compute",
           "options": [
-            { "value": "single-instance", "label": "Single Broker" },
-            { "value": "active-standby-multi-az", "label": "Active/Standby (Multi-AZ)" }
+            {
+              "value": "single-instance",
+              "label": "Single Broker"
+            },
+            {
+              "value": "active-standby-multi-az",
+              "label": "Active/Standby (Multi-AZ)"
+            }
           ],
           "notes": "Active/Standby doubles the instance hourly cost for ActiveMQ, and RabbitMQ clusters scale up for HA."
         },
@@ -5100,17 +5021,6 @@
     "bedrock": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 10000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. LLM inference takes 0.5–5 s; account-level TPM/RPM quotas cap throughput."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -5119,7 +5029,7 @@
           "min": 1,
           "max": 20000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "LLM inference takes 0.5–5 s; account-level TPM/RPM quotas cap throughput."
+          "notes": "LLM inference takes 0.5 to 5 s; account-level TPM/RPM quotas cap throughput."
         }
       ],
       "costParams": [
@@ -5626,18 +5536,6 @@
     "sageMaker": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 10000,
-          "affectsCost": true,
-          "costDriver": "For serverless endpoints, billed per invocation: RPS × 2.628 = millions of invocations/month. Drives the SageMaker Serverless Requests cost line.",
-          "notes": "Maximum sustained request rate in the simulation. Real-time inference latency depends on the model; 50–500 ms is typical."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -5646,27 +5544,7 @@
           "min": 1,
           "max": 2000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "Real-time inference latency depends on the model; 50–500 ms is typical."
-        }
-      ],
-      "costParams": [
-        {
-          "key": "type",
-          "label": "Hosting Type",
-          "type": "enum",
-          "default": "instance",
-          "group": "compute",
-          "options": [
-            {
-              "value": "instance",
-              "label": "Real-time Instance"
-            },
-            {
-              "value": "serverless",
-              "label": "Serverless Inference"
-            }
-          ],
-          "notes": "Real-time instance endpoints bill per instance-hour while running; Serverless Inference bills only per request and GB-second."
+          "notes": "Real-time inference latency depends on the model; 50 to 500 ms is typical."
         },
         {
           "key": "instance",
@@ -5797,7 +5675,9 @@
               "label": "ml.p5.48xlarge (GPU)"
             }
           ],
-          "notes": "Endpoint instance type. ml.p/g GPU types are far more expensive than ml.t/m CPU types."
+          "notes": "Endpoint instance type. ml.p/g GPU types are far more expensive than ml.t/m CPU types.",
+          "affectsCost": true,
+          "costDriver": "Endpoint instance type. ml.p/g GPU types are far more expensive than ml.t/m CPU types."
         },
         {
           "key": "count",
@@ -5808,7 +5688,41 @@
           "max": 100,
           "group": "compute",
           "visibleIf": "config.type === 'instance' || !config.type",
-          "notes": "Number of inference instances behind the endpoint. Each is billed at its instance-hour rate."
+          "notes": "Number of inference instances behind the endpoint. Each is billed at its instance-hour rate.",
+          "affectsCost": true,
+          "costDriver": "Number of inference instances behind the endpoint. Each is billed at its instance-hour rate."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 10000,
+          "affectsCost": true,
+          "costDriver": "For serverless endpoints, billed per invocation: RPS × 2.628 = millions of invocations/month. Drives the SageMaker Serverless Requests cost line.",
+          "notes": "Maximum sustained request rate in the simulation. Real-time inference latency depends on the model; 50 to 500 ms is typical."
+        },
+        {
+          "key": "type",
+          "label": "Hosting Type",
+          "type": "enum",
+          "default": "instance",
+          "group": "compute",
+          "options": [
+            {
+              "value": "instance",
+              "label": "Real-time Instance"
+            },
+            {
+              "value": "serverless",
+              "label": "Serverless Inference"
+            }
+          ],
+          "notes": "Real-time instance endpoints bill per instance-hour while running; Serverless Inference bills only per request and GB-second."
         },
         {
           "key": "memoryMB",
@@ -5862,18 +5776,6 @@
     "appSync": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 100000,
-          "affectsCost": true,
-          "costDriver": "Billed per GraphQL request: RPS × 2.628 = millions of requests/month. Drives the AppSync GraphQL Requests cost line.",
-          "notes": "Maximum sustained request rate in the simulation. GraphQL request resolution including resolver overhead."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -5886,6 +5788,18 @@
         }
       ],
       "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 100000,
+          "affectsCost": true,
+          "costDriver": "Billed per GraphQL request: RPS × 2.628 = millions of requests/month. Drives the AppSync GraphQL Requests cost line.",
+          "notes": "Maximum sustained request rate in the simulation. GraphQL request resolution including resolver overhead."
+        },
         {
           "key": "dtGB",
           "label": "Data Transfer Out (GB)",
@@ -5922,18 +5836,6 @@
     "iotCore": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 1000000,
-          "affectsCost": true,
-          "costDriver": "Billed per device message: RPS × 2.628 = millions of messages/month. Drives the IoT Core Messages cost line.",
-          "notes": "Maximum sustained request rate in the simulation. Inbound device messages per second across the fleet."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -5946,6 +5848,18 @@
         }
       ],
       "costParams": [
+        {
+          "key": "throughput",
+          "label": "Requests/Second",
+          "type": "number",
+          "unit": "rps",
+          "default": 50,
+          "min": 1,
+          "max": 1000000,
+          "affectsCost": true,
+          "costDriver": "Billed per device message: RPS × 2.628 = millions of messages/month. Drives the IoT Core Messages cost line.",
+          "notes": "Maximum sustained request rate in the simulation. Inbound device messages per second across the fleet."
+        },
         {
           "key": "rulesM",
           "label": "Rules Executed (M)",
@@ -5989,10 +5903,22 @@
           "default": "image",
           "group": "compute",
           "options": [
-            { "value": "image", "label": "Image Processing ($1/1k)" },
-            { "value": "videoArchivedMin", "label": "Archived Video ($0.10/min)" },
-            { "value": "videoLiveMin", "label": "Live Video ($0.12/min)" },
-            { "value": "faceVectorM", "label": "Face Vector Storage ($10/M)" }
+            {
+              "value": "image",
+              "label": "Image Processing ($1/1k)"
+            },
+            {
+              "value": "videoArchivedMin",
+              "label": "Archived Video ($0.10/min)"
+            },
+            {
+              "value": "videoLiveMin",
+              "label": "Live Video ($0.12/min)"
+            },
+            {
+              "value": "faceVectorM",
+              "label": "Face Vector Storage ($10/M)"
+            }
           ],
           "notes": "Rekognition API operation type. Processing images is standard; archived and live video analysis are billed per minute."
         },
@@ -6120,7 +6046,7 @@
             }
           ],
           "costDriver": "Operation choice spans a 40× price range: DetectText $1.50/1k pages vs Forms+Tables $65/1k.",
-          "notes": "Which Textract API you call. Plain OCR (DetectText) is 40× cheaper than full forms + tables analysis — pick deliberately.",
+          "notes": "Which Textract API you call. Plain OCR (DetectText) is 40× cheaper than full forms + tables analysis, pick deliberately.",
           "group": "compute"
         }
       ],
@@ -6156,8 +6082,14 @@
           "default": "basic",
           "group": "compute",
           "options": [
-            { "value": "basic", "label": "Basic Tier" },
-            { "value": "professional", "label": "Professional Tier" }
+            {
+              "value": "basic",
+              "label": "Basic Tier"
+            },
+            {
+              "value": "professional",
+              "label": "Professional Tier"
+            }
           ],
           "notes": "Basic offers standard AVC codecs; Professional adds advanced codecs (HEVC, AV1, ProRes) and 4K resolution support."
         },
@@ -6168,10 +6100,22 @@
           "default": "avc",
           "group": "compute",
           "options": [
-            { "value": "avc", "label": "MPEG-4 AVC" },
-            { "value": "hevc", "label": "MPEG-H HEVC" },
-            { "value": "av1", "label": "AV1" },
-            { "value": "prores", "label": "Apple ProRes" }
+            {
+              "value": "avc",
+              "label": "MPEG-4 AVC"
+            },
+            {
+              "value": "hevc",
+              "label": "MPEG-H HEVC"
+            },
+            {
+              "value": "av1",
+              "label": "AV1"
+            },
+            {
+              "value": "prores",
+              "label": "Apple ProRes"
+            }
           ],
           "notes": "Video codec used for compression. Professional codecs cost more."
         },
@@ -6182,9 +6126,18 @@
           "default": "sd",
           "group": "compute",
           "options": [
-            { "value": "sd", "label": "SD" },
-            { "value": "hd", "label": "HD" },
-            { "value": "4k", "label": "4K" }
+            {
+              "value": "sd",
+              "label": "SD"
+            },
+            {
+              "value": "hd",
+              "label": "HD"
+            },
+            {
+              "value": "4k",
+              "label": "4K"
+            }
           ],
           "notes": "Output resolution of transcoded video. SD is cheapest; 4K and Professional HEVC/AV1 are most expensive."
         },
@@ -6294,17 +6247,6 @@
     "appRunner": {
       "primaryParams": [
         {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 50000,
-          "costDriver": "Maximum requests/messages per second this service sustains before queueing.",
-          "notes": "Maximum sustained request rate in the simulation. Effective ceiling is instances × concurrency per instance — the simulation caps at that."
-        },
-        {
           "key": "latency",
           "label": "Base Latency (ms)",
           "type": "number",
@@ -6313,7 +6255,7 @@
           "min": 1,
           "max": 1000,
           "costDriver": "Processing delay added per request in the simulation.",
-          "notes": "Effective ceiling is instances × concurrency per instance — the simulation caps at that."
+          "notes": "Effective ceiling is instances × concurrency per instance, the simulation caps at that."
         },
         {
           "key": "concurrencyPerInstance",
@@ -6325,9 +6267,7 @@
           "max": 200,
           "costDriver": "App Runner autoscales when concurrent requests per instance exceed this (default 100).",
           "notes": "Concurrent requests one instance handles before App Runner scales out. Effective RPS ceiling = instances × concurrency ÷ (latency in seconds)."
-        }
-      ],
-      "costParams": [
+        },
         {
           "key": "instances",
           "label": "Active Instances",
@@ -6336,8 +6276,12 @@
           "min": 1,
           "max": 100,
           "group": "compute",
-          "notes": "Number of active application instances. Each is billed for provisioned memory plus active-request vCPU."
-        },
+          "notes": "Number of active application instances. Each is billed for provisioned memory plus active-request vCPU.",
+          "affectsCost": true,
+          "costDriver": "Number of active application instances. Each is billed for provisioned memory plus active-request vCPU."
+        }
+      ],
+      "costParams": [
         {
           "key": "vcpu",
           "label": "vCPU per Instance",
@@ -6395,7 +6339,68 @@
       }
     },
     "elasticBeanstalk": {
-      "primaryParams": [],
+      "primaryParams": [
+        {
+          "key": "instanceSize",
+          "label": "Instance Size",
+          "type": "enum",
+          "default": "medium",
+          "group": "compute",
+          "options": [
+            {
+              "value": "micro",
+              "label": "micro"
+            },
+            {
+              "value": "small",
+              "label": "small"
+            },
+            {
+              "value": "medium",
+              "label": "medium"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            },
+            {
+              "value": "xlarge",
+              "label": "xlarge"
+            },
+            {
+              "value": "2xlarge",
+              "label": "2xlarge"
+            },
+            {
+              "value": "4xlarge",
+              "label": "4xlarge"
+            },
+            {
+              "value": "12xlarge",
+              "label": "12xlarge"
+            },
+            {
+              "value": "48xlarge",
+              "label": "48xlarge"
+            }
+          ],
+          "notes": "Scales vCPU and RAM within the family. Beanstalk itself is free; you pay for the underlying EC2.",
+          "affectsCost": true,
+          "costDriver": "Scales vCPU and RAM within the family. Beanstalk itself is free; you pay for the underlying EC2."
+        },
+        {
+          "key": "count",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "group": "compute",
+          "notes": "Number of EC2 instances in the environment. Each is billed at its full hourly rate.",
+          "affectsCost": true,
+          "costDriver": "Number of EC2 instances in the environment. Each is billed at its full hourly rate."
+        }
+      ],
       "costParams": [
         {
           "key": "instanceFamily",
@@ -6470,62 +6475,6 @@
             }
           ],
           "notes": "EC2 hardware profile for the environment: t3=burstable/cheap, m=general, c=compute, r=memory-optimized (g=Graviton)."
-        },
-        {
-          "key": "instanceSize",
-          "label": "Instance Size",
-          "type": "enum",
-          "default": "medium",
-          "group": "compute",
-          "options": [
-            {
-              "value": "micro",
-              "label": "micro"
-            },
-            {
-              "value": "small",
-              "label": "small"
-            },
-            {
-              "value": "medium",
-              "label": "medium"
-            },
-            {
-              "value": "large",
-              "label": "large"
-            },
-            {
-              "value": "xlarge",
-              "label": "xlarge"
-            },
-            {
-              "value": "2xlarge",
-              "label": "2xlarge"
-            },
-            {
-              "value": "4xlarge",
-              "label": "4xlarge"
-            },
-            {
-              "value": "12xlarge",
-              "label": "12xlarge"
-            },
-            {
-              "value": "48xlarge",
-              "label": "48xlarge"
-            }
-          ],
-          "notes": "Scales vCPU and RAM within the family. Beanstalk itself is free; you pay for the underlying EC2."
-        },
-        {
-          "key": "count",
-          "label": "Instance Count",
-          "type": "number",
-          "default": 2,
-          "min": 1,
-          "max": 1000,
-          "group": "compute",
-          "notes": "Number of EC2 instances in the environment. Each is billed at its full hourly rate."
         },
         {
           "key": "purchaseOption",
@@ -6611,7 +6560,7 @@
               "label": "Windows"
             }
           ],
-          "costDriver": "Windows includes the license in the hourly rate — roughly 1.45× the Linux price for general-purpose families.",
+          "costDriver": "Windows includes the license in the hourly rate, roughly 1.45× the Linux price for general-purpose families.",
           "notes": "Instance operating system. Windows pricing bundles the OS license, which raises the hourly rate substantially."
         }
       ],
@@ -6765,18 +6714,7 @@
       }
     },
     "ecr": {
-      "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 1000,
-          "costDriver": "Management of pull requests and API throughput."
-        }
-      ],
+      "primaryParams": [],
       "costParams": [
         {
           "key": "storageGB",
@@ -6796,7 +6734,7 @@
           "min": 0,
           "max": 100000,
           "group": "networking",
-          "costDriver": "Image pulls to the internet or across regions bill ~$0.09/GB — often a bigger line than storage.",
+          "costDriver": "Image pulls to the internet or across regions bill ~$0.09/GB, often a bigger line than storage.",
           "notes": "Image pull traffic leaving AWS (CI runners, edge fleets, cross-region pulls). In-region pulls to EC2/Fargate are free."
         }
       ],
@@ -6826,18 +6764,7 @@
       }
     },
     "privateLink": {
-      "primaryParams": [
-        {
-          "key": "throughput",
-          "label": "Requests/Second",
-          "type": "number",
-          "unit": "rps",
-          "default": 50,
-          "min": 1,
-          "max": 10000,
-          "costDriver": "Private endpoint connection throughput limit."
-        }
-      ],
+      "primaryParams": [],
       "costParams": [
         {
           "key": "endpoints",
@@ -6882,6 +6809,886 @@
         ],
         "freeTier": {
           "description": "No default free tier for PrivateLink endpoint connections."
+        }
+      }
+    },
+    "amplify": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 25,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Processing delay added to client requests via CDN/Serverless edge routing.",
+          "notes": "Simulated request latency for assets served from AWS edge cache locations."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "buildInstanceType",
+          "label": "Build Instance Size",
+          "type": "enum",
+          "default": "standard",
+          "group": "compute",
+          "options": [
+            {
+              "value": "standard",
+              "label": "Standard (4 vCPU, 7 GB)"
+            },
+            {
+              "value": "large",
+              "label": "Large (8 vCPU, 15 GB)"
+            },
+            {
+              "value": "xlarge",
+              "label": "XLarge (36 vCPU, 72 GB)"
+            }
+          ],
+          "notes": "Compute size of the CI/CD build instance. Larger instances build faster but bill each build minute at a higher, region-specific rate (us-east-1: $0.01 standard, $0.025 large, $0.10 xlarge)."
+        },
+        {
+          "key": "buildMinutes",
+          "label": "Build Minutes",
+          "type": "number",
+          "default": 500,
+          "min": 0,
+          "max": 100000,
+          "group": "compute",
+          "notes": "Number of build minutes consumed by CI/CD pipeline deployments per month. Billed per minute at the selected build instance size's rate."
+        },
+        {
+          "key": "dataServedGB",
+          "label": "Data Served (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking",
+          "notes": "Amount of data served (outbound data transfer) by Amplify Hosting per month. Billed at $0.15 per GB."
+        },
+        {
+          "key": "storageGB",
+          "label": "Data Storage (GB)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 1000,
+          "group": "storage",
+          "notes": "Amount of data stored by Amplify Hosting (artifacts, assets) in GB. Billed at $0.023 per GB-month."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "buildMinutesCost + dataServedCost + storageCost",
+        "components": [
+          {
+            "id": "build",
+            "name": "Build & Deploy",
+            "formula": "buildMinutes × rate(buildInstanceType), $0.01/min standard, $0.025/min large, $0.10/min xlarge",
+            "variables": [
+              "buildMinutes",
+              "buildInstanceType"
+            ]
+          },
+          {
+            "id": "dataServed",
+            "name": "Data Served (Hosting)",
+            "formula": "dataServedGB × $0.15/GB",
+            "variables": [
+              "dataServedGB"
+            ]
+          },
+          {
+            "id": "storage",
+            "name": "Data Storage (Hosting)",
+            "formula": "storageGB × $0.023/GB-mo",
+            "variables": [
+              "storageGB"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "Amplify has a 12-month free tier (1,000 build minutes/month, 15 GB served/month, 5 GB storage/month) for new accounts. Billed at standard rates thereafter."
+        }
+      }
+    },
+    "ses": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 100,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "API accept latency for SendEmail calls in the simulation.",
+          "notes": "Simulated time for SES to accept a SendEmail/SendRawEmail request."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "dailyVolume",
+          "label": "Outbound Emails/Day",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "notes": "Outbound recipients per day. Billed monthly (×30) at $0.10 per 1,000 emails ($0.0001 each)."
+        },
+        {
+          "key": "inboundDailyVolume",
+          "label": "Inbound Emails/Day",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "notes": "Emails received per day. Billed monthly (×30) at $0.10 per 1,000 emails received."
+        },
+        {
+          "key": "attachmentGB",
+          "label": "Attachment Data (GB/mo)",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 10000,
+          "group": "networking",
+          "notes": "Outbound attachment bytes per month. Billed at $0.12 per GB."
+        },
+        {
+          "key": "dedicatedIPs",
+          "label": "Dedicated IPs",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 50,
+          "group": "networking",
+          "notes": "Dedicated IP addresses leased for sender reputation isolation. $24.95 per IP per month."
+        },
+        {
+          "key": "vdmEnabled",
+          "label": "Virtual Deliverability Manager",
+          "type": "boolean",
+          "default": false,
+          "group": "compute",
+          "notes": "Adds deliverability analytics on every outbound email, $0.07 per 1,000 outbound emails processed on top of the base sending charge."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "outboundCost + vdmCost + inboundCost + attachmentCost + dedicatedIpCost",
+        "components": [
+          {
+            "id": "outbound",
+            "name": "Outbound Email",
+            "formula": "dailyVolume × 30 × $0.0001/email",
+            "variables": [
+              "dailyVolume"
+            ]
+          },
+          {
+            "id": "vdm",
+            "name": "Virtual Deliverability Manager",
+            "formula": "dailyVolume × 30 × $0.00007/email (when enabled)",
+            "variables": [
+              "dailyVolume",
+              "vdmEnabled"
+            ]
+          },
+          {
+            "id": "inbound",
+            "name": "Inbound Email",
+            "formula": "inboundDailyVolume × 30 × $0.0001/email",
+            "variables": [
+              "inboundDailyVolume"
+            ]
+          },
+          {
+            "id": "attachments",
+            "name": "Attachment Egress",
+            "formula": "attachmentGB × $0.12/GB",
+            "variables": [
+              "attachmentGB"
+            ]
+          },
+          {
+            "id": "dedicatedIps",
+            "name": "Dedicated IPs",
+            "formula": "dedicatedIPs × $24.95/mo",
+            "variables": [
+              "dedicatedIPs"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "SES includes 3,000 message charges per month for the first 12 months for new AWS accounts."
+        }
+      }
+    },
+    "documentDb": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Query Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Per-query latency. Effective max RPS ≈ connections ÷ query time."
+        },
+        {
+          "key": "maxConnections",
+          "label": "Max Connections",
+          "type": "number",
+          "unit": "count",
+          "default": 2000,
+          "min": 10,
+          "max": 30000,
+          "costDriver": "Connection-pool ceiling, DocumentDB's classic bottleneck. Unindexed collection scans exhaust connections and take the node offline.",
+          "notes": "Instance-class connection limit (db.r6g.large ≈ 4,500). The simulation caps throughput at connections ÷ (latency in seconds)."
+        },
+        {
+          "key": "instanceCount",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 16,
+          "group": "compute",
+          "notes": "Cluster instances (1 primary + up to 15 replicas). Each instance bills its class rate per hour.",
+          "affectsCost": true,
+          "costDriver": "Cluster instances (1 primary + up to 15 replicas). Each instance bills its class rate per hour."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "instanceClass",
+          "label": "Instance Class",
+          "type": "enum",
+          "default": "db.r6g.large",
+          "group": "compute",
+          "options": [
+            {
+              "value": "db.t3.medium",
+              "label": "db.t3.medium"
+            },
+            {
+              "value": "db.r6g.large",
+              "label": "db.r6g.large (ARM)"
+            },
+            {
+              "value": "db.r6g.xlarge",
+              "label": "db.r6g.xlarge (ARM)"
+            }
+          ],
+          "notes": "Compute instance class for cluster nodes. Priced per instance-hour; the rate differs between standard and I/O-Optimized clusters."
+        },
+        {
+          "key": "storageType",
+          "label": "Storage Configuration",
+          "type": "enum",
+          "default": "standard",
+          "group": "storage",
+          "options": [
+            {
+              "value": "standard",
+              "label": "Standard ($0.10/GB-mo + I/O charges)"
+            },
+            {
+              "value": "io-optimized",
+              "label": "I/O-Optimized ($0.30/GB-mo, $0 I/O)"
+            }
+          ],
+          "notes": "I/O-Optimized clusters trade ~10% higher instance rates and 3× storage cost for zero per-I/O charges, cheaper for I/O-heavy workloads."
+        },
+        {
+          "key": "storageGB",
+          "label": "Storage (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 10,
+          "max": 65536,
+          "group": "storage",
+          "notes": "Consumed cluster storage. Standard $0.10 per GB-month; I/O-Optimized $0.30 per GB-month. Hard ceiling of 64 TiB per cluster."
+        },
+        {
+          "key": "ioRequestsMillion",
+          "label": "I/O Requests (millions/mo)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 10000,
+          "group": "storage",
+          "visibleIf": "config.storageType === 'standard'",
+          "notes": "Read/write I/O operations per month. $0.20 per million on standard storage; free on I/O-Optimized."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "instanceCount × instanceHrRate × 730 + storageGB × storageRate + ioMillions × ioRate",
+        "components": [
+          {
+            "id": "instances",
+            "name": "Cluster Instances",
+            "formula": "instanceCount × class rate/hr × 730 hrs (us-east-1: db.t3.medium $0.078, db.r6g.large $0.2632, db.r6g.xlarge $0.5263; ~10% higher on I/O-Optimized)",
+            "variables": [
+              "instanceClass",
+              "instanceCount",
+              "storageType"
+            ]
+          },
+          {
+            "id": "storage",
+            "name": "Cluster Storage",
+            "formula": "storageGB × ($0.10 standard | $0.30 I/O-Optimized)/GB-mo",
+            "variables": [
+              "storageGB",
+              "storageType"
+            ]
+          },
+          {
+            "id": "io",
+            "name": "I/O Requests",
+            "formula": "ioRequestsMillion × $0.20/M (standard storage only)",
+            "variables": [
+              "ioRequestsMillion",
+              "storageType"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "DocumentDB offers a 30-day free trial for new users: 750 hours of db.t3.medium, 30M I/Os, 5 GB storage, and 5 GB backup storage."
+        }
+      }
+    },
+    "neptune": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Query Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 10,
+          "min": 1,
+          "max": 5000,
+          "costDriver": "Graph traversal latency. Complex traversals over super-vertices multiply query time."
+        },
+        {
+          "key": "maxConnections",
+          "label": "Max Connections",
+          "type": "number",
+          "unit": "count",
+          "default": 1000,
+          "min": 10,
+          "max": 30000,
+          "costDriver": "WebSocket/HTTP connection ceiling. Bursty Gremlin/SPARQL queries exhaust memory and lock query threads, timing out connections.",
+          "notes": "The simulation caps throughput at connections ÷ (latency in seconds); Neptune's default query timeout is 2 minutes."
+        },
+        {
+          "key": "instanceCount",
+          "label": "Instance Count",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 16,
+          "group": "compute",
+          "notes": "Cluster instances (1 writer + up to 15 read replicas).",
+          "affectsCost": true,
+          "costDriver": "Cluster instances (1 writer + up to 15 read replicas)."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "instanceClass",
+          "label": "Instance Class",
+          "type": "enum",
+          "default": "db.r6g.large",
+          "group": "compute",
+          "options": [
+            {
+              "value": "db.t3.medium",
+              "label": "db.t3.medium"
+            },
+            {
+              "value": "db.r6g.large",
+              "label": "db.r6g.large (ARM)"
+            },
+            {
+              "value": "db.r6g.2xlarge",
+              "label": "db.r6g.2xlarge (ARM)"
+            }
+          ],
+          "notes": "Compute instance class for cluster nodes, billed per instance-hour."
+        },
+        {
+          "key": "storageGB",
+          "label": "Storage (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 10,
+          "max": 65536,
+          "group": "storage",
+          "notes": "Consumed graph storage at $0.10 per GB-month. Cluster volume grows in 10 GB segments up to 64 TiB."
+        },
+        {
+          "key": "ioRequestsMillion",
+          "label": "I/O Requests (millions/mo)",
+          "type": "number",
+          "default": 50,
+          "min": 0,
+          "max": 10000,
+          "group": "storage",
+          "notes": "Read/write I/O operations at $0.20 per million. Buffer-cache hits do not incur I/O charges."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "instanceCount × instanceHrRate × 730 + storageGB × $0.10 + ioMillions × $0.20",
+        "components": [
+          {
+            "id": "instances",
+            "name": "Cluster Instances",
+            "formula": "instanceCount × class rate/hr × 730 hrs (us-east-1: db.t3.medium $0.098, db.r6g.large $0.3287, db.r6g.2xlarge $1.3149)",
+            "variables": [
+              "instanceClass",
+              "instanceCount"
+            ]
+          },
+          {
+            "id": "storage",
+            "name": "Graph Storage",
+            "formula": "storageGB × $0.10/GB-mo",
+            "variables": [
+              "storageGB"
+            ]
+          },
+          {
+            "id": "io",
+            "name": "I/O Requests",
+            "formula": "ioRequestsMillion × $0.20/M",
+            "variables": [
+              "ioRequestsMillion"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "Neptune offers a 30-day free trial for new users: 750 hours of db.t3.medium or db.t4g.medium, 10M I/Os, 1 GB storage, and 1 GB backup storage."
+        }
+      }
+    },
+    "timestream": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Write/query acknowledgement latency in the simulation."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "ingestedGB",
+          "label": "Data Ingested (GB/mo)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "compute",
+          "notes": "Data written into Timestream per month at $0.50 per GB (1 KB minimum per write)."
+        },
+        {
+          "key": "memoryStorageGB",
+          "label": "Memory Store (GB)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 10000,
+          "group": "storage",
+          "notes": "Recent data retained in the memory store at $0.036 per GB-hour (~$26.28 per GB-month). Keep memory retention short."
+        },
+        {
+          "key": "magneticStorageGB",
+          "label": "Magnetic Store (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 1000000,
+          "group": "storage",
+          "notes": "Historical data tiered to magnetic storage at $0.03 per GB-month."
+        },
+        {
+          "key": "scannedQueryGB",
+          "label": "Query Data Scanned (GB/mo)",
+          "type": "number",
+          "default": 1000,
+          "min": 0,
+          "max": 1000000,
+          "group": "compute",
+          "notes": "Bytes scanned by queries at $0.01 per GB. Unbounded scans over unindexed time ranges dominate the bill."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "ingestedGB × $0.50 + memoryGB × $0.036 × 730 + magneticGB × $0.03 + scannedGB × $0.01",
+        "components": [
+          {
+            "id": "ingest",
+            "name": "Data Ingestion",
+            "formula": "ingestedGB × $0.50/GB",
+            "variables": [
+              "ingestedGB"
+            ]
+          },
+          {
+            "id": "memory",
+            "name": "Memory Store",
+            "formula": "memoryStorageGB × $0.036/GB-hr × 730 hrs",
+            "variables": [
+              "memoryStorageGB"
+            ]
+          },
+          {
+            "id": "magnetic",
+            "name": "Magnetic Store",
+            "formula": "magneticStorageGB × $0.03/GB-mo",
+            "variables": [
+              "magneticStorageGB"
+            ]
+          },
+          {
+            "id": "scanned",
+            "name": "Query Scans",
+            "formula": "scannedQueryGB × $0.01/GB",
+            "variables": [
+              "scannedQueryGB"
+            ]
+          }
+        ]
+      }
+    },
+    "appConfig": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 15,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Configuration fetch latency in the simulation."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "configRequestsM",
+          "label": "Config Requests (millions/mo)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 1000,
+          "group": "compute",
+          "notes": "GetLatestConfiguration API calls at $0.20 per million requests."
+        },
+        {
+          "key": "deploymentTargets",
+          "label": "Deployment Targets",
+          "type": "number",
+          "default": 100,
+          "min": 1,
+          "max": 10000,
+          "group": "compute",
+          "notes": "Hosts/containers/functions that receive each configuration deployment."
+        },
+        {
+          "key": "deploymentsPerMonth",
+          "label": "Deployments/Month",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 1000,
+          "group": "compute",
+          "notes": "Configuration rollouts per month. Each target receiving a deployment bills $0.0008 per configuration received."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "configRequestsM × $0.20 + deploymentTargets × deploymentsPerMonth × $0.0008",
+        "components": [
+          {
+            "id": "requests",
+            "name": "Configuration Requests",
+            "formula": "configRequestsM × $0.20/M",
+            "variables": [
+              "configRequestsM"
+            ]
+          },
+          {
+            "id": "deployments",
+            "name": "Configurations Received",
+            "formula": "deploymentTargets × deploymentsPerMonth × $0.0008 each",
+            "variables": [
+              "deploymentTargets",
+              "deploymentsPerMonth"
+            ]
+          }
+        ]
+      }
+    },
+    "appMesh": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Proxy Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "costDriver": "Per-hop latency the Envoy sidecar adds to each request."
+        }
+      ],
+      "costParams": [],
+      "costEvaluation": {
+        "formula": "$0, App Mesh control plane is free",
+        "components": [
+          {
+            "id": "controlPlane",
+            "name": "Control Plane",
+            "formula": "$0.00, routing configuration and distribution are not billed",
+            "variables": []
+          }
+        ],
+        "freeTier": {
+          "description": "App Mesh is free: you pay only for the EC2/Fargate compute running the Envoy proxy containers, billed on those services, not on App Mesh."
+        }
+      }
+    },
+    "cloudMap": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "costDriver": "Endpoint resolution latency in the simulation."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "registeredResources",
+          "label": "Registered Resources",
+          "type": "number",
+          "default": 50,
+          "min": 1,
+          "max": 10000,
+          "group": "compute",
+          "notes": "Service instances registered in the Cloud Map registry at $0.10 per resource per month."
+        },
+        {
+          "key": "discoveryQueriesM",
+          "label": "Discovery API Calls (millions/mo)",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 1000,
+          "group": "compute",
+          "notes": "DiscoverInstances API queries at $1.00 per million calls. DNS-based lookups bill as Route 53 queries instead."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "registeredResources × $0.10 + discoveryQueriesM × $1.00",
+        "components": [
+          {
+            "id": "registry",
+            "name": "Resource Registry",
+            "formula": "registeredResources × $0.10/mo",
+            "variables": [
+              "registeredResources"
+            ]
+          },
+          {
+            "id": "queries",
+            "name": "Discovery API Calls",
+            "formula": "discoveryQueriesM × $1.00/M",
+            "variables": [
+              "discoveryQueriesM"
+            ]
+          }
+        ]
+      }
+    },
+    "quickSight": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Dashboard Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 2000,
+          "min": 100,
+          "max": 20000,
+          "costDriver": "Dashboard render latency; SPICE-cached visuals are fast, direct queries inherit source database latency."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "authors",
+          "label": "Authors (Pro)",
+          "type": "number",
+          "default": 5,
+          "min": 1,
+          "max": 100,
+          "group": "compute",
+          "notes": "Users who build datasets and dashboards. Enterprise Author Pro is $40 per user-month (the legacy $24 Author SKU is no longer offered on new pricing)."
+        },
+        {
+          "key": "readers",
+          "label": "Readers",
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "max": 10000,
+          "group": "compute",
+          "notes": "Users who consume dashboards. Enterprise Reader is $3 per user-month (per-session pricing was retired on current plans)."
+        },
+        {
+          "key": "spiceStorageGB",
+          "label": "SPICE Storage (GB)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 10000,
+          "group": "storage",
+          "notes": "In-memory SPICE dataset capacity at $0.38 per GB-month (Enterprise edition)."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "authors × $40 + readers × $3 + spiceGB × $0.38",
+        "components": [
+          {
+            "id": "authors",
+            "name": "Author Pro Licenses",
+            "formula": "authors × $40/user-mo",
+            "variables": [
+              "authors"
+            ]
+          },
+          {
+            "id": "readers",
+            "name": "Reader Licenses",
+            "formula": "readers × $3/user-mo",
+            "variables": [
+              "readers"
+            ]
+          },
+          {
+            "id": "spice",
+            "name": "SPICE In-Memory Storage",
+            "formula": "spiceStorageGB × $0.38/GB-mo",
+            "variables": [
+              "spiceStorageGB"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "QuickSight offers a 30-day free trial including 4 author licenses and 10 GB of SPICE storage."
+        }
+      }
+    },
+    "lightsail": {
+      "primaryParams": [
+        {
+          "key": "latency",
+          "label": "Base Latency (ms)",
+          "type": "number",
+          "unit": "ms",
+          "default": 60,
+          "min": 1,
+          "max": 5000,
+          "costDriver": "Application response latency; degrades sharply once burst credits are exhausted."
+        }
+      ],
+      "costParams": [
+        {
+          "key": "bundleSize",
+          "label": "Instance Bundle",
+          "type": "enum",
+          "default": "2GB",
+          "group": "compute",
+          "options": [
+            {
+              "value": "0.5GB",
+              "label": "512 MB RAM, 2 vCPU (~$5/mo)"
+            },
+            {
+              "value": "1GB",
+              "label": "1 GB RAM, 2 vCPU (~$7/mo)"
+            },
+            {
+              "value": "2GB",
+              "label": "2 GB RAM, 2 vCPU (~$12/mo)"
+            },
+            {
+              "value": "4GB",
+              "label": "4 GB RAM, 2 vCPU (~$24/mo)"
+            },
+            {
+              "value": "8GB",
+              "label": "8 GB RAM, 2 vCPU (~$44/mo)"
+            },
+            {
+              "value": "16GB",
+              "label": "16 GB RAM, 4 vCPU (~$84/mo)"
+            },
+            {
+              "value": "32GB",
+              "label": "32 GB RAM, 8 vCPU (~$164/mo)"
+            }
+          ],
+          "notes": "Linux dual-stack bundle (includes public IPv4). Flat hourly rate billed up to the monthly cap; includes SSD storage and a data-transfer allowance."
+        },
+        {
+          "key": "bandwidthGB",
+          "label": "Data Transfer Out (GB/mo)",
+          "type": "number",
+          "default": 100,
+          "min": 0,
+          "max": 100000,
+          "group": "networking",
+          "notes": "Outbound data transfer. Each bundle includes an allowance (1 TB on 512 MB up to 7 TB on 32 GB); overage bills at $0.09 per GB."
+        }
+      ],
+      "costEvaluation": {
+        "formula": "bundleHourlyRate × 730 + max(0, bandwidthGB − bundleAllowanceGB) × $0.09",
+        "components": [
+          {
+            "id": "bundle",
+            "name": "Instance Bundle",
+            "formula": "bundle hourly rate × 730 hrs (us-east-1: 0.5GB $0.00672/hr … 32GB $0.22043/hr)",
+            "variables": [
+              "bundleSize"
+            ]
+          },
+          {
+            "id": "overage",
+            "name": "Data Transfer Overage",
+            "formula": "max(0, bandwidthGB − allowance) × $0.09/GB",
+            "variables": [
+              "bandwidthGB",
+              "bundleSize"
+            ]
+          }
+        ],
+        "freeTier": {
+          "description": "Lightsail offers 3 months free on selected bundles (e.g. 512 MB and 1 GB instances) for new AWS accounts."
         }
       }
     }

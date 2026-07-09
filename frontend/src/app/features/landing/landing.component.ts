@@ -2,6 +2,8 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  NgZone,
+  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -18,8 +20,11 @@ import { environment } from '../../../environments/environment';
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css'],
 })
-export class LandingComponent implements OnInit {
+export class LandingComponent implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
+  private zone = inject(NgZone);
+  private scrollTicking = false;
+  private readonly onScrollBound = (): void => this.handleScroll();
 
   @Output() launch = new EventEmitter<'developer' | 'architect' | undefined>();
   @ViewChild('shell', { static: true }) shellRef!: ElementRef<HTMLElement>;
@@ -30,6 +35,16 @@ export class LandingComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadLiveStats();
+    // Attach the scroll listener outside Angular so the pill's collapse/expand
+    // transition isn't fighting a full change-detection pass on every frame.
+    // We only re-enter Angular (and trigger CD) on the frame a bound flag flips.
+    this.zone.runOutsideAngular(() => {
+      this.shellRef.nativeElement.addEventListener('scroll', this.onScrollBound, { passive: true });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.shellRef.nativeElement.removeEventListener('scroll', this.onScrollBound);
   }
 
   private async loadLiveStats(): Promise<void> {
@@ -96,10 +111,23 @@ export class LandingComponent implements OnInit {
   navScrolled = false;
   showBackToTop = false;
 
-  onShellScroll(event: Event) {
-    const el = event.target as HTMLElement;
-    this.navScrolled = el.scrollTop > 60;
-    this.showBackToTop = el.scrollTop > 400;
+  private handleScroll(): void {
+    // rAF-coalesce: at most one read per frame regardless of scroll event rate.
+    if (this.scrollTicking) return;
+    this.scrollTicking = true;
+    requestAnimationFrame(() => {
+      this.scrollTicking = false;
+      const top = this.shellRef.nativeElement.scrollTop;
+      const navScrolled = top > 60;
+      const showBackToTop = top > 400;
+      // Nothing bound changed -> stay outside Angular, no change detection.
+      if (navScrolled === this.navScrolled && showBackToTop === this.showBackToTop) return;
+      // A flag flipped -> re-enter Angular so the template updates the class.
+      this.zone.run(() => {
+        this.navScrolled = navScrolled;
+        this.showBackToTop = showBackToTop;
+      });
+    });
   }
 
   scrollToTop(): void {
@@ -108,6 +136,8 @@ export class LandingComponent implements OnInit {
 
   openDocs(event: Event) {
     event.preventDefault();
+    // Record origin so the docs "Back" button returns here.
+    sessionStorage.setItem('docsOrigin', '/');
     window.history.pushState(null, '', '/docs');
     window.dispatchEvent(new Event('popstate'));
   }
@@ -270,13 +300,13 @@ export class LandingComponent implements OnInit {
       badge: 'Design + Cost Analytics',
       title: 'Architect',
       description:
-        'Model production grade systems with 60+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.',
+        'Model production grade systems with 70+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.',
       button: 'Design Infrastructure',
       icon: 'fas fa-building-columns',
       visual: 'architect-visual',
       features: [
-        '60+ real AWS services',
-        '20+ real AWS regions with precise pricing',
+        '70+ real AWS services',
+        '25+ real AWS regions with precise pricing',
         'Live cost analytics dashboard',
         'Accurate per service monthly estimates',
         'Stress test production workloads',

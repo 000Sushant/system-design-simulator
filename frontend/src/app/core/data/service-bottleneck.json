@@ -1,5 +1,5 @@
 {
-  "_comment": "Per-service bottleneck model. 'failureMode' decides what happens past saturation: 'throttle' = reject/queue excess but STAY UP (429/503 that recovers); 'offline' = sustained overload exhausts the real resource (CPU / connections) and the service becomes unresponsive; 'none' = traffic source / unbounded. 'offlineAtRatio' is the demand/capacity ratio that, when sustained, flips an 'offline' service down. Engine: simulation.service.ts. Capacity formulas are documented per service in capacityDriver. All 64 services classified.",
+  "_comment": "Per-service bottleneck model. 'failureMode' decides what happens past saturation: 'throttle' = reject/queue excess but STAY UP (429/503 that recovers); 'offline' = sustained overload exhausts the real resource (CPU / connections) and the service becomes unresponsive; 'none' = traffic source / unbounded. 'offlineAtRatio' is the demand/capacity ratio that, when sustained, flips an 'offline' service down. Engine: simulation.service.ts. Capacity formulas are documented per service in capacityDriver. All 64 services classified. NEW fields: 'capacityRps' = default AWS quota ceiling in requests/sec (capacity no longer follows the user throughput knob or RPS-Sync); 'saturation' = what happens to excess past capacity: 'reject' (fail fast 429, no queue - default for throttle), 'queue' (backlog buffers, health = backlog age), 'degrade' (latency climbs, timeouts, collapse - default for offline).",
   "client": {
     "kind": "source",
     "failureMode": "none",
@@ -10,6 +10,7 @@
   "route53": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 1000000,
     "capacityDriver": "Managed query throughput (very high ceiling)",
     "atSaturation": "DNS resolution stays up to extreme rates; past AWS's ceiling queries are throttled, never offline.",
     "summary": "Fully managed DNS with effectively unlimited query throughput. Under extreme rates AWS throttles resolutions, but the service stays up. It does not go offline. Bottleneck: request throughput, with a very high ceiling."
@@ -17,6 +18,7 @@
   "cognito": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 120,
     "capacityDriver": "User-pool request quota",
     "atSaturation": "Beyond the user-pool quota, sign-in and token requests are throttled (429); the pool shows Overloaded but stays up and recovers.",
     "summary": "Managed authentication that scales to high sign-in and token rates. Sustained spikes are throttled (TooManyRequests / 429) rather than failing. Bottleneck: request throughput against the user-pool quota."
@@ -24,6 +26,7 @@
   "cloudfront": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 250000,
     "capacityDriver": "Edge request throughput (eased by cache hit rate)",
     "atSaturation": "Past edge capacity it throttles requests at the edge but stays up; cache hits keep most load off the origin.",
     "summary": "A global edge CDN with massive request capacity. Cache hits are answered at the edge, so only misses reach the origin. It throttles under extreme load but never goes offline. Bottleneck: request throughput, reduced by the cache hit rate."
@@ -31,6 +34,7 @@
   "apiGateway": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 10000,
     "capacityDriver": "Account steady-state RPS limit + integration timeout",
     "atSaturation": "Past the account RPS limit it returns 429 and shows Overloaded, but stays up and recovers when load drops.",
     "summary": "A managed front door with an account-level steady-state request limit. Excess requests return 429 (throttled) and the gateway stays up. Bottleneck: request throughput plus the integration timeout."
@@ -45,6 +49,7 @@
   "sns": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 30000,
     "capacityDriver": "Publish throughput",
     "atSaturation": "Beyond publish throughput, publishes are throttled (429); the topic stays up and recovers once the burst passes.",
     "summary": "Managed pub/sub with high publish throughput. Excess publishes are throttled rather than failing the service. Bottleneck: publish request throughput."
@@ -52,6 +57,8 @@
   "sqs": {
     "kind": "provisioned",
     "failureMode": "throttle",
+    "capacityRps": 1000000,
+    "saturation": "queue",
     "capacityDriver": "FIFO cap (300/s, 3,000/s batched); standard ≈ unlimited",
     "atSaturation": "Over the FIFO limit sends are throttled (standard queues effectively never saturate); the queue never goes offline.",
     "summary": "Standard queues have effectively unlimited throughput; FIFO queues cap at 300 messages/s (3,000 with batching). Over the limit, sends are throttled. The queue does not go offline. Bottleneck: FIFO throughput cap (standard is practically unbounded)."
@@ -59,6 +66,7 @@
   "kinesis": {
     "kind": "provisioned",
     "failureMode": "throttle",
+    "saturation": "queue",
     "capacityDriver": "Shard count (1,000 records/s or 1 MB/s each)",
     "atSaturation": "Past a shard's limit, writes are throttled (ProvisionedThroughputExceeded); add shards to scale. The stream stays up.",
     "summary": "Throughput is provisioned in shards. 1,000 records/s (1 MB/s) per shard. Exceeding a shard throttles (ProvisionedThroughputExceeded); you add shards to scale. Bottleneck: shard count."
@@ -66,6 +74,8 @@
   "kinesisFirehose": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 100000,
+    "saturation": "queue",
     "capacityDriver": "Buffered ingest throughput",
     "atSaturation": "Bursts past ingest capacity are buffered or throttled, not failed; the stream stays up and drains the buffer.",
     "summary": "A buffered delivery stream that auto-scales ingest. Bursts are buffered or throttled, not failed. Bottleneck: ingest throughput governed by the buffer interval and size."
@@ -73,6 +83,7 @@
   "dynamoDb": {
     "kind": "provisioned",
     "failureMode": "throttle",
+    "capacityRps": 40000,
     "capacityDriver": "Provisioned RCU/WCU (on-demand auto-scales)",
     "atSaturation": "Over provisioned capacity, requests are throttled (on-demand auto-scales); the table shows Overloaded but stays up.",
     "summary": "On-demand mode scales automatically; provisioned mode caps at your RCU/WCU. Over capacity, requests are throttled (ProvisionedThroughputExceeded) while the table stays up. Bottleneck: provisioned read/write capacity units (or per-partition throughput)."
@@ -87,6 +98,7 @@
   "cloudWatch": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 20000,
     "capacityDriver": "Metrics/logs ingestion API limits",
     "atSaturation": "Past API limits, metric and log ingestion is throttled; it stays up and accepts data again as the burst clears.",
     "summary": "Managed metrics and logs ingestion with very high API limits. Bursts are throttled, never taken offline. Bottleneck: ingestion / API request throughput."
@@ -126,6 +138,7 @@
   "elb": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 100000,
     "capacityDriver": "Connection / LCU throughput (auto-scales)",
     "atSaturation": "Past current capacity it scales out; excess connections queue or shed briefly but the load balancer stays up.",
     "summary": "Managed load balancer that scales capacity automatically; excess connections queue or shed rather than failing. Bottleneck: connection / LCU throughput."
@@ -141,6 +154,7 @@
   "stepFunctions": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 1300,
     "capacityDriver": "State-transition rate quota",
     "atSaturation": "Past the state-transition quota, executions are throttled; workflows stay up and resume as capacity frees.",
     "summary": "Managed orchestration limited by state transitions; bursts are throttled, not failed. Bottleneck: state-transition throughput."
@@ -177,6 +191,7 @@
   "natGateway": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 100000,
     "capacityDriver": "Bandwidth & port allocations",
     "atSaturation": "At extreme connection counts it hits port-allocation limits and drops new connections, but the gateway stays up.",
     "summary": "Managed NAT with very high bandwidth; extreme connection counts hit port-allocation limits and drop, but it stays up. Bottleneck: bandwidth / port allocations."
@@ -184,6 +199,8 @@
   "batch": {
     "kind": "compute",
     "failureMode": "throttle",
+    "capacityRps": 1000,
+    "saturation": "queue",
     "capacityDriver": "Compute-environment vCPUs (jobs queue)",
     "atSaturation": "Excess jobs queue rather than failing; the service stays up and works through the backlog as capacity frees.",
     "summary": "Runs jobs on a managed compute pool. Excess work queues rather than failing the service. Bottleneck: compute-environment vCPUs."
@@ -207,6 +224,7 @@
   "eventBridge": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 10000,
     "capacityDriver": "Event ingestion / rule quota",
     "atSaturation": "Bursts past the ingestion quota are throttled; the bus stays up and accepts events again as load drops.",
     "summary": "Managed event bus with high ingestion limits; bursts are throttled, never offline. Bottleneck: event throughput / rule quotas."
@@ -214,6 +232,8 @@
   "msk": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 100000,
+    "saturation": "queue",
     "capacityDriver": "Broker & partition throughput",
     "atSaturation": "Past broker and partition throughput, producers face backpressure and throttling; the cluster stays up.",
     "summary": "Managed Kafka; producers face backpressure and throttling past broker/partition throughput rather than the service failing. Bottleneck: broker and partition throughput."
@@ -221,6 +241,7 @@
   "waf": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 1000000,
     "capacityDriver": "Request inspection rate",
     "atSaturation": "Past inspection capacity, requests are throttled at the edge; it stays up and never drops to offline.",
     "summary": "Inspects requests at the edge with very high capacity; it throttles rather than failing. Bottleneck: request inspection throughput."
@@ -235,6 +256,8 @@
   "athena": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 20,
+    "saturation": "queue",
     "capacityDriver": "Concurrent-query quota",
     "atSaturation": "Queries beyond the concurrency quota are queued or throttled, not failed; the service stays up.",
     "summary": "Serverless SQL over S3; concurrent queries beyond the account quota are queued/throttled, not failed. Bottleneck: concurrent-query limit."
@@ -242,6 +265,7 @@
   "secretsManager": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 10000,
     "capacityDriver": "Secrets API rate limit",
     "atSaturation": "Bursts past the API rate limit are throttled; cache secrets to avoid it. The service stays up.",
     "summary": "Stores secrets behind a rate-limited API; bursts are throttled. Bottleneck: API request rate - cache secrets to avoid it."
@@ -249,6 +273,7 @@
   "transitGateway": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 1000000,
     "capacityDriver": "Per-attachment bandwidth",
     "atSaturation": "Past per-attachment bandwidth, traffic is shaped or queued, not dropped to offline; it stays up.",
     "summary": "Connects networks at high bandwidth; over the per-attachment limit traffic is shaped, not dropped to offline. Bottleneck: per-attachment bandwidth."
@@ -256,6 +281,7 @@
   "directConnect": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 500000,
     "capacityDriver": "Fixed port bandwidth",
     "atSaturation": "Traffic past the port speed is queued or dropped, but the link itself stays up.",
     "summary": "A dedicated network link with fixed bandwidth; traffic past the port speed is queued/dropped but the link stays up. Bottleneck: port bandwidth."
@@ -263,6 +289,7 @@
   "globalAccelerator": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 1000000,
     "capacityDriver": "Edge network throughput",
     "atSaturation": "Past edge capacity it throttles, never goes offline; traffic keeps flowing over the AWS backbone.",
     "summary": "Routes users over the AWS backbone with very high capacity; it throttles, never goes offline. Bottleneck: edge throughput."
@@ -270,6 +297,7 @@
   "xray": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 50000,
     "capacityDriver": "Trace ingestion rate",
     "atSaturation": "Excess traces are sampled or throttled rather than failing; ingestion stays up.",
     "summary": "Ingests distributed traces with sampling; excess is sampled/throttled rather than failing. Bottleneck: trace ingestion rate."
@@ -285,6 +313,8 @@
   "glue": {
     "kind": "compute",
     "failureMode": "throttle",
+    "capacityRps": 100,
+    "saturation": "queue",
     "capacityDriver": "DPU capacity (jobs queue)",
     "atSaturation": "Extra ETL jobs queue past DPU capacity rather than failing; the service stays up and runs them as DPUs free.",
     "summary": "Serverless ETL on DPUs; extra jobs queue rather than failing the service. Bottleneck: DPU capacity / concurrent-job limit."
@@ -301,6 +331,7 @@
     "kind": "connections",
     "failureMode": "offline",
     "offlineAtRatio": 1.5,
+    "capacityRps": 5000,
     "capacityDriver": "Broker connections & throughput",
     "atSaturation": "Overload exhausts broker connections and CPU; the broker becomes unresponsive. It goes Offline until load drops.",
     "summary": "Managed message broker bound by broker connections and CPU; overload exhausts the broker and it becomes unresponsive (offline). Bottleneck: broker connections x throughput."
@@ -308,6 +339,7 @@
   "kms": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 50000,
     "capacityDriver": "Cryptographic request rate",
     "atSaturation": "Bursts past the crypto request limit are throttled; cache data keys to avoid it. The service stays up.",
     "summary": "Key management with a per-region crypto request limit; bursts are throttled - cache data keys to avoid it. Bottleneck: cryptographic request rate."
@@ -336,6 +368,8 @@
   "codeBuild": {
     "kind": "compute",
     "failureMode": "throttle",
+    "capacityRps": 50,
+    "saturation": "queue",
     "capacityDriver": "Build compute (jobs queue)",
     "atSaturation": "Concurrent builds past the limit queue rather than failing; the service stays up and runs them in turn.",
     "summary": "Runs build jobs on managed compute; concurrent builds beyond the limit queue rather than failing. Bottleneck: build concurrency / compute size."
@@ -350,6 +384,7 @@
   "bedrock": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 100,
     "capacityDriver": "Model tokens / requests per minute",
     "atSaturation": "Past the model TPM/RPM quota, calls are throttled (429); the endpoint stays up and recovers as the burst clears.",
     "summary": "Managed foundation-model API limited by tokens and requests per minute; over the quota calls are throttled, not failed. Bottleneck: model TPM/RPM quota."
@@ -365,6 +400,7 @@
   "appSync": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 10000,
     "capacityDriver": "GraphQL request / resolver rate",
     "atSaturation": "Bursts past the request/resolver quota are throttled; the API shows Overloaded but stays up and recovers.",
     "summary": "Managed GraphQL with high request capacity; bursts are throttled, never offline. Bottleneck: request / resolver throughput."
@@ -372,6 +408,7 @@
   "iotCore": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 20000,
     "capacityDriver": "Device message ingestion rate",
     "atSaturation": "Past the message and connection rate, ingestion is throttled; the broker stays up and accepts messages again.",
     "summary": "Ingests device messages at very high rates; excess is throttled rather than failing. Bottleneck: message ingestion / connection rate."
@@ -379,6 +416,7 @@
   "rekognition": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 50,
     "capacityDriver": "Image / video API rate",
     "atSaturation": "Bursts past the API quota are throttled (429), not failed; the service stays up.",
     "summary": "Managed vision API with a per-second request quota; bursts are throttled, not failed. Bottleneck: API request rate."
@@ -386,6 +424,7 @@
   "textract": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 25,
     "capacityDriver": "Document API rate",
     "atSaturation": "Calls past the per-second quota are throttled; the service stays up and accepts requests again as load drops.",
     "summary": "Managed document-analysis API limited by requests per second; over the quota calls are throttled. Bottleneck: API request rate."
@@ -393,6 +432,8 @@
   "mediaConvert": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 50,
+    "saturation": "queue",
     "capacityDriver": "Transcode job concurrency (queues)",
     "atSaturation": "Extra transcode jobs queue when busy rather than failing; the service stays up and processes the backlog.",
     "summary": "Transcodes media as jobs that queue when busy rather than failing. Bottleneck: concurrent transcode jobs."
@@ -400,6 +441,7 @@
   "cloudTrail": {
     "kind": "throughput",
     "failureMode": "throttle",
+    "capacityRps": 20000,
     "capacityDriver": "Management-event ingestion",
     "atSaturation": "High event volumes are batched or throttled, never taken offline; logging stays up.",
     "summary": "Records account activity; high event volumes are batched/throttled, never taken offline. Bottleneck: event ingestion rate."
@@ -460,5 +502,85 @@
     "capacityDriver": "Endpoint bandwidth / connections",
     "atSaturation": "Past endpoint bandwidth, traffic is shaped rather than failed; the endpoint stays up.",
     "summary": "Private connectivity to services with high bandwidth; over the endpoint limit traffic is shaped, not failed. Bottleneck: endpoint bandwidth / connections."
+  },
+  "amplify": {
+    "kind": "compute",
+    "failureMode": "throttle",
+    "capacityRps": 100000,
+    "capacityDriver": "Build minutes & app limits",
+    "atSaturation": "Exceeding concurrent builds or regional app limits will throttle new deployments; static hosting traffic continues serving through the global CDN.",
+    "summary": "Full-stack client hosting and generation; exceeding concurrent builds or regional limits throttles new deployments, but traffic continues serving."
+  },
+  "ses": {
+    "kind": "throughput",
+    "failureMode": "throttle",
+    "capacityRps": 14,
+    "capacityDriver": "Approved sending rate (TPS) and rolling 24-hour quota",
+    "atSaturation": "Submitting mail past the approved TPS throws ThrottlingException (HTTP 400) and excess mail is dropped immediately; the daily quota blocks further sends. Reputation is a second ceiling: bounce rates above 5% or complaints above 0.1% pause the account.",
+    "summary": "Managed email relay bound by an approved sending rate and a rolling daily quota; excess sends are throttled, and poor bounce/complaint reputation can suspend sending entirely. Bottleneck: approved TPS × 24h quota."
+  },
+  "documentDb": {
+    "kind": "connections",
+    "failureMode": "offline",
+    "offlineAtRatio": 1.4,
+    "capacityDriver": "Instance connection limit × per-query CPU/RAM",
+    "atSaturation": "Unindexed collection scans saturate instance CPU and RAM, exhausting the connection pool; queries time out and the node becomes unresponsive until load drops.",
+    "summary": "A MongoDB-compatible document store bound by its connection pool and query indexing. Unindexed scans exhaust connections and CPU, taking the instance offline. Storage has a hard 64 TiB ceiling. Bottleneck: connections ÷ query time."
+  },
+  "neptune": {
+    "kind": "connections",
+    "failureMode": "offline",
+    "offlineAtRatio": 1.4,
+    "capacityDriver": "Query-thread memory and buffer-cache hit ratio",
+    "atSaturation": "Bursty Gremlin/SPARQL traversals over super-vertices exhaust memory and lock query threads; execution times climb until queries hit the 2-minute default timeout and connections fail.",
+    "summary": "A graph database bound by query-thread memory and cache locality. Traversals over super-vertices (millions of edges) exhaust memory and lock threads, timing out connections and taking the node offline. Bottleneck: buffer-cache hits ÷ traversal complexity."
+  },
+  "timestream": {
+    "kind": "throughput",
+    "failureMode": "throttle",
+    "capacityRps": 20000,
+    "capacityDriver": "Regional ingestion quota (~20 MB/s default)",
+    "atSaturation": "Writes past the regional ingest quota are rejected with ThrottlingException (HTTP 429); reads continue. Wide query scans over unindexed time ranges spike cost rather than availability.",
+    "summary": "A serverless time-series ledger bound by its regional ingestion quota; excess writes are rejected with HTTP 429 while reads keep serving. Bottleneck: ingest MB/s quota."
+  },
+  "appConfig": {
+    "kind": "throughput",
+    "failureMode": "throttle",
+    "capacityRps": 3000,
+    "capacityDriver": "GetLatestConfiguration API call rate",
+    "atSaturation": "Polling past account API limits throttles GetLatestConfiguration calls; clients must serve cached configuration until the poll interval backs off.",
+    "summary": "A configuration/feature-flag control plane bound by its API request rate; over-polling gets throttled and clients fall back to cached config. Bottleneck: config-poll requests/sec."
+  },
+  "appMesh": {
+    "kind": "control-plane",
+    "failureMode": "none",
+    "capacityDriver": "Mesh node density (routing-update fan-out)",
+    "atSaturation": "Routing-rule propagation slows as mesh size grows, delaying rollouts; the data plane keeps serving because Envoy proxies route on cached configuration even if the control plane is unreachable.",
+    "summary": "A service-mesh control plane that distributes routes asynchronously; saturation only delays routing updates while Envoy sidecars keep serving from cached routes. Bottleneck: routing-update propagation across mesh nodes."
+  },
+  "cloudMap": {
+    "kind": "throughput",
+    "failureMode": "throttle",
+    "capacityRps": 1000,
+    "capacityDriver": "Discovery API queries/sec",
+    "atSaturation": "DiscoverInstances requests past account rate limits return HTTP 400 throttling errors; applications must cache service resolutions and back off.",
+    "summary": "A service-discovery registry bound by its API query rate; excess discovery calls are throttled, so clients cache resolutions. Bottleneck: registry queries/sec."
+  },
+  "quickSight": {
+    "kind": "provisioned",
+    "failureMode": "throttle",
+    "capacityRps": 500,
+    "capacityDriver": "SPICE in-memory capacity",
+    "atSaturation": "Dashboards exceeding SPICE capacity fall back to direct queries that saturate source database connection pools; visuals load slowly or return errors until capacity is added.",
+    "summary": "A BI dashboard service bound by provisioned SPICE capacity; datasets that overflow it degrade to direct source queries that time out under load. Bottleneck: SPICE GB capacity."
+  },
+  "lightsail": {
+    "kind": "compute",
+    "failureMode": "throttle",
+    "capacityRps": 200,
+    "saturation": "degrade",
+    "capacityDriver": "Burstable CPU credit balance",
+    "atSaturation": "Sustained CPU above the bundle baseline drains burst credits; once exhausted the VM is throttled to baseline performance and response times degrade sharply, the instance stays up.",
+    "summary": "A flat-rate VPS on burstable CPUs; sustained load drains burst credits and throttles the instance to its baseline rather than killing it. Disk IOPS limits throttle similarly. Bottleneck: CPU credit balance."
   }
 }
