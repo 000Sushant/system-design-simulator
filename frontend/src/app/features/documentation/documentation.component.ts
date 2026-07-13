@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnInit, AfterViewChecked, OnDestroy, inject } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, Title, Meta } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AwsCatalogService } from '../../core/services/aws-catalog.service';
 import { AwsServiceDefinition, AwsServiceType } from '../../core/models/architecture.model';
@@ -23,6 +23,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   awsCatalog = inject(AwsCatalogService);
   private sanitizer = inject(DomSanitizer);
   private themeService = inject(ThemeService);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
 
   searchQuery = '';
   activeCategoryId = 'overview';
@@ -136,16 +138,61 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     if (typeof window !== 'undefined' && window.location) {
       const params = new URLSearchParams(window.location.search);
       const serviceParam = params.get('service');
-      if (
-        serviceParam &&
-        this.awsCatalog.services.some((service) => service.type === serviceParam)
-      ) {
-        this.selectedServiceType = serviceParam as AwsServiceType;
-        this.updateConnectivityMap(serviceParam);
-        this.activeCategoryId = '';
-      } else {
-        this.selectedServiceType = null;
+      if (serviceParam) {
+        const matched = this.awsCatalog.services.find(
+          (service) => service.type.toLowerCase() === serviceParam.toLowerCase()
+        );
+        if (matched) {
+          this.selectedServiceType = matched.type as AwsServiceType;
+          this.updateConnectivityMap(matched.type);
+          this.activeCategoryId = '';
+          this.updateTitleAndMeta();
+          return;
+        }
       }
+      this.selectedServiceType = null;
+      this.updateTitleAndMeta();
+    }
+  }
+
+  updateTitleAndMeta(): void {
+    if (this.selectedServiceType) {
+      const doc = this.awsCatalog.getByType(this.selectedServiceType);
+      const name = doc.name;
+      const docData = (serviceDocsData as any)[this.selectedServiceType] || {};
+      const description = (docData.overview || doc.description || '').slice(0, 158);
+
+      const titleAbbreviations: Record<string, string> = {
+        systemsManager: 'SSM',
+        s3: 'S3',
+        ec2: 'EC2',
+        rds: 'RDS',
+        sqs: 'SQS',
+        sns: 'SNS',
+        kms: 'KMS',
+        iam: 'IAM',
+        ecs: 'ECS',
+        eks: 'EKS',
+        waf: 'WAF',
+        certificateManager: 'ACM',
+        ebs: 'EBS',
+        efs: 'EFS',
+        vpc: 'VPC'
+      };
+
+      const abv = titleAbbreviations[this.selectedServiceType];
+      const hasBrand = /^(AWS|Amazon)/.test(name);
+      const titleProduct = abv ? `${name} (${abv})` : (hasBrand ? name : `${name} (AWS)`);
+      const title = `What is ${titleProduct}? Guide, Architecture, Cost & Pricing | Sr. Architect`;
+
+      this.titleService.setTitle(title);
+      this.metaService.updateTag({ name: 'description', content: description });
+    } else {
+      this.titleService.setTitle('AWS Service Library: What Each Service Is, How It Works & Cost | Sr. Architect');
+      this.metaService.updateTag({
+        name: 'description',
+        content: 'Plain-language guides to AWS services: what each is, how it works, when to use it, and how it is priced.'
+      });
     }
   }
 
@@ -284,6 +331,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   closeDeepDive(): void {
     this.selectedServiceType = null;
     window.history.pushState(null, '', '/docs');
+    this.updateTitleAndMeta();
   }
 
   updateConnectivityMap(type: string): void {
@@ -478,6 +526,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     this.updateConnectivityMap(type);
     window.history.pushState(null, '', `/docs?service=${type}`);
     this.activeCategoryId = '';
+    this.updateTitleAndMeta();
 
     const shell = this.el.nativeElement.querySelector('.docs-shell');
     shell?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -519,6 +568,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       window.history.pushState(null, '', '/docs');
     }
     this.activeCategoryId = id;
+    this.updateTitleAndMeta();
     this.isManualScrolling = true;
 
     const performScroll = () => {
