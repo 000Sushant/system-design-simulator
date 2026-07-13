@@ -1,4 +1,4 @@
-name = "aws-pricing-generator"
+name = "daily-analytics"
 main = "src/index.ts"
 compatibility_date = "2024-09-23"
 workers_dev = true
@@ -10,50 +10,42 @@ workers_dev = true
 # ──────────────────────────────────────────────
 
 # ──────────────────────────────────────────────
-# KV Namespace
-# Run: wrangler kv namespace create AWS_PRICING_KV
+# KV Namespace (dedicated to this worker — separate from AWS_PRICING_KV)
+# Run: wrangler kv namespace create DAILY_KV
 # Then paste the returned `id` below.
 # ──────────────────────────────────────────────
 [[kv_namespaces]]
-binding = "AWS_PRICING_KV"
+binding = "DAILY_KV"
 id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 
 # ──────────────────────────────────────────────
-# D1 database (challenge thumbs up/down votes)
-# 1. wrangler d1 create challenge-votes (paste the returned database_id below)
-# Frontend points at this Worker via environment.votesApiBase (dev: http://127.0.0.1:8787).
-# ──────────────────────────────────────────────
-[[d1_databases]]
-binding = "DB"
-database_name = "challenge-votes"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
-
-# ──────────────────────────────────────────────
-# Cron: every 5 minutes
-# - Used for sequential "one region per invocation" processing
-# - Weekly reset is detected internally via KV timestamp
+# Cron: once a day at 00:15 UTC
+# Each run refreshes:
+#   - USD→{EUR,GBP,INR,JPY} exchange rates from Frankfurter (ECB daily rates)
+#   - GitHub stars/forks/clones + Cloudflare visitor analytics
+# Both are cached in KV and served via GET /fx and GET /stats.
 # ──────────────────────────────────────────────
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["15 0 * * *"]
 
 # ──────────────────────────────────────────────
 # Secrets (set via CLI, never in this file):
-#   wrangler secret put AWS_ACCESS_KEY_ID
-#   wrangler secret put AWS_SECRET_ACCESS_KEY
-#
-# Admin auth — required to use POST /trigger, /reset, /start. When unset, those
-# endpoints return 503 (disabled). Generate a strong random value, e.g.:
-#   openssl rand -hex 32 | wrangler secret put ADMIN_TOKEN
-# Then call: curl -X POST -H "Authorization: Bearer <token>" .../trigger
-#
-# CORS allowlist for /votes and /stats (browser origins, comma-separated).
-# Defaults to the production site + http://localhost:4200 when unset. Set as a
-# plain var (not a secret), e.g. in the [vars] block below:
-#   ALLOWED_ORIGINS = "https://srarchitect.qzz.io,http://localhost:4200"
-#
-# Live stats (optional — /stats serves zeros until all three are set):
 #   wrangler secret put GITHUB_TOKEN   # PAT with repo (push) access, for traffic/clones
 #   wrangler secret put CF_API_TOKEN   # token with Analytics:Read on the zone
 #   wrangler secret put CF_ZONE_TAG    # the zone ID of your deployed domain
+# /stats serves zeros until all three are set. /fx needs no secrets.
+#
+# CORS allowlist for /fx and /stats (browser origins, comma-separated).
+# Defaults to the production site + http://localhost:4200 when unset. Set as a
+# plain var, e.g.:
+#   [vars]
+#   ALLOWED_ORIGINS = "https://srarchitect.qzz.io,http://localhost:4200"
+#
+# One-time migration of the all-time stats accumulators from the pricing
+# worker's KV (run from the repo root; IDs are the respective namespace ids):
+#   for k in stats:public stats:clones stats:visitors stats:countries stats:lastRun; do
+#     wrangler kv key get "$k" --namespace-id <AWS_PRICING_KV_ID> --remote > tmp.json
+#     wrangler kv key put "$k" --path tmp.json --namespace-id <DAILY_KV_ID> --remote
+#   done
 # ──────────────────────────────────────────────

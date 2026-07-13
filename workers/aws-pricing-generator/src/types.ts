@@ -1,5 +1,7 @@
 export interface Env {
   AWS_PRICING_KV: KVNamespace;
+  /** Weekly pricing-rebuild workflow (see workflow.ts). */
+  PRICING_WORKFLOW: Workflow;
   AWS_ACCESS_KEY_ID: string;
   AWS_SECRET_ACCESS_KEY: string;
   /**
@@ -10,38 +12,33 @@ export interface Env {
   ADMIN_TOKEN?: string;
   /**
    * Comma-separated list of browser origins allowed to call the CORS endpoints
-   * (/votes, /stats). Defaults to the production site + localhost when unset.
+   * (/votes). Defaults to the production site + localhost when unset.
    */
   ALLOWED_ORIGINS?: string;
   /** D1 database holding per-challenge thumbs up/down tallies. */
   DB: D1Database;
-  // ── Live stats (optional; /stats serves zeros until these are set) ──────────
-  /** GitHub PAT with repo (push) access — required for the traffic/clones API. */
-  GITHUB_TOKEN?: string;
-  /** Cloudflare API token with Analytics:Read on the zone. */
-  CF_API_TOKEN?: string;
-  /** Cloudflare zone tag (zone ID) for the deployed domain. */
-  CF_ZONE_TAG?: string;
 }
 
 /** Persisted in KV under key: "worker:progress" */
 export interface WorkerProgress {
   /** 'idle' = no run in progress; 'running' = actively processing regions; 'failed' = error occurred */
   status: 'idle' | 'running' | 'failed';
-  /** Index into REGIONS array for the NEXT region to process */
+  /** Index of the NEXT region to process within the current run's list */
   currentIndex: number;
-  /** Unix ms when the current (or last) weekly run started */
+  /** Unix ms when the current (or last) run started */
   startedAt: number;
-  /** Region that most recently succeeded */
+  /** Region that most recently rebuilt cleanly */
   lastCompletedRegion?: string;
   /** Error message from the last failure */
   lastError?: string;
-  /** Do not restart until this timestamp (ms) has passed after a failure */
-  cooldownUntil?: number;
-  /** Total regions processed in the current weekly run */
+  /** Regions rebuilt cleanly in the current run */
   completedCount?: number;
+  /** Regions in the current run (27 for a full run, fewer for a repair run) */
+  runTotal?: number;
   /** Build phase (0-based) within the current region; see PHASE_COUNT */
   phase?: number;
+  /** Workflow instance driving the current (or last) run. */
+  instanceId?: string;
 }
 
 export interface RawPriceResult {

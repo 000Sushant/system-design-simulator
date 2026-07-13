@@ -89,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dir: [frontend, worker]
+        dir: [frontend, workers/aws-pricing-generator, workers/daily-analytics]
     steps:
       - uses: actions/checkout@v4
 

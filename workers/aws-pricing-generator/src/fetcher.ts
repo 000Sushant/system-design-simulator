@@ -52,10 +52,12 @@ export function extractMaxPriceParsed(parsed: any): number | null {
  */
 export function extractMatchingPrice(
   result: RawPriceResult,
-  predicate: (parsed: any) => boolean
+  predicate: (parsed: any) => boolean,
+  rawPredicate?: (raw: string) => boolean
 ): number | null {
   if (!result.PriceList?.length) return null;
   const match = result.PriceList.find(raw => {
+    if (rawPredicate && !rawPredicate(raw)) return false;
     try { return predicate(JSON.parse(raw)); } catch { return false; }
   });
   return match === undefined ? null : extractMaxPrice(match);
@@ -66,6 +68,8 @@ export function extractMatchingPrice(
 export class PricingFetcher {
   private aws: AwsClient;
   private callCount = 0;
+  /** Timestamp (ms) at which the next API call may launch. */
+  private nextSlotAt = 0;
 
   constructor(accessKeyId: string, secretAccessKey: string) {
     this.aws = new AwsClient({
@@ -76,16 +80,42 @@ export class PricingFetcher {
     });
   }
 
+  /** Pricing API calls made so far — counts against the per-invocation subrequest limit. */
+  get calls(): number {
+    return this.callCount;
+  }
+
+  /**
+   * Reserves the next launch slot, keeping call STARTS spaced
+   * RATE_LIMIT_DELAY_MS apart even when callers run concurrently. The
+   * reservation is synchronous (nextSlotAt is bumped before awaiting), so
+   * parallel callers each get a distinct slot instead of serializing on the
+   * full round-trip.
+   */
+  private async reserveSlot(): Promise<void> {
+    const slot = Math.max(Date.now(), this.nextSlotAt);
+    this.nextSlotAt = slot + RATE_LIMIT_DELAY_MS;
+    const wait = slot - Date.now();
+    if (wait > 0) await sleep(wait);
+  }
+
+  /** Pushes the launch schedule back after a throttle so pending callers also back off. */
+  private backOff(): Promise<void> {
+    this.nextSlotAt = Math.max(this.nextSlotAt, Date.now() + THROTTLE_BACKOFF_MS);
+    return sleep(THROTTLE_BACKOFF_MS);
+  }
+
   // ── Low-level query ──────────────────────────────────────────────────────
 
   private async query(
     serviceCode: string,
     filters: Filter[],
     predicate?: (parsed: any) => boolean,
-    maxResults = 25
+    maxResults = 25,
+    rawPredicate?: (raw: string) => boolean
   ): Promise<number | null> {
     // Enforce rate limit before every call
-    await sleep(RATE_LIMIT_DELAY_MS);
+    await this.reserveSlot();
     this.callCount++;
 
     const body = JSON.stringify({ ServiceCode: serviceCode, Filters: filters, MaxResults: maxResults });
@@ -105,7 +135,7 @@ export class PricingFetcher {
         const text = await resp.text();
         if (!retried && (text.includes('ThrottlingException') || text.includes('Rate exceeded'))) {
           console.warn(`[Fetcher] Throttled on call #${this.callCount} (${serviceCode}). Backing off ${THROTTLE_BACKOFF_MS}ms...`);
-          await sleep(THROTTLE_BACKOFF_MS);
+          await this.backOff();
           return attempt(true); // single retry
         }
         console.warn(`[Fetcher] HTTP ${resp.status} for ${serviceCode}:`, text.slice(0, 200));
@@ -119,7 +149,7 @@ export class PricingFetcher {
 
       const result: RawPriceResult = await resp.json();
       if (!result.PriceList?.length) return null;
-      if (predicate) return extractMatchingPrice(result, predicate);
+      if (predicate) return extractMatchingPrice(result, predicate, rawPredicate);
       return extractMaxPrice(result.PriceList[0]);
     };
 
@@ -140,13 +170,14 @@ export class PricingFetcher {
   private async queryBulk(
     serviceCode: string,
     filters: Filter[],
-    maxPages = 8
+    maxPages = 8,
+    rawFilter?: (raw: string) => boolean
   ): Promise<any[]> {
     const items: any[] = [];
     let nextToken: string | undefined;
 
     for (let page = 0; page < maxPages; page++) {
-      await sleep(RATE_LIMIT_DELAY_MS);
+      await this.reserveSlot();
       this.callCount++;
 
       const body = JSON.stringify({
@@ -171,7 +202,7 @@ export class PricingFetcher {
             const text = await resp.text();
             if (!retried && (text.includes('ThrottlingException') || text.includes('Rate exceeded'))) {
               console.warn(`[Fetcher] Throttled on bulk call #${this.callCount} (${serviceCode}). Backing off ${THROTTLE_BACKOFF_MS}ms...`);
-              await sleep(THROTTLE_BACKOFF_MS);
+              await this.backOff();
               return attempt(true);
             }
             console.warn(`[Fetcher] HTTP ${resp.status} for ${serviceCode} (bulk):`, text.slice(0, 200));
@@ -190,6 +221,7 @@ export class PricingFetcher {
 
       if (!result) break;
       for (const raw of result.PriceList ?? []) {
+        if (rawFilter && !rawFilter(raw)) continue;
         try { items.push(JSON.parse(raw)); } catch { /* skip malformed item */ }
       }
       nextToken = result.NextToken;
@@ -351,7 +383,7 @@ export class PricingFetcher {
     return this.query('AmazonRDS', filters, p => {
       const ut = String(p.product?.attributes?.usagetype ?? '');
       return ut.includes('InstanceUsage') && !ut.includes('ExtendedSupport');
-    }, 100);
+    }, 100, raw => raw.includes('InstanceUsage') && !raw.includes('ExtendedSupport'));
   }
 
   rdsStorageGp2(regionName: string): Promise<number | null> {
@@ -378,7 +410,7 @@ export class PricingFetcher {
     ], p => {
       const ut = String(p.product?.attributes?.usagetype ?? '');
       return ut.includes('InstanceUsage:') && !ut.includes('IOOptimized');
-    }, 100);
+    }, 100, raw => raw.includes('InstanceUsage:') && !raw.includes('IOOptimized'));
   }
 
   auroraServerlessAcu(regionName: string): Promise<number | null> {
@@ -406,7 +438,26 @@ export class PricingFetcher {
       const ut = String(a.usagetype ?? '');
       return ut.includes('NodeUsage:') && !ut.includes('ExtendedSupport')
         && !ut.includes('Outpost') && a.locationType !== 'AWS Outposts';
-    }, 100);
+    }, 100, raw => raw.includes('NodeUsage:') && !raw.includes('ExtendedSupport') && !raw.includes('Outpost') && !raw.includes('AWS Outposts'));
+  }
+
+  async elastiCacheBulk(regionName: string): Promise<Record<string, number>> {
+    const items = await this.queryBulk('AmazonElastiCache', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'cacheEngine', Value: 'Redis' }
+    ], 8, raw => raw.includes('NodeUsage:') && !raw.includes('ExtendedSupport') && !raw.includes('Outpost') && !raw.includes('AWS Outposts'));
+
+    const instances: Record<string, number> = {};
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const inst = a.instanceType;
+      if (!inst) continue;
+      const price = extractMaxPriceParsed(item);
+      if (price !== null) {
+        instances[inst] = price;
+      }
+    }
+    return instances;
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -876,15 +927,21 @@ export class PricingFetcher {
     for (const item of items) {
       const a = item.product?.attributes ?? {};
       const group = a.group;
+      const ut: string = a.usagetype ?? '';
       const price = extractMaxPriceParsed(item);
       if (price === null) continue;
+      // On-demand SKUs share group "OnDemand" and are distinguished by
+      // usagetype; EFO/retention SKUs have their own groups (verified against
+      // the live us-east-1 offer, 2026-07-10).
       if (group === 'Provisioned shard hour') result.shardHour = price;
       else if (group === 'Payload Units') result.putM = price * 1_000_000;
-      else if (group === 'Stream Hour') result.onDemandStreamHour = price;
-      else if (group === 'Data Ingestion') result.onDemandIngestGB = price;
-      else if (group === 'Data Retrieval') result.onDemandEgressGB = price;
-      else if (group === 'Enhanced Fan-Out retrieval') result.efoEgressGB = price;
-      else if (group === 'Consumer shard hour') result.consumerShardHour = price;
+      else if (group === 'OnDemand' && ut.endsWith('OnDemand-StreamHour')) result.onDemandStreamHour = price;
+      else if (group === 'OnDemand' && ut.endsWith('OnDemand-BilledIncomingBytes')) result.onDemandIngestGB = price;
+      else if (group === 'OnDemand' && ut.endsWith('OnDemand-BilledOutgoingBytes')) result.onDemandEgressGB = price;
+      else if (group === 'OnDemand' && ut.endsWith('OnDemand-BilledOutgoingEFOBytes')) result.efoEgressGB = price;
+      else if (group === 'Enhanced fan-out consumer-shard hour') result.consumerShardHour = price;
+      else if (group === 'OnDemand' && ut.endsWith('OnDemand-ExtendedRetention-ByteHrs')) result.extendedRetentionGB = price;
+      else if (group === 'Long-term Data Retention GB-month') result.longTermRetentionGB = price;
     }
     return result;
   }
@@ -905,27 +962,44 @@ export class PricingFetcher {
       const price = extractMaxPriceParsed(item);
       if (price === null) continue;
 
+      const ut: string = a.usagetype ?? '';
+      // Group/operation/usagetype combinations verified against the live
+      // us-east-1 offer (2026-07-10). IA request SKUs use the same
+      // PayPerRequestThroughput operation as standard; PITR/backup/restore/
+      // export SKUs carry no group or operation, only a usagetype.
       if (group === 'DDB-ReadUnits' && operation === 'PayPerRequestThroughput') {
         result.std.readM = price * 1_000_000;
       } else if (group === 'DDB-WriteUnits' && operation === 'PayPerRequestThroughput') {
         result.std.writeM = price * 1_000_000;
       } else if (volumeType === 'Amazon DynamoDB - Indexed DataStore') {
         result.std.storageGB = price;
-      } else if (volumeType === 'Amazon DynamoDB - Infrequent Access Indexed DataStore') {
+      } else if (volumeType === 'Amazon DynamoDB - Indexed DataStore - IA') {
         result.ia.storageGB = price;
-      } else if (group === 'DDB-ReadUnitsIA' && operation === 'PayPerRequestThroughputIA') {
+      } else if (group === 'DDB-ReadUnitsIA' && operation === 'PayPerRequestThroughput') {
         result.ia.readM = price * 1_000_000;
-      } else if (group === 'DDB-WriteUnitsIA' && operation === 'PayPerRequestThroughputIA') {
+      } else if (group === 'DDB-WriteUnitsIA' && operation === 'PayPerRequestThroughput') {
         result.ia.writeM = price * 1_000_000;
-      } else if (operation === 'PITRBackupStorage') {
+      } else if (group === 'DDB-ReplicatedWriteUnits' && operation === 'PayPerRequestThroughput') {
+        result.std.replicatedWriteM = price * 1_000_000;
+      } else if (group === 'DDB-WriteUnits' && operation === 'CommittedThroughput') {
+        result.std.wcuHr = price;
+      } else if (group === 'DDB-ReadUnits' && operation === 'CommittedThroughput') {
+        result.std.rcuHr = price;
+      } else if (group === 'DDB-WriteUnitsIA' && operation === 'CommittedThroughput') {
+        result.ia.wcuHr = price;
+      } else if (group === 'DDB-ReadUnitsIA' && operation === 'CommittedThroughput') {
+        result.ia.rcuHr = price;
+      } else if (group === 'DDB-ReplicatedWriteUnitsIA' && operation === 'PayPerRequestThroughput') {
+        result.ia.replicatedWriteM = price * 1_000_000;
+      } else if (ut.endsWith('TimedPITRStorage-ByteHrs')) {
         result.pitrStorageGB = price;
-      } else if (operation === 'OnDemandBackupStorage') {
+      } else if (ut.endsWith('TimedBackupStorage-ByteHrs')) {
         result.backupStorageGB = price;
-      } else if (operation === 'RestoreTable') {
+      } else if (ut.endsWith('RestoreDataSize-Bytes')) {
         result.restoreGB = price;
-      } else if (operation === 'GetRecords') {
-        result.streamsRequestsM = price * 100_000;
-      } else if (operation === 'ExportTableToS3') {
+      } else if (group === 'DDB-StreamsReadRequests' && operation === 'GetRecords') {
+        result.streamsRequestsM = price * 1_000_000;
+      } else if (ut.endsWith('-ExportDataSize-Bytes')) {
         result.exportGB = price;
       }
     }
@@ -949,23 +1023,31 @@ export class PricingFetcher {
       const price = extractMaxPriceParsed(item);
       if (price === null) continue;
 
+      // Serverless SKUs sit in group "Serverless" with KafkaServerless-*
+      // usagetypes; broker storage / tiered / Express storage are usagetype-
+      // only (verified against the live us-east-1 offer, 2026-07-10).
       if (group === 'Broker') {
         if (computeFamily) {
           result.instances[`kafka.${computeFamily}`] = price;
         }
       } else if (group === 'ExpressBroker') {
         if (computeFamily) {
-          result.expressInstances[`express.${computeFamily}`] = price;
+          // Express SKUs already carry the "express." prefix in computeFamily
+          // (e.g. "express.m7g.large"), unlike plain Broker SKUs.
+          const key = computeFamily.startsWith('express.') ? computeFamily : `express.${computeFamily}`;
+          result.expressInstances[key] = price;
         }
       } else if (type?.includes('KafkaServerless')) {
-        if (type.includes('ClusterPerHour')) result.serverless.clusterHour = price;
-        else if (type.includes('PartitionHour')) result.serverless.partitionHour = price;
-        else if (type.includes('TrafficIn-Bytes')) result.serverless.ingestGB = price;
-        else if (type.includes('TrafficOut-Bytes')) result.serverless.egressGB = price;
-      } else if (group === 'BrokerStorage') {
+        if (type.endsWith('KafkaServerless-ClusterHours')) result.serverless.clusterHour = price;
+        else if (type.endsWith('KafkaServerless-PartitionHours')) result.serverless.partitionHour = price;
+        else if (type.endsWith('KafkaServerless-In-Bytes')) result.serverless.ingestGB = price;
+        else if (type.endsWith('KafkaServerless-Out-Bytes')) result.serverless.egressGB = price;
+      } else if (type?.endsWith('Kafka.Storage.GP2')) {
         result.storageGB = price;
-      } else if (group === 'TieredStorage') {
+      } else if (type?.endsWith('Kafka.Storage.Tiered')) {
         result.tieredStorageGB = price;
+      } else if (type?.endsWith('Express.Storage')) {
+        result.expressStorageGB = price;
       }
     }
     return result;
@@ -978,19 +1060,52 @@ export class PricingFetcher {
     const result: Record<string, number> = {};
     for (const item of items) {
       const a = item.product?.attributes ?? {};
-      const operation = a.operation;
-      const group = a.group;
+      const operation: string = a.operation ?? '';
+      const group: string = a.group ?? '';
+      const ut: string = a.usagetype ?? '';
       const price = extractMaxPriceParsed(item);
       if (price === null) continue;
 
-      if (operation === 'DetectFaces' || operation === 'DetectLabels') {
-        result.imageM = price * 1000;
-      } else if (operation === 'StartFaceDetection' || operation === 'StartLabelDetection') {
+      // SKUs are identified by group + plain usagetype (no :TechCue/:Shot
+      // segment suffixes, no per-API operation attributes) — verified against
+      // the live us-east-1 offer, 2026-07-10. imageM is $ per 1M images.
+      if (group === 'Rekognition Image API Requests' && /(^|-)ImagesProcessed$/.test(ut) && !ut.includes('ImageProperties')) {
+        result.imageM = price * 1_000_000;
+      } else if (group === 'Rekognition Video API Requests - Archived Content' && ut.endsWith('MinsOfArchVideoProcessed')) {
         result.videoArchivedMin = price;
-      } else if (operation === 'StartFaceSearch') {
+      } else if (group === 'Rekognition Video API Requests - Live Streams' && ut.endsWith('MinsOfLiveVideoProcessed') && !operation) {
         result.videoLiveMin = price;
-      } else if (group === 'FaceVectors') {
+      } else if (group === 'Face Vector Storage') {
         result.faceVectorM = price * 1_000_000;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * ElastiCache Serverless rates per engine, from the single
+   * "ElastiCache Serverless" product family (verified us-east-1, 2026-07-10):
+   *   CachedData:{Engine}                → $/GB-hour of cached data
+   *   ElastiCacheProcessingUnits:{Engine} → $/ECPU (stored as $/million ECPUs)
+   * Returns { redis: { storageGBHour, ecpuM }, valkey: {...} } with only the
+   * values actually found.
+   */
+  async elastiCacheServerless(regionName: string): Promise<Record<string, Record<string, number>>> {
+    const items = await this.queryBulk('AmazonElastiCache', [
+      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'ElastiCache Serverless' },
+    ], 8, raw => raw.includes('CachedData:') || raw.includes('ElastiCacheProcessingUnits:'));
+    const result: Record<string, Record<string, number>> = {};
+    for (const item of items) {
+      const a = item.product?.attributes ?? {};
+      const ut: string = a.usagetype ?? '';
+      const engine = String(a.cacheEngine ?? '').toLowerCase();
+      const price = extractMaxPriceParsed(item);
+      if (price === null || !engine) continue;
+      if (ut.includes('CachedData:')) {
+        (result[engine] ??= {}).storageGBHour = price;
+      } else if (ut.includes('ElastiCacheProcessingUnits:')) {
+        (result[engine] ??= {}).ecpuM = price * 1_000_000;
       }
     }
     return result;
@@ -1235,7 +1350,7 @@ export class PricingFetcher {
     ], p => {
       const a = p.product?.attributes ?? {};
       return a.group === 'Author Pro Subscription' && !(a.usagetype ?? '').includes('Free-Trial');
-    }, 100);
+    }, 100, raw => raw.includes('Author Pro Subscription') && !raw.includes('Free-Trial'));
   }
 
   async quickSightReader(regionName: string): Promise<number | null> {
@@ -1244,13 +1359,13 @@ export class PricingFetcher {
     ], p => {
       const a = p.product?.attributes ?? {};
       return a.group === 'Reader Subscription' && !(a.usagetype ?? '').includes('Free-Trial');
-    }, 100);
+    }, 100, raw => raw.includes('Reader Subscription') && !raw.includes('Free-Trial'));
   }
 
   async quickSightSpice(regionName: string): Promise<number | null> {
     return this.query('AmazonQuickSight', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
-    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('QS-Enterprise-SPICE'), 100);
+    ], p => (p.product?.attributes?.usagetype ?? '').endsWith('QS-Enterprise-SPICE'), 100, raw => raw.includes('QS-Enterprise-SPICE'));
   }
 
   // ── Amazon Lightsail ─────────────────────────────────────────────────────
@@ -1266,7 +1381,7 @@ export class PricingFetcher {
     const items = await this.queryBulk('AmazonLightsail', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Lightsail Instance' }
-    ]);
+    ], 8, raw => raw.includes('BundleUsage:'));
     const out: Record<string, number | null> = {};
     for (const size of sizes) {
       const re = new RegExp(`(^|-)BundleUsage:${size.replace('.', '\\.')}$`);
@@ -1287,6 +1402,6 @@ export class PricingFetcher {
     ], p => {
       const u = p.product?.attributes?.usagetype ?? '';
       return u.endsWith('DataXfer-Out-Overage-Bytes') && !u.includes('Storage');
-    }, 100);
+    }, 100, raw => raw.includes('DataXfer-Out-Overage-Bytes') && !raw.includes('Storage'));
   }
 }

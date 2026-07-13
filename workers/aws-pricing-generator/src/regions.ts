@@ -40,8 +40,5 @@ export const REGIONS: Region[] = [
   { code: 'af-south-1',     name: 'Africa (Cape Town)' },
 ];
 
-/** 7 days in milliseconds — used to decide when a new weekly run should start */
+/** 7 days in milliseconds — the cadence of the weekly rebuild cron */
 export const WEEKLY_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
-
-/** 30-minute cooldown after a failed region before retry */
-export const FAILURE_COOLDOWN_MS = 30 * 60 * 1000;

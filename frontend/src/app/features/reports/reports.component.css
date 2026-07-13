@@ -1,0 +1,1076 @@
+/* ═══════════════════════════════════════════════════════════════
+   Reports Page — Premium Glassmorphic Shell
+   Mirrors the Documentation page visual language exactly.
+   Report content is injected directly (no iframe).
+   ═══════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100vh;
+  font-family: "Inter", "SF Pro Display", -apple-system, sans-serif;
+  color: #1f2937;
+  background:
+    radial-gradient(circle at 12% 10%, var(--c-violet-12), transparent 22%),
+    radial-gradient(circle at 88% 15%, rgba(6, 182, 212, 0.1), transparent 22%),
+    linear-gradient(135deg, #f8f7ff 0%, #f5fbff 46%, #f7f8ff 100%);
+}
+
+.reports-shell {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 88px clamp(12px, 3vw, 42px) 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Mesh Background Orbs ──────────────────────────────────── */
+.mesh-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.orb {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  filter: blur(80px);
+  opacity: 0.14;
+}
+
+.orb-a {
+  top: -60px;
+  left: -80px;
+  background: var(--c-violet);
+}
+
+.orb-b {
+  top: 80px;
+  right: -100px;
+  background: var(--c-cyan);
+}
+
+.orb-c {
+  bottom: 20%;
+  left: 30%;
+  width: 260px;
+  height: 260px;
+  background: var(--c-cyan);
+  opacity: 0.08;
+}
+
+/* ── Glassmorphic Panel Base ───────────────────────────────── */
+.glass-panel {
+  position: relative;
+  border: 1px solid var(--c-white-85);
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.84),
+      rgba(255, 255, 255, 0.44)),
+    rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  box-shadow:
+    0 18px 46px var(--c-violet-08),
+    0 8px 18px var(--c-s900-04),
+    inset 0 1.5px 2px var(--c-white-98),
+    inset 0 -1.5px 2px rgba(124, 58, 237, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Docs-style Navbar
+   ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   Docs-style Navbar
+   ═══════════════════════════════════════════════════════════════ */
+.docs-nav {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: calc(100% - 48px);
+  max-width: 1200px;
+  height: 56px;
+  border-radius: 20px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.07),
+    inset 0 1px 0 var(--c-white-90);
+  transition:
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width, border-radius, max-width;
+}
+
+.docs-nav.nav-scrolled {
+  top: 14px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  border-radius: 999px;
+  padding: 0 18px;
+  background: rgba(9, 9, 12, 0.82);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+  transition:
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-right-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Claymorphic back button */
+.back-btn {
+  position: relative;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--c-white-45);
+  background: var(--c-white-32);
+  color: var(--c-gray-700);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+  flex-shrink: 0;
+  box-shadow:
+    0 4px 12px var(--c-black-04),
+    inset 0 1px 1px var(--c-white-90);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.back-btn:hover {
+  border-color: rgba(124, 58, 237, 0.6);
+  color: var(--c-violet);
+}
+
+/* Scrolled back button: dark glass to match the pill */
+.docs-nav.nav-scrolled .back-btn {
+  background: var(--c-night-90);
+  border-color: var(--c-white-12);
+  color: rgba(241, 245, 249, 0.9);
+  box-shadow: none;
+}
+
+.docs-nav.nav-scrolled .back-btn:hover {
+  background: rgba(8, 11, 22, 0.98);
+  color: #fff;
+  border-color: var(--c-white-25);
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--c-ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease, opacity 0.2s ease;
+}
+
+.brand-mark:hover {
+  opacity: 0.75;
+}
+
+.brand-mark img {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.brand-mark span {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+}
+
+.brand-dot {
+  color: #ff9900 !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+.brand-mark small {
+  padding: 2.5px 7px;
+  border-radius: 999px;
+  color: var(--c-violet);
+  background: var(--c-violet-08);
+  border: 1px solid var(--c-violet-15a);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.05em;
+}
+
+/* On shrink keep the logo; collapse only the brand text + REPORTS badge (like landing). */
+.docs-nav.nav-scrolled .brand-mark span,
+.docs-nav.nav-scrolled .brand-mark small {
+  min-width: 0;
+  max-width: 0;
+  padding: 0;
+  border-width: 0;
+  overflow: hidden;
+  transition:
+    max-width 0.22s ease,
+    padding 0.22s ease,
+    border-width 0.22s ease;
+}
+
+/* On expand, hold the label fully collapsed until the pill has opened */
+.docs-nav:not(.nav-scrolled) .brand-mark span,
+.docs-nav:not(.nav-scrolled) .brand-mark small {
+  min-width: 0;
+  max-width: 200px;
+  overflow: hidden;
+  transition:
+    max-width 0.25s ease 0.22s,
+    padding 0.25s ease 0.22s,
+    border-width 0.25s ease 0.22s;
+}
+
+/* Docs button — Same as landing page */
+.docs-btn {
+  position: relative;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  color: var(--c-gray-700);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+  flex-shrink: 0;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.docs-btn:hover {
+  color: var(--c-ink);
+  background: var(--c-black-05);
+}
+
+/* Scrolled docs button: dark glass to match the pill */
+.docs-nav.nav-scrolled .docs-btn {
+  color: rgba(241, 245, 249, 0.9);
+  border-color: var(--c-white-12);
+  background: var(--c-night-90);
+  box-shadow: inset 0 1px 0 var(--c-white-06);
+}
+
+.docs-nav.nav-scrolled .docs-btn:hover {
+  color: var(--c-white);
+  background: rgba(8, 11, 22, 0.98);
+  border-color: var(--c-white-25);
+}
+
+.docs-nav.nav-scrolled .brand-mark,
+.docs-nav.nav-scrolled .brand-mark span {
+  color: #f1f5f9;
+}
+
+.docs-nav.nav-scrolled .brand-mark small {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: none;
+}
+
+/* ── Theme Toggle Button ───────────────────────────────────── */
+.theme-toggle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--c-white-45);
+  background: var(--c-white-32);
+  color: var(--c-gray-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow:
+    0 4px 12px var(--c-black-04),
+    inset 0 1px 1px var(--c-white-90);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  border-color: rgba(124, 58, 237, 0.6);
+  color: var(--c-violet);
+  background: var(--c-white-45);
+  transform: scale(1.05);
+}
+
+.theme-toggle-btn .sun-moon-svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  transform: rotate(40deg);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn .sun-moon-svg circle {
+  transition: r 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#report-moon-mask circle {
+  transition:
+    cx 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    cy 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn .sun-rays {
+  transition:
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.theme-toggle-btn.show-moon .sun-moon-svg {
+  transform: rotate(90deg);
+}
+
+.theme-toggle-btn.show-moon .sun-moon-svg circle {
+  r: 9;
+}
+
+.theme-toggle-btn.show-moon .sun-rays {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.6);
+}
+
+.docs-nav.nav-scrolled .theme-toggle-btn {
+  background: var(--c-night-90);
+  border-color: var(--c-white-12);
+  color: rgba(241, 245, 249, 0.9);
+  box-shadow: none;
+}
+
+.docs-nav.nav-scrolled .theme-toggle-btn:hover {
+  background: rgba(8, 11, 22, 0.98);
+  color: #fff;
+  border-color: var(--c-white-25);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Report Tab Selector Bar
+   ═══════════════════════════════════════════════════════════════ */
+.report-tabs-bar {
+  position: relative;
+  z-index: 5;
+  max-width: 1200px;
+  margin: 16px auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.report-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.report-tab i {
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 0.25s ease, color 0.25s ease;
+}
+
+.report-tab:hover {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(124, 58, 237, 0.2);
+  color: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.08);
+}
+
+.report-tab:hover i {
+  opacity: 1;
+  color: #7c3aed;
+}
+
+.report-tab.active {
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.55)),
+    rgba(255, 255, 255, 0.62);
+  border-color: rgba(124, 58, 237, 0.28);
+  color: #4f46e5;
+  box-shadow:
+    0 8px 22px rgba(124, 58, 237, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
+}
+
+.report-tab.active i {
+  opacity: 1;
+  color: #7c3aed;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Report Viewport — inline rendered content
+   ═══════════════════════════════════════════════════════════════ */
+.report-viewport {
+  position: relative;
+  z-index: 5;
+  max-width: 1200px;
+  margin: 16px auto 0;
+  width: 100%;
+}
+
+.report-inject {
+  width: 100%;
+}
+
+/* ── Loading State ─────────────────────────────────────────── */
+.report-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(124, 58, 237, 0.15);
+  border-top-color: var(--c-violet);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.report-loading p {
+  font-size: 14px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* ── Footer ────────────────────────────────────────────────── */
+.reports-footer {
+  position: relative;
+  z-index: 5;
+  max-width: 1200px;
+  margin: 32px auto 0;
+  padding: 18px 0 28px;
+  text-align: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.reports-footer p {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════════════ */
+:host-context(.dark) {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(124, 58, 237, 0.18), transparent 28%),
+    radial-gradient(circle at 88% 15%, rgba(6, 182, 212, 0.15), transparent 28%),
+    linear-gradient(135deg, #090b11 0%, #0d111d 46%, #0b0d16 100%);
+}
+
+:host-context(.dark) .docs-nav {
+  background: rgba(13, 17, 30, 0.72);
+  border: 1px solid var(--c-white-06);
+  box-shadow:
+    0 4px 24px var(--c-black-40),
+    inset 0 1px 0 var(--c-white-05);
+}
+
+:host-context(.dark) .docs-nav.nav-scrolled {
+  background: rgba(13, 17, 30, 0.85);
+  border-color: var(--c-white-08);
+  box-shadow:
+    0 10px 30px var(--c-black-50),
+    inset 0 1px 0 var(--c-white-05);
+}
+
+:host-context(.dark) .docs-nav .brand-mark,
+:host-context(.dark) .docs-nav .brand-mark span {
+  color: var(--c-slate-100);
+}
+
+:host-context(.dark) .docs-nav .brand-mark small {
+  background: var(--c-white-06);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: none !important;
+}
+
+:host-context(.dark) .docs-btn {
+  color: rgba(241, 245, 249, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  background: transparent !important;
+}
+
+:host-context(.dark) .docs-btn:hover {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+:host-context(.dark) .back-btn {
+  background: var(--c-night-90);
+  border-color: var(--c-white-12);
+  color: rgba(241, 245, 249, 0.9);
+  box-shadow: none;
+}
+
+:host-context(.dark) .back-btn:hover {
+  background: rgba(8, 11, 22, 0.98);
+  color: #fff;
+  border-color: var(--c-white-25);
+}
+
+:host-context(.dark) .theme-toggle-btn {
+  background: var(--c-night-90);
+  border-color: var(--c-white-12);
+  color: rgba(241, 245, 249, 0.9);
+  box-shadow: none;
+}
+
+:host-context(.dark) .theme-toggle-btn:hover {
+  background: rgba(8, 11, 22, 0.98);
+  color: #fff;
+  border-color: var(--c-white-25);
+}
+
+/* Dark mode tabs */
+:host-context(.dark) .report-tab {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+:host-context(.dark) .report-tab:hover {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(167, 139, 250, 0.25);
+  color: #a78bfa;
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.08);
+}
+
+:host-context(.dark) .report-tab.active {
+  background:
+    linear-gradient(145deg,
+      rgba(15, 23, 42, 0.7),
+      rgba(15, 23, 42, 0.4)),
+    rgba(15, 23, 42, 0.5);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: #a78bfa;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .report-tab.active i {
+  color: #c4b5fd;
+}
+
+/* Dark mode loading */
+:host-context(.dark) .loading-spinner {
+  border-color: rgba(167, 139, 250, 0.15);
+  border-top-color: #a78bfa;
+}
+
+:host-context(.dark) .report-loading p {
+  color: #4b5563;
+}
+
+/* Dark mode footer */
+:host-context(.dark) .reports-footer {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+:host-context(.dark) .reports-footer p {
+  color: #4b5563;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 680px) {
+  .reports-shell {
+    padding: 82px 10px 0;
+  }
+
+  .docs-nav {
+    top: 8px;
+    width: calc(100% - 20px);
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .docs-nav.nav-scrolled {
+    width: calc(100% - 20px);
+    max-width: none;
+    border-radius: 16px;
+    top: 8px;
+    padding: 0 10px;
+  }
+
+  .back-btn {
+    padding: 0 12px;
+    min-height: 34px;
+  }
+
+  .back-btn span,
+  .brand-mark {
+    display: none;
+  }
+
+  .report-tabs-bar {
+    gap: 6px;
+  }
+
+  .report-tab {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .report-tab span {
+    display: none;
+  }
+
+  .report-tab i {
+    font-size: 16px;
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Dynamic Report Content Theme Overrides (::ng-deep)
+   Forces all reports to inherit the premium simulator styles.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Remove default double padding on all reports */
+::ng-deep .report-content {
+  padding-top: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+::ng-deep .report-content.report-dark {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Hide raw report mesh backgrounds (we use the parent shell's glows) */
+::ng-deep .report-content .mesh-bg {
+  display: none !important;
+}
+
+/* Premium Card Styles across all reports */
+::ng-deep .report-content .card {
+  position: relative !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.44)), rgba(255, 255, 255, 0.48) !important;
+  backdrop-filter: blur(24px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(165%) !important;
+  border-radius: 20px !important;
+  padding: 36px !important;
+  margin-bottom: 28px !important;
+  box-shadow:
+    0 18px 46px rgba(124, 58, 237, 0.04),
+    0 8px 18px rgba(31, 41, 55, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(124, 58, 237, 0.03) !important;
+}
+
+/* Dark Mode Premium Cards */
+::ng-deep .report-content.report-dark .card {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Premium Hero Headers across all reports */
+::ng-deep .report-content header.hero,
+::ng-deep .report-content header {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(26px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(165%) !important;
+  border-radius: 24px !important;
+  padding: 36px 40px !important;
+  margin-bottom: 32px !important;
+  color: #1f2937 !important;
+  box-shadow:
+    0 10px 30px rgba(124, 58, 237, 0.02),
+    0 4px 6px rgba(31, 41, 55, 0.01),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Dark Mode Premium Hero Headers */
+::ng-deep .report-content.report-dark header.hero,
+::ng-deep .report-content.report-dark header {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Typography and styling for Hero Headers in Light Mode */
+::ng-deep .report-content header.hero h1,
+::ng-deep .report-content header h1 {
+  color: #111827 !important;
+}
+
+::ng-deep .report-content header.hero p,
+::ng-deep .report-content header p {
+  color: #374151 !important;
+}
+
+::ng-deep .report-content header.hero .meta,
+::ng-deep .report-content header .meta {
+  color: #4b5563 !important;
+}
+
+::ng-deep .report-content header.hero code,
+::ng-deep .report-content header code {
+  color: #312e81 !important;
+  background: rgba(99, 102, 241, 0.08) !important;
+  border: 1px solid rgba(99, 102, 241, 0.15) !important;
+  font-weight: 500 !important;
+}
+
+/* Typography and styling for Hero Headers in Dark Mode */
+::ng-deep .report-content.report-dark header.hero h1,
+::ng-deep .report-content.report-dark header h1 {
+  color: #ffffff !important;
+}
+
+::ng-deep .report-content.report-dark header.hero p,
+::ng-deep .report-content.report-dark header p {
+  color: #cbd5e1 !important;
+}
+
+::ng-deep .report-content.report-dark header.hero .meta,
+::ng-deep .report-content.report-dark header .meta {
+  color: #94a3b8 !important;
+}
+
+::ng-deep .report-content.report-dark header.hero code,
+::ng-deep .report-content.report-dark header code {
+  color: #c4b5fd !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  font-weight: 500 !important;
+}
+
+/* Engine Badge Chips (PulseFlow & Rubix) */
+::ng-deep .report-content .badge.b-pulse {
+  background: rgba(124, 58, 237, 0.08) !important;
+  color: #7c3aed !important;
+  border: 1px solid rgba(124, 58, 237, 0.2) !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4.5px !important;
+}
+
+::ng-deep .report-content.report-dark .badge.b-pulse {
+  background: rgba(167, 139, 250, 0.1) !important;
+  color: #a78bfa !important;
+  border-color: rgba(167, 139, 250, 0.25) !important;
+}
+
+::ng-deep .report-content .badge.b-rubix {
+  background: rgba(6, 182, 212, 0.08) !important;
+  color: #0891b2 !important;
+  border: 1px solid rgba(6, 182, 212, 0.2) !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4.5px !important;
+}
+
+::ng-deep .report-content.report-dark .badge.b-rubix {
+  background: rgba(34, 211, 238, 0.1) !important;
+  color: #22d3ee !important;
+  border-color: rgba(34, 211, 238, 0.25) !important;
+}
+
+/* Collapsible Details panels styling */
+::ng-deep .report-content details {
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  margin-bottom: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.02) !important;
+}
+
+::ng-deep .report-content.report-dark details {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(15, 23, 42, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Remove internal wrap padding to eliminate noticeable gaps */
+::ng-deep .report-content .wrap {
+  padding: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Fix contrast of grey fonts (muted/secondary labels) on transparent backgrounds */
+::ng-deep .report-content {
+  --muted: #374151 !important; /* Darker, high-contrast grey in light mode */
+  --border: rgba(0, 0, 0, 0.1) !important;
+}
+
+::ng-deep .report-content.report-dark {
+  --muted: #a3a3a3 !important; /* Brighter, high-contrast grey in dark mode */
+  --border: rgba(255, 255, 255, 0.14) !important;
+  color: #e2e8f0 !important;
+}
+
+::ng-deep .report-content.report-dark .note,
+::ng-deep .report-content.report-dark .meta,
+::ng-deep .report-content.report-dark p,
+::ng-deep .report-content.report-dark li,
+::ng-deep .report-content.report-dark td {
+  color: #cbd5e1 !important;
+}
+
+/* Compact and Premium Equation Formula Styling */
+::ng-deep .report-content .eqbox {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: 12px !important;
+  padding: 6px 14px !important;
+  margin: 10px 0 !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+::ng-deep .report-content.report-dark .eqbox {
+  background: rgba(15, 23, 42, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+}
+
+::ng-deep .report-content .eq {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 8px 0 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+::ng-deep .report-content.report-dark .eq {
+  border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+::ng-deep .report-content .eq:last-child {
+  border-bottom: none !important;
+}
+
+::ng-deep .report-content .eq .no {
+  font-size: 10px !important;
+  min-width: 20px !important;
+  opacity: 0.8 !important;
+}
+
+::ng-deep .report-content .eq .m {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+::ng-deep .report-content .eq .lbl {
+  font-size: 9.5px !important;
+  color: var(--muted) !important;
+  max-width: 40% !important;
+}
+
+::ng-deep .report-content .frac {
+  vertical-align: -0.6em !important;
+  margin: 0 2px !important;
+  line-height: 1.15 !important;
+}
+
+::ng-deep .report-content .frac > span {
+  padding: 0 3px !important;
+}
+
+
+/* Scrolled Navbar Text Contrast Overrides to keep them readable on the dark pill background */
+.docs-nav.nav-scrolled .brand-mark,
+.docs-nav.nav-scrolled .brand-mark span {
+  color: #f1f5f9 !important;
+}
+
+.docs-nav.nav-scrolled .brand-mark small {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.docs-nav.nav-scrolled .back-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(241, 245, 249, 0.9) !important;
+}
+
+.docs-nav.nav-scrolled .back-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dark Mode Overrides for Table, Content and Contrast legibility */
+::ng-deep .report-content.report-dark h1,
+::ng-deep .report-content.report-dark h2,
+::ng-deep .report-content.report-dark h3,
+::ng-deep .report-content.report-dark h4,
+::ng-deep .report-content.report-dark strong,
+::ng-deep .report-content.report-dark b {
+  color: #ffffff !important;
+}
+
+::ng-deep .report-content.report-dark .table-wrapper,
+::ng-deep .report-content.report-dark table {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+::ng-deep .report-content.report-dark th {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+::ng-deep .report-content.report-dark td {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  color: #e2e8f0 !important;
+}
+
+::ng-deep .report-content.report-dark .rn,
+::ng-deep .report-content.report-dark td .rn,
+::ng-deep .report-content.report-dark td .sub,
+::ng-deep .report-content.report-dark td .muted {
+  color: #94a3b8 !important;
+}
+
+::ng-deep .report-content.report-dark pre {
+  background: #050508 !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+  color: #a5b4fc !important;
+}
+
+::ng-deep .report-content.report-dark .tag-item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
+}
+
+::ng-deep .report-content.report-dark .sev-low {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #94a3b8 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+::ng-deep .report-content.report-dark .sev-low-medium {
+  background: rgba(167, 139, 250, 0.1) !important;
+  color: #c4b5fd !important;
+  border-color: rgba(167, 139, 250, 0.2) !important;
+}
+
+::ng-deep .report-content.report-dark .stat-card {
+  box-shadow: none !important;
+}

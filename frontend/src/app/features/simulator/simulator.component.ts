@@ -1847,6 +1847,18 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.awsCatalog.getByType(type).iconUrl;
   }
 
+  /** Reason text shown wherever a region-unavailable service is rendered disabled. */
+  readonly regionUnavailableReason = 'Not available or SKU absent for the selected region';
+
+  /**
+   * True when the service isn't sold in the currently selected region.
+   * The service stays fully simulatable (us-east-1 baseline pricing);
+   * the UI only renders it disabled-style with the reason above.
+   */
+  isServiceUnavailable(type: string): boolean {
+    return this.awsCatalog.isUnavailableInRegion(type, this.globalRegion);
+  }
+
   /**
    * Distinct AWS services on the canvas, each with a short docs overview and a
    * deep link into the full docs. Powers the architect-mode "Services on this

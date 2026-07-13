@@ -132,8 +132,8 @@
       "tieringPremium": 1.15
     },
     "dynamoDb": {
-      "std": { "readM": 0.125, "writeM": 0.625, "storageGB": 0.25, "wcuHr": 0.00065, "rcuHr": 0.000130 },
-      "ia": { "readM": 0.15625, "writeM": 0.78125, "storageGB": 0.10, "wcuHr": 0.0008125, "rcuHr": 0.0001625 },
+      "std": { "readM": 0.125, "writeM": 0.625, "replicatedWriteM": 0.625, "storageGB": 0.25, "wcuHr": 0.00065, "rcuHr": 0.000130 },
+      "ia": { "readM": 0.15625, "writeM": 0.78125, "replicatedWriteM": 0.78, "storageGB": 0.10, "wcuHr": 0.0008125, "rcuHr": 0.0001625 },
       "pitrStorageGB": 0.20,
       "backupStorageGB": 0.10,
       "restoreGB": 0.15,
@@ -148,7 +148,7 @@
     "securityGroup": {},
     "batch": { "cpuHour": 0.04048, "memHour": 0.004445, "armCpuHour": 0.03238, "armMemHour": 0.00356, "spotDiscount": 0.70, "dataTransferGB": 0.09, "crossAzGB": 0.01, "elbHourly": 0.0225, "logsGB": 0.50 },
     "eks": { "clusterHourlyStandard": 0.10, "clusterHourlyExtended": 0.60, "cpuHour": 0.04048, "memHour": 0.004445, "armCpuHour": 0.03238, "armMemHour": 0.00356, "ephemeralGBHour": 0.000111, "spotDiscount": 0.70, "dataTransferGB": 0.09, "crossAzGB": 0.01, "elbHourly": 0.0225, "natHourly": 0.045, "natDataGB": 0.045, "logsGB": 0.50, "instances": { "t3.medium": 0.0416, "t3.large": 0.0832, "m5.large": 0.096, "m5.xlarge": 0.192, "m6g.large": 0.077, "m7g.large": 0.096, "g5.xlarge": 1.408 }, "ebsGBMonth": 0.08, "reservedDiscount": 0.40, "containerInsightsPerNode": 2.5 },
-    "aurora": { "serverlessAcuHour": 0.12, "instances": { "db.t3.medium": 0.082, "db.r5.large": 0.290, "db.r6g.large": 0.260, "db.t4g.medium": 0.041, "db.m7g.large": 0.13, "db.r7g.large": 0.175 }, "ioOptimizedComputeMultiplier": 1.30, "ioOptimizedStorageRate": 0.225, "storageGB": 0.10, "ioRequestPerM": 0.20 },
+    "aurora": { "serverlessAcuHour": 0.12, "instances": { "db.t3.medium": 0.082, "db.t4g.medium": 0.041, "db.r5.large": 0.29, "db.r6g.large": 0.26, "db.r6g.xlarge": 0.519, "db.r6g.2xlarge": 1.038, "db.r7g.large": 0.276, "db.r7g.xlarge": 0.553, "db.r7g.2xlarge": 1.106, "db.r8g.large": 0.276, "db.r8g.xlarge": 0.552 }, "ioOptimizedComputeMultiplier": 1.30, "ioOptimizedStorageRate": 0.225, "storageGB": 0.10, "ioRequestPerM": 0.20 },
     "eventBridge": { "eventM": 1.00 },
     "kinesis": { "shardHour": 0.015, "putM": 0.014, "retentionGB": 0.023, "onDemandStreamHour": 0.04, "onDemandIngestGB": 0.08, "onDemandEgressGB": 0.04, "efoEgressGB": 0.05, "consumerShardHour": 0.015, "extendedRetentionGB": 0.10, "longTermRetentionGB": 0.023 },
     "msk": { "instances": { "kafka.t3.small": 0.0456, "kafka.m5.large": 0.21, "kafka.m7g.large": 0.204 }, "expressInstances": { "express.m7g.large": 0.408 }, "expressStorageGB": 0.10, "serverless": { "clusterHour": 0.75, "partitionHour": 0.0015, "ingestGB": 0.10, "egressGB": 0.05 }, "tieredStorageGB": 0.06, "storageGB": 0.10 },

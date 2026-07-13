@@ -136,6 +136,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     if (typeof window !== 'undefined' && window.location) {
       const params = new URLSearchParams(window.location.search);
       const serviceParam = params.get('service');
+      const categoryParam = params.get('category');
       if (
         serviceParam &&
         this.awsCatalog.services.some((service) => service.type === serviceParam)
@@ -143,6 +144,9 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         this.selectedServiceType = serviceParam as AwsServiceType;
         this.updateConnectivityMap(serviceParam);
         this.activeCategoryId = '';
+      } else if (categoryParam && this.categories.some(c => c.id === categoryParam)) {
+        this.activeCategoryId = categoryParam;
+        this.selectedServiceType = null;
       } else {
         this.selectedServiceType = null;
       }
@@ -172,13 +176,13 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     const bottleneck =
       bnRaw && bnRaw.summary
         ? {
-            kind: bnRaw.kind,
-            failureMode: bnRaw.failureMode,
-            capacityDriver: bnRaw.capacityDriver || '',
-            summary: bnRaw.summary,
-            saturationCondition: bnRaw.saturationCondition || '',
-            atSaturation: bnRaw.atSaturation || '',
-          }
+          kind: bnRaw.kind,
+          failureMode: bnRaw.failureMode,
+          capacityDriver: bnRaw.capacityDriver || '',
+          summary: bnRaw.summary,
+          saturationCondition: bnRaw.saturationCondition || '',
+          atSaturation: bnRaw.atSaturation || '',
+        }
         : null;
 
     return {
@@ -519,6 +523,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       window.history.pushState(null, '', '/docs');
     }
     this.activeCategoryId = id;
+    window.history.pushState(null, '', `/docs?category=${id}`);
+
     this.isManualScrolling = true;
 
     const performScroll = () => {
@@ -573,4 +579,5 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     window.history.pushState(null, '', '/');
     window.dispatchEvent(new Event('popstate'));
   }
+
 }

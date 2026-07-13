@@ -14,7 +14,7 @@ class FakeKV {
 
 function makeEnv(partial: Partial<Env> = {}): { env: Env; kv: FakeKV } {
   const kv = new FakeKV();
-  const env = { AWS_PRICING_KV: kv, ...partial } as unknown as Env;
+  const env = { DAILY_KV: kv, ...partial } as unknown as Env;
   return { env, kv };
 }
 

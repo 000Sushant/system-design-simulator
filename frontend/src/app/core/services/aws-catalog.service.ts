@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AwsServiceDefinition, AwsServiceType, ServiceConfig } from '../models/architecture.model';
 import awsServicesConfig from '../config/aws-services.json';
 import * as serviceCostModelData from '../data/service-cost-model.json';
+import * as regionAvailabilityData from '../data/region-availability.json';
 
 const baseDefaults: ServiceConfig = {
   throughput: 100,
@@ -185,6 +186,20 @@ export class AwsCatalogService {
       throw new Error(`Unknown AWS service type: ${type}`);
     }
     return definition;
+  }
+
+  private readonly regionAvailability: Record<string, string[]> =
+    (regionAvailabilityData as any).unavailable || (regionAvailabilityData as any).default?.unavailable || {};
+
+  /**
+   * True when AWS does not sell the service (or its pricing SKUs are absent
+   * from the official Price List) in the given region. Derived from the cost
+   * benchmark evidence in region-availability.json. Simulation stays allowed —
+   * pricing falls back to the us-east-1 baseline — but the UI should render
+   * the service as disabled with a reason.
+   */
+  isUnavailableInRegion(type: string, regionCode: string): boolean {
+    return (this.regionAvailability[type] ?? []).includes(regionCode);
   }
 
   categoryColor(category: string): string {

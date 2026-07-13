@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -5,11 +6,19 @@ import { defineConfig } from 'vitest/config';
  * allowlist, vote-delta clamping). These run in Node — they only need the Web
  * Crypto (crypto.subtle) and Fetch (Request/Response) globals, both available
  * in Node 18+. The cron/KV/D1 handlers are out of scope here.
+ *
+ * `cloudflare:workers` (the WorkflowEntrypoint base class) only exists inside
+ * workerd, so it is aliased to a minimal stub for the Node test run.
  */
 export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.spec.ts'],
     globals: false,
+  },
+  resolve: {
+    alias: {
+      'cloudflare:workers': fileURLToPath(new URL('./test/cloudflare-workers-stub.ts', import.meta.url)),
+    },
   },
 });

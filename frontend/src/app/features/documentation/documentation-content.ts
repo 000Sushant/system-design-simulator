@@ -3792,17 +3792,41 @@ export const RELEASE_NOTES: ReleaseNote[] = [
   {
     version: '1.3.1',
     current: true,
-    title: 'Expanded AWS Catalog, Accurate Cost Models & Security Hardening',
+    title: 'Expanded Catalog, 100% Verified Pricing, Workflow Pipeline & Security Hardening',
     summary:
-      'Added 10 new AWS services, overhauled cost calculators for realistic billing, refactored codebase structure with Vitest unit tests, and resolved security vulnerabilities.',
+      'Added 10 new AWS services, re-architected the pricing pipeline on Cloudflare Workflows with audited 100% pricing accuracy across 27 regions, added regional availability detection, in-app engineering reports, multi-currency billing, a more realistic PulseFlow collapse model, Vitest test suites, and security hardening.',
     items: [
       {
         icon: 'fas fa-cubes',
         text: '10 New AWS Services: Added Amplify, SES, DocumentDB, Neptune, Timestream, AppConfig, AppMesh, CloudMap, QuickSight, and Lightsail to the service palette.',
       },
       {
+        icon: 'fas fa-bullseye',
+        text: '100% Pricing Accuracy: Benchmark v5 verified all 7,511 active cost parameters exactly match the live AWS Price List API, lifting the cost-realism score to 92.4%.',
+      },
+      {
+        icon: 'fas fa-diagram-project',
+        text: 'Workflow Pricing Pipeline: Weekly rebuild now runs as a durable Cloudflare Workflow (27 regions × 9 phases) with automatic retries and a daily repair run — refresh time down from ~21h to ~4.2h.',
+      },
+      {
         icon: 'fas fa-calculator',
         text: 'Enhanced Cost Accuracy: Granular pricing overrides and secondary configuration parameters for Aurora, Rekognition, MediaConvert, OpenSearch, EMR, MQ, Bedrock, Kinesis, MSK, DynamoDB, RDS, ElastiCache, Lambda, and EC2.',
+      },
+      {
+        icon: 'fas fa-map-location-dot',
+        text: 'Regional Availability Detection: Services not sold in the selected region are flagged in the palette, preventing invalid architectures while staying simulatable.',
+      },
+      {
+        icon: 'fas fa-chart-column',
+        text: 'Engineering Reports Page: The full cost-accuracy audit and a PulseFlow/Rubix engine deep-dive are now published in-app under /reports.',
+      },
+      {
+        icon: 'fas fa-money-bill-transfer',
+        text: 'Multi-Currency Billing: Costs convert to EUR, GBP, INR, or JPY using ECB reference rates refreshed daily by a new analytics worker.',
+      },
+      {
+        icon: 'fas fa-heart-pulse',
+        text: 'PulseFlow Realism: Node collapses are now timeout-driven with compounding latency, retuned recovery headroom, and caller-side failures for dead dependencies.',
       },
       {
         icon: 'fas fa-code',
@@ -3813,8 +3837,8 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         text: 'Security Hardening: Integrated constant-time token verification to prevent timing attacks, strict origin CORS validation, and clamped vote delta ranges on API requests.',
       },
       {
-        icon: 'fas fa-bug-slash',
-        text: 'Minor Bug Fixes: Implemented resizable canvas sidebars, improved viewport mobile responsiveness, and enhanced unsaved changes warning dialogs.',
+        icon: 'fas fa-paint-roller',
+        text: 'UI Refresh: Redesigned landing page with live project stats, resizable canvas sidebars and dashboard panels, improved mobile responsiveness, and hardened unsaved-changes warnings.',
       },
     ],
   },
@@ -3971,6 +3995,38 @@ export const ARTICLES: DocArticle[] = [
     ],
   },
   {
+    id: 'ov-accuracy',
+    title: 'Audit Accuracy & Simulation Fidelity',
+    category: 'overview',
+    icon: 'fas fa-shield-halved',
+    summary:
+      'Continuous verification reports mapping the simulator against AWS Price List APIs and official saturation specs.',
+    content: [
+      'To guarantee that the simulator\'s cost and behavioral dynamics match reality, we run automated audits comparing the engine against official AWS ground truths.',
+      '<h3>1. Cost & Pricing Accuracy (100.00%)</h3>' +
+      'Every regional cost parameter is checked directly against the live AWS Price List API. Parity is calculated as `MATCH / (MATCH + DRIFT)` over all active, verifiable parameters. To achieve a 100.00% score within the audited scope, the following conditions must be met:' +
+      '<ul>' +
+      '  <li><strong>Strict Equality:</strong> Every audited parameter must match the official AWS Price List API exactly (within a float tolerance of <code>1e-9</code>) after replicating pipeline unit scaling and rounding.</li>' +
+      '  <li><strong>Zero Drifts:</strong> No pricing parameters can deviate from the current day\'s AWS ground truth (0 drifts).</li>' +
+      '  <li><strong>Scope Exclusions:</strong> Static baseline fallbacks (unqueried params) and regional service gaps (where AWS returns no SKU, flagged as <code>NO_API_DATA</code>) are excluded from the verifiable scope, preventing invalid comparisons from distorting the accuracy rating.</li>' +
+      '</ul>',
+      '<h3>2. Behavioral Simulation Fidelity (100.00%)</h3>' +
+      'We run all 73 supported services through standardized load suites to verify class-correct saturation (e.g., fail-fast reject, queue buffers, and compute collapses). Currently, <strong class="text-emerald">453 out of 453 scored checks pass successfully</strong>.',
+      '<h3>3. Cost Model Realism (92.40%)</h3>' +
+      'We track the proportion of known real-world cost factors modeled by the simulator, weighted by bill severity. Out of 345 severity-weighted cost factors, <strong class="text-purple">92.40% are simulated</strong>.',
+      '<h3>Audit Reports</h3>' +
+      '<p>You can view and navigate the detailed audit evidence directly through these full reports:</p>' +
+      '<div class="report-links-wrapper" style="margin: 16px 0; display: flex; gap: 12px; flex-wrap: wrap;">' +
+      '  <a href="/assets/reports/cost-accuracy-benchmark-v5.html" target="_blank" class="cta-button primary" style="padding: 8px 16px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #fff; font-weight: 600;">' +
+      '    <i class="fas fa-coins"></i> <span>View Pricing & Cost Report</span> <i class="fas fa-external-link-alt"></i>' +
+      '  </a>' +
+      '</div>'
+    ],
+    tips: [
+      'Hover over any active connection line or service in the canvas during simulation to see live latency and metrics update in real-time.'
+    ],
+  },
+  {
     id: 'ov-pulseflow',
     title: 'PulseFlow: Reactive Traffic Simulation Engine',
     category: 'engines',
@@ -4043,6 +4099,13 @@ export const ARTICLES: DocArticle[] = [
       '<li><span class="text-emerald"><strong>Auto Scaling Provisioning Delay:</strong></span> Provisioning replacement instances takes time. A collapsed node remains in a booting loop and only recovers if incoming demand is below 72% capacity (<code>RECOVERY_HEADROOM = 0.72</code>) for at least 1.8 seconds (<code>RECOVERY_TICKS = 10</code>).</li>' +
       '<li><span class="text-orange"><strong>M/M/1 Queue Backlog Bounds:</strong></span> Queues buffer spikes but clamp backlog sizes to 8 ticks-worth of capacity (<code>MAX_QUEUE_TICKS = 8</code>) to prevent infinite queue growth. Once relieved, backlog queues decay exponentially at a 0.6 multiplier per tick (~40% decay rate per 180ms tick).</li>' +
       '</ul>',
+      '<h3>Engine Deep Dive</h3>' +
+      '<p>For a detailed breakdown of the math, tick-loop stages, and reactive logic, view our full deep dive report:</p>' +
+      '<div style="margin: 16px 0;">' +
+      '  <a href="/docs?category=engine-deep-dive" class="cta-button primary" style="padding: 8px 16px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #fff; font-weight: 600;">' +
+      '    <i class="fas fa-microchip"></i> <span>View Engine Deep Dive</span>' +
+      '  </a>' +
+      '</div>',
     ],
     tips: [
       'Toggle the Pause button on the canvas toolbar to freeze PulseFlow mid-tick and trace precise bottlenecks.',
@@ -4107,6 +4170,13 @@ export const ARTICLES: DocArticle[] = [
       '<li><span class="text-blue"><strong>Milestone Tracking:</strong></span> Evaluates progress against ordered checkpoints in real time as you draw, providing immediate hints and guidance to lead the user toward optimal design goals.</li>' +
       '<li><span class="text-emerald"><strong>Connection Legality Checker:</strong></span> Rubix scans your active connections against AWS service specifications (defined in <code>aws-services.json</code>) to immediately flag illegal port connections (like wiring a public client directly to an internal DB).</li>' +
       '</ul>',
+      '<h3>Engine Deep Dive</h3>' +
+      '<p>For a detailed breakdown of the declarative grammar, reachability graphs, and topology rules, view our full deep dive report:</p>' +
+      '<div style="margin: 16px 0;">' +
+      '  <a href="/docs?category=engine-deep-dive" class="cta-button primary" style="padding: 8px 16px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #fff; font-weight: 600;">' +
+      '    <i class="fas fa-microchip"></i> <span>View Engine Deep Dive</span>' +
+      '  </a>' +
+      '</div>',
     ],
     tips: [
       'Run `npm run validate:challenges` in the frontend directory to run the Rubix engine locally and verify all design challenges.',

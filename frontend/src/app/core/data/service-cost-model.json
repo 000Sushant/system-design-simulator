@@ -3284,15 +3284,35 @@
               "label": "db.r6g.large (ARM)"
             },
             {
-              "value": "db.m7g.large",
-              "label": "db.m7g.large (ARM)"
+              "value": "db.r6g.xlarge",
+              "label": "db.r6g.xlarge (ARM)"
+            },
+            {
+              "value": "db.r6g.2xlarge",
+              "label": "db.r6g.2xlarge (ARM)"
             },
             {
               "value": "db.r7g.large",
               "label": "db.r7g.large (ARM)"
+            },
+            {
+              "value": "db.r7g.xlarge",
+              "label": "db.r7g.xlarge (ARM)"
+            },
+            {
+              "value": "db.r7g.2xlarge",
+              "label": "db.r7g.2xlarge (ARM)"
+            },
+            {
+              "value": "db.r8g.large",
+              "label": "db.r8g.large (ARM)"
+            },
+            {
+              "value": "db.r8g.xlarge",
+              "label": "db.r8g.xlarge (ARM)"
             }
           ],
-          "notes": "Provisioned instance size. Larger classes add vCPU/RAM and cost; r-class is memory-optimized for databases."
+          "notes": "Provisioned instance size. Aurora sells burstable t-class and memory-optimized r-class instances (no m-class). Larger classes add vCPU/RAM and cost."
         },
         {
           "key": "storageSize",

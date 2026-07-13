@@ -315,6 +315,8 @@
                       type="button"
                       class="service-tile"
                       draggable="true"
+                      [class.region-unavailable]="isServiceUnavailable(service.type)"
+                      [title]="isServiceUnavailable(service.type) ? regionUnavailableReason : ''"
                       (mousemove)="onMouseMove($event)"
                       (dragstart)="onPaletteDragStart($event, service.type)"
                       (click)="addService(service.type)"
@@ -333,7 +335,11 @@
                       </span>
                       <span>
                         <strong>{{ service.name }}</strong>
-                        <small>{{ service.shortName }} · {{ service.category }}</small>
+                        @if (isServiceUnavailable(service.type)) {
+                          <small class="region-unavailable-reason">{{ regionUnavailableReason }}</small>
+                        } @else {
+                          <small>{{ service.shortName }} · {{ service.category }}</small>
+                        }
                       </span>
                     </button>
                   }
@@ -469,6 +475,7 @@
               [class.vpc-card]="node.type === 'vpc'"
               [class.selected]="node.selected"
               [class.offline]="node.status === 'offline'"
+              [class.region-unavailable]="isServiceUnavailable(node.type)"
               [style.borderColor]="
                 node.type === 'client' ? serviceColor(node.type) : statusColor(node.status)
               "
@@ -525,6 +532,11 @@
                   <small>{{ node.type === 'client' ? 'Users' : node.type }}</small>
                 </div>
               </div>
+              @if (isServiceUnavailable(node.type)) {
+                <div class="node-warning" [title]="regionUnavailableReason">
+                  <i class="fas fa-exclamation-triangle"></i> Region Unavailable
+                </div>
+              }
               @if (node.type !== 'client') {
                 <div class="node-status" [style.color]="statusColor(node.status)">
                   {{ node.status | titlecase }}
@@ -820,6 +832,15 @@
               </div>
             </div>
           </div>
+          @if (isServiceUnavailable(node.type)) {
+            <div class="region-unavailable-banner" role="note">
+              <i class="fas fa-triangle-exclamation" style="margin-top: 2px"></i>
+              <span
+                >{{ regionUnavailableReason }} ({{ globalRegion }}). Simulation stays enabled using
+                us-east-1 baseline pricing.</span
+              >
+            </div>
+          }
           @if (selectedDefinition?.description) {
             <div
               class="client-info-msg"
