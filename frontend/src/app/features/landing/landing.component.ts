@@ -134,11 +134,11 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.shellRef.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  openDocs(event: Event) {
+  openDocs(event: Event, queryParams: string = '') {
     event.preventDefault();
     // Record origin so the docs "Back" button returns here.
     sessionStorage.setItem('docsOrigin', '/');
-    window.history.pushState(null, '', '/docs');
+    window.history.pushState(null, '', queryParams ? `/docs${queryParams}` : '/docs');
     window.dispatchEvent(new Event('popstate'));
   }
 

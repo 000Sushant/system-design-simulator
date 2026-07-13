@@ -39,6 +39,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     { id: 'cost', name: 'Cost Dynamics', icon: 'fas fa-coins' },
     { id: 'release-notes', name: 'Release Notes', icon: 'fas fa-rocket' },
     { id: 'contribute', name: 'Ways to Contribute', icon: 'fas fa-hands-helping' },
+    { id: 'legal', name: 'Legal & Policies', icon: 'fas fa-gavel' },
   ];
 
   // Version history. v1.1 / v1.2 mirror the README changelog; v1.0 is the
@@ -151,6 +152,11 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         }
       }
       this.selectedServiceType = null;
+
+      const categoryParam = params.get('category');
+      if (categoryParam) {
+        this.activeCategoryId = categoryParam;
+      }
       this.updateTitleAndMeta();
     }
   }
