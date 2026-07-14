@@ -486,9 +486,18 @@
     </div>
     <nav class="footer-links" aria-label="Footer">
       <a href="/docs" (click)="openDocs($event)">Docs</a>
-      <a href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
-        rel="noopener noreferrer">GitHub</a>
-      <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer">Sponsor</a>
+      <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Disclaimer</a>
+      <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Privacy Policy</a>
+      <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Terms & Conditions</a>
+      <a
+        href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank"
+        rel="noopener noreferrer"
+        >GitHub</a
+      >
+      <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer"
+        >Sponsor</a
+      >
     </nav>
     <p class="footer-copy">
       © 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.

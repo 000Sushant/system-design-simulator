@@ -42,6 +42,51 @@ const esc = (s = '') =>
 // (e.g. dynamoDb -> dynamodb, apiGateway -> apigateway).
 const slug = (t) => t.toLowerCase();
 
+const ABBREVIATIONS = {
+  systemsManager: ['ssm', 'aws ssm', 'systems manager', 'system manager'],
+  s3: ['simple storage service'],
+  ec2: ['elastic compute cloud'],
+  rds: ['relational database service'],
+  sqs: ['simple queue service'],
+  sns: ['simple notification service'],
+  kms: ['key management service'],
+  iam: ['identity and access management'],
+  ecs: ['elastic container service'],
+  eks: ['elastic kubernetes service'],
+  elb: ['alb', 'nlb', 'application load balancer', 'network load balancer', 'load balancer'],
+  waf: ['web application firewall'],
+  certificateManager: ['acm', 'ssl', 'tls'],
+  ebs: ['elastic block store'],
+  efs: ['elastic file system'],
+  vpc: ['virtual private cloud'],
+  route53: ['dns'],
+  cognito: ['auth', 'oauth', 'jwt'],
+  dynamoDb: ['nosql', 'dynamodb'],
+  documentDb: ['mongodb', 'documentdb'],
+  elasticache: ['redis', 'memcached'],
+  apiGateway: ['api gateway'],
+  stepFunctions: ['workflows', 'orchestration'],
+  cloudwatch: ['monitoring', 'logs', 'metrics']
+};
+
+const TITLE_ABBREVIATIONS = {
+  systemsManager: 'SSM',
+  s3: 'S3',
+  ec2: 'EC2',
+  rds: 'RDS',
+  sqs: 'SQS',
+  sns: 'SNS',
+  kms: 'KMS',
+  iam: 'IAM',
+  ecs: 'ECS',
+  eks: 'EKS',
+  waf: 'WAF',
+  certificateManager: 'ACM',
+  ebs: 'EBS',
+  efs: 'EFS',
+  vpc: 'VPC'
+};
+
 // Real services only, skip the "Users" traffic-source node.
 const indexable = services.filter((s) => s.type !== 'client' && docs[s.type]);
 
@@ -123,10 +168,34 @@ function servicePage(svc) {
   const d = docs[svc.type];
   const cm = costModel[svc.type];
   const url = `${SITE}/services/${slug(svc.type)}/`;
+  
+  const abv = TITLE_ABBREVIATIONS[svc.type];
   const hasBrand = /^(AWS|Amazon)/.test(name);
-  const titleProduct = hasBrand ? name : `${name} (AWS)`;
-  const title = `${titleProduct}: What It Is, How It Works & Cost | Sr. Architect`;
+  const titleProduct = abv ? `${name} (${abv})` : (hasBrand ? name : `${name} (AWS)`);
+  const title = `What is ${titleProduct}? Guide, Architecture, Cost & Pricing | Sr. Architect`;
   const desc = (d.overview || '').slice(0, 158);
+
+  const shortName = name.replace(/^(AWS|Amazon)\s+/, '');
+  const abvs = ABBREVIATIONS[svc.type] || [];
+  const keywordSet = new Set([
+    name,
+    shortName,
+    `AWS ${shortName}`,
+    `Amazon ${shortName}`,
+    `${shortName} cost`,
+    `${shortName} pricing`,
+    `what is ${shortName}`,
+    `${name} cost`,
+    `${name} pricing`,
+    `what is ${name}`,
+    svc.category,
+    ...abvs,
+    ...abvs.map(a => `${a} cost`),
+    ...abvs.map(a => `${a} pricing`),
+    ...abvs.map(a => `what is ${a}`),
+    ...abvs.map(a => `aws ${a}`),
+  ]);
+  const keywordsList = Array.from(keywordSet).filter(Boolean);
 
   const related = relatedFor(svc);
   const jsonLd = {
@@ -138,7 +207,7 @@ function servicePage(svc) {
         headline: `${name}: what it is, how it works, and how it is priced`,
         description: d.overview,
         about: `Amazon Web Services ${name}`,
-        keywords: [name, `AWS ${name}`, `${name} cost`, `${name} pricing`, `what is ${name}`, svc.category].join(', '),
+        keywords: keywordsList.join(', '),
         articleSection: svc.category,
         inLanguage: 'en',
         datePublished: '2026-01-01',

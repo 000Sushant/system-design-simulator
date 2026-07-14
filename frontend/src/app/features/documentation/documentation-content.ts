@@ -4473,4 +4473,43 @@ export const ARTICLES: DocArticle[] = [
       '</ul>',
     ],
   },
+  // --- LEGAL & POLICIES ---
+  {
+    id: 'legal-disclaimer',
+    title: 'Disclaimer',
+    category: 'legal',
+    icon: 'fas fa-exclamation-triangle',
+    summary: 'Official disclaimer regarding simulation accuracy, AWS brand relation, and professional usage limits.',
+    content: [
+      '<strong>Educational and Estimation Purposes Only:</strong> Sr. Architect is an educational system design simulator and rough cost estimator. All simulations, capacity calculations, latency graphs, and cost estimates are based on mathematical models and assumptions. They do not represent exact runtime behavior in production or official SLA commitments by Amazon Web Services (AWS).',
+      '<strong>No Affiliation with AWS:</strong> Sr. Architect is an independent, open-source project. It is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Amazon Web Services, Inc., Amazon.com, Inc., or any of their affiliates or subsidiaries. All product names, logos, and brands are property of their respective owners.',
+      '<strong>Use at Your Own Risk:</strong> The tools, calculations, and suggestions provided are for architectural planning and concepts. We accept no liability or responsibility for any direct or indirect business decisions, billing overcharges, security issues, or performance bottlenecks in your actual AWS deployments resulting from using this simulator.'
+    ],
+  },
+  {
+    id: 'legal-privacy',
+    title: 'Privacy Policy',
+    category: 'legal',
+    icon: 'fas fa-user-shield',
+    summary: 'Privacy policy detailing cookies, data collection, and local browser storage usage.',
+    content: [
+      '<strong>Zero Personal Data Collection:</strong> Sr. Architect respects your privacy. We do not collect, store, or sell any personal data, email addresses, names, or contact information. You can use the entire simulator anonymously without registering or logging in.',
+      '<strong>Local-First Storage:</strong> Your canvas layout, tabs, settings, and custom simulation templates are saved directly in your browser using local storage (<code>localStorage</code>). This data never leaves your device and is not sent to our servers.',
+      '<strong>Optional Analytics & API Logging:</strong> The live pricing API and any user feedback forms run entirely over secure channels. We do not track individual IP addresses or correlate user sessions. Any analytical data is aggregated and anonymized to help improve service library performance.',
+      '<strong>Third-Party Links:</strong> Our documentation links to official AWS pricing sites and GitHub. We are not responsible for the privacy practices or contents of those external websites.'
+    ],
+  },
+  {
+    id: 'legal-terms',
+    title: 'Terms & Conditions',
+    category: 'legal',
+    icon: 'fas fa-file-contract',
+    summary: 'Terms of use, license limitations, and open-source usage policies.',
+    content: [
+      '<strong>Acceptance of Terms:</strong> By accessing and using Sr. Architect, you agree to these Terms & Conditions. If you do not agree, you must immediately cease using the website.',
+      '<strong>Permitted Use:</strong> You are granted a non-exclusive, non-transferable, revocable license to use the simulator for learning, teaching, architectural modeling, and personal/professional planning. Scraping or overloading our pricing endpoints is strictly prohibited.',
+      '<strong>Open Source License:</strong> The frontend application and simulation engine are open-source software. You may view, modify, and distribute the codebase in accordance with the terms of our license (Apache License 2.0 or equivalent, as detailed in our GitHub repository).',
+      '<strong>Modifications to Services:</strong> We reserve the right to modify, suspend, or terminate any aspect of the simulator (including live pricing KV updates) at any time without notice. We are not liable to you or any third party for such modifications.'
+    ],
+  },
 ];
