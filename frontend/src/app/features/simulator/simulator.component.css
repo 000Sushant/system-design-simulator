@@ -2109,6 +2109,40 @@ small {
   white-space: nowrap;
 }
 
+/* Region-unavailable services stay draggable/simulatable but read as disabled:
+   greyed icon + amber reason line (see regionUnavailableReason in the component). */
+.service-tile.region-unavailable {
+  opacity: 0.55;
+}
+
+.service-tile.region-unavailable .service-icon {
+  filter: grayscale(1);
+}
+
+.service-tile.region-unavailable:hover {
+  opacity: 0.8;
+}
+
+.service-tile small.region-unavailable-reason {
+  color: #b45309;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.region-unavailable-banner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .canvas {
   position: relative;
   min-width: 0;
@@ -7067,4 +7101,26 @@ small {
 :host-context(.dark) .sidebar-resizer:hover::after,
 :host-context(.dark) .app-shell.is-resizing .sidebar-resizer::after {
   background: rgba(167, 139, 250, 0.5);
+}
+
+/* Node cards on the canvas when service is unavailable in the selected region */
+.node-card.region-unavailable {
+  opacity: 0.7;
+  filter: grayscale(0.5);
+  border-style: dashed !important;
+  border-width: 2px !important;
+  border-color: #d97706 !important; /* amber border */
+}
+.node-card.region-unavailable .node-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #b45309; /* amber-800 */
+  font-weight: 600;
+  background: rgba(251, 191, 36, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(251, 191, 36, 0.2);
 }

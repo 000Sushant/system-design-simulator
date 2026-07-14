@@ -7,58 +7,23 @@
 
   <nav class="landing-nav glass-panel" [class.nav-scrolled]="navScrolled">
     <a class="brand-mark" href="#" aria-label="Sr. Architect home">
-      <img
-        class="brand-logo"
-        src="assets/brand/logo-mark-dark.svg"
-        alt="Sr. Architect"
-        width="32"
-        height="32"
-      />
+      <img class="brand-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="32" height="32" />
       <span>Sr<span class="brand-dot">.</span> Architect</span>
       <small>v1.3.1</small>
     </a>
     <div class="nav-actions">
-      <a
-        href="/docs"
-        (click)="openDocs($event)"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-        >Docs</a
-      >
-      <a
-        href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank"
-        rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-        >GitHub</a
-      >
-      <button
-        type="button"
-        class="theme-toggle-btn"
-        [class.show-moon]="!isDarkMode"
-        (click)="toggleTheme()"
-        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-      >
-        <svg
-          class="sun-moon-svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
+      <a href="/docs" (click)="openDocs($event)" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">Docs</a>
+      <a href="https://github.com/000Sushant/system-design-simulator/" target="_blank" rel="noopener noreferrer"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">GitHub</a>
+      <button type="button" class="theme-toggle-btn" [class.show-moon]="!isDarkMode" (click)="toggleTheme()"
+        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
+        <svg class="sun-moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <mask id="moon-mask">
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            <circle
-              [attr.cx]="!isDarkMode ? 6 : -10"
-              [attr.cy]="!isDarkMode ? 18 : 34"
-              r="7"
-              fill="black"
-            />
+            <circle [attr.cx]="!isDarkMode ? 6 : -10" [attr.cy]="!isDarkMode ? 18 : 34" r="7" fill="black" />
           </mask>
           <circle cx="12" cy="12" r="5" mask="url(#moon-mask)" fill="currentColor" />
           <g class="sun-rays" stroke="currentColor">
@@ -73,13 +38,8 @@
           </g>
         </svg>
       </button>
-      <button
-        type="button"
-        class="mini-launch"
-        (click)="scrollToModes()"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-      >
+      <button type="button" class="mini-launch" (click)="scrollToModes()" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
         <span>Launch</span>
       </button>
     </div>
@@ -88,30 +48,11 @@
   <!-- Liquid-glass distortion filter (referenced by .landing-nav.nav-scrolled backdrop-filter) -->
   <svg class="liquid-glass-defs" aria-hidden="true" width="0" height="0" focusable="false">
     <defs>
-      <filter
-        id="liquid-glass"
-        x="0%"
-        y="0%"
-        width="100%"
-        height="100%"
-        color-interpolation-filters="sRGB"
-      >
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.006 0.006"
-          numOctaves="3"
-          seed="7"
-          result="turbulence"
-        />
+      <filter id="liquid-glass" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.006 0.006" numOctaves="3" seed="7" result="turbulence" />
         <feGaussianBlur in="turbulence" stdDeviation="3.5" result="blurredNoise" />
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="blurredNoise"
-          scale="40"
-          xChannelSelector="R"
-          yChannelSelector="B"
-          result="displaced"
-        />
+        <feDisplacementMap in="SourceGraphic" in2="blurredNoise" scale="40" xChannelSelector="R" yChannelSelector="B"
+          result="displaced" />
         <feGaussianBlur in="displaced" stdDeviation="0.4" />
       </filter>
     </defs>
@@ -132,31 +73,21 @@
         simulation, cost estimation, and production-ready insights.
       </p>
       <div class="hero-actions">
-        <button
-          type="button"
-          class="cta-button primary"
-          (click)="scrollToModes()"
-          (mousemove)="onButtonMouseMove($event)"
-          (mouseleave)="onButtonMouseLeave($event)"
-        >
+        <button type="button" class="cta-button primary" (click)="scrollToModes()"
+          (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
           <span>Launch Simulator</span>
           <i class="fas fa-arrow-right"></i>
         </button>
-        <a
-          class="cta-button ghost github-btn"
-          href="https://github.com/000Sushant/system-design-simulator/"
-          target="_blank"
-          rel="noopener noreferrer"
-          (mousemove)="onButtonMouseMove($event)"
-          (mouseleave)="onButtonMouseLeave($event)"
-        >
+        <a class="cta-button ghost github-btn" href="https://github.com/000Sushant/system-design-simulator/"
+          target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+          (mouseleave)="onButtonMouseLeave($event)">
           <i class="fab fa-github"></i>
           <span>GitHub</span>
           @if (githubStars) {
-            <span class="github-stars-badge">
-              <i class="fas fa-star"></i>
-              {{ githubStars }}
-            </span>
+          <span class="github-stars-badge">
+            <i class="fas fa-star"></i>
+            {{ githubStars }}
+          </span>
           }
         </a>
       </div>
@@ -186,39 +117,35 @@
 
     <div class="mode-grid">
       @for (mode of modes; track mode) {
-        <article
-          class="mode-card glass-panel"
-          [class]="mode.id"
-          (mousemove)="onButtonMouseMove($event)"
-          (mouseleave)="onButtonMouseLeave($event)"
-        >
-          <div class="mode-card-top">
-            <span class="mode-badge">{{ mode.badge }}</span>
-            <span class="mode-icon"><i [class]="mode.icon"></i></span>
-          </div>
-          <div class="mode-visual" [class]="mode.visual" aria-hidden="true">
-            <span class="mini-node node-one"></span>
-            <span class="mini-node node-two"></span>
-            <span class="mini-node node-three"></span>
-            <span class="mini-line line-one"></span>
-            <span class="mini-line line-two"></span>
-            <span class="mini-packet packet-one"></span>
-            <span class="mini-packet packet-two"></span>
-            <span class="mini-metric metric-one"></span>
-            <span class="mini-metric metric-two"></span>
-          </div>
-          <h3>{{ mode.title }}</h3>
-          <p>{{ mode.description }}</p>
-          <ul>
-            @for (feature of mode.features; track feature) {
-              <li><i class="fas fa-check"></i>{{ feature }}</li>
-            }
-          </ul>
-          <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
-            <span>{{ mode.button }}</span>
-            <i class="fas fa-arrow-right"></i>
-          </button>
-        </article>
+      <article class="mode-card glass-panel" [class]="mode.id" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
+        <div class="mode-card-top">
+          <span class="mode-badge">{{ mode.badge }}</span>
+          <span class="mode-icon"><i [class]="mode.icon"></i></span>
+        </div>
+        <div class="mode-visual" [class]="mode.visual" aria-hidden="true">
+          <span class="mini-node node-one"></span>
+          <span class="mini-node node-two"></span>
+          <span class="mini-node node-three"></span>
+          <span class="mini-line line-one"></span>
+          <span class="mini-line line-two"></span>
+          <span class="mini-packet packet-one"></span>
+          <span class="mini-packet packet-two"></span>
+          <span class="mini-metric metric-one"></span>
+          <span class="mini-metric metric-two"></span>
+        </div>
+        <h3>{{ mode.title }}</h3>
+        <p>{{ mode.description }}</p>
+        <ul>
+          @for (feature of mode.features; track feature) {
+          <li><i class="fas fa-check"></i>{{ feature }}</li>
+          }
+        </ul>
+        <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
+          <span>{{ mode.button }}</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </article>
       }
     </div>
     <p class="mode-microcopy">Start simple. Scale infinitely.</p>
@@ -226,7 +153,7 @@
 
   <section class="trust-strip glass-panel" aria-label="Project status">
     @for (pill of trustPills; track pill) {
-      <span>{{ pill }}</span>
+    <span>{{ pill }}</span>
     }
   </section>
 
@@ -234,28 +161,212 @@
     <div class="section-heading">
       <span class="section-kicker">Know your Arsenal</span>
       <h2>
-        Know what can you do with<br /><span class="brand-name-header"
-          >Sr<span class="brand-dot">.</span> Architect</span
-        >
+        Know what can you do with<br /><span class="brand-name-header">Sr<span class="brand-dot">.</span>
+          Architect</span>
       </h2>
     </div>
     <div class="feature-grid">
       @for (feature of features; track feature) {
-        <article
-          class="feature-card glass-panel"
-          (mousemove)="onButtonMouseMove($event)"
-          (mouseleave)="onButtonMouseLeave($event)"
-        >
-          <div class="feature-icon"><i [class]="feature.icon"></i></div>
-          <div class="feature-title">
-            <h3>{{ feature.title }}</h3>
-            @if (feature.badge) {
-              <small>{{ feature.badge }}</small>
-            }
-          </div>
-          <p>{{ feature.description }}</p>
-        </article>
+      <article class="feature-card glass-panel" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
+        <div class="feature-icon"><i [class]="feature.icon"></i></div>
+        <div class="feature-title">
+          <h3>{{ feature.title }}</h3>
+          @if (feature.badge) {
+          <small>{{ feature.badge }}</small>
+          }
+        </div>
+        <p>{{ feature.description }}</p>
+      </article>
       }
+    </div>
+  </section>
+
+  <!-- Fidelity & Performance Telemetry Dashboard -->
+  <section class="telemetry-dashboard-section" aria-labelledby="telemetry-dashboard-title">
+    <div class="section-heading centered">
+      <span class="section-kicker">Simulator Fidelity</span>
+      <h2 id="telemetry-dashboard-title">Performance &amp; Accuracy Benchmarks</h2>
+      <p>Transparent metrics showing the realism of our behavior simulation and cloud billing calculations.</p>
+    </div>
+
+    <div class="telemetry-dashboard-grid">
+      <!-- Engine Card -->
+      <div class="telemetry-console glass-panel purple" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span class="telemetry-glow" aria-hidden="true"></span>
+        
+        <div class="tc-header">
+          <div class="tc-title">
+            <span class="tc-icon"><i class="fas fa-microchip"></i></span>
+            <h3>Behavior Engine</h3>
+          </div>
+          <span class="tc-status-badge">
+            <span class="status-pulse-dot"></span>
+            Active Engine
+          </span>
+        </div>
+        
+        <div class="tc-body">
+          <div class="tc-visual-bay">
+            <div class="tcv-graphic">
+              <svg class="tc-viz" viewBox="0 0 132 132" role="img" aria-label="PulseFlow behavior simulation pulse waveform">
+                <defs>
+                  <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#c084fc" stop-opacity="0" />
+                    <stop offset="0.5" stop-color="#c084fc" stop-opacity="1" />
+                    <stop offset="1" stop-color="#8b5cf6" stop-opacity="1" />
+                  </linearGradient>
+                  <linearGradient id="pulseGradSecondary" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#22d3ee" stop-opacity="0" />
+                    <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.4" />
+                    <stop offset="1" stop-color="#3b82f6" stop-opacity="0.6" />
+                  </linearGradient>
+                  <linearGradient id="waveformAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.22" />
+                    <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0" />
+                  </linearGradient>
+                  <pattern id="pulseGrid" width="12" height="12" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="12" y2="0" stroke-width="0.75" />
+                    <line x1="0" y1="0" x2="0" y2="12" stroke-width="0.75" />
+                  </pattern>
+                  <filter id="waveGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="2.5" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <rect width="132" height="132" fill="url(#pulseGrid)" rx="16" class="viz-grid-bg" />
+                <line class="viz-baseline" x1="8" y1="66" x2="124" y2="66" />
+                <path class="viz-pulse-area" fill="url(#waveformAreaGrad)"
+                  d="M8 66 H40 L48 66 L54 34 L62 96 L68 66 H86 L94 48 L100 82 L106 66 H124 V114 H8 Z" />
+                <path class="viz-pulse-secondary" stroke="url(#pulseGradSecondary)"
+                  d="M8 66 H36 L44 66 L50 46 L58 84 L64 66 H82 L88 54 L94 76 L100 66 H124" />
+                <path class="viz-pulse-ghost" filter="url(#waveGlow)"
+                  d="M8 66 H40 L48 66 L54 34 L62 96 L68 66 H86 L94 48 L100 82 L106 66 H124" />
+                <path class="viz-pulse" stroke="url(#pulseGrad)"
+                  d="M8 66 H40 L48 66 L54 34 L62 96 L68 66 H86 L94 48 L100 82 L106 66 H124" />
+                <circle class="viz-pulse-dot" r="3.5" cx="8" cy="66" />
+              </svg>
+            </div>
+            <div class="tcv-readout">
+              <span class="tc-value">180ms</span>
+              <span class="tc-value-label">PulseFlow Tick Speed</span>
+            </div>
+          </div>
+          
+          <div class="tc-info">
+            <p class="tc-description">
+              PulseFlow simulates real AWS auto-scaling quota ceilings, backpressure queues, connection pools, and failover recoveries.
+            </p>
+            <div class="tc-stats-grid">
+              <div class="tc-stat">
+                <span class="tcs-value">8</span>
+                <span class="tcs-label">Stages</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">10</span>
+                <span class="tcs-label">Metrics</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">~1.1k</span>
+                <span class="tcs-label">Updates / s</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">270+</span>
+                <span class="tcs-label">Params</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tc-footer">
+          <a class="tc-cta" href="/benchmarks?report=engine-deep-dive" (click)="openReport('engine-deep-dive', $event)">
+            <span>Engine Deep Dive</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Cost Audit Card -->
+      <div class="telemetry-console glass-panel cyan" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span class="telemetry-glow" aria-hidden="true"></span>
+        
+        <div class="tc-header">
+          <div class="tc-title">
+            <span class="tc-icon"><i class="fas fa-coins"></i></span>
+            <h3>Pricing Accuracy</h3>
+          </div>
+          <span class="tc-status-badge">
+            <span class="status-pulse-dot"></span>
+            Live Audit
+          </span>
+        </div>
+        
+        <div class="tc-body">
+          <div class="tc-visual-bay">
+            <div class="tcv-graphic">
+              <svg class="tc-viz" viewBox="0 0 132 132" role="img" aria-label="AWS Price List API match radial gauge">
+                <defs>
+                  <linearGradient id="gaugeGrad" x1="0" y1="1" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#22d3ee" />
+                    <stop offset="100%" stop-color="#06b6d4" />
+                  </linearGradient>
+                  <filter id="gaugeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <circle class="viz-dial-scale" cx="66" cy="66" r="59" fill="none" stroke-width="1.5" stroke-dasharray="3 6" />
+                <circle class="viz-track" cx="66" cy="66" r="50" />
+                <circle class="viz-track-dots" cx="66" cy="66" r="42" fill="none" stroke-width="1" stroke-dasharray="1.5 3" />
+                <circle class="viz-fill viz-fill-gauge" cx="66" cy="66" r="50" stroke="url(#gaugeGrad)"
+                  filter="url(#gaugeGlow)" transform="rotate(-90 66 66)" />
+                <text class="viz-num" x="66" y="74">92.4%</text>
+              </svg>
+            </div>
+            <div class="tcv-readout">
+              <span class="tc-value">92.4%</span>
+              <span class="tc-value-label">Billing Coverage</span>
+            </div>
+          </div>
+          
+          <div class="tc-info">
+            <p class="tc-description">
+              Audited against the live AWS Price List API. We match 100% of services to the float, covering regional compute, transfer, and storage costs.
+            </p>
+            <div class="tc-stats-grid">
+              <div class="tc-stat">
+                <span class="tcs-value">100%</span>
+                <span class="tcs-label">Fidelity</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">8.5k+</span>
+                <span class="tcs-label">Checks</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">27</span>
+                <span class="tcs-label">Regions</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">68</span>
+                <span class="tcs-label">Services</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tc-footer">
+          <a class="tc-cta" href="/benchmarks?report=cost-audit" (click)="openReport('cost-audit', $event)">
+            <span>Cost Accuracy Report</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -277,15 +388,10 @@
     </div>
     <div class="social-links">
       @for (link of socialLinks; track link) {
-        <a
-          [href]="link.href"
-          target="_blank"
-          rel="noopener noreferrer"
-          (mousemove)="onButtonMouseMove($event)"
-          (mouseleave)="onButtonMouseLeave($event)"
-        >
-          <i [class]="link.icon"></i>{{ link.label }}
-        </a>
+      <a [href]="link.href" target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
+        <i [class]="link.icon"></i>{{ link.label }}
+      </a>
       }
     </div>
   </section>
@@ -296,19 +402,16 @@
 
     <!-- Live project stats grid -->
     @if (liveStats) {
-      <div class="community-stats-grid">
-        @for (stat of liveStats; track stat) {
-          <div
-            class="community-stat-card glass-panel"
-            (mousemove)="onButtonMouseMove($event)"
-            (mouseleave)="onButtonMouseLeave($event)"
-          >
-            <span class="comm-stat-icon"><i [class]="stat.icon"></i></span>
-            <span class="comm-stat-value">{{ stat.value }}</span>
-            <span class="comm-stat-label">{{ stat.label }}</span>
-          </div>
-        }
+    <div class="community-stats-grid">
+      @for (stat of liveStats; track stat) {
+      <div class="community-stat-card glass-panel" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
+        <span class="comm-stat-icon"><i [class]="stat.icon"></i></span>
+        <span class="comm-stat-value">{{ stat.value }}</span>
+        <span class="comm-stat-label">{{ stat.label }}</span>
       </div>
+      }
+    </div>
     }
 
     <h3 class="contributors-subheading">Top Contributors</h3>
@@ -316,22 +419,11 @@
     <!-- Live contributors list -->
     <div class="contributors-list">
       @for (contributor of contributors; track contributor) {
-        <a
-          [href]="contributor.html_url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="contributor-link"
-          [title]="contributor.login"
-          (mousemove)="onButtonMouseMove($event)"
-          (mouseleave)="onButtonMouseLeave($event)"
-        >
-          <img
-            [src]="contributor.avatar_url"
-            [alt]="contributor.login"
-            class="contributor-avatar"
-          />
-          <span class="contributor-name">{{ contributor.login }}</span>
-        </a>
+      <a [href]="contributor.html_url" target="_blank" rel="noopener noreferrer" class="contributor-link"
+        [title]="contributor.login" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <img [src]="contributor.avatar_url" [alt]="contributor.login" class="contributor-avatar" />
+        <span class="contributor-name">{{ contributor.login }}</span>
+      </a>
       }
     </div>
 
@@ -356,14 +448,8 @@
       and helps keep things running.
     </p>
     <div class="hero-actions center">
-      <a
-        class="cta-button primary sponsor-cta"
-        href="https://github.com/sponsors/000Sushant"
-        target="_blank"
-        rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-      >
+      <a class="cta-button primary sponsor-cta" href="https://github.com/sponsors/000Sushant" target="_blank"
+        rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
         <i class="fas fa-heart"></i>
         <span>Sponsor on GitHub</span>
       </a>
@@ -377,45 +463,22 @@
     <span class="section-kicker">Start now</span>
     <h2>Watch your next architecture come alive before it ships.</h2>
     <div class="hero-actions center">
-      <button
-        type="button"
-        class="cta-button primary"
-        (click)="launch.emit('architect')"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-      >
+      <button type="button" class="cta-button primary" (click)="launch.emit('architect')"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
         <span>Launch Sr. Architect</span>
       </button>
-      <a
-        class="cta-button primary github-btn"
-        href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank"
-        rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-        ><span>Explore GitHub</span></a
-      >
-      <a
-        class="cta-button primary contribute-btn"
-        href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank"
-        rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"
-        ><span>Contribute</span></a
-      >
+      <a class="cta-button primary github-btn" href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"><span>Explore GitHub</span></a>
+      <a class="cta-button primary contribute-btn" href="https://github.com/000Sushant/system-design-simulator/"
+        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
     </div>
   </section>
 
   <footer class="landing-footer">
     <div class="footer-brand">
-      <img
-        class="footer-logo"
-        src="assets/brand/logo-mark-dark.svg"
-        alt="Sr. Architect"
-        width="38"
-        height="38"
-      />
+      <img class="footer-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="38" height="38" />
       <div class="footer-brand-text">
         <span class="footer-name">Sr<span class="brand-dot">.</span> Architect</span>
         <span class="footer-tag">See your architecture before you ship it.</span>
@@ -443,8 +506,8 @@
 
   <!-- Mobile back-to-top -->
   @if (showBackToTop) {
-    <button class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
-      <i class="fas fa-chevron-up"></i>
-    </button>
+  <button class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
+    <i class="fas fa-chevron-up"></i>
+  </button>
   }
 </main>

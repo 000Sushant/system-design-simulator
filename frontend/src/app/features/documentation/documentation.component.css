@@ -656,7 +656,7 @@
 .service-doc-card:hover {
   border-color: color-mix(in srgb, var(--service-color, var(--c-violet)) 45%, transparent);
   transform: translateY(-2.5px);
-  box-shadow: 
+  box-shadow:
     0 12px 30px var(--c-black-05),
     0 0 14px color-mix(in srgb, var(--service-color, var(--c-violet)) 12%, transparent);
 }
@@ -1329,7 +1329,7 @@
   align-items: center;
   gap: 8px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(124, 58, 237, 0.06),
     inset 0 1px 1px var(--c-white-90);
 }
@@ -1338,7 +1338,7 @@
   background: var(--c-violet-12);
   border-color: rgba(124, 58, 237, 0.4);
   transform: translateX(-4px);
-  box-shadow: 
+  box-shadow:
     0 6px 16px var(--c-violet-10a),
     inset 0 1px 1.5px var(--c-white-95);
 }
@@ -1825,25 +1825,70 @@
 }
 
 /* Per-avenue accents */
-.contribute-card.accent-challenge { border-color: rgba(245, 158, 11, 0.28); }
-.contribute-card.accent-challenge .contribute-icon { color: var(--c-amber); background: rgba(245, 158, 11, 0.14); }
-.contribute-card.accent-challenge .contribute-cta { color: var(--c-amber); }
+.contribute-card.accent-challenge {
+  border-color: rgba(245, 158, 11, 0.28);
+}
 
-.contribute-card.accent-service { border-color: rgba(37, 99, 235, 0.26); }
-.contribute-card.accent-service .contribute-icon { color: #2563eb; background: rgba(37, 99, 235, 0.12); }
-.contribute-card.accent-service .contribute-cta { color: #2563eb; }
+.contribute-card.accent-challenge .contribute-icon {
+  color: var(--c-amber);
+  background: rgba(245, 158, 11, 0.14);
+}
 
-.contribute-card.accent-feedback { border-color: rgba(16, 185, 129, 0.26); }
-.contribute-card.accent-feedback .contribute-icon { color: var(--c-emerald-600); background: rgba(16, 185, 129, 0.12); }
-.contribute-card.accent-feedback .contribute-cta { color: var(--c-emerald-600); }
+.contribute-card.accent-challenge .contribute-cta {
+  color: var(--c-amber);
+}
 
-.contribute-card.accent-bug { border-color: rgba(239, 68, 68, 0.26); }
-.contribute-card.accent-bug .contribute-icon { color: #dc2626; background: rgba(239, 68, 68, 0.12); }
-.contribute-card.accent-bug .contribute-cta { color: #dc2626; }
+.contribute-card.accent-service {
+  border-color: rgba(37, 99, 235, 0.26);
+}
 
-.contribute-card.accent-sponsor { border-color: rgba(236, 72, 153, 0.3); }
-.contribute-card.accent-sponsor .contribute-icon { color: #db2777; background: rgba(236, 72, 153, 0.13); }
-.contribute-card.accent-sponsor .contribute-cta { color: #db2777; }
+.contribute-card.accent-service .contribute-icon {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.contribute-card.accent-service .contribute-cta {
+  color: #2563eb;
+}
+
+.contribute-card.accent-feedback {
+  border-color: rgba(16, 185, 129, 0.26);
+}
+
+.contribute-card.accent-feedback .contribute-icon {
+  color: var(--c-emerald-600);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.contribute-card.accent-feedback .contribute-cta {
+  color: var(--c-emerald-600);
+}
+
+.contribute-card.accent-bug {
+  border-color: rgba(239, 68, 68, 0.26);
+}
+
+.contribute-card.accent-bug .contribute-icon {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.contribute-card.accent-bug .contribute-cta {
+  color: #dc2626;
+}
+
+.contribute-card.accent-sponsor {
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+.contribute-card.accent-sponsor .contribute-icon {
+  color: #db2777;
+  background: rgba(236, 72, 153, 0.13);
+}
+
+.contribute-card.accent-sponsor .contribute-cta {
+  color: #db2777;
+}
 
 @media (max-width: 640px) {
   .contribute-grid {
@@ -2142,8 +2187,15 @@
   }
 
   @keyframes btt-fade-in {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -2725,3 +2777,4 @@
 :host-context(.dark) .docs-footer p {
   color: var(--c-slate-500);
 }
+

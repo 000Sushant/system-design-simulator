@@ -1,0 +1,12 @@
+{
+  "description": "Regions where a service is not sold (or its pricing SKUs are absent from the official AWS Price List). Derived from the v3 cost-accuracy benchmark (2026-07-10): a service is listed for a region only when EVERY live pricing query for it returned NO_API_DATA there. Simulation stays enabled (us-east-1 baseline pricing); the UI shows the service as disabled with a reason.",
+  "unavailable": {
+    "amplify": ["af-south-1", "ap-south-2", "ap-southeast-3", "ap-southeast-4", "eu-central-2", "eu-south-2", "me-central-1"],
+    "ses": ["ap-east-1", "ap-southeast-4", "eu-south-2"],
+    "timestream": ["af-south-1", "ap-east-1", "ap-northeast-2", "ap-northeast-3", "ap-south-2", "ap-southeast-1", "ap-southeast-3", "ap-southeast-4", "ca-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-2", "eu-west-3", "me-central-1", "me-south-1", "sa-east-1", "us-west-1"],
+    "quickSight": ["ap-east-1", "ap-south-2", "me-south-1", "us-west-1"],
+    "lightsail": ["af-south-1", "ap-northeast-3", "ap-south-2", "ap-southeast-4", "eu-central-2", "eu-south-1", "me-central-1", "me-south-1", "us-west-1"],
+    "neptune": ["eu-south-1"],
+    "documentDb": ["me-south-1", "us-west-1"]
+  }
+}

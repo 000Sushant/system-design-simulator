@@ -28,7 +28,7 @@ layers, never the reverse.
      · CostService pricing fetch  → backend /api/prices → Cloudflare KV / Worker
      · ProjectStorageService      → browser localStorage
      · AwsCatalogService          → AWS icon CDN + aws-services.json
-     · worker/  + backend/        → pricing generation & serving
+     · workers/ + backend/        → pricing generation & serving
 ```
 
 ## Layers
@@ -37,7 +37,7 @@ layers, never the reverse.
 |---|---|---|---|
 | **Domain** | `frontend/src/app/core/models/` | Pure TypeScript types describing the architecture graph and config. No logic, no framework, no I/O. | nothing |
 | **Application** | `frontend/src/app/core/services/` | The simulation engine, cost engine, validation, factory and presets. Holds the business rules. | Domain |
-| **Infrastructure** | `cost.service` HTTP fetch, `project-storage.service`, `aws-catalog.service`, plus `worker/` and `backend/` | Talks to the outside world: pricing API/KV, `localStorage`, icon CDN. | Domain |
+| **Infrastructure** | `cost.service` HTTP fetch, `project-storage.service`, `aws-catalog.service`, plus `workers/` and `backend/` | Talks to the outside world: pricing API/KV, `localStorage`, icon CDN. | Domain |
 | **Presentation** | `frontend/src/app/features/` | Angular standalone components: the canvas UI, inspector, docs, landing. Renders state and forwards user intent to Application services. | Application, Domain |
 
 **Rules of thumb**
@@ -60,7 +60,7 @@ full contract):
 
 ## Security model
 
-- **Worker** (`worker/src/index.ts` + `worker/src/security.ts`): read routes
+- **Worker** (`workers/aws-pricing-generator/src/index.ts` + `workers/aws-pricing-generator/src/security.ts`): read routes
   (`/status`, `/pricing/{region}`, `/stats`, `/votes`) are public; the mutating
   admin routes (`POST /trigger`, `/reset`, `/start`) require a
   `Bearer ADMIN_TOKEN` header (constant-time comparison, deny-by-default 503

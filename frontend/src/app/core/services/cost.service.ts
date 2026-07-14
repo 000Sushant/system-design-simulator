@@ -4,6 +4,7 @@ import { ArchitectureNode, Currency } from '../models/architecture.model';
 import { environment } from '../../../environments/environment';
 import * as serviceCostModelData from '../data/service-cost-model.json';
 import * as fallbackPricesData from '../data/regions/us-east-1.json';
+import * as regionAvailabilityData from '../data/region-availability.json';
 
 const fallbackPrices = (fallbackPricesData as any).default || fallbackPricesData;
 
@@ -54,6 +55,13 @@ export class CostService {
   ];
 
 
+  private readonly regionAvailability: Record<string, string[]> =
+    (regionAvailabilityData as any).unavailable || (regionAvailabilityData as any).default?.unavailable || {};
+
+  isUnavailableInRegion(type: string, regionCode: string): boolean {
+    return (this.regionAvailability[type] ?? []).includes(regionCode);
+  }
+
   private loadedPricing: any = fallbackPrices;
   private currentRegionCode: string = 'us-east-1';
 
@@ -64,13 +72,65 @@ export class CostService {
    */
   public readonly unsupportedRegion$ = new BehaviorSubject<string | null>(null);
 
-  private readonly conversionRates: Record<Currency, number> = {
+  /**
+   * USD → display-currency rates. The hardcoded values are only a last-resort
+   * fallback: `loadFxRates()` replaces them with live ECB daily rates (via the
+   * daily-analytics Worker's /fx endpoint), cached in localStorage for 24h.
+   */
+  private conversionRates: Record<Currency, number> = {
     USD: 1.0,
     EUR: 0.92,
     GBP: 0.79,
     INR: 83.0,
     JPY: 150.0
   };
+
+  constructor() {
+    this.loadFxRates();
+  }
+
+  private static readonly FX_CACHE_KEY = 'sds-fx-rates';
+  private static readonly FX_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+  private applyFxRates(rates: Record<string, number>): void {
+    const next = { ...this.conversionRates };
+    for (const code of Object.keys(next) as Currency[]) {
+      const rate = rates[code];
+      if (code !== 'USD' && typeof rate === 'number' && isFinite(rate) && rate > 0) {
+        next[code] = rate;
+      }
+    }
+    this.conversionRates = next;
+  }
+
+  /** Live rates: localStorage cache first (24h), then the /fx endpoint. */
+  private async loadFxRates(): Promise<void> {
+    // Browser-only: unit tests construct this service in Node and must stay
+    // offline; the hardcoded fallback rates apply there.
+    if (typeof window === 'undefined') return;
+    try {
+      const cached = localStorage.getItem(CostService.FX_CACHE_KEY);
+      if (cached) {
+        const { rates, cachedAt } = JSON.parse(cached);
+        if (rates) this.applyFxRates(rates);
+        if (Date.now() - (cachedAt ?? 0) < CostService.FX_CACHE_TTL_MS) return;
+      }
+    } catch { /* corrupt cache — fall through to a network refresh */ }
+
+    const base = (environment as { dailyApiBase?: string }).dailyApiBase;
+    if (!base) return;
+    try {
+      const res = await fetch(`${base}/fx`);
+      if (!res.ok) return;
+      const fx = await res.json();
+      if (fx?.rates) {
+        this.applyFxRates(fx.rates);
+        localStorage.setItem(CostService.FX_CACHE_KEY, JSON.stringify({ rates: fx.rates, cachedAt: Date.now() }));
+      }
+    } catch {
+      // Network/Worker unavailable — cached or hardcoded rates stay in effect.
+    }
+  }
 
   private readonly currencySymbols: Record<Currency, string> = {
     USD: '$',
@@ -1360,10 +1420,10 @@ export class CostService {
       const ingestGB = this.getVal(config, 'msk', 'serverlessIngestGB', 100);
       const egressGB = this.getVal(config, 'msk', 'serverlessEgressGB', 100);
 
-      const partitionRate = pf.serverlessPartitionHour || 0.0015;
-      const storageRate = pf.serverlessStorageGB || 0.10;
-      const ingestRate = pf.serverlessIngestGB || 0.10;
-      const egressRate = pf.serverlessEgressGB || 0.05;
+      const partitionRate = pf.serverless?.partitionHour || 0.0015;
+      const storageRate = pf.storageGB || 0.10;
+      const ingestRate = pf.serverless?.ingestGB || 0.10;
+      const egressRate = pf.serverless?.egressGB || 0.05;
 
       const compCost = partitions * 730 * partitionRate;
       const sCost = storageGB * storageRate;
@@ -1899,7 +1959,7 @@ export class CostService {
 
     const pitrEnabled = this.getVal(config, 'dynamoDb', 'pitrEnabled', false);
     if (pitrEnabled) {
-      const pitrRate = pf.pitrGB || 0.20;
+      const pitrRate = pf.pitrStorageGB || 0.20;
       const pitrCost = storageGB * pitrRate;
       lines.push({ label: 'Point-in-Time Recovery', formula: `${storageGB} GB × $${pitrRate}/GB`, value: pitrCost });
       total += pitrCost;
@@ -1907,7 +1967,7 @@ export class CostService {
 
     const backupStorageGB = this.getVal(config, 'dynamoDb', 'backupStorageGB', 0);
     if (backupStorageGB > 0) {
-      const backupRate = pf.backupGB || 0.10;
+      const backupRate = pf.backupStorageGB || 0.10;
       const backupCost = backupStorageGB * backupRate;
       lines.push({ label: 'Backup Storage', formula: `${backupStorageGB} GB × $${backupRate}/GB`, value: backupCost });
       total += backupCost;
@@ -1918,7 +1978,7 @@ export class CostService {
       const writesM = mode === 'on-demand' 
         ? this.getVal(config, 'dynamoDb', 'writesM', 5) 
         : (this.getVal(config, 'dynamoDb', 'wcu', 100) * 730 * 3600) / 1000000;
-      const streamsRate = pf.streamsReqM || 0.20;
+      const streamsRate = pf.streamsRequestsM || 0.20;
       const streamsCost = Math.max(0, writesM - 2.5) * streamsRate;
       if (streamsCost > 0) {
         lines.push({ label: 'DynamoDB Streams', formula: `${writesM.toFixed(1)}M requests × $${streamsRate}/M (after 2.5M free)`, value: streamsCost });
@@ -1978,11 +2038,11 @@ export class CostService {
       const ecpusM = this.getVal(config, 'elastiCache', 'serverlessEcpuM', 10);
 
       const storageRate = engine === 'valkey' 
-        ? (pf.serverlessStorageGBValkey || 0.084) 
-        : (pf.serverlessStorageGB || 0.125);
+        ? (pf.serverless?.valkey?.storageGBHour || 0.084) 
+        : (pf.serverless?.redis?.storageGBHour || 0.125);
       const ecpuRate = engine === 'valkey' 
-        ? (pf.serverlessEcpuMValkey || 2.28) 
-        : (pf.serverlessEcpuM || 3.40);
+        ? (pf.serverless?.valkey?.ecpuM || 0.0023) 
+        : (pf.serverless?.redis?.ecpuM || 0.0034);
 
       const sCost = storageGB * storageRate;
       const eCost = ecpusM * ecpuRate;
@@ -2348,6 +2408,16 @@ export class CostService {
     const config: any = node.config;
     const lines: CostBreakdownLine[] = [];
     let freeTierNote: string | undefined;
+
+    if (this.isUnavailableInRegion(node.type, region)) {
+      lines.push({
+        label: 'Region Unavailable',
+        formula: 'Service not available or SKU absent in the selected region',
+        value: 0,
+        note: 'Excluded from total cost'
+      });
+      return { lines, total: 0, freeTierNote };
+    }
 
     if (model?.costEvaluation?.freeTier?.description) {
       freeTierNote = model.costEvaluation.freeTier.description;

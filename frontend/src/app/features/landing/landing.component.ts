@@ -48,7 +48,7 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   private async loadLiveStats(): Promise<void> {
-    const base = environment.votesApiBase;
+    const base = (environment as { dailyApiBase?: string }).dailyApiBase;
     if (base) {
       try {
         const res = await fetch(`${base}/stats`);
@@ -142,6 +142,14 @@ export class LandingComponent implements OnInit, OnDestroy {
     window.dispatchEvent(new Event('popstate'));
   }
 
+  openReport(reportId: string, event: Event) {
+    event?.preventDefault();
+    // Record origin so the reports page "Back" button returns to the landing page.
+    sessionStorage.setItem('docsOrigin', '/');
+    window.history.pushState(null, '', `/benchmarks?report=${reportId}`);
+    window.dispatchEvent(new Event('popstate'));
+  }
+
   onButtonMouseMove(event: MouseEvent) {
     const btn = event.currentTarget as HTMLElement;
     const rect = btn.getBoundingClientRect();
@@ -152,18 +160,19 @@ export class LandingComponent implements OnInit, OnDestroy {
     const rx = (x - rect.width / 2) / (rect.width / 2);
     const ry = (y - rect.height / 2) / (rect.height / 2);
 
-    // Cast shadow in opposite direction of mouse
-    const shadowX = -rx * 8; // max 8px shift
-    const shadowY = -ry * 8; // max 8px shift
+    // Max rotation in degrees
+    const maxRotation = 6;
+    const tiltX = -ry * maxRotation;
+    const tiltY = rx * maxRotation;
+
+    // Shift shadows slightly
+    const shadowX = rx * 8;
+    const shadowY = ry * 8;
 
     btn.style.setProperty('--mouse-x', `${x}px`);
     btn.style.setProperty('--mouse-y', `${y}px`);
     btn.style.setProperty('--shadow-x', `${shadowX}px`);
     btn.style.setProperty('--shadow-y', `${shadowY}px`);
-
-    // Subtle 3D tilt
-    const tiltX = ry * 4; // rotate around X axis
-    const tiltY = -rx * 4; // rotate around Y axis
     btn.style.setProperty('--tilt-x', `${tiltX}deg`);
     btn.style.setProperty('--tilt-y', `${tiltY}deg`);
   }

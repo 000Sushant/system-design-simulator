@@ -24,8 +24,9 @@ const KEY_VISITORS = 'stats:visitors';  // { byDay: { 'YYYY-MM-DD': uniqueVisito
 const KEY_COUNTRIES = 'stats:countries';// string[] — all-time distinct country codes
 const KEY_LASTRUN = 'stats:lastRun';    // unix ms of the last successful refresh
 
-// Refresh at most this often (cron fires every 5 min; we gate it here).
-const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24h (once a day)
+// Refresh at most this often (the cron fires daily; the gate makes manual or
+// cold-start refreshes cheap no-ops when the cache is still fresh).
+const REFRESH_INTERVAL_MS = 20 * 60 * 60 * 1000; // 20h
 // How far back to ask each provider. GitHub caps clones at 14 days; CF at ~30.
 const LOOKBACK_DAYS = 30;
 
@@ -46,7 +47,7 @@ export const EMPTY_STATS: PublicStats = {
 interface DayMap { byDay: Record<string, number>; }
 
 async function readDayMap(env: Env, key: string): Promise<DayMap> {
-  const raw = await env.AWS_PRICING_KV.get(key);
+  const raw = await env.DAILY_KV.get(key);
   return raw ? (JSON.parse(raw) as DayMap) : { byDay: {} };
 }
 
@@ -151,18 +152,18 @@ export async function refreshStats(env: Env): Promise<PublicStats> {
   // Accumulate clones (overwrite each captured day so we never double-count).
   const clones = await readDayMap(env, KEY_CLONES);
   for (const [date, count] of Object.entries(cloneDays)) clones.byDay[date] = count;
-  await env.AWS_PRICING_KV.put(KEY_CLONES, JSON.stringify(clones));
+  await env.DAILY_KV.put(KEY_CLONES, JSON.stringify(clones));
 
   // Accumulate daily unique visitors.
   const visitors = await readDayMap(env, KEY_VISITORS);
   for (const [date, count] of Object.entries(cf.days)) visitors.byDay[date] = count;
-  await env.AWS_PRICING_KV.put(KEY_VISITORS, JSON.stringify(visitors));
+  await env.DAILY_KV.put(KEY_VISITORS, JSON.stringify(visitors));
 
   // Union of all-time distinct countries.
-  const rawCountries = await env.AWS_PRICING_KV.get(KEY_COUNTRIES);
+  const rawCountries = await env.DAILY_KV.get(KEY_COUNTRIES);
   const known = new Set<string>(rawCountries ? (JSON.parse(rawCountries) as string[]) : []);
   for (const code of Object.keys(cf.windowCountries)) known.add(code);
-  await env.AWS_PRICING_KV.put(KEY_COUNTRIES, JSON.stringify([...known]));
+  await env.DAILY_KV.put(KEY_COUNTRIES, JSON.stringify([...known]));
 
   const topCountries = Object.entries(cf.windowCountries)
     .sort((a, b) => b[1] - a[1])
@@ -179,15 +180,15 @@ export async function refreshStats(env: Env): Promise<PublicStats> {
     updatedAt: new Date().toISOString(),
   };
 
-  await env.AWS_PRICING_KV.put(KEY_PUBLIC, JSON.stringify(stats));
-  await env.AWS_PRICING_KV.put(KEY_LASTRUN, String(Date.now()));
+  await env.DAILY_KV.put(KEY_PUBLIC, JSON.stringify(stats));
+  await env.DAILY_KV.put(KEY_LASTRUN, String(Date.now()));
   return stats;
 }
 
 /** Cron-friendly: refresh only if configured and the interval has elapsed. */
 export async function maybeRefreshStats(env: Env): Promise<void> {
   if (!isConfigured(env)) return;
-  const last = Number(await env.AWS_PRICING_KV.get(KEY_LASTRUN)) || 0;
+  const last = Number(await env.DAILY_KV.get(KEY_LASTRUN)) || 0;
   if (Date.now() - last < REFRESH_INTERVAL_MS) return;
   try {
     await refreshStats(env);
@@ -199,7 +200,7 @@ export async function maybeRefreshStats(env: Env): Promise<void> {
 
 /** Reads the cached stats; refreshes on-demand if the cache is cold. */
 export async function getPublicStats(env: Env): Promise<PublicStats> {
-  const raw = await env.AWS_PRICING_KV.get(KEY_PUBLIC);
+  const raw = await env.DAILY_KV.get(KEY_PUBLIC);
   if (raw) return JSON.parse(raw) as PublicStats;
   if (isConfigured(env)) {
     try {

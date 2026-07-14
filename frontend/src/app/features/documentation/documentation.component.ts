@@ -139,6 +139,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     if (typeof window !== 'undefined' && window.location) {
       const params = new URLSearchParams(window.location.search);
       const serviceParam = params.get('service');
+      const categoryParam = params.get('category');
       if (serviceParam) {
         const matched = this.awsCatalog.services.find(
           (service) => service.type.toLowerCase() === serviceParam.toLowerCase()
@@ -151,11 +152,12 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
           return;
         }
       }
-      this.selectedServiceType = null;
 
-      const categoryParam = params.get('category');
-      if (categoryParam) {
+      if (categoryParam && this.categories.some(c => c.id === categoryParam)) {
         this.activeCategoryId = categoryParam;
+        this.selectedServiceType = null;
+      } else {
+        this.selectedServiceType = null;
       }
       this.updateTitleAndMeta();
     }
@@ -225,13 +227,13 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     const bottleneck =
       bnRaw && bnRaw.summary
         ? {
-            kind: bnRaw.kind,
-            failureMode: bnRaw.failureMode,
-            capacityDriver: bnRaw.capacityDriver || '',
-            summary: bnRaw.summary,
-            saturationCondition: bnRaw.saturationCondition || '',
-            atSaturation: bnRaw.atSaturation || '',
-          }
+          kind: bnRaw.kind,
+          failureMode: bnRaw.failureMode,
+          capacityDriver: bnRaw.capacityDriver || '',
+          summary: bnRaw.summary,
+          saturationCondition: bnRaw.saturationCondition || '',
+          atSaturation: bnRaw.atSaturation || '',
+        }
         : null;
 
     return {
@@ -574,6 +576,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       window.history.pushState(null, '', '/docs');
     }
     this.activeCategoryId = id;
+    window.history.pushState(null, '', `/docs?category=${id}`);
     this.updateTitleAndMeta();
     this.isManualScrolling = true;
 
@@ -629,4 +632,5 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     window.history.pushState(null, '', '/');
     window.dispatchEvent(new Event('popstate'));
   }
+
 }
