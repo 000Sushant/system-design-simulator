@@ -14,6 +14,7 @@ const helmet  = require('helmet');
 const dotenv  = require('dotenv');
 const fs      = require('fs');
 const path    = require('path');
+const rateLimit = require('express-rate-limit');
 const { SUPPORTED_REGIONS } = require('./regions');
 
 // ── Load credentials from .env (local dev only) ─────────────────────────────
@@ -56,6 +57,15 @@ app.use(cors({
   },
 }));
 app.use(express.json());
+
+// Bounds abuse of the KV/filesystem-backed endpoints below (per-IP).
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', apiLimiter);
 
 // ── In-memory cache (session-scoped, avoids repeated KV reads) ───────────────
 /** @type {Map<string, {data: object, cachedAt: number}>} */
