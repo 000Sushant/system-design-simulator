@@ -81,7 +81,7 @@ Rubix is a declarative verification and grading engine that analyzes your visual
 
 Sr. Architect decouples the canvas UI, the simulation iteration loop, and the live AWS pricing pipelines into a highly efficient distributed topology:
 
-![System Architecture Diagram](file:///C:/Users/harsh/.gemini/antigravity-ide/brain/ac9242b1-791f-4140-b60b-d5b22e6865c4/system_architecture_light_1784041467957.png)
+![System Architecture Diagram](docs/images/system_architecture_light.png)
 
 ---
 
