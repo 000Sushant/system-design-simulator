@@ -1824,7 +1824,7 @@
             [disabled]="isSimulationDisabled || mode !== 'idle'"
             (click)="startSimulation()"
           >
-            <i class="fas fa-play"></i>
+            <i class="fa-solid fa-play"></i>
           </button>
           <button
             type="button"
@@ -1834,7 +1834,7 @@
             [class.paused-active]="mode === 'paused'"
             (click)="pauseSimulation()"
           >
-            <i [class]="mode === 'paused' ? 'fas fa-play-circle' : 'fas fa-pause'"></i>
+            <i [class]="mode === 'paused' ? 'fa-solid fa-play' : 'fa-solid fa-pause'"></i>
           </button>
           <button
             type="button"
@@ -1843,7 +1843,7 @@
             [disabled]="mode === 'idle'"
             (click)="stopSimulation()"
           >
-            <i class="fas fa-stop"></i>
+            <i class="fa-solid fa-stop"></i>
           </button>
         </div>
 
