@@ -29,7 +29,6 @@ function step(id: string, completeOn?: OnboardingEvent): OnboardingStep {
   return { id, completeOn } as unknown as OnboardingStep;
 }
 
-/** Builds a service with a controlled step list injected over the JSON-derived one. */
 function serviceWithSteps(steps: OnboardingStep[]): OnboardingService {
   const service = new OnboardingService();
   (service as unknown as { steps: OnboardingStep[] }).steps = steps;

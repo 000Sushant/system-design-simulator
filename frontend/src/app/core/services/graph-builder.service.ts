@@ -10,16 +10,8 @@ export interface BuiltGraph {
   nodeByKey: Map<string, ArchitectureNode>;
 }
 
-/**
- * Builds a connected architecture from a declarative layout + logical edges.
- *
- * Shared by presets, challenge reference solutions, and scaffolds so they all
- * create connections the same way: every edge is resolved to a concrete,
- * rule-valid port pair via ValidationRuleService (no hardcoded port ids).
- */
 @Injectable({ providedIn: 'root' })
 export class GraphBuilderService {
-  // Constructor DI (not inject()) so unit tests can construct with `new`.
   constructor(
     private readonly factory: ArchitectureFactoryService,
     private readonly validation: ValidationRuleService,

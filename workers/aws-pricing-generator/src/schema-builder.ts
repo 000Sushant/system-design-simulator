@@ -1,14 +1,6 @@
 import { PricingFetcher } from './fetcher';
 import { Region } from './regions';
 
-/**
- * Baseline pricing values (us-east-1).
- * All regions START from this template. Live prices fetched by the Worker
- * then override specific fields. Services with no regional price variation
- * use these baseline values unchanged.
- *
- * NOTE: Keep this in sync with frontend/src/app/core/data/regions/us-east-1.json
- */
 const BASELINE_SERVICES: Record<string, any> = {
   client: { dataTransferGB: 0.09 },
   route53: { zoneMonthly: 0.50, standardM: 0.40 },
@@ -109,9 +101,6 @@ const BASELINE_SERVICES: Record<string, any> = {
   securityGroup: {},
   batch: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50 },
   eks: { clusterHourlyStandard: 0.10, clusterHourlyExtended: 0.60, cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, natHourly: 0.045, natDataGB: 0.045, logsGB: 0.50, instances: { 't3.medium': 0.0416, 't3.large': 0.0832, 'm5.large': 0.096, 'm5.xlarge': 0.192, 'm6g.large': 0.077, 'm7g.large': 0.096, 'g5.xlarge': 1.408 }, ebsGBMonth: 0.08, reservedDiscount: 0.40, containerInsightsPerNode: 2.5 },
-  // Aurora instance baselines = live us-east-1 offer prices (2026-07-10).
-  // NOTE: Aurora sells r-family (memory-optimized) and t-family (burstable)
-  // only — never db.m7g.* (a phantom entry removed 2026-07-10).
   aurora: { serverlessAcuHour: 0.12, instances: { 'db.t3.medium': 0.082, 'db.t4g.medium': 0.041, 'db.r5.large': 0.29, 'db.r6g.large': 0.26, 'db.r6g.xlarge': 0.519, 'db.r6g.2xlarge': 1.038, 'db.r7g.large': 0.276, 'db.r7g.xlarge': 0.553, 'db.r7g.2xlarge': 1.106, 'db.r8g.large': 0.276, 'db.r8g.xlarge': 0.552 }, ioOptimizedComputeMultiplier: 1.30, ioOptimizedStorageRate: 0.225, storageGB: 0.10, ioRequestPerM: 0.20 },
   eventBridge: { eventM: 1.00 },
   kinesis: { shardHour: 0.015, putM: 0.014, retentionGB: 0.023, onDemandStreamHour: 0.04, onDemandIngestGB: 0.08, onDemandEgressGB: 0.04, efoEgressGB: 0.05, consumerShardHour: 0.015, extendedRetentionGB: 0.10, longTermRetentionGB: 0.023 },
@@ -137,13 +126,8 @@ const BASELINE_SERVICES: Record<string, any> = {
   codePipeline: { pipelineMonth: 1.00 },
   codeBuild: { rates: { 'general1.small': 0.005, 'general1.medium': 0.010, 'general1.large': 0.020, 'gpu1.large': 0.950 } },
   codeDeploy: { updateRate: 0.02 },
-  // Bedrock token rates are $ per 1M tokens (standard-tier on-demand, text
-  // generation). Keys match the model options in service-cost-model.json;
-  // the trailing legacy keys keep architectures saved before the
-  // provider/model split priced correctly.
   bedrock: {
     inM: {
-      // anthropic
       'claude-sonnet-5': 2.2,
       'claude-fable-5': 11,
       'claude-mythos-5': 11,
@@ -153,7 +137,6 @@ const BASELINE_SERVICES: Record<string, any> = {
       'claude-3-7-sonnet': 3,
       'claude-3-5-haiku': 0.8,
       'claude-3-haiku': 0.25,
-      // amazon
       'nova-2-pro': 1.375,
       'nova-2-omni': 0.3,
       'nova-2-lite': 0.33,
@@ -164,59 +147,45 @@ const BASELINE_SERVICES: Record<string, any> = {
       'titan-text-premier': 0.5,
       'titan-text-express': 0.2,
       'titan-text-lite': 0.15,
-      // openai
       'gpt-oss-120b': 0.15,
       'gpt-oss-20b': 0.07,
-      // meta
       'llama-4-maverick': 0.24,
       'llama-4-scout': 0.17,
       'llama-3-3-70b': 0.72,
       'llama-3-2-11b': 0.16,
       'llama-3-2-3b': 0.15,
       'llama-3-1-8b': 0.22,
-      // deepseek
       'deepseek-v3-2': 0.62,
       'deepseek-r1': 1.35,
-      // mistral
       'mistral-large-3': 0.5,
       'pixtral-large': 2,
       'mistral-small': 1,
       'magistral-small': 0.5,
       'devstral': 0.4,
       'ministral-8b': 0.15,
-      // qwen
       'qwen3-coder-next': 0.5,
       'qwen3-vl-235b': 0.53,
       'qwen3-coder-30b': 0.15,
       'qwen3-32b': 0.15,
-      // google
       'gemma-3-27b': 0.23,
       'gemma-3-12b': 0.09,
       'gemma-3-4b': 0.04,
-      // cohere
       'command-r-plus': 3,
       'command-r': 0.5,
-      // ai21
       'jamba-1-5-large': 2,
       'jamba-1-5-mini': 0.2,
-      // writer
       'palmyra-x5': 0.6,
       'palmyra-x4': 2.5,
-      // moonshot
       'kimi-k2-5': 0.6,
       'kimi-k2-thinking': 0.6,
-      // minimax
       'minimax-m2-5': 0.3,
       'minimax-m2': 0.3,
-      // zai
       'glm-5': 1,
       'glm-4-7': 0.6,
       'glm-4-7-flash': 0.07,
-      // nvidia
       'nemotron-3-super': 0.15,
       'nemotron-nano-3': 0.06,
       'nemotron-nano-2-vl': 0.2,
-      // legacy
       'claude-haiku': 0.25,
       'claude-sonnet': 3,
       'claude-opus': 15,
@@ -224,7 +193,6 @@ const BASELINE_SERVICES: Record<string, any> = {
       'titan': 0.15,
     },
     outM: {
-      // anthropic
       'claude-sonnet-5': 11,
       'claude-fable-5': 55,
       'claude-mythos-5': 55,
@@ -234,7 +202,6 @@ const BASELINE_SERVICES: Record<string, any> = {
       'claude-3-7-sonnet': 15,
       'claude-3-5-haiku': 4,
       'claude-3-haiku': 1.25,
-      // amazon
       'nova-2-pro': 11,
       'nova-2-omni': 2.8,
       'nova-2-lite': 2.75,
@@ -245,59 +212,45 @@ const BASELINE_SERVICES: Record<string, any> = {
       'titan-text-premier': 1.5,
       'titan-text-express': 0.6,
       'titan-text-lite': 0.2,
-      // openai
       'gpt-oss-120b': 0.6,
       'gpt-oss-20b': 0.3,
-      // meta
       'llama-4-maverick': 0.97,
       'llama-4-scout': 0.66,
       'llama-3-3-70b': 0.72,
       'llama-3-2-11b': 0.16,
       'llama-3-2-3b': 0.15,
       'llama-3-1-8b': 0.22,
-      // deepseek
       'deepseek-v3-2': 1.85,
       'deepseek-r1': 5.4,
-      // mistral
       'mistral-large-3': 1.5,
       'pixtral-large': 6,
       'mistral-small': 3,
       'magistral-small': 1.5,
       'devstral': 2,
       'ministral-8b': 0.15,
-      // qwen
       'qwen3-coder-next': 1.2,
       'qwen3-vl-235b': 2.66,
       'qwen3-coder-30b': 0.6,
       'qwen3-32b': 0.6,
-      // google
       'gemma-3-27b': 0.38,
       'gemma-3-12b': 0.29,
       'gemma-3-4b': 0.08,
-      // cohere
       'command-r-plus': 15,
       'command-r': 1.5,
-      // ai21
       'jamba-1-5-large': 8,
       'jamba-1-5-mini': 0.4,
-      // writer
       'palmyra-x5': 6,
       'palmyra-x4': 10,
-      // moonshot
       'kimi-k2-5': 3,
       'kimi-k2-thinking': 2.5,
-      // minimax
       'minimax-m2-5': 1.2,
       'minimax-m2': 1.2,
-      // zai
       'glm-5': 3.2,
       'glm-4-7': 2.2,
       'glm-4-7-flash': 0.4,
-      // nvidia
       'nemotron-3-super': 0.65,
       'nemotron-nano-3': 0.24,
       'nemotron-nano-2-vl': 0.6,
-      // legacy
       'claude-haiku': 1.25,
       'claude-sonnet': 15,
       'claude-opus': 75,
@@ -388,14 +341,7 @@ const BASELINE_SERVICES: Record<string, any> = {
   },
 };
 
-/**
- * Maps each Bedrock model key (as used in BASELINE_SERVICES.bedrock and the
- * frontend cost model) to its live-pricing source:
- *  - od: `model`/`titanModel` attribute in the AmazonBedrock offer ($/1K tokens)
- *  - mp: `servicename` in the AmazonBedrockFoundationModels offer ($/1M tokens)
- */
 export const BEDROCK_MODEL_SOURCES: Record<string, { od?: string; mp?: string }> = {
-  // anthropic
   'claude-sonnet-5': { mp: 'Claude Sonnet 5 (Amazon Bedrock Edition)' },
   'claude-fable-5': { mp: 'Claude Fable 5 (Amazon Bedrock Edition)' },
   'claude-mythos-5': { mp: 'Claude Mythos 5 (Amazon Bedrock Edition)' },
@@ -405,7 +351,6 @@ export const BEDROCK_MODEL_SOURCES: Record<string, { od?: string; mp?: string }>
   'claude-3-7-sonnet': { mp: 'Claude 3.7 Sonnet (Amazon Bedrock Edition)' },
   'claude-3-5-haiku': { mp: 'Claude 3.5 Haiku (Amazon Bedrock Edition)' },
   'claude-3-haiku': { mp: 'Claude 3 Haiku (Amazon Bedrock Edition)' },
-  // amazon
   'nova-2-pro': { od: 'Nova 2.0 Pro' },
   'nova-2-omni': { od: 'Nova 2.0 Omni' },
   'nova-2-lite': { od: 'Nova 2.0 Lite' },
@@ -416,59 +361,45 @@ export const BEDROCK_MODEL_SOURCES: Record<string, { od?: string; mp?: string }>
   'titan-text-premier': { od: 'Titan Text G1 Premier' },
   'titan-text-express': { od: 'Titan Text G1 Express' },
   'titan-text-lite': { od: 'Titan Text G1 Lite' },
-  // openai
   'gpt-oss-120b': { od: 'gpt-oss-120b' },
   'gpt-oss-20b': { od: 'gpt-oss-20b' },
-  // meta
   'llama-4-maverick': { od: 'Llama 4 Maverick 17B' },
   'llama-4-scout': { od: 'Llama 4 Scout 17B' },
   'llama-3-3-70b': { od: 'Llama 3.3 70B' },
   'llama-3-2-11b': { od: 'Llama 3.2 11B' },
   'llama-3-2-3b': { od: 'Llama 3.2 3B' },
   'llama-3-1-8b': { od: 'Llama 3.1 8B' },
-  // deepseek
   'deepseek-v3-2': { od: 'DeepSeek v3.2' },
   'deepseek-r1': { od: 'R1' },
-  // mistral
   'mistral-large-3': { od: 'Mistral Large 3' },
   'pixtral-large': { od: 'Pixtral Large 25.02' },
   'mistral-small': { od: 'Mistral Small' },
   'magistral-small': { od: 'Magistral Small 1.2' },
   'devstral': { od: 'Devstral' },
   'ministral-8b': { od: 'Ministral 8B 3.0' },
-  // qwen
   'qwen3-coder-next': { od: 'Qwen3 Coder Next' },
   'qwen3-vl-235b': { od: 'Qwen3 VL 235B A22B' },
   'qwen3-coder-30b': { od: 'Qwen3 Coder 30B A3B' },
   'qwen3-32b': { od: 'Qwen3 32B' },
-  // google
   'gemma-3-27b': { od: 'Gemma 3 27B' },
   'gemma-3-12b': { od: 'Gemma 3 12B' },
   'gemma-3-4b': { od: 'Gemma 3 4B' },
-  // cohere
   'command-r-plus': { mp: 'Cohere Command R+ (Amazon Bedrock Edition)' },
   'command-r': { mp: 'Cohere Command R (Amazon Bedrock Edition)' },
-  // ai21
   'jamba-1-5-large': { mp: 'Jamba 1.5 Large (Amazon Bedrock Edition)' },
   'jamba-1-5-mini': { mp: 'Jamba 1.5 Mini (Amazon Bedrock Edition)' },
-  // writer
   'palmyra-x5': { mp: 'Palmyra X5 (Amazon Bedrock Edition)' },
   'palmyra-x4': { mp: 'Palmyra X4 (Amazon Bedrock Edition)' },
-  // moonshot
   'kimi-k2-5': { od: 'Kimi K2.5' },
   'kimi-k2-thinking': { od: 'Kimi K2 Thinking' },
-  // minimax
   'minimax-m2-5': { od: 'MiniMax M2.5' },
   'minimax-m2': { od: 'Minimax M2' },
-  // zai
   'glm-5': { od: 'GLM 5' },
   'glm-4-7': { od: 'GLM 4.7' },
   'glm-4-7-flash': { od: 'GLM 4.7 Flash' },
-  // nvidia
   'nemotron-3-super': { od: 'NVIDIA Nemotron 3 Super 120B A12B' },
   'nemotron-nano-3': { od: 'Nemotron Nano 3 30B' },
   'nemotron-nano-2-vl': { od: 'NVIDIA Nemotron Nano 2 VL' },
-  // legacy keys (pre provider/model split)
   'claude-haiku': { mp: 'Claude 3 Haiku (Amazon Bedrock Edition)' },
   'claude-sonnet': { mp: 'Claude 3 Sonnet (Amazon Bedrock Edition)' },
   'claude-opus': { mp: 'Claude 3 Opus (Amazon Bedrock Edition)' },
@@ -476,48 +407,17 @@ export const BEDROCK_MODEL_SOURCES: Record<string, { od?: string; mp?: string }>
   'titan': { od: 'Titan Text G1 Lite' },
 };
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 export function round(n: number | null, decimals = 10): number | null {
   if (n === null) return null;
   return parseFloat(n.toFixed(decimals));
 }
 
-// ─── Main builder ────────────────────────────────────────────────────────────
 
-/** Number of build phases per region. Each phase stays well under Cloudflare's
- *  free-plan limit of 50 subrequests per invocation (~25 Pricing calls max). */
 export const PHASE_COUNT = 9;
 
-/**
- * Worst-case Pricing API subrequests per phase (bulk fetchers counted at their
- * maxPages cap of 8; emrInstance counts 2 per call). The cron handler uses
- * these to chain as many phases as fit in one invocation's subrequest budget.
- *   0: r53(2)+ELB(8)+NAT(2)+egress(1)+EC2 families(7)+EBS(3)            = 23
- *   1: Fargate(5)+Lambda(2)+S3(3)+RDS MySQL(8)+RDS gp2(1)               = 19
- *   2: RDS PG(8)+Aurora ACU(1)+Aurora instances(11)                     = 20
- *   3: DDB(8)+OpenSearch(4)+Redshift(4+1)+EMR(4)+MSK(8)+MQ(8)           = 37
- *   4: Glue(1)+Kinesis(8)+EFS(2)+APIGW(1)+Amplify(5)+SES(5)             = 22
- *   5: DocDB(6+3)+Neptune(3+2)+Timestream(4)                            = 18
- *   6: AppConfig(2)+CloudMap(2)+QS(3)+Lightsail(8+1)+ElastiCache(8+8)   = 32
- *   7: Bedrock on-demand(8)+marketplace(8)                              = 16
- *   8: SageMaker(8)+Rekognition(8)+EC2 extra(6)+GPU anchors(3)          = 25
- */
 export const PHASE_MAX_CALLS: readonly number[] = [23, 19, 20, 37, 22, 18, 32, 16, 25];
 
-/**
- * Runs ONE phase of the regional pricing build. `partial` carries the
- * accumulated result between phases (pass null on phase 0 to start from a
- * fresh baseline clone). A null result from any query leaves the
- * corresponding baseline value untouched.
- *
- * Phases: 0 = Route53/ELB/NAT/egress/EC2/EBS · 1 = Fargate/Lambda/S3/
- * RDS-MySQL · 2 = RDS-PostgreSQL/Aurora · 3 = DynamoDB(bulk)/OpenSearch/
- * Redshift/EMR/MSK(bulk)/MQ(bulk) · 4 = Glue/Kinesis(bulk)/EFS/API Gateway/
- * Amplify/SES · 5 = DocumentDB/Neptune/Timestream · 6 = AppConfig/CloudMap/
- * QuickSight/Lightsail/ElastiCache(nodes+serverless) · 7 = Bedrock ·
- * 8 = SageMaker(bulk)/Rekognition(bulk)/EC2 current-gen + GPU families
- */
 export async function buildPricingPhase(
   region: Region,
   fetcher: PricingFetcher,
@@ -529,9 +429,6 @@ export async function buildPricingPhase(
   console.log(`[Builder] ${region.code}: phase ${phase + 1}/${PHASE_COUNT}...`);
 
   if (phase === 0) {
-  // All queries in this phase are independent — launch them together; the
-  // fetcher's slot scheduler keeps the API launch rate at 5/s.
-  // ── Route53 (global) ────────────────────────────────────────────────────
   const [r53Zone, r53QueriesRaw,
          albHr, albLcu, nlbHr, nlbLcu, clbHr, clbData, gwlbHr, gwlbLcu,
          natHr, natData, egressRate] = await Promise.all([
@@ -544,10 +441,8 @@ export async function buildPricingPhase(
     fetcher.dataTransferOut(loc),
   ]);
   if (r53Zone !== null) svc.route53.zoneMonthly = round(r53Zone, 2)!;
-  // API returns per-query price; we store per-million
   if (r53QueriesRaw !== null) svc.route53.standardM = round(r53QueriesRaw * 1_000_000, 2)!;
 
-  // ── ELB ─────────────────────────────────────────────────────────────────
   if (albHr !== null) svc.elb.types.alb.hourly = round(albHr, 4)!;
   if (albLcu !== null) svc.elb.types.alb.lcuHour = round(albLcu, 4)!;
   if (nlbHr !== null) svc.elb.types.nlb.hourly = round(nlbHr, 4)!;
@@ -557,18 +452,14 @@ export async function buildPricingPhase(
   if (gwlbHr !== null) svc.elb.types.gwlb.hourly = round(gwlbHr, 4)!;
   if (gwlbLcu !== null) svc.elb.types.gwlb.lcuHour = round(gwlbLcu, 4)!;
 
-  // Propagate ALB hourly to ecs/eks configurations as well
   if (albHr !== null) {
     svc.ecs.elbHourly = round(albHr, 4)!;
     svc.eks.elbHourly = round(albHr, 4)!;
   }
 
-  // ── NAT Gateway ─────────────────────────────────────────────────────────
   if (natHr !== null) { svc.natGateway.hourly = round(natHr, 4)!; svc.eks.natHourly = svc.natGateway.hourly; }
   if (natData !== null) { svc.natGateway.dataGB = round(natData, 4)!; svc.eks.natDataGB = svc.natGateway.dataGB; }
 
-  // ── Data Transfer Out (Internet Egress) ──────────────────────────────────
-  // Region-specific egress rate propagates to all services that use it
   if (egressRate !== null) {
     const r = round(egressRate, 4)!;
     svc.client.dataTransferGB            = r;
@@ -581,7 +472,6 @@ export async function buildPricingPhase(
     svc.elasticBeanstalk.dataTransferGB  = r;
   }
 
-  // ── EC2 instances ────────────────────────────────────────────────────────
   const families = ['t3', 'm5', 'm6g', 'c5', 'c6g', 'r5', 'r6g'] as const;
   const instanceMap: Record<string, string> = {
     t3: 't3.large', m5: 'm5.large', m6g: 'm6g.large',
@@ -593,13 +483,11 @@ export async function buildPricingPhase(
     const price = familyPrices[i];
     if (price !== null) {
       svc.ec2.familyRatesLarge[fam] = round(price, 6)!;
-      // Propagate to autoScalingGroup and elasticBeanstalk (same EC2 pricing)
       svc.autoScalingGroup.familyRatesLarge[fam] = round(price, 6)!;
       svc.elasticBeanstalk.familyRatesLarge[fam] = round(price, 6)!;
-      // EKS / ECS ec2 instances list uses the same base rate
       if (fam === 't3') {
         svc.eks.instances['t3.large'] = round(price, 6)!;
-        svc.ecs.instances['t3.medium'] = round(price * 0.5, 6)!; // medium = large * 0.5
+        svc.ecs.instances['t3.medium'] = round(price * 0.5, 6)!;
       }
       if (fam === 'm5') {
         svc.eks.instances['m5.large'] = round(price, 6)!;
@@ -613,27 +501,23 @@ export async function buildPricingPhase(
     }
   }
 
-  // EBS storage rates (gp2, gp3 approximation from gp2 - 20%, io2)
   const [ebsGp2, ebsGp3, ebsIo2] = await Promise.all([
     fetcher.ec2EbsGp2(loc), fetcher.ec2EbsGp3(loc), fetcher.ec2EbsIo2(loc),
   ]);
   if (ebsGp2 !== null) svc.ec2.ebsRates.gp2 = round(ebsGp2, 4)!;
   if (ebsGp3 !== null) svc.ec2.ebsRates.gp3 = round(ebsGp3, 4)!;
-  else if (ebsGp2 !== null) svc.ec2.ebsRates.gp3 = round(ebsGp2 * 0.8, 4)!; // fallback: gp3 ≈ 80% of gp2
+  else if (ebsGp2 !== null) svc.ec2.ebsRates.gp3 = round(ebsGp2 * 0.8, 4)!;
   if (ebsIo2 !== null) svc.ec2.ebsRates.io2 = round(ebsIo2, 4)!;
 
-  // Propagate EBS rates to autoScalingGroup and elasticBeanstalk
   svc.autoScalingGroup.ebsRates = { ...svc.ec2.ebsRates };
   svc.elasticBeanstalk.ebsRates = { ...svc.ec2.ebsRates };
   svc.ecs.ebsGBMonth = svc.ec2.ebsRates.gp3;
-  // Propagate EKS EBS rate
   svc.eks.ebsGBMonth = svc.ec2.ebsRates.gp3;
 
   return svc;
   }
 
   if (phase === 1) {
-  // ── ECS Fargate ──────────────────────────────────────────────────────────
   const RDS_MYSQL_INSTANCES = Object.keys(svc.rds.instanceRates?.mysql ?? {});
   const [cpuX86, memX86, cpuArm, memArm, eph,
          lambdaReqRaw, lambdaDurX86,
@@ -656,23 +540,16 @@ export async function buildPricingPhase(
   if (memArm !== null) { svc.ecs.armMemHour = round(memArm, 6)!; svc.eks.armMemHour = svc.ecs.armMemHour; svc.batch.armMemHour = svc.ecs.armMemHour; }
   if (eph !== null) { svc.ecs.ephemeralGBHour = round(eph, 8)!; svc.eks.ephemeralGBHour = svc.ecs.ephemeralGBHour; }
 
-  // ── Lambda ───────────────────────────────────────────────────────────────
-  // ARM duration = x86 × 0.8 (consistent ratio across all regions)
   if (lambdaReqRaw !== null) svc.lambda.requestM = round(lambdaReqRaw * 1_000_000, 4)!;
   if (lambdaDurX86 !== null) {
     svc.lambda.gbSec_x86 = round(lambdaDurX86, 10)!;
     svc.lambda.gbSec_arm = round(lambdaDurX86 * 0.8, 10)!;
   }
 
-  // ── S3 ───────────────────────────────────────────────────────────────────
   if (s3Std !== null) { svc.s3.storage.standard = round(s3Std, 4)!; svc.s3.storage.intelligent = svc.s3.storage.standard; }
   if (s3Ia !== null) svc.s3.storage.sia = round(s3Ia, 4)!;
   if (s3Glacier !== null) svc.s3.storage.glacier = round(s3Glacier, 4)!;
 
-  // ── RDS — MySQL (instanceRates is keyed by engine) ───────────────────────
-  // MySQL and MariaDB share on-demand list prices, so MariaDB aliases the
-  // fetched MySQL rate. PostgreSQL is queried in the next phase; commercial
-  // engines (SQL Server, Oracle) keep their baseline rates.
   for (let i = 0; i < RDS_MYSQL_INSTANCES.length; i++) {
     const inst = RDS_MYSQL_INSTANCES[i];
     const p = rdsMysqlPrices[i];
@@ -688,7 +565,6 @@ export async function buildPricingPhase(
   }
 
   if (phase === 2) {
-  // ── RDS — PostgreSQL ─────────────────────────────────────────────────────
   const RDS_PG_INSTANCES = Object.keys(svc.rds.instanceRates?.postgresql ?? {});
   const AURORA_INSTANCES = Object.keys(svc.aurora.instances ?? {});
   const [pgPrices, aurAcu, aurPrices] = await Promise.all([
@@ -700,7 +576,6 @@ export async function buildPricingPhase(
     if (pgPrices[i] !== null) svc.rds.instanceRates.postgresql[inst] = round(pgPrices[i], 4)!;
   });
 
-  // ── Aurora ───────────────────────────────────────────────────────────────
   if (aurAcu !== null) svc.aurora.serverlessAcuHour = round(aurAcu, 4)!;
   AURORA_INSTANCES.forEach((inst, i) => {
     if (aurPrices[i] !== null) svc.aurora.instances[inst] = round(aurPrices[i], 4)!;
@@ -710,8 +585,6 @@ export async function buildPricingPhase(
   }
 
   if (phase === 3) {
-  // ── DynamoDB (one bulk fetch covers on-demand, IA, provisioned, global-
-  //    tables replicated writes, PITR/backup/restore/export and streams) ─────
   const REDSHIFT_INSTANCES = Object.keys(svc.redshift.instances ?? {});
   const [ddb, osT3Med, osM6gLg, osR6gLg, osStorage,
          redshiftPrices, rsRpu, emrM5Xl, emrR5Xl, msk, mq] = await Promise.all([
@@ -746,27 +619,22 @@ export async function buildPricingPhase(
     applyDdb(svc.dynamoDb, ddb, 'exportGB', 4);
   }
 
-  // ── OpenSearch ───────────────────────────────────────────────────────────
   if (osT3Med !== null) svc.openSearch.instances['t3.medium'] = round(osT3Med, 4)!;
   if (osM6gLg !== null) svc.openSearch.instances['m6g.large'] = round(osM6gLg, 4)!;
   if (osR6gLg !== null) svc.openSearch.instances['r6g.large'] = round(osR6gLg, 4)!;
   if (osStorage !== null) svc.openSearch.storageGB = round(osStorage, 4)!;
 
-  // ── Redshift ─────────────────────────────────────────────────────────────
   REDSHIFT_INSTANCES.forEach((inst, i) => {
     if (redshiftPrices[i] !== null) svc.redshift.instances[inst] = round(redshiftPrices[i], 4)!;
   });
   if (rsRpu !== null) svc.redshift.rpuHour = round(rsRpu, 4)!;
 
-  // ── EMR (all-in node cost: EC2 + EMR fee) ────────────────────────────────
-  // m5.large has no EMR fee SKU; derived as 50% of m5.xlarge.
   if (emrM5Xl !== null) {
     svc.emr.instances['m5.xlarge'] = round(emrM5Xl, 4)!;
     svc.emr.instances['m5.large'] = round(emrM5Xl * 0.5, 4)!;
   }
   if (emrR5Xl !== null) svc.emr.instances['r5.xlarge'] = round(emrR5Xl, 4)!;
 
-  // ── MSK (one bulk fetch: brokers, Express, serverless, storage tiers) ────
   if (msk) {
     for (const k of Object.keys(svc.msk.instances)) {
       if (msk.instances?.[k] !== undefined) svc.msk.instances[k] = round(msk.instances[k], 4)!;
@@ -782,8 +650,6 @@ export async function buildPricingPhase(
     if (msk.expressStorageGB !== undefined) svc.msk.expressStorageGB = round(msk.expressStorageGB, 4)!;
   }
 
-  // ── Amazon MQ (bulk covers every ActiveMQ Single-AZ broker size; Multi-AZ
-  //    and RabbitMQ are billed via the baseline multipliers) ────────────────
   if (mq) {
     for (const k of Object.keys(svc.mq.instances)) {
       if (mq.instances?.[k] !== undefined) svc.mq.instances[k] = round(mq.instances[k], 4)!;
@@ -808,11 +674,8 @@ export async function buildPricingPhase(
     fetcher.sesDedicatedIp(loc), fetcher.sesVdm(loc),
   ]);
 
-  // ── Glue ─────────────────────────────────────────────────────────────────
   if (glueDpu !== null) svc.glue.dpuHour = round(glueDpu, 4)!;
 
-  // ── Kinesis Data Streams (one bulk fetch: provisioned, on-demand, EFO,
-  //    extended/long-term retention) ─────────────────────────────────────────
   if (kin) {
     const KIN_KEYS: Array<[string, number]> = [
       ['shardHour', 4], ['putM', 4], ['onDemandStreamHour', 4], ['onDemandIngestGB', 4],
@@ -824,14 +687,10 @@ export async function buildPricingPhase(
     }
   }
 
-  // ── EFS ──────────────────────────────────────────────────────────────────
   if (efsStd !== null) svc.efs.storage.standard = round(efsStd, 4)!;
   if (efsIa !== null) svc.efs.storage.ia = round(efsIa, 4)!;
 
-  // ── API Gateway (tiered pricing scale) ───────────────────────────────────
   if (apiGwPrice !== null) {
-    // apiGatewayRest returns the PER-REQUEST price; scale to per-million
-    // before computing the regional ratio against the $3.50/M baseline.
     const ratio = (apiGwPrice * 1_000_000) / 3.50;
     svc.apiGateway.requestsM.rest.tier1 = round(3.50 * ratio, 4)!;
     svc.apiGateway.requestsM.rest.tier2 = round(2.80 * ratio, 4)!;
@@ -851,14 +710,12 @@ export async function buildPricingPhase(
     svc.apiGateway.wsConnectionMinuteM = round(BASELINE_SERVICES.apiGateway.wsConnectionMinuteM * ratio, 4)!;
   }
 
-  // ── AWS Amplify ──────────────────────────────────────────────────────────
   if (ampB !== null) svc.amplify.buildMinute = round(ampB, 4)!;
   if (ampBL !== null) svc.amplify.buildMinuteLarge = round(ampBL, 4)!;
   if (ampBXL !== null) svc.amplify.buildMinuteXLarge = round(ampBXL, 4)!;
   if (ampS !== null) svc.amplify.storageGB = round(ampS, 4)!;
   if (ampD !== null) svc.amplify.dataServedGB = round(ampD, 4)!;
 
-  // ── Amazon SES ────────────────────────────────────────────────────────────
   if (sesOut !== null) svc.ses.email = round(sesOut, 6)!;
   if (sesIn !== null) svc.ses.inboundEmail = round(sesIn, 6)!;
   if (sesAtt !== null) svc.ses.attachmentGB = round(sesAtt, 4)!;
@@ -869,7 +726,6 @@ export async function buildPricingPhase(
   }
 
   if (phase === 5) {
-  // ── Amazon DocumentDB ─────────────────────────────────────────────────────
   const DOCDB_CLASSES = Object.keys(svc.documentDb.instances);
   const NEPTUNE_CLASSES = Object.keys(svc.neptune.instances);
   const [docStdPrices, docIoPrices, docStor, docStorIO, docIo,
@@ -891,14 +747,12 @@ export async function buildPricingPhase(
   if (docStorIO !== null) svc.documentDb.storageIOGB = round(docStorIO, 4)!;
   if (docIo !== null) svc.documentDb.ioMillion = round(docIo * 1_000_000, 4)!;
 
-  // ── Amazon Neptune ────────────────────────────────────────────────────────
   NEPTUNE_CLASSES.forEach((cls, i) => {
     if (nepPrices[i] !== null) svc.neptune.instances[cls] = round(nepPrices[i], 4)!;
   });
   if (nepStor !== null) svc.neptune.storageGB = round(nepStor, 4)!;
   if (nepIo !== null) svc.neptune.ioMillion = round(nepIo * 1_000_000, 4)!;
 
-  // ── Amazon Timestream (regional availability is limited — nulls keep baseline) ──
   if (tsIngest !== null) svc.timestream.ingestGB = round(tsIngest, 4)!;
   if (tsMem !== null) svc.timestream.memoryGBHr = round(tsMem, 4)!;
   if (tsMag !== null) svc.timestream.magneticGB = round(tsMag, 4)!;
@@ -917,27 +771,22 @@ export async function buildPricingPhase(
     fetcher.elastiCacheBulk(loc), fetcher.elastiCacheServerless(loc),
   ]);
 
-  // ── AWS AppConfig ─────────────────────────────────────────────────────────
   if (acReq !== null) svc.appConfig.requestM = round(acReq * 1_000_000, 4)!;
   if (acDep !== null) svc.appConfig.deployment = round(acDep, 6)!;
 
-  // ── AWS Cloud Map ─────────────────────────────────────────────────────────
   if (cmRes !== null) svc.cloudMap.resourceMonth = round(cmRes, 4)!;
   if (cmQry !== null) svc.cloudMap.queryM = round(cmQry * 1_000_000, 4)!;
 
-  // ── Amazon QuickSight ─────────────────────────────────────────────────────
   if (qsAuthor !== null) svc.quickSight.authorPro = round(qsAuthor, 2)!;
   if (qsReader !== null) svc.quickSight.reader = round(qsReader, 2)!;
   if (qsSpice !== null) svc.quickSight.spiceGB = round(qsSpice, 4)!;
 
-  // ── Amazon Lightsail ──────────────────────────────────────────────────────
   const lsBundles = lsBundlesRaw || {};
   for (const [size, rate] of Object.entries(lsBundles)) {
     if (rate !== null) svc.lightsail.bundles[size] = round(rate, 5)!;
   }
   if (lsOver !== null) svc.lightsail.overageGB = round(lsOver, 4)!;
 
-  // ── ElastiCache — node rates + serverless (Redis/Valkey) ─────────────────
   const ecRates = ecRatesRaw || {};
   for (const inst of Object.keys(svc.elastiCache.instances ?? {})) {
     const p = ecRates[inst];
@@ -956,11 +805,6 @@ export async function buildPricingPhase(
   }
 
   if (phase === 7) {
-  // ── Bedrock model token rates ─────────────────────────────────────────────
-  // Two bulk (paginated) queries return every on-demand SKU for the region;
-  // each catalog model is then matched by model name / marketplace
-  // servicename. Models not offered in a region keep the us-east-1 baseline
-  // rate, consistent with how other services fall back.
   const [odRatesRaw, mpRatesRaw] = await Promise.all([
     fetcher.bedrockOnDemand(loc), fetcher.bedrockMarketplace(loc),
   ]);
@@ -969,7 +813,6 @@ export async function buildPricingPhase(
   for (const [key, source] of Object.entries(BEDROCK_MODEL_SOURCES)) {
     const rates = source.od ? odRates[source.od] : mpRates[source.mp!];
     if (!rates) continue;
-    // AmazonBedrock offer prices are $/1K tokens; the simulator stores $/1M.
     const scale = source.od ? 1000 : 1;
     if (rates.in !== undefined) svc.bedrock.inM[key] = round(rates.in * scale, 6)!;
     if (rates.out !== undefined) svc.bedrock.outM[key] = round(rates.out * scale, 6)!;
@@ -978,10 +821,7 @@ export async function buildPricingPhase(
   return svc;
   }
 
-  // ── Phase 8: SageMaker hosting, Rekognition, EC2 current-gen + GPU ────────
 
-  // SageMaker: one bulk fetch returns every Hosting instance rate; only the
-  // curated catalog keys are updated (models absent regionally keep baseline).
   const extraFamilies: Record<string, string> = {
     m7g: 'm7g.large', m7i: 'm7i.large', c7g: 'c7g.large', r7g: 'r7g.large', m8g: 'm8g.large', i4i: 'i4i.large',
   };
@@ -996,7 +836,6 @@ export async function buildPricingPhase(
     if (smRates?.[inst] !== undefined) svc.sageMaker.instances[inst] = round(smRates[inst], 4)!;
   }
 
-  // Rekognition: image, archived/live video, face vector storage.
   if (rek) {
     if (rek.imageM !== undefined) svc.rekognition.imageM = round(rek.imageM, 4)!;
     if (rek.videoArchivedMin !== undefined) svc.rekognition.videoArchivedMin = round(rek.videoArchivedMin, 4)!;
@@ -1004,7 +843,6 @@ export async function buildPricingPhase(
     if (rek.faceVectorM !== undefined) svc.rekognition.faceVectorM = round(rek.faceVectorM, 4)!;
   }
 
-  // EC2 current-gen family anchors (large size, same scheme as phase 0).
   Object.keys(extraFamilies).forEach((fam, i) => {
     const price = extraPrices[i];
     if (price !== null) {
@@ -1019,9 +857,6 @@ export async function buildPricingPhase(
     }
   });
 
-  // EC2 GPU families: GPU prices don't follow the size-multiplier ladder, so
-  // fetch one anchor per family and scale the baseline size table by the
-  // region's anchor ratio (regional = baseline_size × anchor_regional/anchor_baseline).
   for (const [i, [fam, anchor]] of Object.entries(gpuAnchors).entries()) {
     const price = gpuPrices[i];
     const baseAnchor = BASELINE_SERVICES.ec2.gpuInstances[anchor];
@@ -1045,11 +880,6 @@ export async function buildPricingPhase(
   return svc;
 }
 
-/**
- * Builds a complete regional pricing file in one call by running all phases
- * sequentially. Only safe where the 50-subrequest limit does not apply
- * (local dev / paid plan) — production cron uses buildPricingPhase instead.
- */
 export async function buildPricingFile(
   region: Region,
   fetcher: PricingFetcher

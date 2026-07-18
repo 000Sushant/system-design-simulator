@@ -5,7 +5,6 @@ import { RubricReviewer } from './evaluation/architecture-reviewer';
 import { Challenge, ChallengeProgress, GraphRule, Hint, Milestone } from '../models/challenge.model';
 import { makeChallenge } from '../testing/fixtures';
 
-// A milestone rule is irrelevant to hint gating (evaluateMilestones isn't called here).
 const anyRule = {} as GraphRule;
 
 function milestone(id: string, hidden = false): Milestone {
@@ -15,7 +14,6 @@ function hint(id: string, order: number): Hint {
   return { id, title: id, body: `body ${id}`, order };
 }
 
-/** Pushes a controlled challenge + progress into the service's private subjects. */
 function activate(service: ChallengeService, challenge: Challenge, progress: ChallengeProgress): void {
   const internal = service as unknown as {
     activeChallengeSubject: BehaviorSubject<Challenge | null>;
@@ -32,8 +30,6 @@ function progressWith(reached: string[], revealed: string[] = []): ChallengeProg
 describe('ChallengeService', () => {
   let service: ChallengeService;
 
-  // Two standard milestones and three hints: h1/h2 map to the milestones, h3 is
-  // an "additional" hint (order > milestone count) unlocked only once all reached.
   const challenge = makeChallenge({
     id: 'c',
     milestones: [milestone('m1'), milestone('m2')],
@@ -89,7 +85,6 @@ describe('ChallengeService', () => {
       activate(service, challenge, progressWith([]));
       const revealed = service.revealNextHint();
       expect(revealed?.id).toBe('h1');
-      // The reveal is reflected in the active progress stream.
       let current: ChallengeProgress | null = null;
       service.progress$.subscribe((p) => (current = p));
       expect(current!.revealedHintIds).toContain('h1');
@@ -106,7 +101,6 @@ describe('ChallengeService', () => {
 
   describe('revealedHints (gating)', () => {
     it('gates a revealed hint until its milestone is reached', () => {
-      // h2 is revealed but m1 not yet reached → only h1 is visible.
       activate(service, challenge, progressWith([], ['h1', 'h2']));
       expect(service.revealedHints().map((h) => h.id)).toEqual(['h1']);
     });

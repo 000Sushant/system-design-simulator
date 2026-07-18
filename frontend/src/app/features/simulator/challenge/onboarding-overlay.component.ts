@@ -24,7 +24,6 @@ export class OnboardingOverlayComponent {
     return this.onboarding.steps.length;
   }
 
-  /** Manual steps are advanced with the Next button; action steps auto-advance. */
   get isManual(): boolean {
     return this.step?.completeOn === 'manual';
   }

@@ -16,7 +16,6 @@ const emptyMetrics = (): ServiceMetrics => ({
   throughput: 0,
 });
 
-/** Deterministic id generator for assertions. */
 function sequentialIds(): () => string {
   let n = 0;
   return () => `new-${++n}`;

@@ -5,12 +5,6 @@ import { ValidationRuleService } from './validation-rule.service';
 import { AwsCatalogService } from './aws-catalog.service';
 import { ReferenceNode } from '../models/challenge.model';
 
-/**
- * Integration-style characterization: the builder is exercised against the real
- * factory + validation services (both construct from static config), so these
- * lock the "declarative layout + edges → connected graph" contract that presets
- * and challenge reference solutions depend on.
- */
 describe('GraphBuilderService', () => {
   let builder: GraphBuilderService;
 
@@ -51,7 +45,6 @@ describe('GraphBuilderService', () => {
   });
 
   it('throws when an edge has no valid connection rule', () => {
-    // apiGateway → client has no rule (client is a pure traffic source).
     expect(() => builder.build(layout, [['api', 'user']])).toThrow(/no valid connection rule/i);
   });
 });

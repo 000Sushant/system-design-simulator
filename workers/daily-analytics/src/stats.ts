@@ -1,42 +1,27 @@
 import { Env } from './types';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Live project stats: GitHub stars/forks/clones + Cloudflare unique visitors.
-//
-// GitHub traffic (clones) and Cloudflare analytics are both *rolling windows*
-// (last ~14 / ~30 days). To show an ALL-TIME total we snapshot each day's value
-// into KV keyed by date, overwriting on every refresh, then sum every stored day.
-// A daily-or-better refresh guarantees no day is ever missed inside the window.
-//
-// Tokens are never in the frontend. The Worker fetches with secrets and serves a
-// small cached JSON the landing page reads from `GET /stats`.
-// ──────────────────────────────────────────────────────────────────────────────
 
 const GH_OWNER = '000Sushant';
 const GH_REPO = 'system-design-simulator';
 const GH_API = 'https://api.github.com';
 const CF_GRAPHQL = 'https://api.cloudflare.com/client/v4/graphql';
 
-// KV keys
-const KEY_PUBLIC = 'stats:public';      // the cached JSON served to the frontend
-const KEY_CLONES = 'stats:clones';      // { byDay: { 'YYYY-MM-DD': totalClones } }
-const KEY_VISITORS = 'stats:visitors';  // { byDay: { 'YYYY-MM-DD': uniqueVisitors } }
-const KEY_COUNTRIES = 'stats:countries';// string[] — all-time distinct country codes
-const KEY_LASTRUN = 'stats:lastRun';    // unix ms of the last successful refresh
+const KEY_PUBLIC = 'stats:public';
+const KEY_CLONES = 'stats:clones';
+const KEY_VISITORS = 'stats:visitors';
+const KEY_COUNTRIES = 'stats:countries';
+const KEY_LASTRUN = 'stats:lastRun';
 
-// Refresh at most this often (the cron fires daily; the gate makes manual or
-// cold-start refreshes cheap no-ops when the cache is still fresh).
-const REFRESH_INTERVAL_MS = 20 * 60 * 60 * 1000; // 20h
-// How far back to ask each provider. GitHub caps clones at 14 days; CF at ~30.
+const REFRESH_INTERVAL_MS = 20 * 60 * 60 * 1000;
 const LOOKBACK_DAYS = 30;
 
 export interface PublicStats {
   stars: number;
   forks: number;
-  clones: number;     // all-time total git clones
-  visitors: number;   // all-time sum of daily unique visitors (approx — see note below)
-  countries: number;  // all-time distinct countries
-  topCountries: { code: string; requests: number }[]; // recent window, top 5
+  clones: number;
+  visitors: number;
+  countries: number;
+  topCountries: { code: string; requests: number }[];
   updatedAt: string | null;
 }
 
@@ -64,7 +49,6 @@ function ghHeaders(env: Env): Record<string, string> {
   };
 }
 
-// ─── GitHub ────────────────────────────────────────────────────────────────────
 
 async function fetchRepoMeta(env: Env): Promise<{ stars: number; forks: number }> {
   const res = await fetch(`${GH_API}/repos/${GH_OWNER}/${GH_REPO}`, { headers: ghHeaders(env) });
@@ -73,7 +57,6 @@ async function fetchRepoMeta(env: Env): Promise<{ stars: number; forks: number }
   return { stars: data.stargazers_count ?? 0, forks: data.forks_count ?? 0 };
 }
 
-/** Returns { 'YYYY-MM-DD': totalClones } for the last 14 days (requires push token). */
 async function fetchClonesDays(env: Env): Promise<Record<string, number>> {
   const res = await fetch(`${GH_API}/repos/${GH_OWNER}/${GH_REPO}/traffic/clones`, {
     headers: ghHeaders(env),
@@ -87,11 +70,10 @@ async function fetchClonesDays(env: Env): Promise<Record<string, number>> {
   return days;
 }
 
-// ─── Cloudflare ──────────────────────────────────────────────────────────────
 
 interface CfResult {
-  days: Record<string, number>;            // date -> unique visitors
-  windowCountries: Record<string, number>; // country -> requests (current window)
+  days: Record<string, number>;
+  windowCountries: Record<string, number>;
 }
 
 async function fetchCloudflare(env: Env): Promise<CfResult> {
@@ -127,21 +109,18 @@ async function fetchCloudflare(env: Env): Promise<CfResult> {
     days[g.dimensions.date] = g.uniq?.uniques ?? 0;
     for (const c of g.sum?.countryMap ?? []) {
       const code = c.clientCountryName;
-      if (!code || code === 'XX') continue; // XX = unknown
+      if (!code || code === 'XX') continue;
       windowCountries[code] = (windowCountries[code] ?? 0) + (c.requests ?? 0);
     }
   }
   return { days, windowCountries };
 }
 
-// ─── Orchestration ─────────────────────────────────────────────────────────────
 
-/** True when all required secrets/vars are present. */
 function isConfigured(env: Env): boolean {
   return Boolean(env.GITHUB_TOKEN && env.CF_API_TOKEN && env.CF_ZONE_TAG);
 }
 
-/** Fetches everything, merges into the all-time KV accumulators, caches and returns. */
 export async function refreshStats(env: Env): Promise<PublicStats> {
   const [meta, cloneDays, cf] = await Promise.all([
     fetchRepoMeta(env),
@@ -149,17 +128,14 @@ export async function refreshStats(env: Env): Promise<PublicStats> {
     fetchCloudflare(env),
   ]);
 
-  // Accumulate clones (overwrite each captured day so we never double-count).
   const clones = await readDayMap(env, KEY_CLONES);
   for (const [date, count] of Object.entries(cloneDays)) clones.byDay[date] = count;
   await env.DAILY_KV.put(KEY_CLONES, JSON.stringify(clones));
 
-  // Accumulate daily unique visitors.
   const visitors = await readDayMap(env, KEY_VISITORS);
   for (const [date, count] of Object.entries(cf.days)) visitors.byDay[date] = count;
   await env.DAILY_KV.put(KEY_VISITORS, JSON.stringify(visitors));
 
-  // Union of all-time distinct countries.
   const rawCountries = await env.DAILY_KV.get(KEY_COUNTRIES);
   const known = new Set<string>(rawCountries ? (JSON.parse(rawCountries) as string[]) : []);
   for (const code of Object.keys(cf.windowCountries)) known.add(code);
@@ -185,7 +161,6 @@ export async function refreshStats(env: Env): Promise<PublicStats> {
   return stats;
 }
 
-/** Cron-friendly: refresh only if configured and the interval has elapsed. */
 export async function maybeRefreshStats(env: Env): Promise<void> {
   if (!isConfigured(env)) return;
   const last = Number(await env.DAILY_KV.get(KEY_LASTRUN)) || 0;
@@ -198,7 +173,6 @@ export async function maybeRefreshStats(env: Env): Promise<void> {
   }
 }
 
-/** Reads the cached stats; refreshes on-demand if the cache is cold. */
 export async function getPublicStats(env: Env): Promise<PublicStats> {
   const raw = await env.DAILY_KV.get(KEY_PUBLIC);
   if (raw) return JSON.parse(raw) as PublicStats;

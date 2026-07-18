@@ -13,15 +13,8 @@ import { RubricReviewer, evaluateMilestones } from './evaluation/architecture-re
 
 const PROGRESS_KEY = 'sds.challengeProgress';
 
-/**
- * Owns the Developer-Mode challenge experience: the catalog, the active
- * challenge, progress (revealed hints, reached milestones, last score), and
- * evaluation. Milestone changes are emitted as a stream so the UI can toast
- * each newly reached milestone exactly once.
- */
 @Injectable({ providedIn: 'root' })
 export class ChallengeService {
-  // Constructor DI (not inject()) so unit tests can construct with `new`.
   constructor(private readonly reviewer: RubricReviewer) {}
 
   readonly challenges: Challenge[] = (challengesData as unknown as { challenges: Challenge[] })
@@ -33,7 +26,6 @@ export class ChallengeService {
   private readonly progressSubject = new BehaviorSubject<ChallengeProgress | null>(null);
   readonly progress$ = this.progressSubject.asObservable();
 
-  /** Emits a milestone the moment it is first reached (for toasts). */
   private readonly milestoneReachedSubject = new Subject<{
     milestone: Milestone;
     number: number;
@@ -49,7 +41,6 @@ export class ChallengeService {
     return this.challenges.find((challenge) => challenge.id === id);
   }
 
-  /** Starts a challenge, restoring any saved progress for it. */
   start(id: string): Challenge | undefined {
     const challenge = this.getById(id);
     if (!challenge || !challenge.authored) {
@@ -85,7 +76,6 @@ export class ChallengeService {
     return challenge;
   }
 
-  /** Resets progress for a challenge so the user can design it again from scratch. */
   reset(id: string): void {
     const challenge = this.getById(id);
     if (!challenge) return;
@@ -111,13 +101,11 @@ export class ChallengeService {
     this.lastReviewSubject.next(null);
   }
 
-  /** Finds the hint corresponding to the first missing milestone. */
   nextHintToReveal(): Hint | null {
     const challenge = this.activeChallengeSubject.value;
     const progress = this.progressSubject.value;
     if (!challenge || !progress) return null;
 
-    // Find the first milestone (standard or hidden) that is NOT reached
     const firstMissingIndex = challenge.milestones.findIndex(
       (m) => !progress.reachedMilestoneIds.includes(m.id),
     );
@@ -130,13 +118,11 @@ export class ChallengeService {
       return unrevealedAdditionalHints[0] || null;
     }
 
-    // The corresponding hint has order = firstMissingIndex + 1
     const targetOrder = firstMissingIndex + 1;
     const hint = challenge.hints.find((h) => h.order === targetOrder);
     return hint ?? null;
   }
 
-  /** Reveals the next hint corresponding to the missing milestone. */
   revealNextHint(): Hint | null {
     const challenge = this.activeChallengeSubject.value;
     const progress = this.progressSubject.value;
@@ -182,10 +168,6 @@ export class ChallengeService {
       .sort((a, b) => a.order - b.order);
   }
 
-  /**
-   * Recomputes milestone status against the current architecture and emits any
-   * newly reached milestones. Call this whenever the canvas changes.
-   */
   notifyGraphChanged(nodes: ArchitectureNode[], connections: ArchitectureConnection[]): void {
     const challenge = this.activeChallengeSubject.value;
     const progress = this.progressSubject.value;
@@ -193,8 +175,6 @@ export class ChallengeService {
 
     const reached = evaluateMilestones({ nodes, connections }, challenge);
 
-    // If challenge was completed, do not allow real-time graph changes
-    // (such as loading an empty canvas) to downgrade the reached milestone IDs list.
     if (progress.completed) {
       const previouslyReachedStandard = challenge.milestones.filter(
         (m) => !m.hidden && progress.reachedMilestoneIds.includes(m.id),
@@ -242,7 +222,6 @@ export class ChallengeService {
     }
   }
 
-  /** Scores the architecture and records the result. */
   evaluate(nodes: ArchitectureNode[], connections: ArchitectureConnection[]): ReviewResult | null {
     const challenge = this.activeChallengeSubject.value;
     const progress = this.progressSubject.value;
@@ -260,7 +239,6 @@ export class ChallengeService {
     return result;
   }
 
-  /** Per-challenge completion summary for the hub, derived from saved progress. */
   progressFor(id: string): ChallengeProgress | undefined {
     return this.loadProgress()[id];
   }
@@ -287,7 +265,6 @@ export class ChallengeService {
     try {
       localStorage.setItem(PROGRESS_KEY, JSON.stringify(all));
     } catch {
-      // Best-effort persistence; ignore quota/serialization errors.
     }
   }
 }

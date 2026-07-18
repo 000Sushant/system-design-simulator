@@ -49,7 +49,7 @@ describe('AwsCatalogService', () => {
 
   describe('categoryColor', () => {
     it('returns the mapped color for a known category', () => {
-      expect(catalog.categoryColor('Database')).toBe('#6d28d9');
+      expect(catalog.categoryColor('Database')).toBe('#7c3edd');
     });
 
     it('falls back to slate for an unmapped category', () => {

@@ -52,7 +52,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openSimulator(mode?: 'developer' | 'architect'): void {
     const url = mode ? `/playground?mode=${mode}` : '/playground';
-    // push a new history entry so Back returns to landing
     window.history.pushState(null, '', url);
     this.simulatorOpen = true;
     this.docsOpen = false;

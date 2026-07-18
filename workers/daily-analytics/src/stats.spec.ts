@@ -23,7 +23,6 @@ const CONFIGURED = { GITHUB_TOKEN: 'gh', CF_API_TOKEN: 'cf', CF_ZONE_TAG: 'zone'
 let fetchSpy: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
-  // If any test triggers an external call, fail loudly rather than hit the network.
   fetchSpy = vi.fn(async () => {
     throw new Error('unexpected network call');
   });
@@ -45,7 +44,7 @@ describe('getPublicStats', () => {
   });
 
   it('returns EMPTY_STATS when the cache is cold and no tokens are configured', async () => {
-    const { env } = makeEnv({}); // unconfigured
+    const { env } = makeEnv({});
     const result = await getPublicStats(env);
     expect(result).toEqual(EMPTY_STATS);
     expect(fetchSpy).not.toHaveBeenCalled();
@@ -62,7 +61,7 @@ describe('maybeRefreshStats', () => {
 
   it('is a no-op when the refresh interval has not elapsed', async () => {
     const { env, kv } = makeEnv(CONFIGURED);
-    kv.store.set('stats:lastRun', String(Date.now())); // just ran
+    kv.store.set('stats:lastRun', String(Date.now()));
     await maybeRefreshStats(env);
     expect(fetchSpy).not.toHaveBeenCalled();
   });

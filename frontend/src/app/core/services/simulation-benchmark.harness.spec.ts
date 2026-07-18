@@ -1,26 +1,3 @@
-/**
- * simulation-benchmark.harness.spec.ts
- *
- * NOT a unit test — a benchmark harness that drives the real SimulationService
- * through a standardized load-scenario suite for every service in the catalog
- * and scores the observed behavior against the expected AWS saturation
- * semantics (reject / queue / degrade / unbounded) from service-bottleneck.json.
- *
- * Scenarios per service (client → service graph, deterministic, no variable
- * traffic):
- *   UNDER   ρ=0.5   healthy operation: no errors, no stress states
- *   NEAR    ρ=0.92  approach saturation: queueing latency for resource-bound
- *                   services, flat latency for fail-fast managed services
- *   OVER    ρ=1.6 (reject/queue) or ρ=2.0 (degrade): correct saturation
- *                   behavior for the service's class
- *   RECOVER ρ=0.3   after overload: managed services recover instantly,
- *                   queues drain, resource-bound services stay collapsed
- *                   (engine models no auto-recovery — informational)
- *
- * Only runs when BM_SIM_OUT is set, so `npm test` is unaffected:
- *   BM_SIM_OUT=../docs/benchmark-data/simulation-accuracy.json npx vitest run \
- *     src/app/core/services/simulation-benchmark.harness.spec.ts
- */
 import { describe, it } from 'vitest';
 import { writeFileSync } from 'fs';
 import { resolve } from 'path';
@@ -75,7 +52,6 @@ function saturationOf(type: string): 'reject' | 'queue' | 'degrade' | 'none' {
   return spec.failureMode === 'offline' ? 'degrade' : 'reject';
 }
 
-/** Service types with a native sizing formula in computeNodeCapacity. */
 const FORMULA_TYPES = new Set([
   'lambda', 'dynamoDb', 'kinesis', 'appRunner', 'rds', 'ecs', 'elastiCache',
   'openSearch', 'ec2', 'elasticBeanstalk', 'autoScalingGroup', 'eks', 'emr',
@@ -111,7 +87,7 @@ describe('Simulation accuracy benchmark', () => {
         outPort.type,
       );
       sim.start([client, svc], [conn]);
-      sim.pause(); // detach the interval; the harness drives ticks directly
+      sim.pause();
       return { sim, svcId: svc.id, clientId: client.id };
     }
 
@@ -166,7 +142,6 @@ describe('Simulation accuracy benchmark', () => {
             ? 'quota'
             : 'legacy-knob';
 
-      // ── UNDER: ρ = 0.5 (or fixed 1M rps for unbounded services) ───────────
       {
         const rate = unbounded ? 1_000_000 : capacity * 0.5;
         const { sim, svcId } = makeSim(type, rate);
@@ -183,7 +158,6 @@ describe('Simulation accuracy benchmark', () => {
         sim.stop();
       }
 
-      // ── NEAR: ρ = 0.92 ─────────────────────────────────────────────────────
       if (!unbounded) {
         const { sim, svcId } = makeSim(type, capacity * 0.92);
         const s = runTicks(sim, svcId, 25);
@@ -209,7 +183,6 @@ describe('Simulation accuracy benchmark', () => {
         sim.stop();
       }
 
-      // ── OVER + RECOVER ─────────────────────────────────────────────────────
       if (sat === 'none' || unbounded) {
         const { sim, svcId } = makeSim(type, 2_000_000);
         const s = runTicks(sim, svcId, 40);
@@ -226,7 +199,7 @@ describe('Simulation accuracy benchmark', () => {
         const { sim, svcId, clientId } = makeSim(type, capacity * over);
         const s = runTicks(sim, svcId, 40);
         const fin = last(s);
-        const expectedErr = (1 - 1 / over) * 100; // 37.5%
+        const expectedErr = (1 - 1 / over) * 100;
         checks.push({
           name: 'OVER: rejects excess immediately (429 semantics)',
           pass: Math.abs(fin.errorRate - expectedErr) <= 10,
@@ -247,7 +220,6 @@ describe('Simulation accuracy benchmark', () => {
           pass: maxLatency(s) <= baseLatency * 2 + 40,
           detail: `maxLat=${maxLatency(s)}ms vs base=${baseLatency}ms`,
         });
-        // RECOVER
         const clientNode = (sim as any).nodes.find((n: ArchitectureNode) => n.id === clientId)!;
         clientNode.config.requestRate = capacity * 0.3;
         const r = runTicks(sim, svcId, 25);
@@ -277,7 +249,6 @@ describe('Simulation accuracy benchmark', () => {
           pass: fin.avgLatency >= baseLatency + 900,
           detail: `lat=${fin.avgLatency}ms vs base=${baseLatency}ms (wait time = backlog age, capped at 60s)`,
         });
-        // RECOVER: drain
         const clientNode = (sim as any).nodes.find((n: ArchitectureNode) => n.id === clientId)!;
         clientNode.config.requestRate = capacity * 0.3;
         const r = runTicks(sim, svcId, 30);
@@ -289,7 +260,6 @@ describe('Simulation accuracy benchmark', () => {
         });
         sim.stop();
       } else {
-        // degrade
         const { sim, svcId, clientId } = makeSim(type, capacity * 2);
         const s = runTicks(sim, svcId, 40);
         const fin = last(s);
@@ -312,7 +282,6 @@ describe('Simulation accuracy benchmark', () => {
           pass: maxLatency(s) >= baseLatency * 3,
           detail: `maxLat=${Math.round(maxLatency(s))}ms vs base=${baseLatency}ms`,
         });
-        // RECOVER (informational: engine models no auto-recovery for collapsed nodes)
         const clientNode = (sim as any).nodes.find((n: ArchitectureNode) => n.id === clientId)!;
         clientNode.config.requestRate = capacity * 0.3;
         const r = runTicks(sim, svcId, 25);

@@ -10,15 +10,13 @@ export interface Point {
   y: number;
 }
 
-// Node-box geometry the canvas renders against.
-const OUTPUT_PORT_X_OFFSET = 184; // node width — output ports sit on the right edge
-const PORT_Y_OFFSET = 62; // vertical center of the port row
-const MIN_EDGE_CURVE = 80; // minimum bezier control distance
-const EDGE_CURVE_RATIO = 0.45; // control distance as a fraction of the horizontal span
+const OUTPUT_PORT_X_OFFSET = 184;
+const PORT_Y_OFFSET = 62;
+const MIN_EDGE_CURVE = 80;
+const EDGE_CURVE_RATIO = 0.45;
 
 const ORIGIN: Point = { x: 0, y: 0 };
 
-/** Screen position of a node's input (left) or output (right) port. */
 export function portPoint(node: ArchitectureNode, direction: PortDirection): Point {
   return {
     x: node.x + (direction === 'input' ? 0 : OUTPUT_PORT_X_OFFSET),
@@ -26,7 +24,6 @@ export function portPoint(node: ArchitectureNode, direction: PortDirection): Poi
   };
 }
 
-/** SVG path for a connection's curved edge; empty when an endpoint is missing. */
 export function edgePath(connection: ArchitectureConnection, nodes: ArchitectureNode[]): string {
   const ends = endpoints(connection, nodes);
   if (!ends) return '';
@@ -35,7 +32,6 @@ export function edgePath(connection: ArchitectureConnection, nodes: Architecture
   return `M ${start.x} ${start.y} C ${start.x + curve} ${start.y}, ${end.x - curve} ${end.y}, ${end.x} ${end.y}`;
 }
 
-/** Midpoint of a connection's straight axis (used to anchor labels). */
 export function connectionMidpoint(
   connection: ArchitectureConnection,
   nodes: ArchitectureNode[],
@@ -43,7 +39,6 @@ export function connectionMidpoint(
   return pointAlong(connection, nodes, 0.5);
 }
 
-/** Position of an in-flight packet along its connection (progress 0..1). */
 export function packetPoint(
   packet: DataPacket,
   connections: ArchitectureConnection[],
@@ -64,7 +59,6 @@ function endpoints(
   return { start: portPoint(source, 'output'), end: portPoint(target, 'input') };
 }
 
-/** Linear interpolation between a connection's endpoints at fraction `t`. */
 function pointAlong(connection: ArchitectureConnection, nodes: ArchitectureNode[], t: number): Point {
   const ends = endpoints(connection, nodes);
   if (!ends) return { ...ORIGIN };

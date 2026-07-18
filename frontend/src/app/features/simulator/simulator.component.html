@@ -1050,7 +1050,7 @@
                     <input
                       type="number"
                       [min]="field.min"
-                      [max]="field.max"
+                      [max]="field.max ?? null"
                       [step]="field.step"
                       [ngModel]="node.config[field.key]"
                       (ngModelChange)="updateConfig(field.key, $event)"
@@ -1123,8 +1123,8 @@
                     >
                       <input
                         type="number"
-                        [min]="field.min"
-                        [max]="field.max"
+                        [min]="field.min ?? null"
+                        [max]="field.max ?? null"
                         [step]="1"
                         [ngModel]="
                           node.config[field.key] !== undefined
@@ -1267,8 +1267,8 @@
                       >
                         <input
                           type="number"
-                          [min]="field.min"
-                          [max]="field.max"
+                          [min]="field.min ?? null"
+                          [max]="field.max ?? null"
                           [step]="1"
                           [ngModel]="
                             node.config[field.key] !== undefined

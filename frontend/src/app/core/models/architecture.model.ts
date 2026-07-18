@@ -74,7 +74,6 @@ export type AwsServiceType =
   | 'quickSight'
   | 'lightsail';
 
-
 export type PortDirection = 'input' | 'output';
 export type PortType =
   | 'http'
@@ -148,11 +147,26 @@ export interface AwsServiceDefinition {
   type: AwsServiceType;
   name: string;
   shortName: string;
-  category: 'Compute' | 'Containers' | 'Networking & Content Delivery' | 'Storage' | 'Database' | 'Analytics' | 'Machine Learning' | 'Application Integration' | 'Developer Tools' | 'Management & Governance' | 'Security, Identity, & Compliance' | 'Media Services' | 'Internet of Things' | 'Users';
+  category:
+    | 'Compute'
+    | 'Containers'
+    | 'Networking & Content Delivery'
+    | 'Storage'
+    | 'Database'
+    | 'Analytics'
+    | 'Machine Learning'
+    | 'Application Integration'
+    | 'Developer Tools'
+    | 'Management & Governance'
+    | 'Security, Identity, & Compliance'
+    | 'Media Services'
+    | 'Internet of Things'
+    | 'Users';
   description: string;
   color: string;
   icon: string;
   iconUrl: string;
+  glyphUrl: string;
   ports: ServicePort[];
   defaults: ServiceConfig;
   behavior: {

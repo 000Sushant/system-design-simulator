@@ -54,8 +54,6 @@ describe('evaluateVisibleIf', () => {
   });
 
   it('never executes arbitrary code (no eval escape)', () => {
-    // The former new Function() impl would have RUN this. The safe parser only
-    // ever returns a boolean and never evaluates the injected statement.
     const malicious = "config.x === 'a'); globalThis.__pwned = true; ('";
     const result = evaluateVisibleIf(malicious, {});
     expect(typeof result).toBe('boolean');

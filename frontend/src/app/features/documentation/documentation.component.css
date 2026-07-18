@@ -2778,3 +2778,8 @@
   color: var(--c-slate-500);
 }
 
+/* AWS Amplify base icon color adjustment to match standard Compute category orange */
+img.type-amplify {
+  filter: hue-rotate(50deg) saturate(2) brightness(1.6) !important;
+}
+

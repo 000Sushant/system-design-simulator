@@ -133,29 +133,21 @@
             "id": "requestCost",
             "name": "API Request Cost",
             "formula": "requestCount × pricePerMillionRequests",
-            "variables": [
-              "requestCount",
-              "apiType"
-            ],
+            "variables": ["requestCount", "apiType"],
             "note": "HTTP=$1.00/M, REST=$3.50/M, WebSocket=$1.00/M messages + $0.25/M connection minutes"
           },
           {
             "id": "dataTransferCost",
             "name": "Data Transfer Out",
             "formula": "responsePayloadGB × $0.09/GB",
-            "variables": [
-              "responsePayloadGB"
-            ],
+            "variables": ["responsePayloadGB"],
             "note": "First 100 GB/mo free across all AWS services"
           },
           {
             "id": "cacheCost",
             "name": "Cache Infrastructure",
             "formula": "cacheSize.pricePerHour × 730 hours",
-            "variables": [
-              "cacheStrategy",
-              "cacheSize"
-            ],
+            "variables": ["cacheStrategy", "cacheSize"],
             "note": "Only applies to REST APIs with caching enabled"
           }
         ],
@@ -202,18 +194,14 @@
             "id": "hostedZoneCost",
             "name": "Hosted Zone Cost",
             "formula": "min(hostedZones, 25) × $0.50 + max(0, hostedZones − 25) × $0.10",
-            "variables": [
-              "hostedZones"
-            ],
+            "variables": ["hostedZones"],
             "note": "First 25 zones at $0.50/mo, additional at $0.10/mo"
           },
           {
             "id": "queryRoutingCost",
             "name": "DNS Query Cost",
             "formula": "dnsQueryVolume × queryPricePerMillion",
-            "variables": [
-              "throughput"
-            ],
+            "variables": ["throughput"],
             "note": "First 1B queries at $0.40/M, above 1B at $0.20/M"
           }
         ],
@@ -277,7 +265,7 @@
           "min": 0,
           "max": 1000000,
           "group": "networking",
-          "notes": "Estimated gigabytes of content delivered to end users monthly. Main cost driver for CloudFront-heavy architectures (video, large assets). Request count is derived from Requests/Second; the edge price class follows the Users node's Request Region."
+          "notes": "Fallback only: when a Users (client) node is on the canvas, monthly GB is derived automatically as Requests/Second × 2,628,000 req/mo × the client's Average Package Size (KB) ÷ 1,048,576, and this knob is ignored. Main cost driver for CloudFront-heavy architectures (video, large assets). Request count is derived from Requests/Second; the edge price class follows the Users node's Request Region."
         },
         {
           "key": "wafEnabled",
@@ -295,38 +283,28 @@
             "id": "dataTransferCost",
             "name": "Data Transfer Out",
             "formula": "viewerEgressGB × $0.085/GB (first 10 TB tier)",
-            "variables": [
-              "viewerEgressGB"
-            ],
+            "variables": ["viewerEgressGB"],
             "note": "1 TB/mo always free. Tiered: $0.085→$0.080→$0.060→$0.040"
           },
           {
             "id": "requestCost",
             "name": "Request Cost",
             "formula": "viewerRequests × price per 10K",
-            "variables": [
-              "viewerRequestCount",
-              "requestProtocol"
-            ],
+            "variables": ["viewerRequestCount", "requestProtocol"],
             "note": "HTTP=$0.75/M, HTTPS=$1.00/M (US/EU)"
           },
           {
             "id": "originShieldCost",
             "name": "Origin Shield",
             "formula": "viewerRequests × $0.009/10K (if enabled)",
-            "variables": [
-              "originShieldEnabled",
-              "viewerRequestCount"
-            ],
+            "variables": ["originShieldEnabled", "viewerRequestCount"],
             "note": "Additional per-request charge on top of standard pricing"
           },
           {
             "id": "invalidationCost",
             "name": "Invalidation Cost",
             "formula": "max(0, paths − 1000) × $0.005",
-            "variables": [
-              "invalidationPathCount"
-            ],
+            "variables": ["invalidationPathCount"],
             "note": "First 1,000 paths/mo free"
           }
         ],
@@ -444,42 +422,28 @@
             "id": "requestCost",
             "name": "Request Cost",
             "formula": "(throughput × 2,628,000 / 1M) invocations × $0.20/M",
-            "variables": [
-              "throughput"
-            ],
+            "variables": ["throughput"],
             "note": "Monthly invocations derived from RPS × 2,628,000 sec/mo. First 1M requests/mo always free."
           },
           {
             "id": "computeCost",
             "name": "Compute Cost (GB-seconds)",
             "formula": "max(0, gbSeconds − 400000) × pricePerGBSec",
-            "variables": [
-              "throughput",
-              "durationMs",
-              "memoryMB",
-              "architecture"
-            ],
+            "variables": ["throughput", "durationMs", "memoryMB", "architecture"],
             "note": "gbSeconds = (throughput × 2,628,000) × (durationMs/1000) × (memoryMB/1024). x86=$0.0000166667/GB-sec, ARM=$0.0000133334/GB-sec. First 400K GB-sec/mo free."
           },
           {
             "id": "provisionedCost",
             "name": "Provisioned Concurrency",
             "formula": "instances × (memoryMB/1024) × 2,592,000 sec × $0.0000041667/GB-sec",
-            "variables": [
-              "provisionedConcurrency",
-              "memoryMB"
-            ],
+            "variables": ["provisionedConcurrency", "memoryMB"],
             "note": "Billed 24/7 even when idle. No free tier."
           },
           {
             "id": "storageCost",
             "name": "Ephemeral Storage",
             "formula": "(storageMB − 512) / 1024 × totalGBSeconds × $0.0000000309",
-            "variables": [
-              "ephemeralStorageMB",
-              "invocationCount",
-              "avgDurationMs"
-            ],
+            "variables": ["ephemeralStorageMB", "invocationCount", "avgDurationMs"],
             "note": "Only charged for storage above the included 512 MB"
           }
         ],
@@ -755,43 +719,28 @@
             "id": "computeCost",
             "name": "Compute Cost",
             "formula": "instanceCount × hourlyPrice × runHours × (1 − discount%)",
-            "variables": [
-              "instanceType",
-              "instanceCount",
-              "runHours",
-              "purchaseOption"
-            ],
+            "variables": ["instanceType", "instanceCount", "runHours", "purchaseOption"],
             "note": "On-Demand = no discount, Spot up to 90% off, Reserved up to 72% off"
           },
           {
             "id": "storageCost",
             "name": "EBS Storage",
             "formula": "instanceCount × ebsVolumeGB × pricePerGB",
-            "variables": [
-              "instanceCount",
-              "ebsVolumeGB",
-              "ebsVolumeType"
-            ],
+            "variables": ["instanceCount", "ebsVolumeGB", "ebsVolumeType"],
             "note": "gp3=$0.08/GB, io1/io2=$0.125/GB per month"
           },
           {
             "id": "iopsCost",
             "name": "Provisioned IOPS",
             "formula": "instanceCount × max(0, iops − 3000) × $0.005 (gp3) or iops × $0.065 (io1)",
-            "variables": [
-              "instanceCount",
-              "ebsIOPS",
-              "ebsVolumeType"
-            ],
+            "variables": ["instanceCount", "ebsIOPS", "ebsVolumeType"],
             "note": "gp3 includes 3,000 IOPS free; io1 charges from first IOPS"
           },
           {
             "id": "dataTransferCost",
             "name": "Data Transfer Out",
             "formula": "max(0, GB − 100 free) × $0.09/GB",
-            "variables": [
-              "dataTransferOutGB"
-            ],
+            "variables": ["dataTransferOutGB"],
             "note": "First 100 GB/mo free across all services"
           }
         ],
@@ -898,7 +847,7 @@
           "min": 0,
           "max": 1000000,
           "group": "networking",
-          "notes": "Data downloaded from S3 to the internet monthly. Use CloudFront in front of S3 to shift costs to cheaper CDN transfer rates."
+          "notes": "Fallback only: when a Users (client) node is on the canvas, monthly GB is derived automatically as GET Requests (M) × the client's Average Package Size (KB) ÷ 1,048,576, and this knob is ignored. Use CloudFront in front of S3 to shift costs to cheaper CDN transfer rates."
         }
       ],
       "costEvaluation": {
@@ -908,39 +857,28 @@
             "id": "storageCost",
             "name": "Storage Cost",
             "formula": "storedGB × pricePerGB (by storage class)",
-            "variables": [
-              "storedGB",
-              "storageClass"
-            ],
+            "variables": ["storedGB", "storageClass"],
             "note": "Standard=$0.023/GB, IA=$0.0125/GB, Glacier Deep=$0.00099/GB"
           },
           {
             "id": "putRequestCost",
             "name": "PUT/COPY/POST/LIST Requests",
             "formula": "putRequests(K) × putPricePer1K",
-            "variables": [
-              "putRequestCount",
-              "storageClass"
-            ],
+            "variables": ["putRequestCount", "storageClass"],
             "note": "Standard=$0.005/1K, IA=$0.01/1K, Glacier=$0.03-0.05/1K"
           },
           {
             "id": "getRequestCost",
             "name": "GET/SELECT Requests",
             "formula": "getRequests(K) × getPricePer1K",
-            "variables": [
-              "getRequestCount",
-              "storageClass"
-            ],
+            "variables": ["getRequestCount", "storageClass"],
             "note": "Standard=$0.0004/1K, IA=$0.001/1K"
           },
           {
             "id": "dataTransferCost",
             "name": "Data Transfer Out",
             "formula": "max(0, GB − 100 free) × $0.09/GB",
-            "variables": [
-              "dataTransferOutGB"
-            ],
+            "variables": ["dataTransferOutGB"],
             "note": "First 100 GB/mo free across all AWS services"
           }
         ],
@@ -1097,17 +1035,13 @@
             "id": "hourly",
             "name": "Hourly Charge",
             "formula": "instances × 730 hrs × $0.0225",
-            "variables": [
-              "instanceCount"
-            ]
+            "variables": ["instanceCount"]
           },
           {
             "id": "lcu",
             "name": "LCU Charge",
             "formula": "LCUs × 730 hrs × $0.008",
-            "variables": [
-              "lcuCount"
-            ]
+            "variables": ["lcuCount"]
           }
         ]
       }
@@ -1154,25 +1088,19 @@
             "id": "ep",
             "name": "Endpoint Hourly",
             "formula": "endpoints × 730 hrs × $0.01",
-            "variables": [
-              "endpoints"
-            ]
+            "variables": ["endpoints"]
           },
           {
             "id": "epdata",
             "name": "Endpoint Data",
             "formula": "GB × $0.01",
-            "variables": [
-              "endpointGB"
-            ]
+            "variables": ["endpointGB"]
           },
           {
             "id": "peering",
             "name": "Peering Data",
             "formula": "GB × $0.02",
-            "variables": [
-              "peeringGB"
-            ]
+            "variables": ["peeringGB"]
           }
         ]
       }
@@ -1220,17 +1148,13 @@
             "id": "hourly",
             "name": "Hourly Charge",
             "formula": "instances × 730 hrs × $0.045",
-            "variables": [
-              "instances"
-            ]
+            "variables": ["instances"]
           },
           {
             "id": "data",
             "name": "Data Processing",
             "formula": "GB × $0.045",
-            "variables": [
-              "dataGB"
-            ]
+            "variables": ["dataGB"]
           }
         ]
       }
@@ -1309,33 +1233,25 @@
             "id": "metrics",
             "name": "Custom Metrics",
             "formula": "metrics × $0.30",
-            "variables": [
-              "customMetrics"
-            ]
+            "variables": ["customMetrics"]
           },
           {
             "id": "logs",
             "name": "Log Ingestion",
             "formula": "GB × $0.50",
-            "variables": [
-              "logsGB"
-            ]
+            "variables": ["logsGB"]
           },
           {
             "id": "alarms",
             "name": "Alarms",
             "formula": "alarms × $0.10",
-            "variables": [
-              "alarms"
-            ]
+            "variables": ["alarms"]
           },
           {
             "id": "dashboards",
             "name": "Dashboards",
             "formula": "max(0, dash - 3) × $3.00",
-            "variables": [
-              "dashboards"
-            ],
+            "variables": ["dashboards"],
             "note": "3 dashboards free"
           }
         ],
@@ -1519,45 +1435,31 @@
             "id": "provWrite",
             "name": "Provisioned Writes",
             "formula": "WCU × 730 hrs × $0.00065",
-            "variables": [
-              "wcu",
-              "capacityMode"
-            ]
+            "variables": ["wcu", "capacityMode"]
           },
           {
             "id": "provRead",
             "name": "Provisioned Reads",
             "formula": "RCU × 730 hrs × $0.00013",
-            "variables": [
-              "rcu",
-              "capacityMode"
-            ]
+            "variables": ["rcu", "capacityMode"]
           },
           {
             "id": "odWrite",
             "name": "On-Demand Writes",
             "formula": "Millions × $1.25",
-            "variables": [
-              "wruM",
-              "capacityMode"
-            ]
+            "variables": ["wruM", "capacityMode"]
           },
           {
             "id": "odRead",
             "name": "On-Demand Reads",
             "formula": "Millions × $0.25",
-            "variables": [
-              "rruM",
-              "capacityMode"
-            ]
+            "variables": ["rruM", "capacityMode"]
           },
           {
             "id": "storage",
             "name": "Storage",
             "formula": "max(0, GB - 25) × $0.25",
-            "variables": [
-              "storageGB"
-            ]
+            "variables": ["storageGB"]
           }
         ],
         "freeTier": {
@@ -1750,19 +1652,13 @@
             "id": "compute",
             "name": "DB Compute",
             "formula": "hourlyRate × 730 hrs × (Multi-AZ ? 2 : 1)",
-            "variables": [
-              "instanceType",
-              "multiAZ"
-            ]
+            "variables": ["instanceType", "multiAZ"]
           },
           {
             "id": "storage",
             "name": "DB Storage (gp3)",
             "formula": "GB × $0.115 × (Multi-AZ ? 2 : 1)",
-            "variables": [
-              "storageGB",
-              "multiAZ"
-            ]
+            "variables": ["storageGB", "multiAZ"]
           }
         ]
       }
@@ -1923,18 +1819,13 @@
             "id": "compute",
             "name": "Node Compute",
             "formula": "nodes × hourlyRate × 730 hrs",
-            "variables": [
-              "instanceType",
-              "nodes"
-            ]
+            "variables": ["instanceType", "nodes"]
           },
           {
             "id": "backup",
             "name": "Backup Storage",
             "formula": "GB × $0.085",
-            "variables": [
-              "backupGB"
-            ]
+            "variables": ["backupGB"]
           }
         ]
       }
@@ -2182,19 +2073,13 @@
             "id": "cpu",
             "name": "vCPU Cost",
             "formula": "tasks × vCPU × 730 hrs × $0.04048",
-            "variables": [
-              "tasks",
-              "vCPU"
-            ]
+            "variables": ["tasks", "vCPU"]
           },
           {
             "id": "mem",
             "name": "Memory Cost",
             "formula": "tasks × GB × 730 hrs × $0.004445",
-            "variables": [
-              "tasks",
-              "memoryGB"
-            ]
+            "variables": ["tasks", "memoryGB"]
           }
         ]
       }
@@ -2250,21 +2135,13 @@
             "id": "cpu",
             "name": "vCPU Cost",
             "formula": "jobs × vCPU × hrs × $0.04048",
-            "variables": [
-              "tasks",
-              "vCPU",
-              "hoursPerMonth"
-            ]
+            "variables": ["tasks", "vCPU", "hoursPerMonth"]
           },
           {
             "id": "mem",
             "name": "Memory Cost",
             "formula": "jobs × GB × hrs × $0.004445",
-            "variables": [
-              "tasks",
-              "memoryGB",
-              "hoursPerMonth"
-            ]
+            "variables": ["tasks", "memoryGB", "hoursPerMonth"]
           }
         ],
         "freeTier": {
@@ -2326,10 +2203,7 @@
             "id": "req",
             "name": "Requests Cost",
             "formula": "(Requests/Second × 2.628) Millions × Price/M",
-            "variables": [
-              "queueType",
-              "throughput"
-            ]
+            "variables": ["queueType", "throughput"]
           }
         ]
       }
@@ -2389,25 +2263,19 @@
             "id": "pub",
             "name": "Publish Cost",
             "formula": "Millions × $0.50",
-            "variables": [
-              "publishM"
-            ]
+            "variables": ["publishM"]
           },
           {
             "id": "http",
             "name": "HTTP Delivery",
             "formula": "Millions × $0.60",
-            "variables": [
-              "httpDeliveriesM"
-            ]
+            "variables": ["httpDeliveriesM"]
           },
           {
             "id": "email",
             "name": "Email Delivery",
             "formula": "Millions × $20.00",
-            "variables": [
-              "emailDeliveriesM"
-            ]
+            "variables": ["emailDeliveriesM"]
           }
         ]
       }
@@ -2474,28 +2342,19 @@
             "id": "std",
             "name": "Standard Transitions",
             "formula": "Millions × $25.00",
-            "variables": [
-              "workflowType",
-              "transitionsM"
-            ]
+            "variables": ["workflowType", "transitionsM"]
           },
           {
             "id": "expReq",
             "name": "Express Requests",
             "formula": "Millions × $1.00",
-            "variables": [
-              "workflowType",
-              "expressRequestsM"
-            ]
+            "variables": ["workflowType", "expressRequestsM"]
           },
           {
             "id": "expComp",
             "name": "Express Compute",
             "formula": "Millions GB-sec × $16.67",
-            "variables": [
-              "workflowType",
-              "expressGBsecM"
-            ]
+            "variables": ["workflowType", "expressGBsecM"]
           }
         ]
       }
@@ -2538,7 +2397,7 @@
         },
         {
           "key": "syncRpsToServices",
-          "label": "Dynamic RPS (auto-size services)",
+          "label": "Dynamic RPS",
           "type": "boolean",
           "default": false,
           "costDriver": "Drives per-service traffic volumes used in the cost estimate while enabled.",
@@ -2582,14 +2441,18 @@
           "default": 50,
           "min": 1,
           "max": 10240,
-          "costDriver": "Size of each request package sent from the client."
+          "affectsCost": true,
+          "costDriver": "Payload size per request, used wherever AWS bills by data volume: ELB LCU/GB-processed dimension, CloudFront & S3 data-transfer-out GB, SQS/SNS 64 KB request chunking, and client egress GB.",
+          "notes": "Simulation: sets the Kinesis per-shard ingest limit (1 MB/s vs 1,000 records/s — large records need more shards) and the API Gateway cache working-set used to derive its cache hit rate. Cost: RPS × 2,628,000 req/mo × KB ÷ 1,048,576 gives the monthly GB that drives ELB data processing, CloudFront/S3 data transfer out, and client egress; SQS/SNS bill one request per 64 KB chunk of this payload (256 KB max)."
         },
         {
           "key": "requestRegion",
           "label": "Request Region",
           "type": "enum",
           "default": "global",
-          "costDriver": "Select the region from where you are receiving maximum traffic",
+          "affectsCost": true,
+          "costDriver": "User geography used for edge-based pricing. Impacts CloudFront (edge price class for data transfer & requests) and Global Accelerator (DT-Premium $/GB, paired with the deployment region). Other services bill by their deployment region and are unaffected.",
+          "notes": "Select the region from where you are receiving maximum traffic. Global (Mixed) is priced at the US/Canada–Europe baseline edge class for both CloudFront and Global Accelerator.",
           "options": [
             {
               "value": "global",
@@ -2714,10 +2577,7 @@
             "id": "egress",
             "name": "Data Transfer Out (Egress)",
             "formula": "requestRate × 2,628,000 req/mo × packageSize KB ÷ 1,048,576 = GB × rate",
-            "variables": [
-              "requestRate",
-              "packageSize"
-            ]
+            "variables": ["requestRate", "packageSize"]
           }
         ],
         "freeTier": {
@@ -3188,18 +3048,13 @@
             "id": "controlPlane",
             "name": "EKS Control Plane",
             "formula": "$0.10/hr × 730 hrs × clusters",
-            "variables": [
-              "clusterCount"
-            ]
+            "variables": ["clusterCount"]
           },
           {
             "id": "workers",
             "name": "Worker Nodes",
             "formula": "nodeCount × hourlyRate × 730 hrs",
-            "variables": [
-              "nodeInstanceType",
-              "nodeCount"
-            ]
+            "variables": ["nodeInstanceType", "nodeCount"]
           }
         ]
       }
@@ -3361,21 +3216,13 @@
             "id": "compute",
             "name": "Aurora Compute",
             "formula": "pricingMode === 'serverless' ? averageACU × $0.12/ACU-hr : db.r6g.large @ $0.29/hr",
-            "variables": [
-              "pricingMode",
-              "acuMin",
-              "acuMax",
-              "multiAZ"
-            ]
+            "variables": ["pricingMode", "acuMin", "acuMax", "multiAZ"]
           },
           {
             "id": "storage",
             "name": "Storage Cost",
             "formula": "storageGB × $0.10/GB/mo",
-            "variables": [
-              "storageGB",
-              "multiAZ"
-            ]
+            "variables": ["storageGB", "multiAZ"]
           }
         ]
       }
@@ -3415,9 +3262,7 @@
             "id": "events",
             "name": "Events Ingestion",
             "formula": "(Requests/Second × 2.628) Millions × $1.00/Million",
-            "variables": [
-              "throughput"
-            ]
+            "variables": ["throughput"]
           }
         ]
       }
@@ -3538,17 +3383,13 @@
             "id": "shards",
             "name": "Shard Hour Cost",
             "formula": "shards × $0.015/hr × 730 hrs",
-            "variables": [
-              "shards"
-            ]
+            "variables": ["shards"]
           },
           {
             "id": "payload",
             "name": "PUT Payloads",
             "formula": "payloadM × $0.014/Million",
-            "variables": [
-              "putRecordsM"
-            ]
+            "variables": ["putRecordsM"]
           }
         ]
       }
@@ -3722,19 +3563,13 @@
             "id": "compute",
             "name": "Broker Compute",
             "formula": "brokerCount × brokerRate × 730 hrs",
-            "variables": [
-              "brokerInstanceType",
-              "brokerCount"
-            ]
+            "variables": ["brokerInstanceType", "brokerCount"]
           },
           {
             "id": "storage",
             "name": "Broker Storage",
             "formula": "brokerCount × storageGB × $0.10/GB/mo",
-            "variables": [
-              "brokerCount",
-              "storageGB"
-            ]
+            "variables": ["brokerCount", "storageGB"]
           }
         ]
       }
@@ -3772,18 +3607,13 @@
             "id": "mau",
             "name": "MAU Volume (Tiered)",
             "formula": "First 50,000 MAUs free, next 50,000 @ $0.0055/MAU",
-            "variables": [
-              "mau"
-            ]
+            "variables": ["mau"]
           },
           {
             "id": "security",
             "name": "Advanced Security",
             "formula": "advancedSecurity ? MAUs × $0.050/MAU : $0.00",
-            "variables": [
-              "mau",
-              "advancedSecurity"
-            ]
+            "variables": ["mau", "advancedSecurity"]
           }
         ]
       }
@@ -3843,26 +3673,19 @@
             "id": "acls",
             "name": "Web ACL Base Fee",
             "formula": "webAcls × $5.00/mo",
-            "variables": [
-              "webAcls"
-            ]
+            "variables": ["webAcls"]
           },
           {
             "id": "rules",
             "name": "Rules Charge",
             "formula": "rules × $1.00/mo × webAcls",
-            "variables": [
-              "webAcls",
-              "rules"
-            ]
+            "variables": ["webAcls", "rules"]
           },
           {
             "id": "requests",
             "name": "Request Traffic",
             "formula": "requestsM × $0.60/Million",
-            "variables": [
-              "requestsM"
-            ]
+            "variables": ["requestsM"]
           }
         ]
       }
@@ -3928,10 +3751,7 @@
             "id": "storage",
             "name": "EFS Storage",
             "formula": "storageGB × pricePerGB",
-            "variables": [
-              "storageGB",
-              "storageClass"
-            ]
+            "variables": ["storageGB", "storageClass"]
           }
         ]
       }
@@ -3969,9 +3789,7 @@
             "id": "queries",
             "name": "Data Queries Scanned",
             "formula": "dataScannedTB × $5.00/TB",
-            "variables": [
-              "dataScannedTB"
-            ]
+            "variables": ["dataScannedTB"]
           }
         ]
       }
@@ -4007,17 +3825,13 @@
             "id": "storage",
             "name": "Secrets Storage",
             "formula": "secretsCount × $0.40/secret/mo",
-            "variables": [
-              "secretsCount"
-            ]
+            "variables": ["secretsCount"]
           },
           {
             "id": "api",
             "name": "API Requests",
             "formula": "apiCalls10k × $0.05/10k calls",
-            "variables": [
-              "apiCalls10k"
-            ]
+            "variables": ["apiCalls10k"]
           }
         ]
       }
@@ -4065,17 +3879,13 @@
             "id": "attachments",
             "name": "Attachment Hour Fee",
             "formula": "attachments × $0.05/hr × 730 hrs",
-            "variables": [
-              "attachments"
-            ]
+            "variables": ["attachments"]
           },
           {
             "id": "data",
             "name": "Data Processing Fee",
             "formula": "dataProcessedGB × $0.02/GB",
-            "variables": [
-              "dataProcessedGB"
-            ]
+            "variables": ["dataProcessedGB"]
           }
         ]
       }
@@ -4135,17 +3945,13 @@
             "id": "port",
             "name": "Connection Port Fee",
             "formula": "portRate × 730 hrs",
-            "variables": [
-              "connectionSpeed"
-            ]
+            "variables": ["connectionSpeed"]
           },
           {
             "id": "data",
             "name": "Data Out Fee",
             "formula": "dataOutGB × $0.02/GB",
-            "variables": [
-              "dataOutGB"
-            ]
+            "variables": ["dataOutGB"]
           }
         ]
       }
@@ -4183,7 +3989,7 @@
           "min": 0,
           "max": 100000,
           "group": "networking",
-          "notes": "Data transferred through the accelerator per month, in GB, billed per GB by source/destination region."
+          "notes": "Data transferred through the accelerator per month, in GB. The DT-Premium $/GB rate depends on the deployment region (source) and the Users node's Request Region (destination geography), per the official AWS rate table."
         }
       ],
       "costEvaluation": {
@@ -4193,17 +3999,13 @@
             "id": "base",
             "name": "Accelerator Base Fee",
             "formula": "accelerators × $0.025/hr × 730 hrs",
-            "variables": [
-              "accelerators"
-            ]
+            "variables": ["accelerators"]
           },
           {
             "id": "premium",
             "name": "Data Premium (DT-in/out)",
-            "formula": "dataProcessedGB × $0.015/GB",
-            "variables": [
-              "dataProcessedGB"
-            ]
+            "formula": "dataProcessedGB × DT-Premium rate (deployment region → Request Region geography; $0.007–$0.105/GB)",
+            "variables": ["dataProcessedGB"]
           }
         ]
       }
@@ -4239,17 +4041,13 @@
             "id": "storage",
             "name": "Traces Storage",
             "formula": "tracesStoredM × $0.50/Million",
-            "variables": [
-              "tracesStoredM"
-            ]
+            "variables": ["tracesStoredM"]
           },
           {
             "id": "scan",
             "name": "Traces Retrieval & Scans",
             "formula": "tracesScannedM × $0.50/Million",
-            "variables": [
-              "tracesScannedM"
-            ]
+            "variables": ["tracesScannedM"]
           }
         ]
       }
@@ -4395,19 +4193,13 @@
             "id": "compute",
             "name": "Search Instances",
             "formula": "nodeCount × hourlyRate × 730 hrs",
-            "variables": [
-              "instanceType",
-              "nodeCount"
-            ]
+            "variables": ["instanceType", "nodeCount"]
           },
           {
             "id": "storage",
             "name": "EBS Volume Storage",
             "formula": "nodeCount × storageGB × $0.12/GB/mo",
-            "variables": [
-              "nodeCount",
-              "storageGB"
-            ]
+            "variables": ["nodeCount", "storageGB"]
           }
         ]
       }
@@ -4524,10 +4316,7 @@
             "id": "compute",
             "name": "Redshift Compute Cluster",
             "formula": "nodeCount × hourlyRate × 730 hrs",
-            "variables": [
-              "instanceType",
-              "nodeCount"
-            ]
+            "variables": ["instanceType", "nodeCount"]
           }
         ]
       }
@@ -4573,10 +4362,7 @@
             "id": "etl",
             "name": "ETL Serverless Sparks",
             "formula": "dpuCount × $0.44/DPU-hr × jobHours",
-            "variables": [
-              "dpuCount",
-              "hoursPerMonth"
-            ]
+            "variables": ["dpuCount", "hoursPerMonth"]
           }
         ]
       }
@@ -4697,10 +4483,7 @@
             "id": "compute",
             "name": "EMR Compute Cluster",
             "formula": "nodeCount × $0.144/hr × activeHours",
-            "variables": [
-              "nodeCount",
-              "hoursPerMonth"
-            ]
+            "variables": ["nodeCount", "hoursPerMonth"]
           }
         ]
       }
@@ -4746,9 +4529,7 @@
             "id": "ingest",
             "name": "Inbound Streaming Ingestion",
             "formula": "dataInboundGB × $0.029/GB",
-            "variables": [
-              "dataInboundGB"
-            ]
+            "variables": ["dataInboundGB"]
           }
         ]
       }
@@ -4844,10 +4625,7 @@
             "id": "broker",
             "name": "Broker Running Hours",
             "formula": "hourlyRate × 730 hrs × (standby ? 2 : 1)",
-            "variables": [
-              "instanceType",
-              "deploymentMode"
-            ]
+            "variables": ["instanceType", "deploymentMode"]
           }
         ]
       }
@@ -4883,17 +4661,13 @@
             "id": "keys",
             "name": "KMS Active Keys",
             "formula": "keysCount × $1.00/key/mo",
-            "variables": [
-              "keysCount"
-            ]
+            "variables": ["keysCount"]
           },
           {
             "id": "api",
             "name": "Encryption APIs",
             "formula": "apiRequests10k × $0.03/10k calls",
-            "variables": [
-              "apiRequests10k"
-            ]
+            "variables": ["apiRequests10k"]
           }
         ]
       }
@@ -4917,9 +4691,7 @@
             "id": "tier",
             "name": "Shield Security Tier",
             "formula": "protectionTier === 'advanced' ? $3,000.00 : $0.00",
-            "variables": [
-              "protectionTier"
-            ]
+            "variables": ["protectionTier"]
           }
         ]
       }
@@ -4956,9 +4728,7 @@
             "id": "pipelines",
             "name": "Active Pipelines runs",
             "formula": "max(0, pipelines − 1 free) × $1.00",
-            "variables": [
-              "pipelinesCount"
-            ]
+            "variables": ["pipelinesCount"]
           }
         ]
       }
@@ -5002,10 +4772,7 @@
             "id": "minutes",
             "name": "Build Run minutes",
             "formula": "buildMinutes × minutePrice",
-            "variables": [
-              "buildType",
-              "buildMinutes"
-            ]
+            "variables": ["buildType", "buildMinutes"]
           }
         ]
       }
@@ -5031,9 +4798,7 @@
             "id": "deploy",
             "name": "On-Premises Deployments",
             "formula": "onPremisesDeployments × $0.02",
-            "variables": [
-              "onPremisesDeployments"
-            ]
+            "variables": ["onPremisesDeployments"]
           }
         ]
       }
@@ -5534,21 +5299,13 @@
             "id": "input",
             "name": "Input Token Ingestion",
             "formula": "inputM × priceInput(provider, model)",
-            "variables": [
-              "provider",
-              "model",
-              "inputTokensMillion"
-            ]
+            "variables": ["provider", "model", "inputTokensMillion"]
           },
           {
             "id": "output",
             "name": "Output Token Generation",
             "formula": "outputM × priceOutput(provider, model)",
-            "variables": [
-              "provider",
-              "model",
-              "outputTokensMillion"
-            ]
+            "variables": ["provider", "model", "outputTokensMillion"]
           }
         ]
       }
@@ -5784,11 +5541,7 @@
             "id": "compute",
             "name": "SageMaker Inference",
             "formula": "inferenceType === 'provisioned' ? hours × $0.05/hr : secondsM × $20.00/Million",
-            "variables": [
-              "inferenceType",
-              "hoursPerMonth",
-              "inferenceDurationSecondsM"
-            ]
+            "variables": ["inferenceType", "hoursPerMonth", "inferenceDurationSecondsM"]
           }
         ]
       }
@@ -5838,17 +5591,13 @@
             "id": "queries",
             "name": "GraphQL Query execution",
             "formula": "queriesM × $4.00/Million",
-            "variables": [
-              "queriesM"
-            ]
+            "variables": ["queriesM"]
           },
           {
             "id": "realtime",
             "name": "Real-time Subscriptions",
             "formula": "connectionMinsM × $0.08/Million",
-            "variables": [
-              "realtimeConnectionsM"
-            ]
+            "variables": ["realtimeConnectionsM"]
           }
         ]
       }
@@ -5898,17 +5647,13 @@
             "id": "connectivity",
             "name": "Device Connectivity",
             "formula": "devices × 43,800 mins/mo × $0.08/Million",
-            "variables": [
-              "devicesCount"
-            ]
+            "variables": ["devicesCount"]
           },
           {
             "id": "messages",
             "name": "Messaging Traffic",
             "formula": "messagesM × $1.00/Million",
-            "variables": [
-              "messagesM"
-            ]
+            "variables": ["messagesM"]
           }
         ]
       }
@@ -5994,9 +5739,7 @@
             "id": "analysis",
             "name": "Image Detection API",
             "formula": "imagesK × $1.00/1,000 images",
-            "variables": [
-              "imagesAnalyzedK"
-            ]
+            "variables": ["imagesAnalyzedK"]
           }
         ]
       }
@@ -6077,17 +5820,13 @@
             "id": "standard",
             "name": "Standard Documents API",
             "formula": "standardK × $1.50/1k pages",
-            "variables": [
-              "standardPagesK"
-            ]
+            "variables": ["standardPagesK"]
           },
           {
             "id": "tables",
             "name": "Tables Data API",
             "formula": "tableK × $15.00/1k pages",
-            "variables": [
-              "tablePagesK"
-            ]
+            "variables": ["tablePagesK"]
           }
         ]
       }
@@ -6179,10 +5918,7 @@
             "id": "transcode",
             "name": "Output Transcoding runs",
             "formula": "minutes × tierRate",
-            "variables": [
-              "transcodingTier",
-              "outputMinutes"
-            ]
+            "variables": ["transcodingTier", "outputMinutes"]
           }
         ]
       }
@@ -6208,9 +5944,7 @@
             "id": "audit",
             "name": "Trail Copies Ingestion",
             "formula": "eventsK × $0.10/100k events",
-            "variables": [
-              "additionalEventCopiesK"
-            ]
+            "variables": ["additionalEventCopiesK"]
           }
         ],
         "freeTier": {
@@ -6249,17 +5983,13 @@
             "id": "warm",
             "name": "Warm Storage Recovery",
             "formula": "warmGB × $0.05/GB",
-            "variables": [
-              "warmStorageGB"
-            ]
+            "variables": ["warmStorageGB"]
           },
           {
             "id": "cold",
             "name": "Cold Storage Archival",
             "formula": "coldGB × $0.01/GB",
-            "variables": [
-              "coldStorageGB"
-            ]
+            "variables": ["coldStorageGB"]
           }
         ]
       }
@@ -6341,19 +6071,13 @@
             "id": "cpu",
             "name": "Container vCPU Fee",
             "formula": "instances × vCPU × $0.007/hr × 730 hrs",
-            "variables": [
-              "vcpu",
-              "activeInstances"
-            ]
+            "variables": ["vcpu", "activeInstances"]
           },
           {
             "id": "memory",
             "name": "Container Memory Fee",
             "formula": "instances × memoryGB × $0.0009/hr × 730 hrs",
-            "variables": [
-              "memoryGB",
-              "activeInstances"
-            ]
+            "variables": ["memoryGB", "activeInstances"]
           }
         ]
       }
@@ -6663,10 +6387,7 @@
             "id": "storage",
             "name": "FSx Storage Volume",
             "formula": "storageGB × pricePerGB",
-            "variables": [
-              "fsxType",
-              "storageGB"
-            ]
+            "variables": ["fsxType", "storageGB"]
           }
         ]
       }
@@ -6681,10 +6402,7 @@
             "id": "ca",
             "name": "Private CAs",
             "formula": "privateCasCount × $400.00/mo",
-            "variables": [
-              "privateCertificates",
-              "privateCasCount"
-            ]
+            "variables": ["privateCertificates", "privateCasCount"]
           }
         ],
         "freeTier": {
@@ -6723,9 +6441,7 @@
             "id": "parameters",
             "name": "Advanced Parameter Store keys",
             "formula": "advancedParameters × $0.05/parameter/mo",
-            "variables": [
-              "advancedParameters"
-            ]
+            "variables": ["advancedParameters"]
           }
         ],
         "freeTier": {
@@ -6765,17 +6481,13 @@
             "id": "storageCost",
             "name": "Image Storage Cost",
             "formula": "storedGB × $0.10/GB/mo",
-            "variables": [
-              "storedGB"
-            ]
+            "variables": ["storedGB"]
           },
           {
             "id": "dataTransferCost",
             "name": "Egress Transfer Cost",
             "formula": "dataTransferOutGB × $0.09/GB",
-            "variables": [
-              "dataTransferOutGB"
-            ]
+            "variables": ["dataTransferOutGB"]
           }
         ],
         "freeTier": {
@@ -6814,17 +6526,13 @@
             "id": "endpointHourlyCost",
             "name": "Endpoint Connection Cost",
             "formula": "endpointCount × 730 hours × $0.01/hr",
-            "variables": [
-              "endpointCount"
-            ]
+            "variables": ["endpointCount"]
           },
           {
             "id": "dataProcessedCost",
             "name": "Data Processing Cost",
             "formula": "dataProcessedGB × $0.01/GB",
-            "variables": [
-              "dataProcessedGB"
-            ]
+            "variables": ["dataProcessedGB"]
           }
         ],
         "freeTier": {
@@ -6907,26 +6615,19 @@
             "id": "build",
             "name": "Build & Deploy",
             "formula": "buildMinutes × rate(buildInstanceType), $0.01/min standard, $0.025/min large, $0.10/min xlarge",
-            "variables": [
-              "buildMinutes",
-              "buildInstanceType"
-            ]
+            "variables": ["buildMinutes", "buildInstanceType"]
           },
           {
             "id": "dataServed",
             "name": "Data Served (Hosting)",
             "formula": "dataServedGB × $0.15/GB",
-            "variables": [
-              "dataServedGB"
-            ]
+            "variables": ["dataServedGB"]
           },
           {
             "id": "storage",
             "name": "Data Storage (Hosting)",
             "formula": "storageGB × $0.023/GB-mo",
-            "variables": [
-              "storageGB"
-            ]
+            "variables": ["storageGB"]
           }
         ],
         "freeTier": {
@@ -7005,42 +6706,31 @@
             "id": "outbound",
             "name": "Outbound Email",
             "formula": "dailyVolume × 30 × $0.0001/email",
-            "variables": [
-              "dailyVolume"
-            ]
+            "variables": ["dailyVolume"]
           },
           {
             "id": "vdm",
             "name": "Virtual Deliverability Manager",
             "formula": "dailyVolume × 30 × $0.00007/email (when enabled)",
-            "variables": [
-              "dailyVolume",
-              "vdmEnabled"
-            ]
+            "variables": ["dailyVolume", "vdmEnabled"]
           },
           {
             "id": "inbound",
             "name": "Inbound Email",
             "formula": "inboundDailyVolume × 30 × $0.0001/email",
-            "variables": [
-              "inboundDailyVolume"
-            ]
+            "variables": ["inboundDailyVolume"]
           },
           {
             "id": "attachments",
             "name": "Attachment Egress",
             "formula": "attachmentGB × $0.12/GB",
-            "variables": [
-              "attachmentGB"
-            ]
+            "variables": ["attachmentGB"]
           },
           {
             "id": "dedicatedIps",
             "name": "Dedicated IPs",
             "formula": "dedicatedIPs × $24.95/mo",
-            "variables": [
-              "dedicatedIPs"
-            ]
+            "variables": ["dedicatedIPs"]
           }
         ],
         "freeTier": {
@@ -7154,29 +6844,19 @@
             "id": "instances",
             "name": "Cluster Instances",
             "formula": "instanceCount × class rate/hr × 730 hrs (us-east-1: db.t3.medium $0.078, db.r6g.large $0.2632, db.r6g.xlarge $0.5263; ~10% higher on I/O-Optimized)",
-            "variables": [
-              "instanceClass",
-              "instanceCount",
-              "storageType"
-            ]
+            "variables": ["instanceClass", "instanceCount", "storageType"]
           },
           {
             "id": "storage",
             "name": "Cluster Storage",
             "formula": "storageGB × ($0.10 standard | $0.30 I/O-Optimized)/GB-mo",
-            "variables": [
-              "storageGB",
-              "storageType"
-            ]
+            "variables": ["storageGB", "storageType"]
           },
           {
             "id": "io",
             "name": "I/O Requests",
             "formula": "ioRequestsMillion × $0.20/M (standard storage only)",
-            "variables": [
-              "ioRequestsMillion",
-              "storageType"
-            ]
+            "variables": ["ioRequestsMillion", "storageType"]
           }
         ],
         "freeTier": {
@@ -7271,26 +6951,19 @@
             "id": "instances",
             "name": "Cluster Instances",
             "formula": "instanceCount × class rate/hr × 730 hrs (us-east-1: db.t3.medium $0.098, db.r6g.large $0.3287, db.r6g.2xlarge $1.3149)",
-            "variables": [
-              "instanceClass",
-              "instanceCount"
-            ]
+            "variables": ["instanceClass", "instanceCount"]
           },
           {
             "id": "storage",
             "name": "Graph Storage",
             "formula": "storageGB × $0.10/GB-mo",
-            "variables": [
-              "storageGB"
-            ]
+            "variables": ["storageGB"]
           },
           {
             "id": "io",
             "name": "I/O Requests",
             "formula": "ioRequestsMillion × $0.20/M",
-            "variables": [
-              "ioRequestsMillion"
-            ]
+            "variables": ["ioRequestsMillion"]
           }
         ],
         "freeTier": {
@@ -7360,33 +7033,25 @@
             "id": "ingest",
             "name": "Data Ingestion",
             "formula": "ingestedGB × $0.50/GB",
-            "variables": [
-              "ingestedGB"
-            ]
+            "variables": ["ingestedGB"]
           },
           {
             "id": "memory",
             "name": "Memory Store",
             "formula": "memoryStorageGB × $0.036/GB-hr × 730 hrs",
-            "variables": [
-              "memoryStorageGB"
-            ]
+            "variables": ["memoryStorageGB"]
           },
           {
             "id": "magnetic",
             "name": "Magnetic Store",
             "formula": "magneticStorageGB × $0.03/GB-mo",
-            "variables": [
-              "magneticStorageGB"
-            ]
+            "variables": ["magneticStorageGB"]
           },
           {
             "id": "scanned",
             "name": "Query Scans",
             "formula": "scannedQueryGB × $0.01/GB",
-            "variables": [
-              "scannedQueryGB"
-            ]
+            "variables": ["scannedQueryGB"]
           }
         ]
       }
@@ -7443,18 +7108,13 @@
             "id": "requests",
             "name": "Configuration Requests",
             "formula": "configRequestsM × $0.20/M",
-            "variables": [
-              "configRequestsM"
-            ]
+            "variables": ["configRequestsM"]
           },
           {
             "id": "deployments",
             "name": "Configurations Received",
             "formula": "deploymentTargets × deploymentsPerMonth × $0.0008 each",
-            "variables": [
-              "deploymentTargets",
-              "deploymentsPerMonth"
-            ]
+            "variables": ["deploymentTargets", "deploymentsPerMonth"]
           }
         ]
       }
@@ -7530,17 +7190,13 @@
             "id": "registry",
             "name": "Resource Registry",
             "formula": "registeredResources × $0.10/mo",
-            "variables": [
-              "registeredResources"
-            ]
+            "variables": ["registeredResources"]
           },
           {
             "id": "queries",
             "name": "Discovery API Calls",
             "formula": "discoveryQueriesM × $1.00/M",
-            "variables": [
-              "discoveryQueriesM"
-            ]
+            "variables": ["discoveryQueriesM"]
           }
         ]
       }
@@ -7597,25 +7253,19 @@
             "id": "authors",
             "name": "Author Pro Licenses",
             "formula": "authors × $40/user-mo",
-            "variables": [
-              "authors"
-            ]
+            "variables": ["authors"]
           },
           {
             "id": "readers",
             "name": "Reader Licenses",
             "formula": "readers × $3/user-mo",
-            "variables": [
-              "readers"
-            ]
+            "variables": ["readers"]
           },
           {
             "id": "spice",
             "name": "SPICE In-Memory Storage",
             "formula": "spiceStorageGB × $0.38/GB-mo",
-            "variables": [
-              "spiceStorageGB"
-            ]
+            "variables": ["spiceStorageGB"]
           }
         ],
         "freeTier": {
@@ -7693,18 +7343,13 @@
             "id": "bundle",
             "name": "Instance Bundle",
             "formula": "bundle hourly rate × 730 hrs (us-east-1: 0.5GB $0.00672/hr … 32GB $0.22043/hr)",
-            "variables": [
-              "bundleSize"
-            ]
+            "variables": ["bundleSize"]
           },
           {
             "id": "overage",
             "name": "Data Transfer Overage",
             "formula": "max(0, bandwidthGB − allowance) × $0.09/GB",
-            "variables": [
-              "bandwidthGB",
-              "bundleSize"
-            ]
+            "variables": ["bandwidthGB", "bundleSize"]
           }
         ],
         "freeTier": {

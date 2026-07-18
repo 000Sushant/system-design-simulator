@@ -1,6 +1,5 @@
 import { Env } from './types';
 
-// ─── HTTP utility ──────────────────────────────────────────────────────────────
 
 export function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(data, null, 2), {
@@ -9,7 +8,6 @@ export function json(data: unknown, status = 200, extraHeaders: Record<string, s
   });
 }
 
-// ─── CORS ────────────────────────────────────────────────────────────────────
 
 export const DEFAULT_ALLOWED_ORIGINS = ['https://srarchitect.qzz.io', 'http://localhost:4200'];
 
@@ -20,10 +18,6 @@ export function allowedOrigins(env: Env): string[] {
     .filter(Boolean);
 }
 
-/**
- * Reflects the request Origin only when it is on the allowlist. Non-browser
- * callers (no Origin header) are unaffected.
- */
 export function corsHeaders(request: Request, env: Env): Record<string, string> {
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, OPTIONS',

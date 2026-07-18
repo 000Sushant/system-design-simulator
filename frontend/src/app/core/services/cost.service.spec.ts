@@ -9,13 +9,6 @@ import * as usEast1Data from '../data/regions/us-east-1.json';
 const catalog = new AwsCatalogService();
 const allServiceTypes: AwsServiceType[] = catalog.services.map((s) => s.type);
 
-/**
- * Characterization tests for the cost engine. They assert structural invariants
- * (aggregate = sum of parts, non-negativity, determinism) rather than exact AWS
- * prices, so they guard against regressions while a refactor is in flight without
- * being brittle to pricing-data updates. Runs against the bundled us-east-1
- * fallback pricing — no network.
- */
 describe('CostService', () => {
   let cost: CostService;
   let factory: ArchitectureFactoryService;
@@ -26,7 +19,6 @@ describe('CostService', () => {
   });
 
   const node = (type: AwsServiceType): ArchitectureNode => factory.createNode(type, 0, 0);
-  // Types that should always carry a non-zero monthly cost on their defaults.
   const billableTypes: AwsServiceType[] = ['ec2', 's3', 'lambda', 'rds', 'dynamoDb', 'apiGateway', 'amplify'];
 
   it('returns a currency symbol for every supported currency', () => {
@@ -81,7 +73,6 @@ describe('CostService', () => {
       const n = bedrockNode();
       expect(n.config['provider']).toBe('anthropic');
       expect(n.config['model']).toBe('claude-sonnet-5');
-      // 10M in × $2.2/M + 2M out × $11/M = $44
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(44, 5);
     });
 
@@ -89,7 +80,7 @@ describe('CostService', () => {
       const bedrockModel = (serviceCostModelData as any).serviceCostModel.bedrock;
       const baseline = (usEast1Data as any).services.bedrock;
       const modelParams = bedrockModel.costParams.filter((p: { key: string }) => p.key === 'model');
-      expect(modelParams.length).toBeGreaterThanOrEqual(15); // one per provider
+      expect(modelParams.length).toBeGreaterThanOrEqual(15);
 
       for (const param of modelParams) {
         const provider = /'([a-z0-9]+)'/.exec(param.visibleIf)?.[1];
@@ -103,10 +94,8 @@ describe('CostService', () => {
     });
 
     it('still prices architectures saved before the provider/model split', () => {
-      // Legacy configs carry model keys like "claude-haiku" and no provider.
       const n = bedrockNode({ model: 'claude-haiku', inTokensM: 10, outTokensM: 2 });
       delete (n.config as Record<string, unknown>)['provider'];
-      // 10M × $0.25/M + 2M × $1.25/M = $5
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(5, 5);
     });
   });
@@ -119,7 +108,6 @@ describe('CostService', () => {
 
     it('prices the defaults from the cost-model params (build + served + storage)', () => {
       const n = amplifyNode();
-      // 500 min × $0.01 + 100 GB × $0.15 + 10 GB × $0.023 = $20.23
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(20.23, 5);
     });
 
@@ -141,12 +129,10 @@ describe('CostService', () => {
 
     it('scales each dimension with its cost param', () => {
       const n = amplifyNode({ buildMinutes: 1000, dataServedGB: 200, storageGB: 100 });
-      // 1000 × $0.01 + 200 × $0.15 + 100 × $0.023 = $42.30
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(42.3, 5);
     });
 
     it('bills build minutes at the selected build instance size rate', () => {
-      // Non-build dimensions stay fixed: 100 GB × $0.15 + 10 GB × $0.023 = $15.23
       const large = amplifyNode({ buildInstanceType: 'large' });
       expect(cost.calculateNodeCostUsd(large, 'us-east-1', [large])).toBeCloseTo(500 * 0.025 + 15.23, 5);
 
@@ -163,6 +149,51 @@ describe('CostService', () => {
     });
   });
 
+  describe('Global Accelerator DT-Premium (deployment region → Request Region)', () => {
+    const gaNode = (config: Record<string, unknown> = {}): ArchitectureNode => {
+      const n = node('globalAccelerator');
+      return { ...n, config: { ...n.config, ...config } as ArchitectureNode['config'] };
+    };
+    const clientNode = (requestRegion: string): ArchitectureNode => {
+      const n = node('client');
+      return { ...n, config: { ...n.config, requestRegion } as ArchitectureNode['config'] };
+    };
+
+    it('prices the default (no Users node) at the US/Canada→US/Canada baseline', () => {
+      const ga = gaNode();
+      expect(cost.calculateNodeCostUsd(ga, 'us-east-1', [ga])).toBeCloseTo(19.75, 5);
+    });
+
+    it('prices Global (Mixed) users identically to the US/Canada baseline', () => {
+      const ga = gaNode();
+      const c = clientNode('global');
+      expect(cost.calculateNodeCostUsd(ga, 'us-east-1', [ga, c])).toBeCloseTo(19.75, 5);
+    });
+
+    it('charges the official cross-geography rate for distant users', () => {
+      const ga = gaNode();
+      const c = clientNode('ap-southeast-2');
+      expect(cost.calculateNodeCostUsd(ga, 'us-east-1', [ga, c])).toBeCloseTo(28.75, 5);
+    });
+
+    it('charges the cheap intra-geography rate when app and users share a group', () => {
+      const ga = gaNode();
+      const c = clientNode('ap-southeast-2');
+      expect(cost.calculateNodeCostUsd(ga, 'ap-southeast-2', [ga, c])).toBeCloseTo(18.95, 5);
+    });
+
+    it('itemizes the DT-Premium line with the source→destination pair', () => {
+      const ga = gaNode();
+      const c = clientNode('sa-east-1');
+      const breakdown = cost.getCostBreakdown(ga, 'eu-west-1', [ga, c]);
+      const dt = breakdown.lines.find((l) => l.label === 'Data Transfer (DT-Premium)');
+      expect(dt).toBeTruthy();
+      expect(dt!.value).toBeCloseTo(4.3, 5);
+      expect(dt!.formula).toContain('Europe → South America');
+      expect(breakdown.lines.some((l) => l.label === 'Regional Adjustment')).toBe(false);
+    });
+  });
+
   describe('missing-services batch pricing (report v2)', () => {
     const withConfig = (type: AwsServiceType, config: Record<string, unknown> = {}): ArchitectureNode => {
       const n = node(type);
@@ -170,25 +201,20 @@ describe('CostService', () => {
     };
 
     it('prices SES defaults and doubles up correctly with VDM + dedicated IP', () => {
-      // 1000/day × 30 × $0.0001 + 1 GB × $0.12 = $3.12
       const n = withConfig('ses');
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(3.12, 5);
-      // + VDM 30000 × 0.00007 = 2.10, + 1 IP 24.95, + inbound 100/day × 30 × 0.0001 = 0.30
       const loaded = withConfig('ses', { vdmEnabled: true, dedicatedIPs: 1, inboundDailyVolume: 100 });
       expect(cost.calculateNodeCostUsd(loaded, 'us-east-1', [loaded])).toBeCloseTo(3.12 + 2.1 + 24.95 + 0.3, 5);
     });
 
     it('prices DocumentDB standard vs I/O-Optimized storage correctly', () => {
-      // 2 × $0.2631 × 730 + 100 × $0.10 + 100M × $0.20 = 384.126 + 10 + 20
       const std = withConfig('documentDb');
       expect(cost.calculateNodeCostUsd(std, 'us-east-1', [std])).toBeCloseTo(2 * 0.2631 * 730 + 10 + 20, 5);
-      // I/O-Optimized: higher instance + storage rate, no I/O line
       const io = withConfig('documentDb', { storageType: 'io-optimized' });
       expect(cost.calculateNodeCostUsd(io, 'us-east-1', [io])).toBeCloseTo(2 * 0.2895 * 730 + 100 * 0.30, 5);
     });
 
     it('prices Neptune instances, storage, and I/O', () => {
-      // 2 × $0.3287 × 730 + 100 × $0.10 + 50 × $0.20 = 479.902 + 10 + 10
       const n = withConfig('neptune');
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(2 * 0.3287 * 730 + 10 + 10, 5);
       const big = withConfig('neptune', { instanceClass: 'db.r6g.2xlarge', instanceCount: 1 });
@@ -196,13 +222,11 @@ describe('CostService', () => {
     });
 
     it('prices Timestream across all four dimensions', () => {
-      // 100 × $0.50 + 10 × $0.036 × 730 + 100 × $0.03 + 1000 × $0.01 = 50 + 262.8 + 3 + 10
       const n = withConfig('timestream');
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(50 + 262.8 + 3 + 10, 5);
     });
 
     it('prices AppConfig requests and per-target deployments', () => {
-      // 10M × $0.20 + 100 targets × 10 deploys × $0.0008 = 2 + 0.8
       const n = withConfig('appConfig');
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(2.8, 5);
     });
@@ -216,30 +240,79 @@ describe('CostService', () => {
     });
 
     it('prices Cloud Map registry and discovery calls', () => {
-      // 50 × $0.10 + 10M × $1.00 = 5 + 10
       const n = withConfig('cloudMap');
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(15, 5);
     });
 
     it('prices QuickSight licenses and SPICE', () => {
-      // 5 × $40 + 20 × $3 + 100 × $0.38 = 200 + 60 + 38
       const n = withConfig('quickSight');
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(298, 5);
     });
 
     it('prices Lightsail bundles flat and bills only transfer overage', () => {
-      // 2GB bundle: $0.01612 × 730 ≈ $11.77, 100 GB within 3 TB allowance → $0 overage
       const n = withConfig('lightsail');
       expect(cost.calculateNodeCostUsd(n, 'us-east-1', [n])).toBeCloseTo(0.01612 * 730, 5);
-      // 0.5GB bundle with 1500 GB used: allowance 1024 GB → 476 GB × $0.09
       const over = withConfig('lightsail', { bundleSize: '0.5GB', bandwidthGB: 1500 });
       expect(cost.calculateNodeCostUsd(over, 'us-east-1', [over])).toBeCloseTo(0.00672 * 730 + 476 * 0.09, 5);
     });
   });
 
-  // Broad net over the entire per-service cost switch (~70 cases). This guards
-  // the decomposition: every type must stay finite, non-negative, deterministic,
-  // and its breakdown total must equal its node cost.
+  describe('client packageSize drives payload-based billing', () => {
+    const withConfig = (type: AwsServiceType, config: Record<string, unknown> = {}): ArchitectureNode => {
+      const n = node(type);
+      return { ...n, config: { ...n.config, ...config } as ArchitectureNode['config'] };
+    };
+    const client = (packageSize: number, requestRate = 100): ArchitectureNode =>
+      withConfig('client', { packageSize, requestRate });
+
+    it('derives CloudFront DT-out from RPS × packageSize instead of the static knob', () => {
+      const cf = withConfig('cloudfront', { throughput: 100, dataTransferOut: 5000 });
+      const c = client(100);
+      const withClient = cost.getCostBreakdown(cf, 'us-east-1', [cf, c]);
+      const dtLine = withClient.lines.find((l) => l.label === 'Data Transfer Out');
+      expect(dtLine?.formula).toContain('KB/req');
+      const alone = cost.getCostBreakdown(cf, 'us-east-1', [cf]);
+      const dtAlone = alone.lines.find((l) => l.label === 'Data Transfer Out');
+      expect(dtLine!.value).toBeGreaterThan(dtAlone!.value);
+    });
+
+    it('derives S3 DT-out from GET volume × packageSize', () => {
+      const s3 = withConfig('s3', { getsM: 10, dataTransferOut: 100 });
+      const c = client(200);
+      const withClient = cost.getCostBreakdown(s3, 'us-east-1', [s3, c]);
+      const dtLine = withClient.lines.find((l) => l.label === 'Data Transfer Out');
+      expect(dtLine?.formula).toContain('KB/obj');
+      const alone = cost.getCostBreakdown(s3, 'us-east-1', [s3]);
+      const dtAlone = alone.lines.find((l) => l.label === 'Data Transfer Out');
+      expect(dtLine!.value).toBeGreaterThan(dtAlone!.value);
+    });
+
+    it('bills SQS one request per 64 KB chunk of the payload', () => {
+      const sqs = withConfig('sqs', { throughput: 100 });
+      const small = cost.calculateNodeCostUsd(sqs, 'us-east-1', [sqs, client(50)]);
+      const large = cost.calculateNodeCostUsd(sqs, 'us-east-1', [sqs, client(200)]);
+      expect(large).toBeGreaterThan(small * 3);
+      const huge = cost.calculateNodeCostUsd(sqs, 'us-east-1', [sqs, client(4000)]);
+      expect(huge).toBeCloseTo(large, 5);
+    });
+
+    it('bills SNS publishes per 64 KB chunk of the payload', () => {
+      const sns = withConfig('sns', { throughput: 100 });
+      const small = cost.calculateNodeCostUsd(sns, 'us-east-1', [sns, client(50)]);
+      const large = cost.calculateNodeCostUsd(sns, 'us-east-1', [sns, client(200)]);
+      expect(large).toBeGreaterThan(small);
+    });
+
+    it('keeps static-knob behavior when no client node exists', () => {
+      for (const type of ['cloudfront', 's3', 'sqs', 'sns'] as AwsServiceType[]) {
+        const n = node(type);
+        const alone = cost.calculateNodeCostUsd(n, 'us-east-1', [n]);
+        expect(Number.isFinite(alone)).toBe(true);
+        expect(alone).toBeGreaterThanOrEqual(0);
+      }
+    });
+  });
+
   describe.each(allServiceTypes)('cost invariants for "%s"', (type) => {
     it('is finite, non-negative, deterministic, and breakdown-consistent', () => {
       const n = node(type);
@@ -248,7 +321,7 @@ describe('CostService', () => {
 
       expect(Number.isFinite(first)).toBe(true);
       expect(first).toBeGreaterThanOrEqual(0);
-      expect(second).toBe(first); // deterministic
+      expect(second).toBe(first);
       expect(cost.getCostBreakdown(n, 'us-east-1', [n]).total).toBeCloseTo(first, 5);
     });
   });

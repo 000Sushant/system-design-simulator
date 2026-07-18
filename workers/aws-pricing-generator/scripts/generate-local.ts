@@ -1,20 +1,3 @@
-/**
- * Generates regional pricing files LOCALLY using the worker's own build
- * pipeline (all 9 phases in one pass — no Cloudflare subrequest/CPU limits),
- * then writes per-region JSON plus a wrangler-compatible bulk-upload file.
- *
- * Usage (from worker/):
- *   node --env-file=.dev.vars --import tsx scripts/generate-local.ts [regionCodes...]
- *
- * With no arguments every region is built (~45–60s each, ~25 min total).
- * Pass region codes (e.g. "eu-central-1 ap-south-1") to build a subset.
- *
- * Upload the result to Cloudflare KV (from worker/):
- *   npx wrangler kv bulk put kv-local/bulk.json --binding AWS_PRICING_KV --remote
- *
- * Keys are written WITHOUT the worker's 8-day TTL so the data survives until
- * the cron pipeline overwrites it with a fresh weekly run.
- */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

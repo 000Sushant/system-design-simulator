@@ -43,7 +43,7 @@ export class SimulationCanvasComponent implements OnDestroy {
       name: 'api gateway',
       label: 'API Gateway',
       sublabel: 'REST router',
-      color: '#34d399', // Premium Emerald
+      color: '#34d399',
       icon: 'fas fa-network-wired',
       position: { left: '50%', top: '33.33%' },
     },
@@ -52,7 +52,7 @@ export class SimulationCanvasComponent implements OnDestroy {
       name: 'client',
       label: 'Users',
       sublabel: 'web & mobile',
-      color: '#38bdf8', // Electric Blue
+      color: '#38bdf8',
       icon: 'fas fa-mobile-alt',
       position: { left: '25%', top: '54.16%' },
     },
@@ -61,7 +61,7 @@ export class SimulationCanvasComponent implements OnDestroy {
       name: 'ec2 cluster',
       label: 'Backend',
       sublabel: 'auto-scaled',
-      color: '#fbbf24', // Premium Amber
+      color: '#fbbf24',
       icon: 'fas fa-server',
       position: { left: '75%', top: '54.16%' },
     },
@@ -70,7 +70,7 @@ export class SimulationCanvasComponent implements OnDestroy {
       name: 'rds cluster',
       label: 'Database',
       sublabel: 'primary write',
-      color: '#a78bfa', // Violet
+      color: '#a78bfa',
       icon: 'fas fa-database',
       position: { left: '50%', top: '75%' },
     },
@@ -83,11 +83,9 @@ export class SimulationCanvasComponent implements OnDestroy {
   private intervalId: any;
 
   constructor() {
-    // Pre-populate history
     this.sparklineHistory = [24, 28, 25, 30, 22, 26, 28, 24, 27, 25, 29, 23, 26, 28, 24];
     this.generateSparkline();
 
-    // Pre-populate logs with mock traffic
     for (let i = 0; i < 4; i++) {
       this.addLog();
     }
@@ -96,16 +94,13 @@ export class SimulationCanvasComponent implements OnDestroy {
       this.metrics.latency = 20 + Math.floor(Math.random() * 10);
       this.metrics.rps = 130 + Math.floor(Math.random() * 20);
 
-      // Update sparkline
       this.sparklineHistory.push(this.metrics.latency);
       this.sparklineHistory.shift();
       this.generateSparkline();
 
-      // Update dynamic indicators
       this.metrics.cpu = 45 + Math.floor(Math.random() * 25);
       this.metrics.pool = `${6 + Math.floor(Math.random() * 6)}/20`;
 
-      // Log additions
       if (Math.random() > 0.2) {
         this.addLog();
       }

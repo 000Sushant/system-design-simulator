@@ -28,7 +28,6 @@ describe('edgePath', () => {
 describe('connectionMidpoint', () => {
   it('is the average of the two port points', () => {
     const nodes = [nodeAt('a', 0, 0), nodeAt('b', 400, 100)];
-    // start = (184, 62), end = (400, 162) → midpoint (292, 112)
     expect(connectionMidpoint(makeConn('a', 'b'), nodes)).toEqual({ x: 292, y: 112 });
   });
 
@@ -48,7 +47,6 @@ describe('packetPoint', () => {
   });
 
   it('interpolates along the connection by progress', () => {
-    // start (184, 62) → end (400, 62); halfway x = 292
     expect(packetPoint(packet(0), [conn], nodes)).toEqual({ x: 184, y: 62 });
     expect(packetPoint(packet(0.5), [conn], nodes)).toEqual({ x: 292, y: 62 });
     expect(packetPoint(packet(1), [conn], nodes)).toEqual({ x: 400, y: 62 });

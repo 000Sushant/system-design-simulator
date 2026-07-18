@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ProjectStorageService, PersistedWorkspace } from './project-storage.service';
 import { ArchitectureProject } from '../models/architecture.model';
 
-/** Minimal in-memory localStorage — the suite runs in the `node` environment (no DOM). */
 class MemoryStorage {
   private store = new Map<string, string>();
   getItem(key: string): string | null {

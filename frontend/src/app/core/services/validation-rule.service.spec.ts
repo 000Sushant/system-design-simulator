@@ -7,7 +7,6 @@ function port(id: string, direction: 'input' | 'output', type: PortType): Servic
   return { id, label: id, direction, type };
 }
 
-/** Overrides the config-derived rules with a controlled set for deterministic branch coverage. */
 function setRules(service: ValidationRuleService, rules: ConnectionRule[]): void {
   (service as unknown as { rules: ConnectionRule[] }).rules = rules;
 }
@@ -78,7 +77,7 @@ describe('ValidationRuleService', () => {
 
     it('rejects a duplicate of an existing connection', () => {
       setRules(service, [EC2_TO_RDS]);
-      const existing = makeConn('a', 'b'); // sourcePortId 'out', targetPortId 'in'
+      const existing = makeConn('a', 'b');
       const result = service.validate(makeNode('a', 'ec2'), out, makeNode('b', 'rds'), inp, [existing]);
       expect(result.allowed).toBe(false);
       expect(result.message).toMatch(/already exists/i);
@@ -86,7 +85,6 @@ describe('ValidationRuleService', () => {
 
     it('rejects a pairing that matches no rule', () => {
       setRules(service, [EC2_TO_RDS]);
-      // reverse direction: no rds → ec2 rule exists
       const result = service.validate(makeNode('a', 'rds'), out, makeNode('b', 'ec2'), inp, []);
       expect(result.allowed).toBe(false);
       expect(result.message).toMatch(/cannot connect/i);

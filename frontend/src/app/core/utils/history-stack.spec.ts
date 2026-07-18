@@ -12,7 +12,6 @@ describe('HistoryStack', () => {
     const stack = new HistoryStack<string>();
     stack.push('v1');
     expect(stack.canUndo).toBe(true);
-    // current state is 'v2'; undo should return the recorded 'v1'.
     expect(stack.undo('v2')).toBe('v1');
     expect(stack.canUndo).toBe(false);
     expect(stack.canRedo).toBe(true);
@@ -21,7 +20,7 @@ describe('HistoryStack', () => {
   it('redoes the state that was current at undo time', () => {
     const stack = new HistoryStack<string>();
     stack.push('v1');
-    stack.undo('v2'); // redo stack now holds 'v2'
+    stack.undo('v2');
     expect(stack.redo('v1')).toBe('v2');
     expect(stack.canRedo).toBe(false);
     expect(stack.canUndo).toBe(true);
@@ -36,18 +35,17 @@ describe('HistoryStack', () => {
   it('clears the redo stack on a fresh push', () => {
     const stack = new HistoryStack<string>();
     stack.push('v1');
-    stack.undo('v2'); // redo holds 'v2'
+    stack.undo('v2');
     expect(stack.canRedo).toBe(true);
-    stack.push('v3'); // a new edit invalidates redo
+    stack.push('v3');
     expect(stack.canRedo).toBe(false);
   });
 
   it('coalesces same-key edits within the time window', () => {
     const stack = new HistoryStack<string>({ coalesceWindowMs: 700 });
     expect(stack.push('a', 'slider', 1000)).toBe(true);
-    expect(stack.push('b', 'slider', 1200)).toBe(false); // coalesced, nothing pushed
+    expect(stack.push('b', 'slider', 1200)).toBe(false);
     expect(stack.push('c', 'slider', 1300)).toBe(false);
-    // Only one entry exists despite three pushes.
     expect(stack.undo('current')).toBe('a');
     expect(stack.canUndo).toBe(false);
   });
@@ -55,8 +53,8 @@ describe('HistoryStack', () => {
   it('does not coalesce once the window elapses or the key changes', () => {
     const stack = new HistoryStack<string>({ coalesceWindowMs: 700 });
     expect(stack.push('a', 'slider', 1000)).toBe(true);
-    expect(stack.push('b', 'slider', 2000)).toBe(true); // window elapsed
-    expect(stack.push('c', 'move', 2100)).toBe(true); // different key
+    expect(stack.push('b', 'slider', 2000)).toBe(true);
+    expect(stack.push('c', 'move', 2100)).toBe(true);
     expect(stack.undo('x')).toBe('c');
     expect(stack.undo('x')).toBe('b');
     expect(stack.undo('x')).toBe('a');
@@ -65,7 +63,6 @@ describe('HistoryStack', () => {
   it('enforces the size limit by dropping the oldest entries', () => {
     const stack = new HistoryStack<number>({ limit: 3 });
     for (let i = 1; i <= 5; i++) stack.push(i);
-    // Only the 3 most recent (3,4,5) are retained.
     expect(stack.undo(0)).toBe(5);
     expect(stack.undo(0)).toBe(4);
     expect(stack.undo(0)).toBe(3);

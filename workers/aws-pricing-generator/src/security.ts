@@ -1,6 +1,5 @@
 import { Env } from './types';
 
-// ─── HTTP utility ──────────────────────────────────────────────────────────────
 
 export function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(data, null, 2), {
@@ -9,13 +8,7 @@ export function json(data: unknown, status = 200, extraHeaders: Record<string, s
   });
 }
 
-// ─── Admin auth ────────────────────────────────────────────────────────────────
 
-/**
- * Guards the state-changing admin endpoints (/trigger, /reset, /start).
- * Returns an error Response when the caller is not authorized, or `null` when
- * the request may proceed. Denies by default when ADMIN_TOKEN is not configured.
- */
 export async function requireAdmin(request: Request, env: Env): Promise<Response | null> {
   if (!env.ADMIN_TOKEN) {
     return json({ error: 'Admin endpoints are disabled: ADMIN_TOKEN is not configured.' }, 503);
@@ -28,10 +21,6 @@ export async function requireAdmin(request: Request, env: Env): Promise<Response
   return null;
 }
 
-/**
- * Constant-time string comparison. Compares SHA-256 digests so neither the
- * length nor the contents of the secret leak through timing or early exit.
- */
 export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
   const enc = new TextEncoder();
   const [da, db] = await Promise.all([
@@ -45,7 +34,6 @@ export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
   return diff === 0;
 }
 
-// ─── CORS ────────────────────────────────────────────────────────────────────
 
 export const DEFAULT_ALLOWED_ORIGINS = ['https://srarchitect.qzz.io', 'http://localhost:4200'];
 
@@ -56,11 +44,6 @@ export function allowedOrigins(env: Env): string[] {
     .filter(Boolean);
 }
 
-/**
- * Reflects the request Origin only when it is on the allowlist. Restricting
- * this (vs. a wildcard) stops other websites from casting votes through a
- * visitor's browser. Non-browser callers (no Origin header) are unaffected.
- */
 export function corsHeaders(request: Request, env: Env): Record<string, string> {
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -74,9 +57,7 @@ export function corsHeaders(request: Request, env: Env): Record<string, string> 
   return headers;
 }
 
-// ─── Votes helpers ─────────────────────────────────────────────────────────────
 
-/** Coerces an incoming vote delta to exactly -1, 0, or 1. */
 export function clampDelta(value: unknown): number {
   if (value === 1 || value === -1) return value;
   return 0;

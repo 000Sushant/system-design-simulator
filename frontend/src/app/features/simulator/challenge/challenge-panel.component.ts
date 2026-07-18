@@ -39,17 +39,11 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
   private readonly catalog = inject(AwsCatalogService);
   private readonly theme = inject(ThemeService);
 
-  /** Asks the host to scaffold a fresh canvas for this challenge. */
   @Output() startChallenge = new EventEmitter<Challenge>();
-  /** Asks the host to clear the canvas when resetting a challenge. */
   @Output() resetChallenge = new EventEmitter<Challenge>();
-  /** Asks the host to load the curated sandbox preset. */
   @Output() freePractice = new EventEmitter<void>();
-  /** Asks the host to (re)play the onboarding tour. */
   @Output() replayTour = new EventEmitter<void>();
-  /** Asks the host to evaluate the current canvas. */
   @Output() requestEvaluate = new EventEmitter<void>();
-  /** Asks the host to load the reference solution onto the canvas. */
   @Output() showReference = new EventEmitter<Challenge>();
 
   readonly difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
@@ -63,22 +57,18 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
 
   indicatorStyle: any = { opacity: '0' };
 
-  /** Collapsible state for the post-completion solution walkthrough. */
   solutionExpanded = true;
 
-  /** Mascot illustration, swapped for a dark-friendly variant in dark mode. */
   get mascotImage(): string {
     return this.theme.isDark
       ? 'assets/mascot/server-metaphor-dark.png'
       : 'assets/mascot/server-metaphor.png';
   }
 
-  /** Icon URL for a service shown in the solution walkthrough. */
   solutionIcon(type: AwsServiceType): string {
     return this.catalog.getByType(type).iconUrl;
   }
 
-  /** Theme color for a service shown in the solution walkthrough. */
   solutionColor(type: AwsServiceType): string {
     return this.catalog.getByType(type).color;
   }
@@ -140,7 +130,6 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
     void this.votes.load();
   }
 
-  /** Casts a vote without triggering the card's open action. */
   onVote(challenge: Challenge, direction: 'up' | 'down', event: Event): void {
     event.stopPropagation();
     void this.votes.vote(challenge.id, direction);
@@ -154,7 +143,6 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
     return this.challenges.challenges.filter((c) => c.difficulty === difficulty);
   }
 
-  /** Count of authored (playable) challenges in a difficulty, for the tab badge. */
   authoredCount(difficulty: Difficulty): number {
     return this.challengesByDifficulty(difficulty).filter((c) => c.authored).length;
   }
@@ -182,8 +170,6 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
     return this.active.milestones.filter((m) => !m.hidden);
   }
 
-  /** Only the completed standard milestones, so the list can number them 1..N
-   *  by how many are done (not by their fixed position in the full list). */
   reachedStandardMilestones(): Milestone[] {
     if (!this.progress) return [];
     return this.standardMilestones().filter((m) =>
@@ -219,7 +205,6 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
     return this.challenges.progressFor(challenge.id)?.lastScore;
   }
 
-  /** A topic icon derived from the challenge title (purely cosmetic). */
   iconFor(challenge: Challenge): string {
     const t = challenge.title.toLowerCase();
     if (/(url|shorten|link|dns|cdn)/.test(t)) return 'fa-link';
@@ -234,7 +219,6 @@ export class ChallengePanelComponent implements OnInit, OnDestroy, AfterViewChec
     return 'fa-sitemap';
   }
 
-  /** Accent color for a challenge's icon tile (by category). */
   accentFor(challenge: Challenge): string {
     return categoryStyle(challenge.category).color;
   }

@@ -9,7 +9,9 @@
       "Configurable request rate (RPS) to simulate traffic surges.",
       "Measures end-to-end response latency and client-side timeouts.",
       "Supports retry behaviors for transient connection failures.",
-      "Acts as the client workload source for simulator telemetry."
+      "Acts as the client workload source for simulator telemetry.",
+      "Request Region sets the user geography used for edge-based pricing: it selects CloudFront's edge price class and Global Accelerator's DT-Premium rate (paired with the deployment region). Global (Mixed) is priced at the US/Canada–Europe baseline.",
+      "Average Package Size (KB) models the payload of each request and is used everywhere AWS bills or throttles by data volume. Cost: monthly data volume = RPS × 2,628,000 req/mo × KB ÷ 1,048,576 GB, which drives the ELB LCU data-processed dimension (and CLB per-GB charge), CloudFront data transfer out, S3 data transfer out (GETs × object size), and client egress; SQS and SNS bill one request per 64 KB chunk of the payload (256 KB message limit), so a 200 KB payload costs 4× the requests of a 50 KB one. Simulation: it sets the Kinesis per-shard ingest ceiling (a shard allows 1,000 records/s OR 1 MB/s, whichever binds first — 50 KB records cap a shard near 20 records/s) and sizes the API Gateway cache working set that determines its simulated cache hit rate."
     ],
     "commonIntegrationPatterns": [
       "Resolve endpoints using Route 53 DNS.",
@@ -656,7 +658,8 @@
       "Provides static Anycast IP addresses for global clients.",
       "Routes traffic over the private AWS global network.",
       "Supports instant failover across application endpoints.",
-      "Improves TCP/UDP performance and reduces latency."
+      "Improves TCP/UDP performance and reduces latency.",
+      "DT-Premium data transfer is billed per source→destination geography pair: the simulator derives the source from the selected deployment region and the destination from the Users node's Request Region."
     ],
     "commonIntegrationPatterns": [
       "Route global user traffic to Application Load Balancers.",

@@ -44,7 +44,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.loadReport();
     window.addEventListener('popstate', this.onPop);
     this.themeSub = this.themeService.isDark$.subscribe(() => {
-      // Re-render with updated theme class
       this.renderCurrentReport();
     });
   }
@@ -52,7 +51,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     window.removeEventListener('popstate', this.onPop);
     this.themeSub?.unsubscribe();
-    // Clean up injected style tags
     document.querySelectorAll('style[data-report-style]').forEach(el => el.remove());
   }
 
@@ -79,7 +77,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     url.searchParams.set('report', id);
     window.history.replaceState(null, '', url.toString());
     this.loadReport();
-    // Scroll content area back to top
     const shell = document.querySelector('.reports-shell');
     if (shell) shell.scrollTop = 0;
   }
@@ -108,21 +105,16 @@ export class ReportsComponent implements OnInit, OnDestroy {
     const raw = this.loadedReports.get(this.activeReportId);
     if (!raw) return;
 
-    // Extract <style> content
     const styleMatch = raw.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
     const styleContent = styleMatch ? styleMatch[1] : '';
 
-    // Extract <body> content
     const bodyMatch = raw.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
     let bodyContent = bodyMatch ? bodyMatch[1] : '';
 
-    // Remove the report's own .docs-nav (we use the shell's navbar)
     bodyContent = bodyContent.replace(/<nav[^>]*class="docs-nav"[^>]*>[\s\S]*?<\/nav>/gi, '');
 
-    // Replace all em-dashes with colons to ensure a clean, natural, human-written tone
     bodyContent = bodyContent.replace(/\s*—\s*/g, ': ');
 
-    // Add dynamic premium icons to the PulseFlow and Rubix badges
     bodyContent = bodyContent
       .replace(/<span class="badge b-pulse">PulseFlow<\/span>/g, '<span class="badge b-pulse"><i class="fas fa-wave-square"></i> PulseFlow</span>')
       .replace(/<span class="badge b-rubix">Rubix<\/span>/g, '<span class="badge b-rubix"><i class="fas fa-cube"></i> Rubix</span>');
@@ -138,7 +130,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
       .replace(/padding-top:\s*96px\s*!important/gi, 'padding-top: 0 !important')
       .replace(/padding:\s*96px\s+/gi, 'padding: 0px ');
 
-    // Neutralize base background styles on .report-content and .report-content.report-dark
     scopedStyle = scopedStyle
       .replace(/\.report-content\.report-dark\s*\{([^}]*?)background:\s*[^;]+?!important/gi, (match, group) => {
         return `.report-content.report-dark {${group}background: transparent !important`;
@@ -147,7 +138,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
         return `.report-content {${group}background: transparent`;
       });
 
-    // Inject scoped style into head (remove previous one first)
     const styleId = `report-style-${this.activeReportId}`;
     document.querySelectorAll('style[data-report-style]').forEach(el => el.remove());
     const styleEl = document.createElement('style');
@@ -155,7 +145,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     styleEl.textContent = scopedStyle;
     document.head.appendChild(styleEl);
 
-    // Build the wrapper with theme class
     const themeClass = this.isDarkMode ? 'report-dark' : '';
     const finalHtml = `<div class="report-content ${themeClass}">${bodyContent}</div>`;
     this.reportHtml = this.sanitizer.bypassSecurityTrustHtml(finalHtml);

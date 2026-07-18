@@ -445,6 +445,10 @@
   letter-spacing: normal;
 }
 
+:host-context(.dark) .eyebrow-pre {
+  color: var(--c-slate-400);
+}
+
 .hero-copy h1 {
   max-width: 620px;
   margin: 18px 0 14px;
@@ -471,6 +475,34 @@
 
 .hero-actions.center {
   justify-content: center;
+}
+
+/* Short desktop viewports (e.g. 1366x768 laptops, or wide screens at 125-150%
+   OS scaling): the full-size hero copy stack pushes .hero-actions below the
+   fold. Height-gated so tall screens keep the default sizes, and width-gated
+   so phone/tablet layouts (<=980px) are untouched. Placed after the base
+   .hero-copy/.hero-actions rules above so it wins the cascade when active. */
+@media (min-width: 981px) and (max-height: 780px) {
+  .hero-section {
+    margin-block: 8px 24px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(32px, 4.4vw, 50px);
+    margin: 0 0 10px;
+  }
+
+  .hero-copy .eyebrow-pre {
+    font-size: 19px;
+  }
+
+  .hero-copy p {
+    font-size: 14px;
+  }
+
+  .hero-actions {
+    margin-top: 16px;
+  }
 }
 
 /* --- GitHub Star Badge --- */
@@ -612,9 +644,11 @@
   /* 3D dynamic tilt transform using client coords calculated in JS */
   transform: perspective(1600px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateZ(0);
 
-  /* Polished transitions */
+  /* Polished transitions. transform stays fast/linear: --tilt-x/y update on
+     every mousemove, so a slow eased transition never catches up to the
+     mouse and reads as a smeared/blurry drag during active tilting. */
   transition:
-    transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.05s linear,
     box-shadow 0.25s ease,
     border-color 0.25s ease;
 }
@@ -659,6 +693,13 @@
     var(--shadow-x, 0px) var(--shadow-y, 25px) 50px rgba(15, 23, 42, 0.08),
     0 8px 18px var(--c-s900-04),
     inset 0 1px 1px var(--c-white-98);
+
+  /* Rotating a backdrop-filter plane in 3D forces the browser to resample the
+     blurred backdrop at an angle every frame, which reads as extra smear on
+     top of the intended blur. Drop the blur while actively tilted; it snaps
+     back the instant the mouse leaves and the card settles flat again. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .mode-card-top {
@@ -699,41 +740,7 @@
     inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
-.developer .mode-icon {
-  color: #0e7490;
-}
-
-.developer .mode-button {
-  color: #075985;
-  border-color: rgba(6, 182, 212, 0.26);
-  background:
-    linear-gradient(145deg,
-      rgba(255, 255, 255, 0.76),
-      rgba(255, 255, 255, 0.24)),
-    radial-gradient(circle at 18% 0%, rgba(6, 182, 212, 0.28), transparent 46%),
-    radial-gradient(circle at 88% 30%,
-      rgba(124, 58, 237, 0.18),
-      transparent 44%),
-    var(--c-white-34);
-  box-shadow:
-    0 12px 26px var(--c-violet-10a),
-    inset 0 1px 1px rgba(255, 255, 255, 1),
-    inset 0 -1px 2px var(--c-violet-12);
-}
-
-.architect .mode-button {
-  color: #7c2d12;
-  border-color: rgba(245, 158, 11, 0.3);
-  background:
-    linear-gradient(145deg,
-      rgba(255, 255, 255, 0.76),
-      rgba(255, 255, 255, 0.24)),
-    radial-gradient(circle at 18% 0%, rgba(245, 158, 11, 0.3), transparent 46%),
-    radial-gradient(circle at 88% 30%,
-      rgba(236, 72, 153, 0.18),
-      transparent 44%),
-    var(--c-white-34);
-}
+/* Card Mode Overrides unified */
 
 .mode-card h3 {
   margin: 16px 0 8px;
@@ -757,27 +764,36 @@
   padding: 0;
   margin: 14px 0 0;
   display: grid;
-  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
 }
 
 .mode-card li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   color: #475569;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 720;
+  line-height: 1.4;
 }
 
 .mode-card li i {
   color: #10b981;
   font-size: 11px;
+  margin-top: 3px;
   filter: drop-shadow(0 0 7px rgba(16, 185, 129, 0.45));
 }
 
 .mode-button {
   width: 100%;
   margin-top: 16px;
+}
+
+@media (max-width: 680px) {
+  .mode-card ul {
+    grid-template-columns: 1fr;
+  }
 }
 
 .trust-strip {
@@ -2431,6 +2447,11 @@
 :host-context(.dark) .nav-actions a {
   color: var(--c-slate-300);
   border-color: var(--c-white-12);
+  /* Base .cta-button sets a white frosted backing as background-color via the
+     `background` shorthand; the near-transparent dark gradient lets it bleed
+     through as a washed-out light pill, so it must be cleared here. */
+  background-color: transparent;
+  text-shadow: none;
   background-image:
     linear-gradient(135deg,
       var(--c-white-03) 0%,
@@ -2494,15 +2515,7 @@
   box-shadow: inset 0 1px 0 var(--c-white-03);
 }
 
-/* Developer Mode Icon - Soft Cyan */
-:host-context(.dark) .developer .mode-icon {
-  color: #22d3ee;
-}
-
-/* Architect Mode Icon - Soft Purple */
-:host-context(.dark) .architect .mode-icon {
-  color: var(--c-violet-300);
-}
+/* Mode Icons dark overrides unified */
 
 /* Uniform Mode Card Hover Border and Shadow (No Neon Glows) */
 :host-context(.dark) .mode-card:hover {
@@ -2511,6 +2524,7 @@
     0 8px 18px var(--c-black-35),
     inset 0 1px 1px var(--c-white-05);
 }
+
 
 
 /* ── 2. Feature Cards (Arsenal Cards) themed overrides ────────────────────────── */
@@ -2611,85 +2625,225 @@
   color: var(--c-slate-400);
 }
 
+:host-context(.dark) .contributors-subheading {
+  color: var(--c-slate-100);
+}
+
 /* ── Footer ─────────────────────────────────────────────── */
 .landing-footer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  max-width: clamp(1100px, 80vw, 1500px);
+  margin: 72px auto 28px;
+  padding: 44px clamp(24px, 4vw, 48px) 28px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.landing-footer::before {
+  display: none !important;
+}
+
+.footer-glow {
+  display: none !important;
+}
+
+.footer-main {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: space-between;
-  gap: 20px 32px;
-  max-width: clamp(1100px, 80vw, 1500px);
-  margin: 64px auto 0;
-  padding: 28px 24px 40px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  gap: 36px 48px;
 }
 
 .footer-brand {
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 440px;
+}
+
+.footer-brand-row {
+  display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 13px;
 }
 
 .footer-logo {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
 }
 
 .footer-brand-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .footer-name {
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 17px;
   letter-spacing: -0.03em;
-  color: var(--c-ink);
+  color: var(--c-slate-900);
 }
 
 .footer-tag {
   font-size: 12.5px;
-  color: #6b7280;
-}
-
-.footer-links {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.footer-links a {
-  font-size: 13px;
   font-weight: 600;
-  color: var(--c-gray-700);
-  text-decoration: none;
-  transition: color 0.2s ease;
+  letter-spacing: 0.01em;
+  color: var(--c-slate-500);
 }
 
-.footer-links a:hover {
-  color: #ff9900;
+.footer-credit-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--c-slate-500);
+}
+
+.footer-credit-text strong {
+  color: var(--c-slate-800);
+  font-weight: 800;
+}
+
+.footer-social.social-links {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.footer-social.social-links a {
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 13px;
+  font-size: 12.5px;
+}
+
+.footer-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px clamp(36px, 5vw, 80px);
+  padding-top: 6px;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 120px;
+}
+
+.footer-col-title {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-slate-400);
+  margin-bottom: 3px;
+}
+
+.footer-col a {
+  align-self: flex-start;
+  position: relative;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--c-slate-600);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.footer-col a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1.5px;
+  background: var(--c-violet);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: var(--c-violet);
+}
+
+.footer-col a:hover::after {
+  transform: scaleX(1);
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .footer-copy {
-  width: 100%;
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--c-slate-400);
+}
+
+.footer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #059669;
+}
+
+.footer-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
 }
 
 @media (max-width: 640px) {
   .landing-footer {
+    margin-top: 56px;
+    padding: 36px 22px 24px;
+    border-radius: 16px;
+  }
+
+  .footer-main {
+    flex-direction: column;
+  }
+
+  .footer-bottom {
     flex-direction: column;
     align-items: flex-start;
-    gap: 18px;
   }
 }
 
 :host-context(.dark) .landing-footer {
-  border-top-color: var(--c-white-08);
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark) .footer-glow {
+  display: none !important;
 }
 
 :host-context(.dark) .footer-name {
@@ -2700,16 +2854,40 @@
   color: var(--c-slate-400);
 }
 
-:host-context(.dark) .footer-links a {
-  color: rgba(241, 245, 249, 0.8);
+:host-context(.dark) .footer-credit-text {
+  color: var(--c-slate-400);
 }
 
-:host-context(.dark) .footer-links a:hover {
-  color: #ff9900;
+:host-context(.dark) .footer-credit-text strong {
+  color: var(--c-slate-100);
+}
+
+:host-context(.dark) .footer-col-title {
+  color: var(--c-slate-500);
+}
+
+:host-context(.dark) .footer-col a {
+  color: rgba(241, 245, 249, 0.78);
+}
+
+:host-context(.dark) .footer-col a::after {
+  background: var(--c-violet-300);
+}
+
+:host-context(.dark) .footer-col a:hover {
+  color: var(--c-violet-300);
+}
+
+:host-context(.dark) .footer-bottom {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 :host-context(.dark) .footer-copy {
   color: var(--c-slate-500);
+}
+
+:host-context(.dark) .footer-status {
+  color: #34d399;
 }
 
 /* --- Community Stats Dashboard --- */
@@ -2784,6 +2962,10 @@
 
 :host-context(.dark) .comm-stat-icon {
   color: var(--c-violet-300);
+}
+
+:host-context(.dark) .comm-stat-value {
+  color: var(--c-slate-100);
 }
 
 .telemetry-dashboard-section {
@@ -3007,210 +3189,58 @@
   margin-top: 2px;
 }
 
-.tc-visual-bay {
+.tc-metric-hero {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 14px;
-  padding: 8px 12px;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5);
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 20px;
+  background: rgba(148, 163, 184, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  min-width: 140px;
+  text-align: center;
   flex-shrink: 0;
 }
 
-.tcv-graphic {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+:host-context(.dark) .tc-metric-hero {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
-.tcv-readout {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-}
-
-.tc-value {
+.tc-metric-hero .tc-value {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 24px;
-  font-weight: 900;
+  font-size: 32px;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
-  color: var(--c-ink);
-  transition: text-shadow 0.3s ease;
+  color: var(--c-slate-900);
 }
 
-.telemetry-console.purple .tc-value {
+.telemetry-console.purple .tc-metric-hero .tc-value {
   color: var(--c-violet);
 }
 
-.telemetry-console.cyan .tc-value {
+.telemetry-console.cyan .tc-metric-hero .tc-value {
   color: #0891b2;
 }
 
-.telemetry-console.purple:hover .tc-value {
-  text-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
+:host-context(.dark) .telemetry-console.purple .tc-metric-hero .tc-value {
+  color: var(--c-violet-300);
 }
 
-.telemetry-console.cyan:hover .tc-value {
-  text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+:host-context(.dark) .telemetry-console.cyan .tc-metric-hero .tc-value {
+  color: #22d3ee;
 }
 
-.tc-value-label {
-  margin-top: 3px;
+.tc-metric-hero .tc-value-label {
   font-size: 9.5px;
   font-weight: 750;
   line-height: 1.25;
   letter-spacing: -0.01em;
   color: var(--c-slate-500);
-}
-
-/* -- SVG Data Visuals -- */
-.tc-viz {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  overflow: visible;
-}
-
-.viz-track {
-  fill: none;
-  stroke: rgba(15, 23, 42, 0.06);
-  stroke-width: 7px;
-}
-
-.viz-dial-scale {
-  stroke: rgba(15, 23, 42, 0.04);
-}
-
-.viz-track-dots {
-  stroke: rgba(15, 23, 42, 0.08);
-}
-
-.viz-fill {
-  fill: none;
-  stroke-width: 7px;
-  stroke-linecap: round;
-}
-
-/* r=50 -> circumference ~314.16; 92.4% filled -> dashoffset = 314.16 * (1 - 0.924) = 23.88 */
-.viz-fill-gauge {
-  stroke-dasharray: 314.16;
-  stroke-dashoffset: 314.16;
-  animation: gaugeFill 1.5s cubic-bezier(0.25, 1, 0.3, 1) forwards;
-}
-
-@keyframes gaugeFill {
-  to {
-    stroke-dashoffset: 23.88;
-  }
-}
-
-.viz-num {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-variant-numeric: tabular-nums;
-  fill: #0891b2;
-  font-size: 19px;
-  font-weight: 900;
-  text-anchor: middle;
-  letter-spacing: -0.03em;
-}
-
-/* PulseFlow waveform */
-.viz-baseline {
-  stroke: rgba(15, 23, 42, 0.06);
-  stroke-width: 1.5;
-  stroke-dasharray: 3 4;
-}
-
-.viz-grid-bg {
-  stroke: none;
-  fill: rgba(15, 23, 42, 0.015);
-}
-
-pattern#pulseGrid line {
-  stroke: rgba(124, 58, 237, 0.05);
-}
-
-.viz-pulse-secondary {
-  fill: none;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 100 300;
-  animation: pulseTraceSecondary 3.6s linear infinite;
-}
-
-@keyframes pulseTraceSecondary {
-  from {
-    stroke-dashoffset: 400;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.viz-pulse-ghost {
-  fill: none;
-  stroke-width: 3px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.viz-pulse-area {
-  opacity: 0.7;
-  transform-origin: center;
-  animation: pulseAreaFade 3s ease-in-out infinite alternate;
-}
-
-@keyframes pulseAreaFade {
-  0% { opacity: 0.5; }
-  100% { opacity: 0.85; }
-}
-
-.viz-pulse {
-  fill: none;
-  stroke-width: 3px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 150 260;
-  animation: pulseTrace 2.4s linear infinite;
-}
-
-@keyframes pulseTrace {
-  from {
-    stroke-dashoffset: 410;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.viz-pulse-dot {
-  fill: #8b5cf6;
-  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.8));
-  offset-path: path("M8 66 H40 L48 66 L54 34 L62 96 L68 66 H86 L94 48 L100 82 L106 66 H124");
-  animation: pulseDot 2.4s linear infinite;
-}
-
-@keyframes pulseDot {
-  from {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  to {
-    offset-distance: 100%;
-    opacity: 0;
-  }
 }
 
 /* -- Info Column -- */
@@ -3293,6 +3323,12 @@ pattern#pulseGrid line {
   justify-content: flex-end;
   margin-top: auto;
   padding-top: 8px;
+}
+
+/* Slightly shorter than the default cta-button so it sits snugly inside
+   the telemetry card instead of the full hero-sized button. */
+.tc-footer .cta-button {
+  min-height: 42px;
 }
 
 .tc-cta {
@@ -3436,6 +3472,12 @@ pattern#pulseGrid line {
   color: #22d3ee;
 }
 
+:host-context(.dark) .tc-visual-bay {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+}
+
 :host-context(.dark) .tc-value-label,
 :host-context(.dark) .tc-description,
 :host-context(.dark) .tcs-label {
@@ -3566,23 +3608,7 @@ pattern#pulseGrid line {
     gap: 14px;
   }
   
-  .tc-visual-bay {
-    justify-content: center;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .viz-fill-gauge {
-    animation: none;
-    stroke-dashoffset: 23.88;
-  }
-  .viz-pulse,
-  .viz-pulse-secondary {
-    animation: none;
-    stroke-dasharray: none;
-  }
-  .viz-pulse-dot {
-    animation: none;
-    opacity: 0;
+  .tc-metric-hero {
+    width: 100%;
   }
 }

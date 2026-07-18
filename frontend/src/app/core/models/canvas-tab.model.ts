@@ -8,7 +8,6 @@ import {
 } from './architecture.model';
 import type { PersistedTab } from '../services/project-storage.service';
 
-/** A single canvas in the multi-tab workspace, including runtime-only state. */
 export interface CanvasTab {
   id: string;
   name: string;
@@ -26,7 +25,6 @@ export interface CanvasTab {
   simulationMode: SimulationMode;
   totals: { processed: number; dropped: number; avgLatency: number };
   tick: number;
-  /** True when the canvas has unsaved changes (orange dot); false once saved. */
   dirty: boolean;
 }
 
@@ -34,7 +32,6 @@ const DEFAULT_CURRENCY: Currency = 'USD';
 const DEFAULT_REGION = 'us-east-1';
 const DEFAULT_PAN = { x: 40, y: 40 };
 
-/** Serializes a runtime tab to its persistable form (drops runtime-only fields). */
 export function toPersistedTab(tab: CanvasTab): PersistedTab {
   return {
     id: tab.id,
@@ -48,10 +45,6 @@ export function toPersistedTab(tab: CanvasTab): PersistedTab {
   };
 }
 
-/**
- * Rebuilds a runtime tab from persisted data, filling runtime-only defaults.
- * Tolerant of partial/legacy records so a malformed save never loses a canvas.
- */
 export function fromPersistedTab(tab: PersistedTab, index: number, defaultZoom: number): CanvasTab {
   return {
     id: tab.id || `tab-${Date.now()}-${index}`,

@@ -39,7 +39,7 @@ describe('failure queue', () => {
     const putsAfterFirst = kv.puts;
     const queue = await updateFailureQueue(env, { add: 'sa-east-1' });
     expect(queue).toEqual(['sa-east-1']);
-    expect(kv.puts).toBe(putsAfterFirst); // no redundant write
+    expect(kv.puts).toBe(putsAfterFirst);
   });
 
   it('removes a region on clean rebuild and leaves others queued', async () => {

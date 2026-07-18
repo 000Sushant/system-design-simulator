@@ -1,15 +1,8 @@
 export interface Region {
-  /** AWS region code, e.g. "us-east-1" */
   code: string;
-  /** AWS Pricing API location name, e.g. "US East (N. Virginia)" */
   name: string;
 }
 
-/**
- * All 27 regions supported by this Worker.
- * The `name` field must match the "location" attribute value
- * returned by the AWS Pricing API exactly.
- */
 export const REGIONS: Region[] = [
   { code: 'us-east-1',      name: 'US East (N. Virginia)' },
   { code: 'us-east-2',      name: 'US East (Ohio)' },
@@ -40,5 +33,4 @@ export const REGIONS: Region[] = [
   { code: 'af-south-1',     name: 'Africa (Cape Town)' },
 ];
 
-/** 7 days in milliseconds — the cadence of the weekly rebuild cron */
 export const WEEKLY_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;

@@ -6,12 +6,6 @@ import { ValidationRuleService } from './validation-rule.service';
 import { AwsCatalogService } from './aws-catalog.service';
 import { ArchitectureProject } from '../models/architecture.model';
 
-/**
- * The presets are shipped sample architectures assembled by GraphBuilderService
- * against the real connection rules. Building them here is a live guarantee that
- * every preset edge stays rule-valid — a rules/config change that breaks a
- * preset fails this suite instead of erroring in the user's browser.
- */
 describe('PresetService', () => {
   let service: PresetService;
 
@@ -21,7 +15,6 @@ describe('PresetService', () => {
     service = new PresetService(builder);
   });
 
-  /** No connection may reference a node id that isn't in the graph. */
   function expectNoDanglingConnections(project: ArchitectureProject): void {
     const nodeIds = new Set(project.nodes.map((n) => n.id));
     for (const conn of project.connections) {

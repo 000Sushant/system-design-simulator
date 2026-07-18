@@ -7,12 +7,6 @@ import { ArchitectureConnection, ArchitectureNode, HealthStatus } from '../model
 const VALID_STATUSES: HealthStatus[] = ['normal', 'busy', 'overloaded', 'failing', 'offline'];
 const TICK_MS = 180;
 
-/**
- * Characterization tests for the deterministic traffic engine, driven through
- * its public lifecycle with fake timers. They assert structural invariants
- * (tick advances, statuses stay valid, metrics never go NaN, lifecycle
- * transitions) rather than exact per-tick numbers, which include randomness.
- */
 describe('SimulationService', () => {
   let sim: SimulationService;
   let factory: ArchitectureFactoryService;
@@ -28,7 +22,6 @@ describe('SimulationService', () => {
     vi.useRealTimers();
   });
 
-  /** A minimal but valid client → ec2 graph. */
   function clientToEc2(): { nodes: ArchitectureNode[]; connections: ArchitectureConnection[] } {
     const client = factory.createNode('client', 0, 0);
     const ec2 = factory.createNode('ec2', 300, 0);
@@ -74,7 +67,6 @@ describe('SimulationService', () => {
     const originalStatus = nodes[1].status;
     sim.start(nodes, connections);
     vi.advanceTimersByTime(TICK_MS * 2);
-    // The engine works on its own copies; the input array’s nodes are untouched.
     expect(nodes[1].status).toBe(originalStatus);
   });
 
@@ -120,8 +112,6 @@ describe('SimulationService', () => {
       const connections = [connect(client, cdn), connect(cdn, ecs)];
       const demand = sim.estimateDemand([client, cdn, ecs], connections);
       expect(demand.get(cdn.id)).toBe(1000);
-      // Only the 20% cache misses reach the origin, further shaped by the
-      // engine's 0.72 CDN edge factor (mirrors propagateNodeOutput).
       expect(demand.get(ecs.id)).toBeCloseTo(1000 * 0.2 * 0.72, 5);
     });
 
@@ -144,11 +134,6 @@ describe('SimulationService', () => {
     });
   });
 
-  /**
-   * Golden test: locks in the exact per-tick node metrics for a fixed graph.
-   * The metrics path is deterministic when no client uses Variable Traffic, so
-   * this snapshot catches any behavioral drift while step() is refactored.
-   */
   it('matches the recorded metrics for a fixed graph after 10 ticks', () => {
     const client = factory.createNode('client', 0, 0);
     const ec2 = factory.createNode('ec2', 300, 0);

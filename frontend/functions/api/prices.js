@@ -1,12 +1,4 @@
-/**
- * Cloudflare Pages Function: GET /api/prices?region={code}
- *
- * Serves pre-generated regional pricing JSON from the AWS_PRICING_KV namespace.
- * Served same-origin as the app, so no CORS headers are needed.
- */
 
-// Matches AWS region codes (e.g. us-east-1, ap-southeast-1, us-gov-east-1).
-// Restricting the charset keeps arbitrary input out of the KV key lookup.
 const REGION_PATTERN = /^[a-z0-9-]{1,32}$/;
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 const DEFAULT_REGION = 'us-east-1';
@@ -27,7 +19,6 @@ export async function onRequest(context) {
   }
 
   if (!context.env.AWS_PRICING_KV) {
-    // Misconfiguration: log for the operator, return a generic message to the client.
     console.error("[prices] KV binding 'AWS_PRICING_KV' is not configured.");
     return jsonResponse({ error: 'Pricing service is temporarily unavailable.' }, 503);
   }
@@ -48,7 +39,6 @@ export async function onRequest(context) {
 
     return new Response(rawData, { headers: { ...JSON_HEADERS, 'X-Cache': 'KV_PAGES_FUNCTION' } });
   } catch (err) {
-    // Never echo raw error details back to the client.
     console.error(`[prices] KV read failed for ${regionCode}:`, err);
     return jsonResponse({ error: 'Failed to read pricing data.' }, 500);
   }

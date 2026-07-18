@@ -1,8 +1,3 @@
-/**
- * Typed test fixtures. Building full domain objects by hand is noisy, so these
- * factories fill the required fields with neutral defaults and accept overrides.
- * Only used by *.spec.ts files (never imported by the app).
- */
 import {
   ArchitectureConnection,
   ArchitectureNode,
@@ -97,6 +92,7 @@ export function makeDefinition(
     color: '#000000',
     icon: '',
     iconUrl: '',
+    glyphUrl: '',
     ports: [],
     defaults: { ...ZERO_CONFIG },
     behavior: {

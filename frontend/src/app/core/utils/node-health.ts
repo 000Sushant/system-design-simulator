@@ -7,25 +7,15 @@ import {
 export interface NodeHealth {
   tone: 'success' | 'warning' | 'error' | 'neutral';
   message: string;
-  /** Short label for compact UI (badges/tooltips). */
   short?: string;
-  /** When true, the architecture cannot be simulated until this is fixed. */
   blocksRun?: boolean;
 }
 
-/**
- * Derives a node's health from its parameters, its connectivity (against the
- * service's behavior contract), and its current runtime status. Pure and
- * deterministic — the component supplies the live connections and the service
- * definition. Static/structural errors set `blocksRun`; runtime statuses
- * (busy/overloaded/offline) do not, so the user can re-run to tune.
- */
 export function evaluateNodeHealth(
   node: ArchitectureNode,
   connections: ArchitectureConnection[],
   definition: AwsServiceDefinition,
 ): NodeHealth {
-  // Parameter-level validation before connectivity checks.
   if (node.type === 'elb') {
     const count = node.config?.['count'];
     const numCount = count !== undefined && count !== null && count !== '' ? Number(count) : 1;
@@ -61,8 +51,6 @@ export function evaluateNodeHealth(
     };
   }
 
-  // Fully isolated node where neither side is mandatory (e.g. IAM/KMS placed
-  // standalone): a soft warning instead of letting it pass silently.
   if (inputs === 0 && outputs === 0) {
     return {
       tone: 'warning',
@@ -87,8 +75,6 @@ export function evaluateNodeHealth(
     };
   }
 
-  // Runtime statuses persist after a run stops, so these stay as they were
-  // during the run. They are NOT blocksRun, so the user can re-run to tune.
   if (node.status === 'offline' || node.status === 'failing') {
     return {
       tone: 'error',

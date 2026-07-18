@@ -5,7 +5,6 @@ import { GraphBuilderService } from './graph-builder.service';
 
 @Injectable({ providedIn: 'root' })
 export class PresetService {
-  // Constructor DI (not inject()) so unit tests can construct with `new`.
   constructor(private readonly graphBuilder: GraphBuilderService) {}
 
   private toLayout(rows: Array<[string, AwsServiceType, string, number, number]>): ReferenceNode[] {
@@ -33,19 +32,16 @@ export class PresetService {
       ['monitoring', 'cloudWatch', 'Monitoring', 800, 720],
     ]);
     const edges: Array<[string, string]> = [
-      // Edge & authentication
       ['users', 'dns'],
       ['users', 'auth'],
       ['dns', 'cdn'],
       ['dns', 'wsApi'],
       ['cdn', 'storage'],
-      // WebSocket connection lifecycle ($connect / $disconnect, presence)
       ['auth', 'connFn'],
       ['wsApi', 'connFn'],
       ['connFn', 'presence'],
       ['connFn', 'messages'],
       ['connFn', 'monitoring'],
-      // Message send path (persist, look up presence, fan-out, stream)
       ['wsApi', 'msgFn'],
       ['msgFn', 'messages'],
       ['msgFn', 'presence'],
@@ -53,12 +49,10 @@ export class PresetService {
       ['msgFn', 'push'],
       ['msgFn', 'stream'],
       ['msgFn', 'monitoring'],
-      // Asynchronous fan-out & delivery workers
       ['push', 'deliveryQueue'],
       ['deliveryQueue', 'workers'],
       ['workers', 'messages'],
       ['workers', 'monitoring'],
-      // Message stream → archive & search
       ['stream', 'archive'],
       ['archive', 'storage'],
       ['stream', 'search'],

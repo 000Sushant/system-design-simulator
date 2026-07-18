@@ -42,12 +42,8 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     { id: 'legal', name: 'Legal & Policies', icon: 'fas fa-gavel' },
   ];
 
-  // Version history. v1.1 / v1.2 mirror the README changelog; v1.0 is the
-  // foundational release derived from the README's core "Key Highlights".
   readonly releaseNotes: ReleaseNote[] = RELEASE_NOTES;
 
-  // Rendered at the foot of the Release Notes view. Sr. Architect is open
-  // source; these are the ways people can help it grow.
   readonly contributionWays = [
     {
       icon: 'fas fa-bullseye',
@@ -156,10 +152,35 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       if (categoryParam && this.categories.some(c => c.id === categoryParam)) {
         this.activeCategoryId = categoryParam;
         this.selectedServiceType = null;
+        this.updateTitleAndMeta();
+        this.isManualScrolling = true;
+        setTimeout(() => this.scrollToCategorySection(categoryParam), 60);
+        return;
       } else {
         this.selectedServiceType = null;
       }
       this.updateTitleAndMeta();
+    }
+  }
+
+  private scrollToCategorySection(id: string): void {
+    const shell = this.el.nativeElement.querySelector('.docs-shell');
+    if (id === 'overview') {
+      shell?.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => (this.isManualScrolling = false), 800);
+      return;
+    }
+    const targetSection = this.el.nativeElement.querySelector(`#section-${id}`);
+    if (targetSection && shell) {
+      const shellRect = shell.getBoundingClientRect();
+      const targetRect = targetSection.getBoundingClientRect();
+      const scrollTop = shell.scrollTop;
+      const targetTop = targetRect.top + scrollTop - shellRect.top - 88;
+
+      shell.scrollTo({ top: targetTop, behavior: 'smooth' });
+      setTimeout(() => (this.isManualScrolling = false), 800);
+    } else {
+      this.isManualScrolling = false;
     }
   }
 
@@ -222,7 +243,6 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     const rawSvg =
       custom?.illustrationSvg || this.buildServiceIllustration(defaultInfo, connectedTargets);
 
-    // Bottleneck model (what limits this service and whether it throttles or fails).
     const bnRaw = (serviceBottleneckData as any)[type];
     const bottleneck =
       bnRaw && bnRaw.summary
@@ -244,9 +264,6 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       practicalExample: docData.practicalScenario || '',
       keyCapabilities: docData.keyCharacteristics || [],
       useCases: docData.commonIntegrationPatterns || [],
-      // SAFE: rawSvg is build-time-static — either a hand-authored illustration
-      // from the serviceDocs map or buildServiceIllustration() output derived
-      // from static service definitions. It must never carry user input.
       illustrationSvg: this.sanitizer.bypassSecurityTrustHtml(rawSvg),
       bottleneck,
     };
@@ -346,7 +363,6 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     const rawData: any = awsServicesConfig;
     const services = rawData.services || (rawData.default && rawData.default.services) || [];
 
-    // Find this service rules
     const thisService = services.find((s: any) => s.type === type);
     this.rules =
       thisService?.rules?.map((r: any) => {
@@ -359,7 +375,6 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
         };
       }) || [];
 
-    // Find outbound services
     const allowedTargets = thisService?.rules?.map((r: any) => r.target) || [];
     const outboundList = services
       .filter((s: any) => allowedTargets.includes(s.type))
@@ -369,7 +384,6 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       })
       .slice(0, 4);
 
-    // Find inbound services
     const inboundList = services
       .filter((s: any) => {
         return s.rules?.some((r: any) => r.target === type);
@@ -580,31 +594,10 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     this.updateTitleAndMeta();
     this.isManualScrolling = true;
 
-    const performScroll = () => {
-      const shell = this.el.nativeElement.querySelector('.docs-shell');
-      if (id === 'overview') {
-        shell.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(() => (this.isManualScrolling = false), 800);
-      } else {
-        const targetSection = this.el.nativeElement.querySelector(`#section-${id}`);
-        if (targetSection && shell) {
-          const shellRect = shell.getBoundingClientRect();
-          const targetRect = targetSection.getBoundingClientRect();
-          const scrollTop = shell.scrollTop;
-          const targetTop = targetRect.top + scrollTop - shellRect.top - 88;
-
-          shell.scrollTo({ top: targetTop, behavior: 'smooth' });
-          setTimeout(() => (this.isManualScrolling = false), 800);
-        } else {
-          this.isManualScrolling = false;
-        }
-      }
-    };
-
     if (wasServiceOpen) {
-      setTimeout(performScroll, 50);
+      setTimeout(() => this.scrollToCategorySection(id), 50);
     } else {
-      performScroll();
+      this.scrollToCategorySection(id);
     }
   }
 
@@ -617,16 +610,12 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
     shell?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /** Back returns to wherever docs was opened from: the playground if the user
-   *  came from there, otherwise the landing page. The origin is stashed in
-   *  sessionStorage by the opener (survives docs' own internal URL updates). */
   goBack(): void {
     const target = sessionStorage.getItem('docsOrigin') === '/playground' ? '/playground' : '/';
     window.history.pushState(null, '', target);
     window.dispatchEvent(new Event('popstate'));
   }
 
-  /** The logo always returns to the landing page. */
   goHome(event: Event): void {
     event.preventDefault();
     window.history.pushState(null, '', '/');

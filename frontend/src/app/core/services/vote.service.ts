@@ -11,11 +11,6 @@ export type VoteChoice = 'up' | 'down' | null;
 
 const MY_VOTES_KEY = 'sds.challengeVotes';
 
-/**
- * Reads/writes per-challenge thumbs up/down tallies from the Cloudflare Worker
- * (D1-backed). The user's own choice is remembered locally so a click can
- * toggle or switch, and the server only ever receives a -1/0/+1 delta.
- */
 @Injectable({ providedIn: 'root' })
 export class VoteService {
   private readonly talliesSubject = new BehaviorSubject<Record<string, VoteTally>>({});
@@ -23,7 +18,6 @@ export class VoteService {
 
   private myVotes: Record<string, VoteChoice> = this.loadMyVotes();
 
-  /** Votes are only available when a Worker base URL is configured. */
   get enabled(): boolean {
     return !!environment.votesApiBase;
   }
@@ -36,7 +30,6 @@ export class VoteService {
     return this.talliesSubject.value[challengeId] ?? { up: 0, down: 0 };
   }
 
-  /** Loads all tallies from the Worker. Silent no-op on failure. */
   async load(): Promise<void> {
     if (!this.enabled) return;
     try {
@@ -44,14 +37,9 @@ export class VoteService {
       if (!res.ok) return;
       this.talliesSubject.next((await res.json()) as Record<string, VoteTally>);
     } catch {
-      // Offline / not deployed yet — leave tallies empty.
     }
   }
 
-  /**
-   * Registers a vote. Toggles off if the same direction is clicked again, or
-   * switches sides. Updates optimistically, then reconciles with the server.
-   */
   async vote(challengeId: string, direction: 'up' | 'down'): Promise<void> {
     if (!this.enabled) return;
 
@@ -62,7 +50,6 @@ export class VoteService {
     const downDelta = (next === 'down' ? 1 : 0) - (prev === 'down' ? 1 : 0);
     if (upDelta === 0 && downDelta === 0) return;
 
-    // Optimistic local update.
     const current = this.tally(challengeId);
     this.patchTally(challengeId, {
       up: Math.max(0, current.up + upDelta),
@@ -82,7 +69,6 @@ export class VoteService {
         this.patchTally(challengeId, { up: body.up, down: body.down });
       }
     } catch {
-      // Keep the optimistic value; a later load() will reconcile.
     }
   }
 
@@ -105,7 +91,6 @@ export class VoteService {
     try {
       localStorage.setItem(MY_VOTES_KEY, JSON.stringify(this.myVotes));
     } catch {
-      // ignore quota errors
     }
   }
 }

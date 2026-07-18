@@ -1,18 +1,3 @@
-/**
- * cost-benchmark.harness.spec.ts
- *
- * NOT a unit test — a benchmark harness that drives the real CostService to
- * compute an organizational reference architecture's monthly bill per region,
- * twice:
- *   1. with the simulator's live Cloudflare KV pricing (what users see), and
- *   2. with that same pricing corrected to today's official AWS Price List API
- *      values (from scripts/benchmark-kv-accuracy.mjs results).
- *
- * The delta between the two is the architecture-level cost accuracy.
- *
- * Only runs when BM_KV_DIR / BM_RESULTS_DIR / BM_OUT env vars are set, so
- * `npm test` is unaffected. Delete this file after the benchmark if desired.
- */
 import { describe, it } from 'vitest';
 import { readFileSync, readdirSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
@@ -26,9 +11,6 @@ const RESULTS_DIR = process.env['BM_RESULTS_DIR'];
 const OUT = process.env['BM_OUT'];
 const enabled = Boolean(KV_DIR && RESULTS_DIR && OUT);
 
-/** Organizational reference architecture — node types with catalog-default
- *  configs (the simulator's own defaults; no invented numbers). Multi-tier
- *  web + data + messaging + ops, the shape of a mid-size org's production VPC. */
 const ORG_ARCHITECTURE: AwsServiceType[] = [
   'client',
   'route53',
@@ -57,8 +39,6 @@ const ORG_ARCHITECTURE: AwsServiceType[] = [
   'cloudTrail',
 ];
 
-/** deep get/set that tolerate dots inside keys (instance types) by trying the
- *  longest key join first at every level. */
 function deepGet(obj: any, path: string): any {
   const parts = path.split('.');
   let cur = obj;
@@ -97,7 +77,7 @@ function deepSet(obj: any, path: string, value: number): boolean {
         i = j;
         break;
       }
-      if (j === i + 1) return false; // no key matched at this level
+      if (j === i + 1) return false;
     }
   }
   return false;
@@ -117,7 +97,6 @@ describe.skipIf(!enabled)('cost-accuracy benchmark roll-up', () => {
       const regionCode: string = results.regionCode;
       const kvDoc = JSON.parse(readFileSync(resolve(KV_DIR!, `${regionCode}.json`), 'utf8'));
 
-      // Corrected pricing: KV overlaid with today's official API values.
       const corrected = JSON.parse(JSON.stringify(kvDoc));
       let applied = 0;
       let applyFailures: string[] = [];

@@ -23,7 +23,6 @@ const emptyMetrics: ServiceMetrics = {
 
 @Injectable({ providedIn: 'root' })
 export class ArchitectureFactoryService {
-  // Constructor DI (not inject()) so unit tests can construct with `new`.
   constructor(private readonly catalog: AwsCatalogService) {}
 
   createNode(type: AwsServiceType, x: number, y: number): ArchitectureNode {

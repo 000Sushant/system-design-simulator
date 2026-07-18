@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import worker from './index';
 import { Env } from './types';
 
-// ─── Minimal fakes for the Cloudflare bindings the fetch handler touches ──────
 
 class FakeKV {
   store = new Map<string, string>();

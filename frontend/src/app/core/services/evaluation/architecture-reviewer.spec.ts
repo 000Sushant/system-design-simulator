@@ -34,7 +34,7 @@ describe('RubricReviewer', () => {
       },
     });
     const result = reviewer.review(graph, challenge);
-    expect(result.score).toBe(50); // 1 of 2 standard weight
+    expect(result.score).toBe(50);
     expect(result.passed).toBe(false);
     expect(result.findings.find((f) => f.message === 'Has cache')?.severity).toBe('fail');
     expect(result.findings.find((f) => f.message === 'Has cache')?.fixHint).toBe('add cache');
@@ -51,7 +51,7 @@ describe('RubricReviewer', () => {
       },
     });
     const result = reviewer.review(graph, challenge);
-    expect(result.score).toBe(200); // optional check is not in the standard denominator
+    expect(result.score).toBe(200);
     expect(result.passed).toBe(true);
     expect(result.findings.find((f) => f.message.includes('Has DB'))?.severity).toBe('pass');
   });

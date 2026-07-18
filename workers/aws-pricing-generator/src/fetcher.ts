@@ -1,28 +1,19 @@
 import { AwsClient } from 'aws4fetch';
 import { BedrockTokenRates, RawPriceResult } from './types';
 
-/** Milliseconds between consecutive AWS Pricing API calls. 200ms = 5 req/sec (well under 10/sec limit). */
 const RATE_LIMIT_DELAY_MS = 200;
 
-/** Extra wait after a ThrottlingException before retrying. */
 const THROTTLE_BACKOFF_MS = 3000;
 
-/** AWS Pricing API base URL (global endpoint, us-east-1 only). */
 const PRICING_ENDPOINT = 'https://api.pricing.us-east-1.amazonaws.com/';
 
 type Filter = { Type: 'TERM_MATCH'; Field: string; Value: string };
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Extracts the single highest unit price from an AWS GetProducts result item.
- * Selects the maximum across all priceDimensions so free-tier tiers don't
- * mask the standard rate.
- */
 export function extractMaxPrice(raw: string): number | null {
   try {
     return extractMaxPriceParsed(JSON.parse(raw));
@@ -31,7 +22,6 @@ export function extractMaxPrice(raw: string): number | null {
   }
 }
 
-/** Same as extractMaxPrice but for an already-parsed price list item. */
 export function extractMaxPriceParsed(parsed: any): number | null {
   const onDemand = parsed?.terms?.OnDemand;
   if (!onDemand) return null;
@@ -45,11 +35,6 @@ export function extractMaxPriceParsed(parsed: any): number | null {
   return max >= 0 ? max : null;
 }
 
-/**
- * Among all returned price list items, pick the one satisfying `predicate`,
- * then extract the max price. Strict: returns null when nothing matches, so
- * a wrong product is never priced silently (the baseline is used instead).
- */
 export function extractMatchingPrice(
   result: RawPriceResult,
   predicate: (parsed: any) => boolean,
@@ -63,12 +48,10 @@ export function extractMatchingPrice(
   return match === undefined ? null : extractMaxPrice(match);
 }
 
-// ─── Main fetcher class ─────────────────────────────────────────────────────
 
 export class PricingFetcher {
   private aws: AwsClient;
   private callCount = 0;
-  /** Timestamp (ms) at which the next API call may launch. */
   private nextSlotAt = 0;
 
   constructor(accessKeyId: string, secretAccessKey: string) {
@@ -80,18 +63,10 @@ export class PricingFetcher {
     });
   }
 
-  /** Pricing API calls made so far — counts against the per-invocation subrequest limit. */
   get calls(): number {
     return this.callCount;
   }
 
-  /**
-   * Reserves the next launch slot, keeping call STARTS spaced
-   * RATE_LIMIT_DELAY_MS apart even when callers run concurrently. The
-   * reservation is synchronous (nextSlotAt is bumped before awaiting), so
-   * parallel callers each get a distinct slot instead of serializing on the
-   * full round-trip.
-   */
   private async reserveSlot(): Promise<void> {
     const slot = Math.max(Date.now(), this.nextSlotAt);
     this.nextSlotAt = slot + RATE_LIMIT_DELAY_MS;
@@ -99,13 +74,11 @@ export class PricingFetcher {
     if (wait > 0) await sleep(wait);
   }
 
-  /** Pushes the launch schedule back after a throttle so pending callers also back off. */
   private backOff(): Promise<void> {
     this.nextSlotAt = Math.max(this.nextSlotAt, Date.now() + THROTTLE_BACKOFF_MS);
     return sleep(THROTTLE_BACKOFF_MS);
   }
 
-  // ── Low-level query ──────────────────────────────────────────────────────
 
   private async query(
     serviceCode: string,
@@ -114,7 +87,6 @@ export class PricingFetcher {
     maxResults = 25,
     rawPredicate?: (raw: string) => boolean
   ): Promise<number | null> {
-    // Enforce rate limit before every call
     await this.reserveSlot();
     this.callCount++;
 
@@ -131,12 +103,11 @@ export class PricingFetcher {
       });
 
       if (resp.status === 429 || resp.status === 400) {
-        // 429 = ThrottlingException; 400 can also be used for throttling
         const text = await resp.text();
         if (!retried && (text.includes('ThrottlingException') || text.includes('Rate exceeded'))) {
           console.warn(`[Fetcher] Throttled on call #${this.callCount} (${serviceCode}). Backing off ${THROTTLE_BACKOFF_MS}ms...`);
           await this.backOff();
-          return attempt(true); // single retry
+          return attempt(true);
         }
         console.warn(`[Fetcher] HTTP ${resp.status} for ${serviceCode}:`, text.slice(0, 200));
         return null;
@@ -161,12 +132,6 @@ export class PricingFetcher {
     }
   }
 
-  /**
-   * Fetches ALL price list items matching `filters`, following NextToken
-   * pagination (100 items/page, capped at `maxPages` to bound subrequests).
-   * Returns parsed items; a failed page ends pagination with what was
-   * collected so far rather than discarding earlier pages.
-   */
   private async queryBulk(
     serviceCode: string,
     filters: Filter[],
@@ -222,7 +187,7 @@ export class PricingFetcher {
       if (!result) break;
       for (const raw of result.PriceList ?? []) {
         if (rawFilter && !rawFilter(raw)) continue;
-        try { items.push(JSON.parse(raw)); } catch { /* skip malformed item */ }
+        try { items.push(JSON.parse(raw)); } catch { }
       }
       nextToken = result.NextToken;
       if (!nextToken) break;
@@ -230,22 +195,7 @@ export class PricingFetcher {
     return items;
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Amazon Bedrock
-  //
-  // Two offer files cover Bedrock model pricing:
-  //  - AmazonBedrock: 1P + openly-licensed models (Nova, Titan, Llama,
-  //    Mistral, DeepSeek, ...) with rich attributes; token prices are $/1K.
-  //  - AmazonBedrockFoundationModels: marketplace-listed models (modern
-  //    Claude, Cohere, AI21, Writer, ...) identified only by `servicename`;
-  //    token prices are $/1M.
-  // ────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Standard-tier on-demand TEXT token rates from the AmazonBedrock offer,
-   * keyed by the `model` (or `titanModel`) attribute. Prices are $ per 1K
-   * tokens. Excludes flex/priority/batch tiers and non-text modalities.
-   */
   async bedrockOnDemand(regionName: string): Promise<BedrockTokenRates> {
     const IN_RE = /^(input tokens|text input tokens?)$/i;
     const OUT_RE = /^(output tokens|text output tokens?)$/i;
@@ -272,14 +222,7 @@ export class PricingFetcher {
     return rates;
   }
 
-  /**
-   * Standard-tier on-demand token rates from the marketplace
-   * (AmazonBedrockFoundationModels) offer, keyed by `servicename`. Prices
-   * are $ per 1M tokens. Prefers regional SKUs; falls back to global
-   * (cross-region) SKUs for models only offered that way in a region.
-   */
   async bedrockMarketplace(regionName: string): Promise<BedrockTokenRates> {
-    // [direction, priority (0 = regional preferred, 1 = global fallback), usagetype suffix]
     const SUFFIXES: Array<['in' | 'out', 0 | 1, string]> = [
       ['in',  0, '_InputTokenCount-Units'],
       ['in',  0, '_input_tokens_standard-Units'],
@@ -322,9 +265,6 @@ export class PricingFetcher {
     return rates;
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // EC2
-  // ────────────────────────────────────────────────────────────────────────
 
   ec2Instance(regionName: string, instanceType: string): Promise<number | null> {
     return this.query('AmazonEC2', [
@@ -362,9 +302,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // RDS
-  // ────────────────────────────────────────────────────────────────────────
 
   rdsInstance(regionName: string, instanceType: string, engine = 'MySQL'): Promise<number | null> {
     const filters = [
@@ -378,8 +315,6 @@ export class PricingFetcher {
     } else {
       filters.push({ Type: 'TERM_MATCH' as const, Field: 'licenseModel', Value: 'No license required' });
     }
-    // Pin the plain instance-hour SKU: the same filters also match RDS
-    // Extended Support surcharge SKUs.
     return this.query('AmazonRDS', filters, p => {
       const ut = String(p.product?.attributes?.usagetype ?? '');
       return ut.includes('InstanceUsage') && !ut.includes('ExtendedSupport');
@@ -394,14 +329,8 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Aurora
-  // ────────────────────────────────────────────────────────────────────────
 
   auroraInstance(regionName: string, instanceType: string): Promise<number | null> {
-    // Pin the Aurora Standard SKU (usagetype "InstanceUsage:<type>"); the same
-    // filters also match the pricier I/O-Optimized SKU ("InstanceUsageIOOptimized:").
-    // The simulator applies ioOptimizedComputeMultiplier separately.
     return this.query('AmazonRDS', [
       { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
       { Type: 'TERM_MATCH', Field: 'instanceType',     Value: instanceType },
@@ -421,14 +350,8 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // ElastiCache
-  // ────────────────────────────────────────────────────────────────────────
 
   elastiCacheInstance(regionName: string, instanceType: string): Promise<number | null> {
-    // Pin the plain node-hour SKU ("NodeUsage:<type>"); the same filters also
-    // match Extended Support surcharges ("ExtendedSupportYr3-NodeUsage:") and
-    // AWS Outposts SKUs ("Outpost-NodeUsage:").
     return this.query('AmazonElastiCache', [
       { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
       { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
@@ -460,9 +383,6 @@ export class PricingFetcher {
     return instances;
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // ECS Fargate
-  // ────────────────────────────────────────────────────────────────────────
 
   ecsFargateCpu(regionName: string): Promise<number | null> {
     return this.query('AmazonECS', [
@@ -516,9 +436,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Lambda
-  // ────────────────────────────────────────────────────────────────────────
 
   lambdaRequests(regionName: string): Promise<number | null> {
     return this.query('AWSLambda', [
@@ -539,9 +456,6 @@ export class PricingFetcher {
     });
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // S3
-  // ────────────────────────────────────────────────────────────────────────
 
   s3Storage(regionName: string, volumeType: string): Promise<number | null> {
     return this.query('AmazonS3', [
@@ -551,9 +465,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // ELB
-  // ────────────────────────────────────────────────────────────────────────
 
   elbHourly(regionName: string): Promise<number | null> {
     return this.query('AWSELB', [
@@ -596,8 +507,6 @@ export class PricingFetcher {
   }
 
   clbHourly(regionName: string): Promise<number | null> {
-    // The CLB hourly SKU no longer carries the old groupDescription value;
-    // select by usagetype instead.
     return this.query('AWSELB', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Load Balancer' },
@@ -636,9 +545,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // NAT Gateway
-  // ────────────────────────────────────────────────────────────────────────
 
   natGatewayHourly(regionName: string): Promise<number | null> {
     return this.query('AmazonEC2', [
@@ -658,13 +564,7 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // DynamoDB
-  // ────────────────────────────────────────────────────────────────────────
 
-  // The bare group filter matches BOTH the on-demand request-unit SKU and the
-  // provisioned capacity-unit-hour SKU, in nondeterministic order per region.
-  // readM/writeM are on-demand request prices, so pin PayPerRequestThroughput.
   dynamoDbRead(regionName: string): Promise<number | null> {
     return this.query('AmazonDynamoDB', [
       { Type: 'TERM_MATCH', Field: 'location',  Value: regionName },
@@ -689,9 +589,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // OpenSearch
-  // ────────────────────────────────────────────────────────────────────────
 
   openSearchInstance(regionName: string, instanceType: string): Promise<number | null> {
     return this.query('AmazonES', [
@@ -701,7 +598,6 @@ export class PricingFetcher {
   }
 
   openSearchStorage(regionName: string): Promise<number | null> {
-    // GP3 is the baseline semantic (us-east-1 gp3 = $0.122/GB-mo).
     return this.query('AmazonES', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Amazon OpenSearch Service Volume' },
@@ -709,9 +605,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Redshift
-  // ────────────────────────────────────────────────────────────────────────
 
   redshiftInstance(regionName: string, instanceType: string): Promise<number | null> {
     return this.query('AmazonRedshift', [
@@ -722,8 +615,6 @@ export class PricingFetcher {
   }
 
   redshiftServerless(regionName: string): Promise<number | null> {
-    // The operation also matches capacity-reservation SKUs (e.g. $2,430/RPU-Hr
-    // upfront). Pin the plain on-demand ServerlessUsage SKU.
     return this.query('AmazonRedshift', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Serverless' },
@@ -731,15 +622,7 @@ export class PricingFetcher {
     ], p => String(p.product?.attributes?.usagetype ?? '').endsWith(':ServerlessUsage'), 100);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // EMR
-  // ────────────────────────────────────────────────────────────────────────
 
-  /**
-   * All-in EMR node cost = EC2 Linux on-demand + EMR service fee.
-   * The ElasticMapReduce service code prices only the EMR fee (~25% of the
-   * EC2 rate), while the simulator bills the full node.
-   */
   async emrInstance(regionName: string, instanceType: string): Promise<number | null> {
     const fee = await this.query('ElasticMapReduce', [
       { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
@@ -750,9 +633,6 @@ export class PricingFetcher {
     return ec2 === null ? null : ec2 + fee;
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // MSK
-  // ────────────────────────────────────────────────────────────────────────
 
   mskInstance(regionName: string, instanceType: string): Promise<number | null> {
     const family = instanceType.replace('kafka.', '');
@@ -763,9 +643,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Amazon MQ
-  // ────────────────────────────────────────────────────────────────────────
 
   mqInstance(regionName: string, instanceType: string): Promise<number | null> {
     const type = instanceType.replace('mq.', '');
@@ -777,9 +654,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Route 53 (global — no location filter)
-  // ────────────────────────────────────────────────────────────────────────
 
   route53Zone(): Promise<number | null> {
     return this.query('AmazonRoute53', [
@@ -796,9 +670,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Glue
-  // ────────────────────────────────────────────────────────────────────────
 
   glueDpu(regionName: string): Promise<number | null> {
     return this.query('AWSGlue', [
@@ -807,9 +678,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Kinesis Data Streams
-  // ────────────────────────────────────────────────────────────────────────
 
   kinesisShardHour(regionName: string): Promise<number | null> {
     return this.query('AmazonKinesis', [
@@ -825,9 +693,6 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // EFS
-  // ────────────────────────────────────────────────────────────────────────
 
   efsStorage(regionName: string, storageClass: string): Promise<number | null> {
     if (storageClass === 'Standard') {
@@ -836,17 +701,12 @@ export class PricingFetcher {
         { Type: 'TERM_MATCH', Field: 'storageClass', Value: 'General Purpose' },
       ], p => (p.product?.attributes?.usagetype || '').includes('TimedStorage'));
     }
-    // IA: the AWS pricing page quotes the Elastic-Throughput IA SKU (-ET),
-    // not the legacy bursting IA SKU (which is ~55% pricier).
     return this.query('AmazonEFS', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Storage' },
     ], p => (p.product?.attributes?.usagetype || '').endsWith('IATimedStorage-ET-ByteHrs'), 100);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // CloudFront (per-region pricing for data transfer out)
-  // ────────────────────────────────────────────────────────────────────────
 
   cloudfrontDtOut(regionName: string): Promise<number | null> {
     return this.query('AmazonCloudFront', [
@@ -855,13 +715,7 @@ export class PricingFetcher {
     ]);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // API Gateway
-  // ────────────────────────────────────────────────────────────────────────
 
-  /** Returns the REST first-tier price PER REQUEST (e.g. 0.0000035 in us-east-1).
-   *  The productFamily also contains HTTP-API and $0 SKUs, so the REST request
-   *  SKU is pinned by usagetype. Callers must scale ×1,000,000 for per-million. */
   apiGatewayRest(regionName: string): Promise<number | null> {
     return this.query('AmazonApiGateway', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
@@ -869,22 +723,13 @@ export class PricingFetcher {
     ], p => String(p.product?.attributes?.usagetype ?? '').endsWith('ApiGatewayRequest'), 100);
   }
 
-  // ────────────────────────────────────────────────────────────────────────
-  // Data Transfer Out (Internet Egress)
-  // ────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Fetches the standard internet egress price per GB for a given region.
-   * Uses AWSDataTransfer service with fromLocation = region name, toLocation = External.
-   * Falls back to a region-group estimate if the API returns null.
-   */
   async dataTransferOut(regionName: string): Promise<number | null> {
     const price = await this.query('AWSDataTransfer', [
       { Type: 'TERM_MATCH', Field: 'fromLocation', Value: regionName },
       { Type: 'TERM_MATCH', Field: 'toLocation',   Value: 'External' },
       { Type: 'TERM_MATCH', Field: 'transferType', Value: 'AWS Outbound' },
     ], (p: any) => {
-      // Prefer the primary standard tier (not free tier at 0.00)
       const dim = Object.values(p.terms?.OnDemand ?? {}) as any[];
       if (!dim.length) return false;
       const dims = Object.values(dim[0]?.priceDimensions ?? {}) as any[];
@@ -893,10 +738,8 @@ export class PricingFetcher {
 
     if (price !== null) return price;
 
-    // Fallback: regional group estimates (standard AWS pricing tiers)
     if (regionName.startsWith('South America')) return 0.15;
     if (regionName.startsWith('Asia Pacific') || regionName.startsWith('Middle East') || regionName.startsWith('Africa')) return 0.11;
-    // US, Canada, EU
     return 0.09;
   }
 
@@ -930,9 +773,6 @@ export class PricingFetcher {
       const ut: string = a.usagetype ?? '';
       const price = extractMaxPriceParsed(item);
       if (price === null) continue;
-      // On-demand SKUs share group "OnDemand" and are distinguished by
-      // usagetype; EFO/retention SKUs have their own groups (verified against
-      // the live us-east-1 offer, 2026-07-10).
       if (group === 'Provisioned shard hour') result.shardHour = price;
       else if (group === 'Payload Units') result.putM = price * 1_000_000;
       else if (group === 'OnDemand' && ut.endsWith('OnDemand-StreamHour')) result.onDemandStreamHour = price;
@@ -963,10 +803,6 @@ export class PricingFetcher {
       if (price === null) continue;
 
       const ut: string = a.usagetype ?? '';
-      // Group/operation/usagetype combinations verified against the live
-      // us-east-1 offer (2026-07-10). IA request SKUs use the same
-      // PayPerRequestThroughput operation as standard; PITR/backup/restore/
-      // export SKUs carry no group or operation, only a usagetype.
       if (group === 'DDB-ReadUnits' && operation === 'PayPerRequestThroughput') {
         result.std.readM = price * 1_000_000;
       } else if (group === 'DDB-WriteUnits' && operation === 'PayPerRequestThroughput') {
@@ -1023,17 +859,12 @@ export class PricingFetcher {
       const price = extractMaxPriceParsed(item);
       if (price === null) continue;
 
-      // Serverless SKUs sit in group "Serverless" with KafkaServerless-*
-      // usagetypes; broker storage / tiered / Express storage are usagetype-
-      // only (verified against the live us-east-1 offer, 2026-07-10).
       if (group === 'Broker') {
         if (computeFamily) {
           result.instances[`kafka.${computeFamily}`] = price;
         }
       } else if (group === 'ExpressBroker') {
         if (computeFamily) {
-          // Express SKUs already carry the "express." prefix in computeFamily
-          // (e.g. "express.m7g.large"), unlike plain Broker SKUs.
           const key = computeFamily.startsWith('express.') ? computeFamily : `express.${computeFamily}`;
           result.expressInstances[key] = price;
         }
@@ -1066,9 +897,6 @@ export class PricingFetcher {
       const price = extractMaxPriceParsed(item);
       if (price === null) continue;
 
-      // SKUs are identified by group + plain usagetype (no :TechCue/:Shot
-      // segment suffixes, no per-API operation attributes) — verified against
-      // the live us-east-1 offer, 2026-07-10. imageM is $ per 1M images.
       if (group === 'Rekognition Image API Requests' && /(^|-)ImagesProcessed$/.test(ut) && !ut.includes('ImageProperties')) {
         result.imageM = price * 1_000_000;
       } else if (group === 'Rekognition Video API Requests - Archived Content' && ut.endsWith('MinsOfArchVideoProcessed')) {
@@ -1082,14 +910,6 @@ export class PricingFetcher {
     return result;
   }
 
-  /**
-   * ElastiCache Serverless rates per engine, from the single
-   * "ElastiCache Serverless" product family (verified us-east-1, 2026-07-10):
-   *   CachedData:{Engine}                → $/GB-hour of cached data
-   *   ElastiCacheProcessingUnits:{Engine} → $/ECPU (stored as $/million ECPUs)
-   * Returns { redis: { storageGBHour, ecpuM }, valkey: {...} } with only the
-   * values actually found.
-   */
   async elastiCacheServerless(regionName: string): Promise<Record<string, Record<string, number>>> {
     const items = await this.queryBulk('AmazonElastiCache', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
@@ -1150,9 +970,6 @@ export class PricingFetcher {
     ], p => {
       const u = p.product?.attributes?.usagetype ?? '';
       const inst = p.product?.attributes?.instancetype ?? '';
-      // Standard SKU usagetype ends with plain "BuildDuration"; Large16GB /
-      // Xlarge72GB SKUs end with "BuildDuration-Large16GB" / "-XLarge72GB",
-      // so match on the instancetype attribute instead.
       return u.includes('BuildDuration') && inst === instanceType;
     });
   }
@@ -1175,9 +992,7 @@ export class PricingFetcher {
     });
   }
 
-  // ── Amazon SES ───────────────────────────────────────────────────────────
 
-  /** $/recipient for outbound SendEmail. Regional usagetype is "Recipients" or "<PFX>-Recipients". */
   async sesOutboundEmail(regionName: string): Promise<number | null> {
     return this.query('AmazonSES', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
@@ -1185,7 +1000,6 @@ export class PricingFetcher {
     ], p => /(^|-)Recipients$/.test(p.product?.attributes?.usagetype ?? ''), 100);
   }
 
-  /** $/message received. Excludes the per-chunk SKU that shares the product family. */
   async sesInboundEmail(regionName: string): Promise<number | null> {
     return this.query('AmazonSES', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
@@ -1207,16 +1021,13 @@ export class PricingFetcher {
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('DIP-Hours'), 100);
   }
 
-  /** VDM outbound processing $/email. Tiered SKU — extractMaxPrice picks the tier-0 (highest) rate. */
   async sesVdm(regionName: string): Promise<number | null> {
     return this.query('AmazonSES', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('Recipients-VirtDelivMgr'), 100);
   }
 
-  // ── Amazon DocumentDB ────────────────────────────────────────────────────
 
-  /** Instance-hour rate. Standard usagetype "InstanceUsage:db.x"; I/O-Optimized "InstanceUsageIOOptimized:db.x". */
   async docDbInstance(regionName: string, instanceType: string, ioOptimized = false): Promise<number | null> {
     return this.query('AmazonDocDB', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
@@ -1238,7 +1049,6 @@ export class PricingFetcher {
     }, 100);
   }
 
-  /** $/IO — callers scale ×1,000,000 for the per-million rate. */
   async docDbIo(regionName: string): Promise<number | null> {
     return this.query('AmazonDocDB', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
@@ -1246,7 +1056,6 @@ export class PricingFetcher {
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('StorageIOUsage'), 100);
   }
 
-  // ── Amazon Neptune ───────────────────────────────────────────────────────
 
   async neptuneInstance(regionName: string, instanceType: string): Promise<number | null> {
     return this.query('AmazonNeptune', [
@@ -1268,7 +1077,6 @@ export class PricingFetcher {
     }, 100);
   }
 
-  /** $/IO — callers scale ×1,000,000 for the per-million rate. */
   async neptuneIo(regionName: string): Promise<number | null> {
     return this.query('AmazonNeptune', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
@@ -1276,7 +1084,6 @@ export class PricingFetcher {
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('StorageIOUsage'), 100);
   }
 
-  // ── Amazon Timestream ────────────────────────────────────────────────────
 
   async timestreamIngest(regionName: string): Promise<number | null> {
     return this.query('AmazonTimestream', [
@@ -1300,18 +1107,12 @@ export class PricingFetcher {
   }
 
   async timestreamScanned(regionName: string): Promise<number | null> {
-    // The productFamily for scanned-query billing varies by region, so match on
-    // usagetype alone. The predicate is still strict (only a DataScanned-Bytes SKU
-    // is accepted, never a wrong one), so this only ever helps find it — if the
-    // region genuinely doesn't expose it, the baseline is used.
     return this.query('AmazonTimestream', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('DataScanned-Bytes'), 100);
   }
 
-  // ── AWS AppConfig (billed under the AWSSystemsManager offer) ────────────
 
-  /** $/request — callers scale ×1,000,000 for the per-million rate. */
   async appConfigRequests(regionName: string): Promise<number | null> {
     return this.query('AWSSystemsManager', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
@@ -1324,7 +1125,6 @@ export class PricingFetcher {
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('AppConfig-Deployments'), 100);
   }
 
-  // ── AWS Cloud Map ────────────────────────────────────────────────────────
 
   async cloudMapResource(regionName: string): Promise<number | null> {
     return this.query('AWSCloudMap', [
@@ -1332,7 +1132,6 @@ export class PricingFetcher {
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('Cloud-Map-Resources'), 100);
   }
 
-  /** $/call — callers scale ×1,000,000. Excludes the DIR-prefixed duplicate SKU. */
   async cloudMapQuery(regionName: string): Promise<number | null> {
     return this.query('AWSCloudMap', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName }
@@ -1342,7 +1141,6 @@ export class PricingFetcher {
     }, 100);
   }
 
-  // ── Amazon QuickSight ────────────────────────────────────────────────────
 
   async quickSightAuthorPro(regionName: string): Promise<number | null> {
     return this.query('AmazonQuickSight', [
@@ -1368,15 +1166,7 @@ export class PricingFetcher {
     ], p => (p.product?.attributes?.usagetype ?? '').endsWith('QS-Enterprise-SPICE'), 100, raw => raw.includes('QS-Enterprise-SPICE'));
   }
 
-  // ── Amazon Lightsail ─────────────────────────────────────────────────────
 
-  /**
-   * Hourly rates for the Linux dual-stack (IPv4) instance bundles, keyed by
-   * bundle RAM size (e.g. "2GB"). One bulk scan of the "Lightsail Instance"
-   * family resolves every size; general-purpose bundle usagetypes end with
-   * "BundleUsage:<size>" — the regex excludes _IPv6/_win variants and the
-   * Compute/Memory-optimized families whose usagetype embeds a different prefix.
-   */
   async lightsailBundles(regionName: string, sizes: string[]): Promise<Record<string, number | null>> {
     const items = await this.queryBulk('AmazonLightsail', [
       { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
@@ -1391,10 +1181,6 @@ export class PricingFetcher {
     return out;
   }
 
-  /**
-   * $/GB for data transfer out beyond the bundle allowance. The overage SKUs
-   * carry data-transfer attributes (`fromLocation`), not `location`.
-   */
   async lightsailOverage(regionName: string): Promise<number | null> {
     return this.query('AmazonLightsail', [
       { Type: 'TERM_MATCH', Field: 'fromLocation', Value: regionName },

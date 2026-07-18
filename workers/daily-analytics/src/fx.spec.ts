@@ -65,7 +65,7 @@ describe('refreshFxRates', () => {
 describe('maybeRefreshFxRates', () => {
   it('is a no-op when the refresh interval has not elapsed', async () => {
     const { env, kv } = makeEnv();
-    kv.store.set('fx:lastRun', String(Date.now())); // just ran
+    kv.store.set('fx:lastRun', String(Date.now()));
     await maybeRefreshFxRates(env);
     expect(fetchSpy).not.toHaveBeenCalled();
   });

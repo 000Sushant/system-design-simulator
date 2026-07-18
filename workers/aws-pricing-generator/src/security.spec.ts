@@ -9,7 +9,6 @@ import {
 } from './security';
 import { Env } from './types';
 
-/** Builds a minimal Env with only the fields the security helpers read. */
 function env(partial: Partial<Env> = {}): Env {
   return partial as Env;
 }

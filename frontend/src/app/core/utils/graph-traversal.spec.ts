@@ -21,7 +21,6 @@ describe('downstreamNodeIds', () => {
 
   it('follows direction only (does not walk edges backward)', () => {
     const conns = [makeConn('a', 'b'), makeConn('c', 'b')];
-    // From b there are no outgoing edges, so nothing is downstream.
     expect(downstreamNodeIds('b', conns).size).toBe(0);
   });
 

@@ -1,20 +1,3 @@
-/**
- * Safe evaluator for the `visibleIf` predicates declared in the service
- * cost-model JSON. Replaces a former `new Function(...)` call, which was a
- * code-injection vector (CWE-95) and forced `unsafe-eval` in the CSP.
- *
- * The supported grammar is intentionally tiny — exactly what the data uses:
- *
- *   expr    := orExpr
- *   orExpr  := andExpr ( '||' andExpr )*
- *   andExpr := atom ( '&&' atom )*
- *   atom    := '!' 'config.'<key>
- *            | 'config.'<key> ( ('===' | '!==' | '==' | '!=') <literal> )?
- *   literal := 'single' | "double" | true | false | null | <number>
- *
- * Unparseable expressions fail open (return `true`) so a malformed rule never
- * hides a field — preserving the previous runtime behaviour.
- */
 
 export type ConfigRecord = Record<string, unknown>;
 
@@ -79,7 +62,6 @@ function parseLiteral(token: string): unknown {
   throw new Error(`Unsupported visibleIf literal: "${token}"`);
 }
 
-/** Splits on a top-level binary operator (`||`/`&&`), ignoring quoted spans. */
 function splitTopLevel(expr: string, operator: '||' | '&&'): string[] {
   const parts: string[] = [];
   let quote: "'" | '"' | null = null;

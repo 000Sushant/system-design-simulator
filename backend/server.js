@@ -1,33 +1,21 @@
-/**
- * Pricing Backend — Static KV Reader
- *
- * Serves pre-generated regional pricing JSON files from Cloudflare KV.
- * Does NOT call AWS Pricing API or AWS SDK at runtime.
- *
- * Cloudflare KV is populated weekly by the Cloudflare Worker in /worker.
- * See /worker/src/index.ts for details.
- */
 
 const express = require('express');
-const cors    = require('cors');
-const helmet  = require('helmet');
-const dotenv  = require('dotenv');
-const fs      = require('fs');
-const path    = require('path');
+const cors = require('cors');
+const helmet = require('helmet');
+const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
 const { SUPPORTED_REGIONS } = require('./regions');
 
-// ── Load credentials from .env (local dev only) ─────────────────────────────
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-// ── Config ───────────────────────────────────────────────────────────────────
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Cloudflare KV REST API credentials
-const CF_ACCOUNT_ID      = process.env.CF_ACCOUNT_ID      || '';
+const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID || '';
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID || '';
-const CF_API_TOKEN       = process.env.CF_API_TOKEN        || '';
+const CF_API_TOKEN = process.env.CF_API_TOKEN || '';
 
 function isKVConfigured() {
   return !!(
@@ -39,8 +27,6 @@ function isKVConfigured() {
 
 const CF_KV_BASE = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values`;
 
-// Comma-separated list of origins allowed to call this API.
-// Defaults to the local Angular dev server when unset.
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:4200')
   .split(',')
   .map((o) => o.trim())
@@ -49,7 +35,6 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:4200')
 app.use(helmet());
 app.use(cors({
   origin(origin, callback) {
-    // Allow same-origin / non-browser callers (no Origin header).
     if (!origin || ALLOWED_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
@@ -58,7 +43,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Bounds abuse of the KV/filesystem-backed endpoints below (per-IP).
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 60,
@@ -67,36 +51,24 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-// ── In-memory cache (session-scoped, avoids repeated KV reads) ───────────────
-/** @type {Map<string, {data: object, cachedAt: number}>} */
 const memCache = new Map();
-const MEM_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const MEM_CACHE_TTL_MS = 60 * 60 * 1000;
 
-// ── KV read helper ────────────────────────────────────────────────────────────
 
-/**
- * Fetches a regional pricing file from Cloudflare KV.
- * Returns null if the region key does not exist in KV.
- * @param {string} regionCode
- * @returns {Promise<object|null>}
- */
 async function getPricingFromKV(regionCode) {
-  // 1. Check in-memory cache
   const cached = memCache.get(regionCode);
   if (cached && (Date.now() - cached.cachedAt) < MEM_CACHE_TTL_MS) {
     console.log(`[server] 🟢 Memory cache HIT for: ${regionCode}`);
     return cached.data;
   }
 
-  // 2. Validate CF credentials are configured
   if (!isKVConfigured()) {
     console.warn('[server] ⚠️  Cloudflare KV credentials not configured or placeholder in .env.');
     return null;
   }
 
-  // 3. Fetch from Cloudflare KV REST API
   const kvKey = `pricing:${regionCode}`;
-  const url   = `${CF_KV_BASE}/${encodeURIComponent(kvKey)}`;
+  const url = `${CF_KV_BASE}/${encodeURIComponent(kvKey)}`;
 
   console.log(`[server] 🔵 Fetching from Cloudflare KV: ${kvKey}`);
 
@@ -119,7 +91,6 @@ async function getPricingFromKV(regionCode) {
 
     const data = await response.json();
 
-    // 4. Store in memory cache
     memCache.set(regionCode, { data, cachedAt: Date.now() });
     console.log(`[server] ✅ Showing pricing for region: ${regionCode} (source: Cloudflare KV)`);
     return data;
@@ -130,20 +101,10 @@ async function getPricingFromKV(regionCode) {
   }
 }
 
-// ── Routes ────────────────────────────────────────────────────────────────────
 
-/**
- * GET /api/prices?region={regionCode}
- *
- * Returns pre-generated pricing data for the requested region.
- * - 200: pricing JSON from KV
- * - 404: { unsupportedRegion: true, regionCode } if not yet generated
- * - 503: if KV credentials are misconfigured
- */
 app.get('/api/prices', async (req, res) => {
   const regionCode = (req.query.region || 'us-east-1').trim().toLowerCase();
 
-  // 0. Reject unknown region codes before any KV / filesystem lookup.
   if (!SUPPORTED_REGIONS.has(regionCode)) {
     return res.status(404).json({
       unsupportedRegion: true,
@@ -152,7 +113,6 @@ app.get('/api/prices', async (req, res) => {
     });
   }
 
-  // 1. If it's us-east-1, serve the local us-east-1.json file directly from frontend src folder to avoid duplicates
   if (regionCode === 'us-east-1') {
     const localFilePath = path.join(__dirname, '..', 'frontend', 'src', 'app', 'core', 'data', 'regions', 'us-east-1.json');
     if (fs.existsSync(localFilePath)) {
@@ -167,11 +127,9 @@ app.get('/api/prices', async (req, res) => {
     }
   }
 
-  // 2. Fetch from Cloudflare KV for other regions (or as fallback for us-east-1 if local file is missing)
   const data = await getPricingFromKV(regionCode);
 
   if (data === null) {
-    // If KV is not configured, return 404 so frontend behaves gracefully
     if (!isKVConfigured()) {
       return res.status(404).json({
         unsupportedRegion: true,
@@ -191,18 +149,13 @@ app.get('/api/prices', async (req, res) => {
   res.json(data);
 });
 
-/**
- * GET /api/status
- * Shows which regions are available in the in-memory cache (proxy indicator).
- */
 app.get('/api/status', (_req, res) => {
   res.json({
     cachedRegions: [...memCache.keys()],
-    kvConfigured:  isKVConfigured(),
+    kvConfigured: isKVConfigured(),
   });
 });
 
-// ── Start ─────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
   console.log(`[server] 🚀 Pricing backend listening on port ${PORT}`);

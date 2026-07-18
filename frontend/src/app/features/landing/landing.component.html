@@ -207,53 +207,9 @@
         </div>
         
         <div class="tc-body">
-          <div class="tc-visual-bay">
-            <div class="tcv-graphic">
-              <svg class="tc-viz" viewBox="0 0 132 132" role="img" aria-label="PulseFlow behavior simulation pulse waveform">
-                <defs>
-                  <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0" stop-color="#c084fc" stop-opacity="0" />
-                    <stop offset="0.5" stop-color="#c084fc" stop-opacity="1" />
-                    <stop offset="1" stop-color="#8b5cf6" stop-opacity="1" />
-                  </linearGradient>
-                  <linearGradient id="pulseGradSecondary" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0" stop-color="#22d3ee" stop-opacity="0" />
-                    <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.4" />
-                    <stop offset="1" stop-color="#3b82f6" stop-opacity="0.6" />
-                  </linearGradient>
-                  <linearGradient id="waveformAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.22" />
-                    <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0" />
-                  </linearGradient>
-                  <pattern id="pulseGrid" width="12" height="12" patternUnits="userSpaceOnUse">
-                    <line x1="0" y1="0" x2="12" y2="0" stroke-width="0.75" />
-                    <line x1="0" y1="0" x2="0" y2="12" stroke-width="0.75" />
-                  </pattern>
-                  <filter id="waveGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="2.5" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-                <rect width="132" height="132" fill="url(#pulseGrid)" rx="16" class="viz-grid-bg" />
-                <line class="viz-baseline" x1="8" y1="66" x2="124" y2="66" />
-                <path class="viz-pulse-area" fill="url(#waveformAreaGrad)"
-                  d="M8 66 H40 L48 66 L54 34 L62 96 L68 66 H86 L94 48 L100 82 L106 66 H124 V114 H8 Z" />
-                <path class="viz-pulse-secondary" stroke="url(#pulseGradSecondary)"
-                  d="M8 66 H36 L44 66 L50 46 L58 84 L64 66 H82 L88 54 L94 76 L100 66 H124" />
-                <path class="viz-pulse-ghost" filter="url(#waveGlow)"
-                  d="M8 66 H40 L48 66 L54 34 L62 96 L68 66 H86 L94 48 L100 82 L106 66 H124" />
-                <path class="viz-pulse" stroke="url(#pulseGrad)"
-                  d="M8 66 H40 L48 66 L54 34 L62 96 L68 66 H86 L94 48 L100 82 L106 66 H124" />
-                <circle class="viz-pulse-dot" r="3.5" cx="8" cy="66" />
-              </svg>
-            </div>
-            <div class="tcv-readout">
-              <span class="tc-value">180ms</span>
-              <span class="tc-value-label">PulseFlow Tick Speed</span>
-            </div>
+          <div class="tc-metric-hero">
+            <span class="tc-value">180ms</span>
+            <span class="tc-value-label">PulseFlow Tick Speed</span>
           </div>
           
           <div class="tc-info">
@@ -282,7 +238,7 @@
         </div>
         
         <div class="tc-footer">
-          <a class="tc-cta" href="/benchmarks?report=engine-deep-dive" (click)="openReport('engine-deep-dive', $event)">
+          <a class="cta-button primary" href="/benchmarks?report=engine-deep-dive" (click)="openReport('engine-deep-dive', $event)">
             <span>Engine Deep Dive</span>
             <i class="fas fa-arrow-right"></i>
           </a>
@@ -305,34 +261,9 @@
         </div>
         
         <div class="tc-body">
-          <div class="tc-visual-bay">
-            <div class="tcv-graphic">
-              <svg class="tc-viz" viewBox="0 0 132 132" role="img" aria-label="AWS Price List API match radial gauge">
-                <defs>
-                  <linearGradient id="gaugeGrad" x1="0" y1="1" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#22d3ee" />
-                    <stop offset="100%" stop-color="#06b6d4" />
-                  </linearGradient>
-                  <filter id="gaugeGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-                <circle class="viz-dial-scale" cx="66" cy="66" r="59" fill="none" stroke-width="1.5" stroke-dasharray="3 6" />
-                <circle class="viz-track" cx="66" cy="66" r="50" />
-                <circle class="viz-track-dots" cx="66" cy="66" r="42" fill="none" stroke-width="1" stroke-dasharray="1.5 3" />
-                <circle class="viz-fill viz-fill-gauge" cx="66" cy="66" r="50" stroke="url(#gaugeGrad)"
-                  filter="url(#gaugeGlow)" transform="rotate(-90 66 66)" />
-                <text class="viz-num" x="66" y="74">92.4%</text>
-              </svg>
-            </div>
-            <div class="tcv-readout">
-              <span class="tc-value">92.4%</span>
-              <span class="tc-value-label">Billing Coverage</span>
-            </div>
+          <div class="tc-metric-hero">
+            <span class="tc-value">92.4%</span>
+            <span class="tc-value-label">Billing Coverage</span>
           </div>
           
           <div class="tc-info">
@@ -361,38 +292,12 @@
         </div>
         
         <div class="tc-footer">
-          <a class="tc-cta" href="/benchmarks?report=cost-audit" (click)="openReport('cost-audit', $event)">
+          <a class="cta-button primary" href="/benchmarks?report=cost-audit" (click)="openReport('cost-audit', $event)">
             <span>Cost Accuracy Report</span>
             <i class="fas fa-arrow-right"></i>
           </a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section class="creator-card glass-panel">
-    <div class="creator-glow" aria-hidden="true"></div>
-    <div class="creator-avatar">SK</div>
-    <div class="creator-copy">
-      <span class="section-kicker">Creator</span>
-      <h2>Made with <span class="beating-heart">❤️</span> by Sushant Kumar</h2>
-      <p>
-        Backend-focused full stack engineer obsessed with cloud architecture, scalable systems, and
-        building tools that make engineering feel alive.
-      </p>
-      <div class="creator-badges">
-        <span>Open Source</span>
-        <span>GNU GPLv3 Licensed</span>
-        <span>Contributions Welcome</span>
-      </div>
-    </div>
-    <div class="social-links">
-      @for (link of socialLinks; track link) {
-      <a [href]="link.href" target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)">
-        <i [class]="link.icon"></i>{{ link.label }}
-      </a>
-      }
     </div>
   </section>
 
@@ -448,60 +353,70 @@
       and helps keep things running.
     </p>
     <div class="hero-actions center">
+      <button type="button" class="cta-button primary" (click)="scrollToModes()"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span>Launch Sr. Architect</span>
+      </button>
       <a class="cta-button primary sponsor-cta" href="https://github.com/sponsors/000Sushant" target="_blank"
         rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
         <i class="fas fa-heart"></i>
-        <span>Sponsor on GitHub</span>
+        <span>Sponsor</span>
       </a>
+      <a class="cta-button primary contribute-btn"
+        href="https://github.com/000Sushant/system-design-simulator/blob/main/CONTRIBUTING.md" target="_blank"
+        rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
     </div>
     <p class="sponsor-note">
       Every contribution funds development, pricing accuracy, and new features.
     </p>
   </section>
 
-  <section class="final-cta glass-panel">
-    <span class="section-kicker">Start now</span>
-    <h2>Watch your next architecture come alive before it ships.</h2>
-    <div class="hero-actions center">
-      <button type="button" class="cta-button primary" (click)="launch.emit('architect')"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-        <span>Launch Sr. Architect</span>
-      </button>
-      <a class="cta-button primary github-btn" href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Explore GitHub</span></a>
-      <a class="cta-button primary contribute-btn" href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
-    </div>
-  </section>
-
   <footer class="landing-footer">
-    <div class="footer-brand">
-      <img class="footer-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="38" height="38" />
-      <div class="footer-brand-text">
-        <span class="footer-name">Sr<span class="brand-dot">.</span> Architect</span>
-        <span class="footer-tag">See your architecture before you ship it.</span>
+
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-brand-row">
+          <img class="footer-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="42" height="42" />
+          <div class="footer-brand-text">
+            <span class="footer-name">Sr<span class="brand-dot">.</span> Architect</span>
+            <span class="footer-tag">See your architecture before you ship it.</span>
+          </div>
+        </div>
+        <p class="footer-credit-text">
+          Made with <span class="beating-heart">❤️</span> by <strong>Sushant Kumar</strong>, a backend-focused
+          full stack engineer building tools that make engineering feel alive.
+        </p>
+        <div class="footer-social social-links">
+          @for (link of socialLinks; track link) {
+          <a [href]="link.href" target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+            (mouseleave)="onButtonMouseLeave($event)">
+            <i [class]="link.icon"></i>{{ link.label }}
+          </a>
+          }
+        </div>
       </div>
+
+      <nav class="footer-columns" aria-label="Footer">
+        <div class="footer-col">
+          <span class="footer-col-title">Product</span>
+          <a href="/docs" (click)="openDocs($event)">Docs</a>
+          <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer">Sponsor</a>
+        </div>
+        <div class="footer-col">
+          <span class="footer-col-title">Legal</span>
+          <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Disclaimer</a>
+          <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Privacy Policy</a>
+          <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Terms &amp; Conditions</a>
+        </div>
+      </nav>
     </div>
-    <nav class="footer-links" aria-label="Footer">
-      <a href="/docs" (click)="openDocs($event)">Docs</a>
-      <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Disclaimer</a>
-      <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Privacy Policy</a>
-      <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Terms & Conditions</a>
-      <a
-        href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank"
-        rel="noopener noreferrer"
-        >GitHub</a
-      >
-      <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer"
-        >Sponsor</a
-      >
-    </nav>
-    <p class="footer-copy">
-      © 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.
-    </p>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">
+        © 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.
+      </p>
+    </div>
   </footer>
 
   <!-- Mobile back-to-top -->

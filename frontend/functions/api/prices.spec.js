@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { onRequest } from './prices.js';
 
-/** Minimal KV fake; `throwOnGet` simulates a KV read failure. */
 function fakeKv(entries = {}, throwOnGet = false) {
   const store = new Map(Object.entries(entries));
   return {
@@ -61,7 +60,6 @@ describe('prices Pages function', () => {
   });
 
   it('returns a generic 500 on KV failure without leaking error details', async () => {
-    // The function logs the underlying error server-side; silence it in the test.
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const res = await onRequest(context('us-east-1', { AWS_PRICING_KV: fakeKv({}, true) }));
     errSpy.mockRestore();

@@ -29,15 +29,11 @@ export class LandingComponent implements OnInit, OnDestroy {
   @Output() launch = new EventEmitter<'developer' | 'architect' | undefined>();
   @ViewChild('shell', { static: true }) shellRef!: ElementRef<HTMLElement>;
 
-  /** Live project stats from the Worker. Null until loaded; hidden if it stays null. */
   liveStats: { icon: string; value: string; label: string }[] | null = null;
   githubStars: string | null = null;
 
   ngOnInit(): void {
     this.loadLiveStats();
-    // Attach the scroll listener outside Angular so the pill's collapse/expand
-    // transition isn't fighting a full change-detection pass on every frame.
-    // We only re-enter Angular (and trigger CD) on the frame a bound flag flips.
     this.zone.runOutsideAngular(() => {
       this.shellRef.nativeElement.addEventListener('scroll', this.onScrollBound, { passive: true });
     });
@@ -54,14 +50,12 @@ export class LandingComponent implements OnInit, OnDestroy {
         const res = await fetch(`${base}/stats`);
         if (res.ok) {
           const s = await res.json();
-          // Only show the strip once there is something real to show.
           if (s && (s.stars || s.clones || s.visitors)) {
             this.liveStats = this.toStats(s);
             return;
           }
         }
       } catch {
-        // Network/Worker unavailable: fall through to the dev fallback below.
       }
     }
     const host = window.location.hostname;
@@ -112,7 +106,6 @@ export class LandingComponent implements OnInit, OnDestroy {
   showBackToTop = false;
 
   private handleScroll(): void {
-    // rAF-coalesce: at most one read per frame regardless of scroll event rate.
     if (this.scrollTicking) return;
     this.scrollTicking = true;
     requestAnimationFrame(() => {
@@ -120,9 +113,7 @@ export class LandingComponent implements OnInit, OnDestroy {
       const top = this.shellRef.nativeElement.scrollTop;
       const navScrolled = top > 60;
       const showBackToTop = top > 400;
-      // Nothing bound changed -> stay outside Angular, no change detection.
       if (navScrolled === this.navScrolled && showBackToTop === this.showBackToTop) return;
-      // A flag flipped -> re-enter Angular so the template updates the class.
       this.zone.run(() => {
         this.navScrolled = navScrolled;
         this.showBackToTop = showBackToTop;
@@ -136,7 +127,6 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   openDocs(event: Event, queryParams: string = '') {
     event.preventDefault();
-    // Record origin so the docs "Back" button returns here.
     sessionStorage.setItem('docsOrigin', '/');
     window.history.pushState(null, '', queryParams ? `/docs${queryParams}` : '/docs');
     window.dispatchEvent(new Event('popstate'));
@@ -144,7 +134,6 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   openReport(reportId: string, event: Event) {
     event?.preventDefault();
-    // Record origin so the reports page "Back" button returns to the landing page.
     sessionStorage.setItem('docsOrigin', '/');
     window.history.pushState(null, '', `/benchmarks?report=${reportId}`);
     window.dispatchEvent(new Event('popstate'));
@@ -156,16 +145,13 @@ export class LandingComponent implements OnInit, OnDestroy {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    // Relative coordinates from center (-1 to 1)
     const rx = (x - rect.width / 2) / (rect.width / 2);
     const ry = (y - rect.height / 2) / (rect.height / 2);
 
-    // Max rotation in degrees
     const maxRotation = 6;
     const tiltX = -ry * maxRotation;
     const tiltY = rx * maxRotation;
 
-    // Shift shadows slightly
     const shadowX = rx * 8;
     const shadowY = ry * 8;
 
@@ -195,7 +181,6 @@ export class LandingComponent implements OnInit, OnDestroy {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    // fallback: find first mode-section
     const section = shell.querySelector('.mode-section') as HTMLElement | null;
     if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -266,7 +251,7 @@ export class LandingComponent implements OnInit, OnDestroy {
     {
       label: 'Email',
       icon: 'fa fa-envelope',
-      href: 'mailto:[000susahntkumar@gmail.com]',
+      href: 'mailto:000sushantkumar@gmail.com',
     },
     {
       label: 'LinkedIn',
@@ -306,7 +291,7 @@ export class LandingComponent implements OnInit, OnDestroy {
     },
     {
       id: 'architect' as const,
-      badge: 'Design + Cost Analytics',
+      badge: 'Architecture Cost Analytics',
       title: 'Architect',
       description:
         'Model production grade systems with 70+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.',
@@ -320,6 +305,7 @@ export class LandingComponent implements OnInit, OnDestroy {
         'Accurate per service monthly estimates',
         'Stress test production workloads',
         'Granular performance tuning',
+        'Cost estimates in 5 currencies',
       ],
     },
   ];

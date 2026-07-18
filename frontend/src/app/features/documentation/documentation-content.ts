@@ -1,10 +1,5 @@
 import { DocArticle, ReleaseNote, ServiceDoc } from './documentation.types';
 
-/**
- * Per-service documentation content (text + inline SVG illustrations) shown in
- * the docs UI. Extracted verbatim from DocumentationComponent so the component
- * stays presentation logic and this stays editable content/data.
- */
 export const SERVICE_DOCS: Record<
   string,
   Partial<Omit<ServiceDoc, 'illustrationSvg'>> & { illustrationSvg?: string }
@@ -3787,7 +3782,6 @@ export const SERVICE_DOCS: Record<
   },
 };
 
-/** Version history shown on the Release Notes tab. */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
     version: '1.3.1',
@@ -3975,9 +3969,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
   },
 ];
 
-/** Long-form documentation articles grouped by category. */
 export const ARTICLES: DocArticle[] = [
-  // --- OVERVIEW ---
   {
     id: 'ov-intro',
     title: 'What is Sr. Architect?',
@@ -4218,7 +4210,6 @@ export const ARTICLES: DocArticle[] = [
       '</ul>',
     ],
   },
-  // --- GETTING STARTED ---
   {
     id: 'gs-builder',
     title: 'Guided Visual Builder',
@@ -4284,7 +4275,6 @@ export const ARTICLES: DocArticle[] = [
     ],
   },
 
-  // --- SIMULATOR CORE ---
   {
     id: 'sim-flow',
     title: 'Real-Time Traffic flow',
@@ -4337,7 +4327,6 @@ export const ARTICLES: DocArticle[] = [
     ],
   },
 
-  // --- FORMULAS & CALCULATIONS ---
   {
     id: 'formula-engine',
     title: 'The 180ms Heartbeat',
@@ -4456,7 +4445,6 @@ export const ARTICLES: DocArticle[] = [
     ],
   },
 
-  // --- COST DYNAMICS ---
   {
     id: 'cost-estimation',
     title: 'Regional Costs & Multipliers',
@@ -4473,7 +4461,6 @@ export const ARTICLES: DocArticle[] = [
       '</ul>',
     ],
   },
-  // --- LEGAL & POLICIES ---
   {
     id: 'legal-disclaimer',
     title: 'Disclaimer',

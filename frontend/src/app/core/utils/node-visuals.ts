@@ -1,12 +1,11 @@
 import { ArchitectureConnection, HealthStatus } from '../models/architecture.model';
 
-/** Health status → node badge/border color. Single source for these hues. */
 export const HEALTH_STATUS_COLOR: Record<HealthStatus, string> = {
   normal: '#16a34a',
-  busy: '#d97706', // amber — nearing capacity (warning)
-  overloaded: '#dc2626', // red — past capacity, treated as an error
+  busy: '#d97706',
+  overloaded: '#dc2626',
   failing: '#dc2626',
-  offline: '#dc2626', // red when stopped/offline
+  offline: '#dc2626',
 };
 
 const EDGE_COLOR = {
@@ -26,19 +25,13 @@ export function statusColor(status: HealthStatus): string {
   return HEALTH_STATUS_COLOR[status];
 }
 
-/** Edge color from its live traffic, falling back to a theme-aware idle hue. */
 export function connectionColor(connection: ArchitectureConnection, isDark: boolean): string {
   const { errorRate, intensity } = connection.traffic;
   if (errorRate > EDGE_ERROR_RATE_THRESHOLD) return EDGE_COLOR.error;
   if (intensity > EDGE_BUSY_INTENSITY_THRESHOLD) return EDGE_COLOR.busy;
-  // Idle edge stays legible: dark ink on light theme, light slate on dark.
   return isDark ? EDGE_COLOR.idleDark : EDGE_COLOR.idleLight;
 }
 
-/**
- * Human-readable latency: ms under 1s, seconds under 1 min, then "Xm Ys".
- * Keeps overloaded nodes legible as latency climbs from ms into minutes.
- */
 export function formatLatency(ms: number | null | undefined): string {
   const value = Math.max(0, Math.round(Number(ms) || 0));
   if (value < MS_PER_SECOND) return `${value}ms`;

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// Votes are only enabled when a Worker base URL is configured.
 vi.mock('../../../environments/environment', () => ({
   environment: { votesApiBase: 'https://worker.test' },
 }));
@@ -14,7 +13,6 @@ interface FetchCall {
 
 let fetchCalls: FetchCall[];
 
-/** Installs a fetch stub that returns the given JSON bodies in call order. */
 function stubFetch(responses: Array<{ ok?: boolean; body?: unknown }>): void {
   let i = 0;
   fetchCalls = [];
@@ -102,10 +100,8 @@ describe('VoteService', () => {
     });
 
     it('never lets an optimistic tally go negative', async () => {
-      // No prior server tally, toggling off would compute up-1 → clamped at 0.
       stubFetch([{ body: { up: 1, down: 0 } }, { body: { up: 0, down: 0 } }]);
       await service.vote('c', 'up');
-      // Reset optimistic base by reading, then toggle off from up:1
       await service.vote('c', 'up');
       expect(service.tally('c').up).toBeGreaterThanOrEqual(0);
     });
