@@ -56,9 +56,3 @@ export function corsHeaders(request: Request, env: Env): Record<string, string> 
   }
   return headers;
 }
-
-
-export function clampDelta(value: unknown): number {
-  if (value === 1 || value === -1) return value;
-  return 0;
-}

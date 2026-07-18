@@ -13,52 +13,25 @@ class FakeKV {
   }
 }
 
-class FakeStatement {
-  constructor(private readonly db: FakeD1) {}
-  bind(): this {
-    return this;
-  }
-  async run(): Promise<{ success: boolean }> {
-    this.db.runCount++;
-    return { success: true };
-  }
-  async first<T>(): Promise<T | null> {
-    return this.db.firstResult as T | null;
-  }
-  async all<T>(): Promise<{ results: T[] }> {
-    return { results: this.db.allResults as T[] };
-  }
-}
-
-class FakeD1 {
-  runCount = 0;
-  firstResult: unknown = null;
-  allResults: unknown[] = [];
-  prepare(): FakeStatement {
-    return new FakeStatement(this);
-  }
-}
-
-function makeEnv(partial: Partial<Env> = {}): { env: Env; kv: FakeKV; db: FakeD1 } {
+function makeEnv(partial: Partial<Env> = {}): { env: Env; kv: FakeKV } {
   const kv = new FakeKV();
-  const db = new FakeD1();
-  const env = { AWS_PRICING_KV: kv, DB: db, ...partial } as unknown as Env;
-  return { env, kv, db };
+  const env = { AWS_PRICING_KV: kv, ...partial } as unknown as Env;
+  return { env, kv };
 }
 
 const ctx = { waitUntil: () => undefined, passThroughOnException: () => undefined } as unknown as ExecutionContext;
 
 function call(method: string, path: string, opts: { body?: unknown; headers?: Record<string, string> } = {}, envParts: Partial<Env> = {}) {
-  const { env, kv, db } = makeEnv(envParts);
+  const { env, kv } = makeEnv(envParts);
   const init: RequestInit = { method, headers: opts.headers };
   if (opts.body !== undefined) init.body = JSON.stringify(opts.body);
   const request = new Request(`https://worker.example${path}`, init);
-  return { promise: worker.fetch(request, env, ctx), kv, db, env };
+  return { promise: worker.fetch(request, env, ctx), kv, env };
 }
 
 describe('worker fetch routing', () => {
   it('answers CORS preflight (OPTIONS) with 204', async () => {
-    const { promise } = call('OPTIONS', '/votes', { headers: { Origin: 'http://localhost:4200' } });
+    const { promise } = call('OPTIONS', '/status', { headers: { Origin: 'http://localhost:4200' } });
     const res = await promise;
     expect(res.status).toBe(204);
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:4200');
@@ -89,38 +62,6 @@ describe('admin route protection (integration)', () => {
   it('POST /reset is 401 with a wrong token', async () => {
     const res = await (await call('POST', '/reset', { headers: { Authorization: 'Bearer nope' } }, { ADMIN_TOKEN: 'right' })).promise;
     expect(res.status).toBe(401);
-  });
-});
-
-describe('POST /votes validation', () => {
-  it('rejects invalid JSON with 400', async () => {
-    const { env } = makeEnv();
-    const request = new Request('https://worker.example/votes', { method: 'POST', body: '{bad json' });
-    const res = await worker.fetch(request, env, ctx);
-    expect(res.status).toBe(400);
-    expect((await res.json() as { error: string }).error).toMatch(/invalid json/i);
-  });
-
-  it('rejects a challengeId that fails the [a-z0-9-]{1,64} pattern', async () => {
-    const res = await (await call('POST', '/votes', { body: { challengeId: 'Bad_ID!', upDelta: 1 } })).promise;
-    expect(res.status).toBe(400);
-    expect((await res.json() as { error: string }).error).toMatch(/invalid challengeid/i);
-  });
-
-  it('rejects an empty vote (both deltas clamp to 0) with 400', async () => {
-    const res = await (await call('POST', '/votes', { body: { challengeId: 'valid-id', upDelta: 5, downDelta: 2 } })).promise;
-    expect(res.status).toBe(400);
-    expect((await res.json() as { error: string }).error).toMatch(/empty vote/i);
-  });
-
-  it('applies a valid vote and returns the updated tally', async () => {
-    const { promise, db } = call('POST', '/votes', { body: { challengeId: 'valid-id', upDelta: 1 } });
-    db.firstResult = { up: 3, down: 1 };
-    const res = await promise;
-    expect(res.status).toBe(200);
-    const body = await res.json() as { challengeId: string; up: number; down: number };
-    expect(body).toEqual({ challengeId: 'valid-id', up: 3, down: 1 });
-    expect(db.runCount).toBe(1);
   });
 });
 

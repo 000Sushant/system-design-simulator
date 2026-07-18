@@ -4,7 +4,6 @@ import {
   timingSafeEqual,
   allowedOrigins,
   corsHeaders,
-  clampDelta,
   DEFAULT_ALLOWED_ORIGINS,
 } from './security';
 import { Env } from './types';
@@ -102,26 +101,5 @@ describe('corsHeaders', () => {
   it('honours a custom ALLOWED_ORIGINS allowlist', () => {
     const headers = corsHeaders(req({ Origin: 'https://custom.app' }), env({ ALLOWED_ORIGINS: 'https://custom.app' }));
     expect(headers['Access-Control-Allow-Origin']).toBe('https://custom.app');
-  });
-});
-
-describe('clampDelta', () => {
-  it('passes through exactly 1 and -1', () => {
-    expect(clampDelta(1)).toBe(1);
-    expect(clampDelta(-1)).toBe(-1);
-  });
-
-  it('clamps any other number to 0', () => {
-    expect(clampDelta(0)).toBe(0);
-    expect(clampDelta(5)).toBe(0);
-    expect(clampDelta(-3)).toBe(0);
-    expect(clampDelta(0.5)).toBe(0);
-  });
-
-  it('clamps non-number inputs to 0', () => {
-    expect(clampDelta('1')).toBe(0);
-    expect(clampDelta(undefined)).toBe(0);
-    expect(clampDelta(null)).toBe(0);
-    expect(clampDelta({})).toBe(0);
   });
 });

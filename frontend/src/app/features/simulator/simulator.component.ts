@@ -48,6 +48,7 @@ import { CostService, CostBreakdown } from '../../core/services/cost.service';
 import { Currency } from '../../core/models/architecture.model';
 import serviceCostModelData from '../../core/data/service-cost-model.json';
 
+// Strip upper limits from client RPS config fields in-memory once on startup
 const clientPrimaryParams =
   (serviceCostModelData.serviceCostModel as any)['client']?.primaryParams || [];
 for (const field of clientPrimaryParams) {
@@ -91,6 +92,7 @@ interface PortSelection {
   port: ServicePort;
 }
 
+/** Deep-cloned canvas state captured for undo/redo. */
 interface CanvasSnapshot {
   nodes: ArchitectureNode[];
   connections: ArchitectureConnection[];
@@ -146,6 +148,9 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLDivElement>;
   @ViewChild('flowCanvas') flowCanvas?: FCanvasComponent;
 
+  // Modal focus management: move focus into a dialog when it opens and restore it on close.
+  // The refs live inside *ngIf overlays, so the setters fire on open (element present) and close
+  // (undefined). Dialogs are mutually exclusive, so a single stored return target is sufficient.
   private modalReturnFocus: HTMLElement | null = null;
   private runStatsTouchListener?: (e: Event) => void;
   @ViewChild('unsupportedCard') set unsupportedCard(ref: ElementRef<HTMLElement> | undefined) {
@@ -162,6 +167,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (ref) {
       const active = document.activeElement;
       this.modalReturnFocus = active instanceof HTMLElement ? active : null;
+      // Focus after the view settles so the element is present and laid out.
       setTimeout(() => ref.nativeElement.focus(), 0);
     } else if (this.modalReturnFocus) {
       this.modalReturnFocus.focus();
@@ -907,8 +913,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   showSaveLoader = false;
   showSaveSuccess = false;
   roleMode: 'developer' | 'architect' = 'architect';
+  /** Whether the navbar role-switcher dropdown is open. */
   roleMenuOpen = false;
 
+  /** Unsaved-work guard popup. Shown when leaving a non-empty canvas via a
+   *  mode switch, going to the homepage, or closing a tab. */
   leaveGuard: {
     action: 'switch' | 'home' | 'closeTab';
     title: string;
@@ -944,6 +953,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedConnectionIds: string[] = [];
   ctrlPressed = false;
 
+  // Keyboard-shortcuts panel. Auto-shown once for new visitors, reopenable via
+  // the "?" key or the thinking-cat button at any time.
   showHotkeys = false;
   private static readonly HOTKEYS_SEEN_KEY = 'sds.hotkeysSeen';
   readonly hotkeyGroups: {
@@ -977,12 +988,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     },
   ];
 
+  // Copy / paste buffer. Holds deep clones so later canvas edits never mutate it.
   private clipboard: {
     nodes: ArchitectureNode[];
     connections: ArchitectureConnection[];
   } | null = null;
   private pasteCount = 0;
 
+  // Undo / redo history (per active canvas). Snapshots are captured *before* a
+  // mutation, so undo restores the prior state. Rapid edits (slider drags, node
+  // drags) coalesce into one entry via a short time window + matching key.
   private readonly history = new HistoryStack<CanvasSnapshot>({
     limit: 60,
     coalesceWindowMs: 700,
@@ -990,6 +1005,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   advancedConfigExpanded = false;
   costEvaluationExpanded = false;
   public selectionTrigger = (event: any): boolean => {
+    // Support for Chrome, Edge, and Mac (Meta)
     const e = event.originalEvent || event;
     return !!(e.ctrlKey || e.metaKey || e.shiftKey);
   };
@@ -1016,8 +1032,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   private wasMobileViewport = false;
   private readonly onMobileViewportChange = (): void => this.updateMobileViewport();
 
+  /** Region code that was active before the user switched to an unsupported region */
   previousRegion = 'us-east-1';
+  /** Controls visibility of the unsupported region popup */
   showUnsupportedRegion = false;
+  /** The unsupported region code to display in the popup */
   unsupportedRegionCode = '';
 
   get isDarkMode(): boolean {
@@ -1030,6 +1049,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private challengeSubscription?: Subscription;
 
+  /** Transient "milestone reached" celebration popup. */
   milestonePopup: { number: number; total: number; label: string; isHidden?: boolean } | null =
     null;
   private milestonePopupTimer?: ReturnType<typeof setTimeout>;
@@ -1054,6 +1074,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       workspace.tabs.some((t) => (t.nodes?.length ?? 0) > 0);
 
     const local = this.storage.loadLocal();
+    // Prefer the full multi-tab workspace so every saved canvas is restored.
+    // Fall back to the single saved project, then to the preset/dev blank.
     if (hasWorkspaceContent) {
       this.restoreWorkspace(workspace!);
     } else if (
@@ -1062,15 +1084,19 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       local.id !== 'preset-messaging-realtime'
     ) {
       this.applyProject(local);
+      // Restored straight from saved storage: nothing unsaved yet (green dot).
       const restored = this.tabs[this.activeTabIndex];
       if (restored) restored.dirty = false;
     } else if (this.roleMode === 'developer') {
+      // Developer Mode opens to the Challenge hub on a clean canvas; the
+      // onboarding tour runs on first visit. "Free practice" loads the preset.
       this.applyProject(this.blankDeveloperProject());
       this.onboarding.start();
     } else {
       this.applyProject(this.presets.messagingPreset());
     }
 
+    // Toast each milestone the moment it is first reached.
     this.challengeSubscription = this.challengeService.milestoneReached$.subscribe(
       ({ milestone, number, total, isHidden }) =>
         this.showMilestonePopup(number, total, milestone.label, isHidden),
@@ -1095,14 +1121,18 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.refreshHealthHold();
     });
 
+    // Subscribe to unsupported region events from the cost service
     this.unsupportedRegionSubscription = this.costService.unsupportedRegion$
       .pipe(filter((code) => code !== null))
       .subscribe((code) => {
         this.unsupportedRegionCode = code!;
         this.showUnsupportedRegion = true;
+        // Revert to the previous valid region silently (without re-fetching)
         this.globalRegion = this.previousRegion;
       });
 
+    // First visit: surface the keyboard shortcuts once. Desktop only (shortcuts
+    // are irrelevant on touch). Defer if the guided tour is running.
     if (!this.hotkeysSeen() && !this.onboarding.isRunning && !this.isMobileViewport) {
       this.showHotkeys = true;
     }
@@ -1162,6 +1192,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   updateAnnotationText(id: string, event: Event): void {
     const text = (event.target as HTMLElement).innerText;
+    // We only update the model to sync state, but avoid triggering logic that might re-render the div
     const anno = this.annotations.find((a) => a.id === id);
     if (anno && anno.text !== text) {
       this.pushHistory(`annotext:${id}`);
@@ -1228,12 +1259,17 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    // Ensure the initial project is correctly synced with the flow canvas once it's available
     if (this.flowCanvas) {
       this.flowCanvas.setScale(this.zoom);
       this.flowCanvas._setPosition(this.pan);
       this.flowCanvas.redraw();
     }
 
+    // Direct event isolation on the toolbar container.
+    // By stopping touch events from bubbling up to the document level,
+    // we bypass f-flow's global touch event interceptors, allowing
+    // Android Chrome and other browsers to use native momentum scrolling.
     const toolbarActions = this.elementRef.nativeElement.querySelector('.toolbar-actions');
     if (toolbarActions) {
       const stopTouch = (e: TouchEvent) => {
@@ -1248,6 +1284,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       toolbarActions.addEventListener('touchend', stopTouch, { passive: true });
     }
 
+    // Setup capture-phase touch and click event listeners to collapse the run stats panel on click-away
     this.runStatsTouchListener = (e: Event) => {
       if (!this.isMobileViewport || !this.runStatsExpanded) return;
       const target = e.target as HTMLElement;
@@ -1289,6 +1326,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.calculateNodeHealth(this.selectedNode);
     }
 
+    // Check if any node is in an error state
     const nodesWithErrors = this.nodes.filter((n) => this.calculateNodeHealth(n).tone === 'error');
     if (nodesWithErrors.length > 0) {
       return {
@@ -1297,6 +1335,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       };
     }
 
+    // Check if any node is in a warning state
     const nodesWithWarnings = this.nodes.filter(
       (n) => this.calculateNodeHealth(n).tone === 'warning',
     );
@@ -1321,6 +1360,9 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get isSimulationDisabled(): boolean {
+    // Only integration/config errors (missing connections, fan-in/out, bad
+    // params) should block running. Runtime capacity errors from a prior run
+    // persist for display but must not prevent re-running to tune the design.
     return this.nodes.some((n) => {
       const health = this.calculateNodeHealth(n);
       return health.tone === 'error' && health.blocksRun === true;
@@ -1328,6 +1370,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get erroredNodes(): ArchitectureNode[] {
+    // The Users node is a pure traffic source and carries no health state.
     return this.nodes.filter((n) => n.type !== 'client' && this.stickyHealthTone(n) === 'error');
   }
 
@@ -1335,15 +1378,24 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.nodes.filter((n) => n.type !== 'client' && this.stickyHealthTone(n) === 'warning');
   }
 
+  /** Stable trackBy so error/warning pills aren't torn down between sim ticks. */
   trackByNodeId(_index: number, node: ArchitectureNode): string {
     return node.id;
   }
 
+  /**
+   * During a run a node's transient status flips between normal/busy/overloaded
+   * every tick, which would make its summary pill appear and disappear (and break
+   * hover). We keep a node in its error/warning bucket for a short grace window
+   * after it last qualified, so the list stays stable. When idle the hold map is
+   * empty, so this returns the live tone immediately.
+   */
   private readonly healthHold = new Map<string, { tone: 'error' | 'warning'; until: number }>();
   private static readonly healthHoldMs = 1500;
 
   private stickyHealthTone(node: ArchitectureNode): 'error' | 'warning' | 'other' {
     const current = this.calculateNodeHealth(node).tone;
+    // Grace hold only applies during an active run; when idle, report live tone.
     const sticky = this.mode === 'running' || this.mode === 'paused';
     const held = sticky ? this.healthHold.get(node.id)?.tone : undefined;
     if (current === 'error' || held === 'error') return 'error';
@@ -1351,6 +1403,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'other';
   }
 
+  /** Refresh the grace-period hold map from the latest snapshot statuses. */
   private refreshHealthHold(): void {
     if (this.mode !== 'running' && this.mode !== 'paused') {
       this.healthHold.clear();
@@ -1377,6 +1430,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.calculateNodeHealth(node).short || 'Integration required';
   }
 
+  /**
+   * CPU is only a meaningful metric for services where the user controls or
+   * pays for compute capacity. Fully managed/serverless services (DNS, queues,
+   * object storage, CDN, etc.) hide the CPU stat in the inspector.
+   */
   private static readonly cpuRelevantTypes = new Set<string>([
     'ec2',
     'ecs',
@@ -1402,6 +1460,12 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return SimulatorComponent.cpuRelevantTypes.has(node.type);
   }
 
+  /**
+   * A field is locked if the JSON marks it readonly, OR it is the throughput
+   * (Capacity RPS) field on a node currently synced to a client's RPS Sync.
+   * The sync handshake stamps `_designThroughput` on every downstream node, so
+   * we use that as the run-time signal.
+   */
   isFieldLocked(node: ArchitectureNode, field: any): boolean {
     return isFieldLocked(node, field);
   }
@@ -1430,10 +1494,20 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     window.open(docsUrl, '_blank', 'noopener,noreferrer');
   }
 
+  /**
+   * Whether the engine actually reads this config key for this node — gates
+   * the gauge icon so a cost-only knob can't claim to drive the simulation.
+   */
   isSimParam(node: ArchitectureNode, key: string | number | symbol): boolean {
     return this.simulation.isSimulationParam(node, String(key));
   }
 
+  /**
+   * Effective capacity the simulation engine uses for the selected node, with
+   * its source. Shown in the inspector so the Requests/Second cost param can't
+   * be mistaken for a capacity ceiling (capacity comes from sizing params and
+   * AWS quotas, not from traffic volume).
+   */
   get selectedCapacityInfo(): {
     capacity: number;
     source: string;
@@ -1504,6 +1578,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     const model = (serviceCostModelData.serviceCostModel as any)[this.selectedNode.type];
     const params = model?.costParams || [];
+    // CloudFront's Traffic Region is locked to the Users node — mirror that node's selected
+    // region into the (read-only) field so it stays visible and correct in the cost panel.
     if (this.selectedNode.type === 'cloudfront') {
       const clientNode = this.nodes.find((n) => n.type === 'client');
       const clientRegion = (clientNode?.config?.['requestRegion'] as string) || 'global';
@@ -1527,6 +1603,15 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return model?.costEvaluation || null;
   }
 
+  // Memoised so repeated reads within/across change-detection passes (e.g. every
+  // mousemove-triggered CD cycle) return the SAME breakdown reference instead of a
+  // freshly computed one. getCostBreakdown() builds brand-new line objects on every
+  // call; without caching, Angular's `@for (... track line)` sees an entirely new
+  // collection each pass (NG0956, forced DOM destroy/recreate) and dev-mode's
+  // double-check can observe two different label strings for the same binding in
+  // one cycle (NG0100). Keyed on a cheap JSON signature of config rather than
+  // object identity because some services (cloudfront/elb) mutate node.config
+  // in place as a side effect of the cost-params getter.
   private _costBreakdownCache: {
     nodeId: string;
     configSignature: string;
@@ -1562,6 +1647,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return value;
   }
 
+  // Memoised so the getter returns a STABLE array reference across change-detection
+  // passes while nodes/connections/selection are unchanged. Without this, returning a
+  // fresh array every CD pass makes the *ngFor + ngModel in the Traffic Management
+  // panel thrash and lock up the page.
   private _outConnCache: {
     nodeId: string;
     connsRef: ArchitectureConnection[];
@@ -1573,6 +1662,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }[];
   } | null = null;
 
+  /**
+   * Outgoing edges of the selected node, paired with their downstream target's
+   * name/type — backs the inspector's "Traffic Management" section so the user
+   * can set what share of this node's output each downstream receives.
+   */
   get selectedOutgoingConnections(): {
     connection: ArchitectureConnection;
     targetName: string;
@@ -1608,10 +1702,12 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return value;
   }
 
+  /** trackBy for the Traffic Management list — keeps DOM/ngModel stable across CD. */
   trackByConnId(_: number, item: { connection: ArchitectureConnection }): string {
     return item.connection.id;
   }
 
+  /** Set a single outgoing edge's traffic share (0–100%). */
   updateConnectionWeight(connectionId: string, value: number | string | null | undefined): void {
     let weight: any;
     if (value === null || value === undefined || value === '') {
@@ -1691,6 +1787,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.roleMode === 'developer') {
       services = services.filter((s) => devServices.has(s.type));
     } else {
+      // Architect Mode
       if (!this.showAllServices) {
         services = services.filter((s) => devServices.has(s.type));
       }
@@ -1759,6 +1856,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (node.type === 'client') {
       return !!node.config['variableTraffic'];
     }
+    // Downstream synced services: walk all clients, check if this node is downstream and the client has variable+sync on
     for (const client of this.nodes) {
       if (client.type !== 'client') continue;
       if (!client.config['variableTraffic'] || !client.config['syncRpsToServices']) continue;
@@ -1790,12 +1888,23 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.awsCatalog.getByType(type).glyphUrl;
   }
 
+  /** Reason text shown wherever a region-unavailable service is rendered disabled. */
   readonly regionUnavailableReason = 'Not available or SKU absent for the selected region';
 
+  /**
+   * True when the service isn't sold in the currently selected region.
+   * The service stays fully simulatable (us-east-1 baseline pricing);
+   * the UI only renders it disabled-style with the reason above.
+   */
   isServiceUnavailable(type: string): boolean {
     return this.awsCatalog.isUnavailableInRegion(type, this.globalRegion);
   }
 
+  /**
+   * Distinct AWS services on the canvas, each with a short docs overview and a
+   * deep link into the full docs. Powers the architect-mode "Services on this
+   * canvas" panel — contextual (only what's used), not random.
+   */
   get canvasServices(): { type: AwsServiceType; name: string; overview: string }[] {
     const docs = serviceDocumentationData as Record<string, { overview?: string }>;
     const seen = new Set<AwsServiceType>();
@@ -1815,6 +1924,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return out;
   }
 
+  /** Unified view of active services on the canvas, aggregating instance counts, costs, and percentage contributions. */
   get unifiedServices(): {
     type: AwsServiceType;
     name: string;
@@ -1829,6 +1939,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.globalCurrency === 'USD' ? 1 : this.costService['conversionRates'][this.globalCurrency];
     const symbol = this.costService.getCurrencySymbol(this.globalCurrency);
 
+    // Calculate node costs in USD
     const nodeCosts = new Map<string, number>();
     let totalUsd = 0;
     for (const node of this.nodes) {
@@ -1840,6 +1951,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       totalUsd += usd;
     }
 
+    // Group by AwsServiceType
     const grouped = new Map<
       AwsServiceType,
       {
@@ -1890,6 +2002,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
 
+    // Sort: cost descending, then count descending, then name
     return out.sort((a, b) => {
       if (Math.abs(a.totalCost - b.totalCost) > 0.0001) {
         return b.totalCost - a.totalCost;
@@ -1901,6 +2014,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Top monthly cost contributors for the architect-mode empty state. */
   get costDrivers(): {
     name: string;
     type: AwsServiceType;
@@ -1930,7 +2044,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setRegion(region: string): void {
-    this.previousRegion = this.globalRegion;
+    this.previousRegion = this.globalRegion; // Save before switching
     this.globalRegion = region;
     this.loadRegionCost(region);
   }
@@ -1972,6 +2086,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.doGoHome();
   }
 
+  /** Native browser warning for refresh / closing the tab / external back. */
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.anyTabUnsaved()) {
@@ -1985,10 +2100,12 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     window.dispatchEvent(new Event('popstate'));
   }
 
+  /** True when the active canvas has any services, connections, or notes. */
   private canvasHasContent(): boolean {
     return this.nodes.length > 0 || this.connections.length > 0 || this.annotations.length > 0;
   }
 
+  /** True when a given tab (active or not) holds any content. */
   private tabHasContent(index: number): boolean {
     if (index === this.activeTabIndex) return this.canvasHasContent();
     const t = this.tabs[index];
@@ -2000,19 +2117,26 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  /** True when a tab has content AND unsaved edits (orange dot). New empty
+   *  tabs start dirty but have no content, so they never trip the guard. */
   private tabIsUnsaved(index: number): boolean {
     const t = this.tabs[index];
     return !!t && t.dirty && this.tabHasContent(index);
   }
 
+  /** True when any tab (active or background) has unsaved content. Used so we
+   *  never silently lose work that lives on a non-active canvas. */
   private anyTabUnsaved(): boolean {
     return this.tabs.some((_, i) => this.tabIsUnsaved(i));
   }
 
+  /** True when any tab holds content (saved or not). Used by the mode switch so
+   *  an empty active tab doesn't hide work on other canvases. */
   private anyTabHasContent(): boolean {
     return this.tabs.some((_, i) => this.tabHasContent(i));
   }
 
+  /** Collapse every canvas down to a single fresh, empty tab. */
   private resetAllCanvases(): void {
     this.simulation.stop();
     this.tabs = [];
@@ -2029,8 +2153,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Persist every tab (not just the active one) so no canvas is lost. */
   private persistWorkspace(): void {
     this.saveActiveTabState();
+    // Keep the single-project key in sync for the active canvas (back-compat).
     this.storage.save(this.currentProject()).subscribe();
     const workspace: PersistedWorkspace = {
       activeIndex: this.activeTabIndex,
@@ -2040,11 +2166,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tabs.forEach((t) => (t.dirty = false));
   }
 
+  /** Save all canvases immediately (no loader) for the leave-guard flow. */
   private saveNow(): void {
     this.persistWorkspace();
     this.setMessage('All canvases saved.', 'success');
   }
 
+  /** Rebuild every tab from a saved workspace on load. */
   private restoreWorkspace(ws: PersistedWorkspace): void {
     const defaultZoom = this.isMobileViewport ? 0.65 : 0.85;
     this.tabs = ws.tabs.map((pt, i) => fromPersistedTab(pt, i, defaultZoom));
@@ -2054,6 +2182,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tabs.forEach((t) => (t.dirty = false));
   }
 
+  /** Handles a button choice from the unsaved-work guard popup. */
   resolveLeaveGuard(choice: 'keep' | 'fresh' | 'saveFresh' | 'save' | 'discard' | 'cancel'): void {
     const g = this.leaveGuard;
     this.leaveGuard = null;
@@ -2066,33 +2195,36 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     switch (choice) {
-      case 'keep':
+      case 'keep': // mode switch: carry the canvas into the new mode
         proceed();
         break;
-      case 'fresh':
+      case 'fresh': // mode switch: clear every canvas, then switch
         this.resetAllCanvases();
         proceed();
         break;
-      case 'saveFresh':
+      case 'saveFresh': // mode switch: save all, clear every canvas, then switch
         this.saveNow();
         this.resetAllCanvases();
         proceed();
         break;
-      case 'save':
+      case 'save': // home / closeTab: save first, then leave/close
         this.saveNow();
         proceed();
         break;
-      case 'discard':
+      case 'discard': // home / closeTab: leave/close without saving
         proceed();
         break;
     }
   }
 
+  /** Toggles the navbar role-switcher dropdown. */
   toggleRoleMenu(event: Event): void {
     event.stopPropagation();
     this.roleMenuOpen = !this.roleMenuOpen;
   }
 
+  /** Switches the playground role (architect ↔ developer) in place, keeping the
+   *  current canvas. Persists the choice in the URL so a reload stays put. */
   switchRole(mode: 'developer' | 'architect'): void {
     this.roleMenuOpen = false;
     if (this.roleMode === mode) return;
@@ -2118,12 +2250,14 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /** Closes the role-switcher dropdown when clicking anywhere else. */
   @HostListener('document:click')
   closeRoleMenu(): void {
     if (this.roleMenuOpen) this.roleMenuOpen = false;
   }
 
   goDocs(): void {
+    // Record origin so the docs "Back" button returns to the playground.
     sessionStorage.setItem('docsOrigin', '/playground');
     window.history.pushState(null, '', '/docs');
     window.dispatchEvent(new Event('popstate'));
@@ -2143,6 +2277,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // Undo / redo — skip while typing in a field so native text undo still works.
     if (mod && !inEditable) {
       const k = event.key.toLowerCase();
       if (k === 'z' && !event.shiftKey) {
@@ -2177,6 +2312,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // "?" opens the shortcuts panel; Esc closes it (or clears selection).
     if (!mod && !inEditable && event.key === '?') {
       event.preventDefault();
       this.toggleHotkeys();
@@ -2249,8 +2385,15 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isFlowInteractiveTarget(event.target)) {
       return;
     }
+    // Library handles panning via fZoom directive
   }
 
+  /**
+   * Clears the selection when the user clicks empty canvas. We handle this
+   * ourselves rather than relying only on Foblex's fSelectionChange: after a
+   * node drag, Foblex swallows the click that immediately follows, leaving the
+   * selection stuck until another node is clicked.
+   */
   onCanvasBackgroundClick(event: MouseEvent): void {
     const target = event.target;
     if (
@@ -2265,6 +2408,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onCanvasPointerMove(_event: PointerEvent): void {
+    // Library handles panning via fZoom directive
   }
 
   onCanvasPointerUp(event: PointerEvent): void {
@@ -2274,6 +2418,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onCanvasTouchStart(_event: TouchEvent): void {
+    // Handled by library
   }
 
   private isFlowInteractiveTarget(target: EventTarget | null): boolean {
@@ -2286,18 +2431,22 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private cancelCanvasPan(): void {
+    // Native library panning doesn't need manual cancellation here
   }
 
   onCanvasDrop(event: DragEvent): void {
     event.preventDefault();
     const point = this.toCanvasPoint(event.clientX, event.clientY);
 
+    // Handle AWS Service Drop — addService captures undo history + selects + messages
     const type = event.dataTransfer?.getData('application/aws-service') as AwsServiceType;
     if (type) {
+      // Center the node card (148×94) on the drop point.
       this.addService(type, point.x - 74, point.y - 47);
       return;
     }
 
+    // Handle Annotation Drop
     const isAnnotation = event.dataTransfer?.getData('application/annotation') === 'true';
     if (isAnnotation) {
       this.addAnnotation(point.x - 110, point.y - 60);
@@ -2324,6 +2473,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  /**
+   * Returns a stable position object for a node/annotation so [fNodePosition]
+   * keeps the same reference unless x/y actually change. Without this, the
+   * template's inline object literal is rebuilt on every change-detection pass
+   * (every ~180ms while the sim is running) and Foblex re-applies the position,
+   * cancelling any in-progress drag — making nodes feel un-draggable mid-run.
+   */
   nodePos(item: { id: string; x: number; y: number }): {
     x: number;
     y: number;
@@ -2348,13 +2504,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.selectedConnectionIds.length > 0 ||
       selectedAnnoIds.length > 0
     ) {
+      // No automatic expansion as per user request
     }
 
+    // Update the selected flag on nodes for UI feedback
     this.nodes = this.nodes.map((node) => ({
       ...node,
       selected: this.selectedNodeIds.includes(node.id),
     }));
 
+    // Update the selected flag on annotations
     this.annotations = this.annotations.map((anno) => ({
       ...anno,
       selected: selectedAnnoIds.includes(anno.id),
@@ -2376,6 +2535,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onFoblexCanvasChange(event: FCanvasChangeEvent): void {
     this.pan = { x: event.position.x, y: event.position.y };
+    // Keep the exact scale — toCanvasPoint() divides by this, so rounding here
+    // makes dropped nodes drift from the cursor once zoomed. Display rounds via pipe.
     this.zoom = event.scale;
     this.revealMinimap();
   }
@@ -2395,6 +2556,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tryCreateConnection(source.node, source.port, target.node, target.port);
   }
 
+  /**
+   * Clicking a node card while an output port is pending completes the connection to that
+   * node's first compatible input port, so the user doesn't have to re-target the tiny port dot.
+   */
   onNodeCardClick(id: string): void {
     if (this.activePort && this.activePort.node.id !== id) {
       const targetNode = this.nodes.find((n) => n.id === id);
@@ -2466,6 +2631,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.connections,
     );
 
+    // If exact port match fails, auto-correct by finding ANY valid port combination between these two nodes
     if (!result.allowed) {
       const allOutputs = sourceNode.ports.filter((p) => p.direction === 'output');
       const allInputs = targetNode.ports.filter((p) => p.direction === 'input');
@@ -2547,10 +2713,12 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.pushHistory();
 
+    // 1. Delete selected connections
     if (connectionCount > 0) {
       this.connections = this.connections.filter((c) => !this.selectedConnectionIds.includes(c.id));
     }
 
+    // 2. Delete selected nodes and their associated connections
     if (nodeCount > 0) {
       this.connections = this.connections.filter(
         (c) =>
@@ -2560,6 +2728,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.nodes = this.nodes.filter((n) => !this.selectedNodeIds.includes(n.id));
     }
 
+    // 3. Delete selected annotations
     if (annoCount > 0) {
       this.annotations = this.annotations.filter((a) => !selectedAnnoIds.includes(a.id));
     }
@@ -2587,6 +2756,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.deleteSelected();
   }
 
+  // ───── Keyboard-shortcuts panel ─────
   private hotkeysSeen(): boolean {
     try {
       return localStorage.getItem(SimulatorComponent.HOTKEYS_SEEN_KEY) === 'true';
@@ -2596,6 +2766,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openHotkeys(): void {
+    // Keyboard shortcuts are desktop-only — never surface them on touch/tablet.
     if (this.isMobileViewport) {
       return;
     }
@@ -2607,6 +2778,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       localStorage.setItem(SimulatorComponent.HOTKEYS_SEEN_KEY, 'true');
     } catch {
+      // ignore persistence failures
     }
   }
 
@@ -2618,6 +2790,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // ───── Copy / paste / duplicate ─────
   private selectNodes(ids: string[]): void {
     this.selectedNodeIds = ids;
     this.selectedConnectionIds = [];
@@ -2720,6 +2893,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   openDocs(): void {
     this.simulation.stop();
+    // Record origin so the docs "Back" button returns to the playground.
     sessionStorage.setItem('docsOrigin', '/playground');
     window.history.pushState(null, '', '/docs');
     window.dispatchEvent(new Event('popstate'));
@@ -2738,6 +2912,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => {
       this.showSaveLoader = false;
       this.showSaveSuccess = true;
+      // Persist every tab, not just the active one, so no canvas is lost.
       this.persistWorkspace();
       this.setMessage('Architecture saved successfully.', 'success');
       setTimeout(() => {
@@ -2804,6 +2979,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   resetCanvas(): void {
     this.simulation.stop();
+    // Record the pre-clear state so Ctrl+Z can bring the architecture back.
     if (this.nodes.length > 0 || this.connections.length > 0 || this.annotations.length > 0) {
       this.pushHistory();
     }
@@ -2930,6 +3106,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.collapsedCategories.has(category);
   }
 
+  /** min/max bounds for a config key, from whichever field list defines it. */
   private fieldBoundsFor(key: any): { min?: number; max?: number } {
     const lists: any[][] = [
       this.selectedConfigFields,
@@ -2973,12 +3150,14 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
         : node,
     );
 
+    // Client special handling: propagate RPS to downstream services if sync is on
     if (
       selectedType === 'client' &&
       (key === 'requestRate' || key === 'variableMinRps' || key === 'variableMaxRps')
     ) {
       const clientNode = this.nodes.find((n) => n.id === selectedId);
       if (clientNode?.config['syncRpsToServices']) {
+        // If variable traffic is on and the range changed, propagate the new midpoint
         let propagateRps = clientNode.config['requestRate'];
         if (
           clientNode.config['variableTraffic'] &&
@@ -3016,6 +3195,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     const selectedId = this.selectedNode.id;
     this.pushHistory(`config:${selectedId}:${key}`);
 
+    // Handle client booleans BEFORE applying so we can react to the transition
     if (selectedType === 'client' && key === 'syncRpsToServices') {
       const clientNode = this.nodes.find((n) => n.id === selectedId);
       if (clientNode) {
@@ -3044,6 +3224,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       const clientNode = this.nodes.find((n) => n.id === selectedId);
       if (clientNode) {
         if (value === true) {
+          // Backfill range defaults on first enable so existing/preset nodes
+          // (which were created before these params existed) get sensible values
           const min = Number(clientNode.config['variableMinRps']) || 50;
           const max = Number(clientNode.config['variableMaxRps']) || 200;
           const mid = Math.round((min + max) / 2);
@@ -3076,6 +3258,9 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+    // Bedrock: the model list is scoped to the selected provider, so switching
+    // provider must also reset the model to that provider's first option —
+    // otherwise config.model keeps pricing the previous provider's model.
     if (selectedType === 'bedrock' && key === 'provider') {
       const bedrockParams =
         (serviceCostModelData.serviceCostModel as any).bedrock?.costParams ?? [];
@@ -3117,6 +3302,13 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return downstreamNodeIds(sourceId, this.connections);
   }
 
+  /**
+   * Dynamic RPS: estimate each downstream service's real arrival rate from the
+   * graph (fan-out weights, cache offload), auto-size its sizing parameters to
+   * carry that load at ~65% utilization, and write the per-node demand into
+   * `throughput` for the cost panel. `captureSnapshot` (toggle-on) records the
+   * pre-sizing values so toggling off restores them exactly.
+   */
   private dynamicSizeDownstream(clientId: string, rps: number, captureSnapshot = false): void {
     const downstream = this.getDownstreamNodeIds(clientId);
     const graph = this.nodes.map((n) =>
@@ -3158,6 +3350,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       if (snap === undefined) return n;
       const { _designThroughput, _dynFactor, ...rest } = n.config;
       const cfg: Record<string, unknown> = { ...rest };
+      // Legacy snapshots stored a bare throughput number; new ones store the
+      // full map of keys Dynamic RPS changed.
       const restored: Record<string, unknown> =
         typeof snap === 'number' ? { throughput: snap } : (snap as Record<string, unknown>);
       for (const [key, value] of Object.entries(restored)) {
@@ -3201,16 +3395,20 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onConfigChange(): void {
+    // Sync local changes to the simulation service so they take effect immediately
     this.simulation.updateNodes(this.nodes, this.connections);
     this.onboarding.notify('configChanged');
     this.afterGraphMutated();
   }
 
+  // ── Challenges (Developer Mode) ──────────────────────────────────────────────
 
+  /** Re-evaluates milestones for the active challenge after any canvas change. */
   private afterGraphMutated(): void {
     this.challengeService.notifyGraphChanged(this.nodes, this.connections);
   }
 
+  /** Shows a brief center-screen popup when a milestone is reached. */
   private showMilestonePopup(
     number: number,
     total: number,
@@ -3222,6 +3420,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.milestonePopupTimer = setTimeout(() => (this.milestonePopup = null), 3200);
   }
 
+  /** Empty starting canvas for Developer Mode (the Challenge hub is the focus). */
   private blankDeveloperProject(): ArchitectureProject {
     return {
       id: 'dev-blank',
@@ -3234,11 +3433,15 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  /** Panel → start a challenge: always opens a fresh canvas seeded with a Users node. */
   onStartChallenge(challenge: Challenge): void {
     this.simulation.stop();
     this.challengeService.start(challenge.id);
+    // Open every challenge on its own new canvas so existing work is preserved.
     this.addCanvasTab(challenge.title, challenge.title);
     const client = this.factory.createNode('client', 80, 220);
+    // Seed the Users node with this challenge's workload (RPS / payload / spikes)
+    // so the simulation reflects the problem from the first run.
     const refClient = challenge.referenceSolution?.nodes.find((n) => n.type === 'client');
     if (refClient?.config) {
       client.config = { ...client.config, ...refClient.config } as typeof client.config;
@@ -3253,6 +3456,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMessage(`Challenge started on a new canvas: ${challenge.title}`, 'success');
   }
 
+  /** Panel → reset/redesign a challenge: clears progress and resets canvas. */
   onResetChallenge(challenge: Challenge): void {
     this.simulation.stop();
     this.pushHistory();
@@ -3266,6 +3470,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMessage(`Challenge progress reset: ${challenge.title}`, 'success');
   }
 
+  /** Panel → leave the curated sandbox loaded for freeform practice. */
   onFreePractice(): void {
     this.simulation.stop();
     this.challengeService.exit();
@@ -3273,10 +3478,12 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMessage('Free practice, sandbox loaded.', 'success');
   }
 
+  /** Panel → replay the onboarding tour. */
   onReplayTour(): void {
     this.onboarding.start(true);
   }
 
+  /** Panel → score the current architecture against the active challenge. */
   onEvaluateChallenge(): void {
     const result = this.challengeService.evaluate(this.nodes, this.connections);
     if (!result) return;
@@ -3288,6 +3495,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  /** Panel → load the challenge's reference solution onto the canvas. */
   onShowReference(challenge: Challenge): void {
     this.simulation.stop();
     const { nodes, connections } = this.graphBuilder.build(
@@ -3307,6 +3515,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMessage('Loaded the reference solution.', 'neutral');
   }
 
+  // ── Undo / Redo ────────────────────────────────────────────────────────────
 
   get canUndo(): boolean {
     return this.history.canUndo;
@@ -3315,6 +3524,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.history.canRedo;
   }
 
+  /** Deep-clone the current canvas into a snapshot. */
   private snapshotState(): CanvasSnapshot {
     return {
       nodes: JSON.parse(JSON.stringify(this.nodes)),
@@ -3323,12 +3533,20 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  /**
+   * Capture the pre-mutation state. Call this at the start of any method that
+   * changes nodes / connections / annotations. Pass a `coalesceKey` for
+   * continuous edits (e.g. 'config', 'move') so a slider drag becomes a single
+   * undo entry instead of dozens.
+   */
   private pushHistory(coalesceKey?: string): void {
+    // Any edit that records history makes the active canvas unsaved (orange dot).
     const activeTab = this.tabs[this.activeTabIndex];
     if (activeTab) activeTab.dirty = true;
     this.history.push(this.snapshotState(), coalesceKey);
   }
 
+  /** Clear history — used when loading a project or switching canvas tabs. */
   private resetHistory(): void {
     this.history.clear();
   }
@@ -3452,6 +3670,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalCurrency = project.currency || 'USD';
     this.globalRegion = project.region || 'us-east-1';
     this.loadRegionCost(this.globalRegion);
+    // Normalize client nodes: ensure requestRate is at least the JSON min (100 default)
+    // so legacy saved nodes don't surface a stale value of 1 from earlier toggle bugs.
     this.nodes = project.nodes.map((n) => {
       if (n.type === 'client') {
         const rate = Number(n.config['requestRate']);
@@ -3467,6 +3687,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clearSelection();
     this.resetHistory();
 
+    // Reset view to make the project visible
     this.zoom = this.isMobileViewport ? 0.65 : 0.85;
     this.pan = { x: 40, y: 40 };
 
@@ -3582,6 +3803,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadTabState(index);
   }
 
+  /**
+   * Creates a fresh empty canvas tab, makes it active, and returns its index.
+   * New canvases start dirty (orange dot) since they have never been saved.
+   */
   private addCanvasTab(name: string, projectName: string): number {
     this.saveActiveTabState();
     const tabIndex = this.tabs.length;
@@ -3647,6 +3872,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   startRenameTab(index: number, event: MouseEvent): void {
     event.stopPropagation();
     this.editingTabIndex = index;
+    // The rename input renders on the next change-detection tick; focus + select it
+    // (replaces the removed `autofocus` attribute). Only one is visible at a time.
     setTimeout(() => {
       const input = document.querySelector<HTMLInputElement>('.tab-rename-input');
       input?.focus();
@@ -3694,6 +3921,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  // --- Sidebar Highlights Expansion Logic ---
   private expandedHighlights = new Set<string>();
 
   isHighlightExpanded(id: string): boolean {

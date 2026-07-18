@@ -20,6 +20,16 @@ id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 
 # ──────────────────────────────────────────────
+# D1 database (challenge thumbs up/down votes)
+# 1. wrangler d1 create challenge-votes (paste the returned database_id below)
+# Frontend points at this Worker via environment.votesApiBase.
+# ──────────────────────────────────────────────
+[[d1_databases]]
+binding = "DB"
+database_name = "challenge-votes"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# ──────────────────────────────────────────────
 # Cron: once a day at 00:15 UTC
 # Each run refreshes:
 #   - USD→{EUR,GBP,INR,JPY} exchange rates from Frankfurter (ECB daily rates)
@@ -36,7 +46,7 @@ crons = ["15 0 * * *"]
 #   wrangler secret put CF_ZONE_TAG    # the zone ID of your deployed domain
 # /stats serves zeros until all three are set. /fx needs no secrets.
 #
-# CORS allowlist for /fx and /stats (browser origins, comma-separated).
+# CORS allowlist for /fx, /stats and /votes (browser origins, comma-separated).
 # Defaults to the production site + http://localhost:4200 when unset. Set as a
 # plain var, e.g.:
 #   [vars]

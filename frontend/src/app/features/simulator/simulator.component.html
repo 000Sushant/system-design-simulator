@@ -233,15 +233,21 @@
         {{ leftCollapsed ? '›' : '‹' }}
       </button>
       @if (!leftCollapsed) {
-        <div class="sidebar-resizer left-resizer" (mousedown)="startResizeLeft($event)" aria-hidden="true"></div>
+        <div
+          class="sidebar-resizer left-resizer"
+          (mousedown)="startResizeLeft($event)"
+          aria-hidden="true"
+        ></div>
       }
       <div class="sidebar-content">
         <div class="panel-heading">
-          <div style="display: flex; align-items: center; gap: 8px">
-            <i class="fas fa-cubes" style="color: #7c3aed; font-size: 14px"></i>
-            <span>Service Palette</span>
+          <div class="panel-heading-brand">
+            <i class="fas fa-shapes palette-heading-icon"></i>
+            <span class="panel-heading-title">Service Palette</span>
           </div>
-          <small>{{ filteredCatalog.length }} / {{ catalog.length }}</small>
+          <small class="panel-heading-badge"
+            >{{ filteredCatalog.length }} / {{ catalog.length }}</small
+          >
         </div>
         <label class="search-box" (mousemove)="onMouseMove($event)">
           <span>⌕</span>
@@ -266,7 +272,7 @@
             <button type="button" class="category-header" (click)="toggleCategory('Built-in')">
               <span class="category-indicator" style="background: #6366f1"></span>
               <span class="category-name">Built-in</span>
-              <small>1</small>
+              <small>2</small>
               <b>{{ isCategoryCollapsed('Built-in') ? '+' : '−' }}</b>
             </button>
             @if (!isCategoryCollapsed('Built-in')) {
@@ -277,20 +283,51 @@
                   draggable="true"
                   (dragstart)="onAnnotationDragStart($event)"
                   (click)="addAnnotation()"
-                  style="
-                    background-color: rgba(99, 102, 241, 0.08);
-                    border-color: rgba(99, 102, 241, 0.2);
-                  "
+                  style="--service-color: #6366f1"
                 >
                   <span
-                    class="service-icon"
-                    style="--service-color: #6366f1; display: grid; place-items: center"
+                    class="service-tile-icon service-tile-icon--flat"
+                    style="display: grid; place-items: center"
                   >
-                    <i class="fas fa-font" style="font-size: 18px; color: #6366f1"></i>
+                    <i class="fas fa-font" style="color: #6366f1"></i>
                   </span>
                   <span>
                     <strong>Note</strong>
-                    <small>Built-in · Canvas Annotation</small>
+                  </span>
+                </button>
+
+                <!-- Users / Client Tile -->
+                @let client = clientService;
+                <button
+                  type="button"
+                  class="service-tile"
+                  draggable="true"
+                  [class.region-unavailable]="isServiceUnavailable(client.type)"
+                  [title]="isServiceUnavailable(client.type) ? regionUnavailableReason : ''"
+                  (mousemove)="onMouseMove($event)"
+                  (dragstart)="onPaletteDragStart($event, client.type)"
+                  (click)="addService(client.type)"
+                  [style.--service-color]="serviceColor(client.type)"
+                >
+                  <span
+                    class="service-tile-icon service-tile-icon--flat"
+                    [style.--service-color]="serviceColor(client.type)"
+                  >
+                    <div
+                      class="icon-recolor"
+                      aria-hidden="true"
+                      [ngStyle]="{
+                        'background-color': serviceColor(client.type),
+                        'mask-image': 'url(' + client.glyphUrl + ')',
+                        '-webkit-mask-image': 'url(' + client.glyphUrl + ')',
+                      }"
+                    ></div>
+                  </span>
+                  <span>
+                    <strong>{{ client.name }}</strong>
+                    @if (isServiceUnavailable(client.type)) {
+                      <small class="region-unavailable-reason">{{ regionUnavailableReason }}</small>
+                    }
                   </span>
                 </button>
               </div>
@@ -320,25 +357,28 @@
                       (mousemove)="onMouseMove($event)"
                       (dragstart)="onPaletteDragStart($event, service.type)"
                       (click)="addService(service.type)"
-                      [style.background-color]="serviceColor(service.type) + '14'"
-                      [style.border-color]="serviceColor(service.type) + '33'"
+                      [style.--service-color]="serviceColor(service.type)"
                     >
                       <span
-                        class="service-icon"
+                        class="service-tile-icon"
                         [style.--service-color]="serviceColor(service.type)"
                       >
-                        <img [src]="service.iconUrl" [alt]="service.name + ' icon'" />
                         <div
-                          class="tint-overlay"
-                          [style.background]="serviceColor(service.type)"
+                          class="icon-recolor"
+                          aria-hidden="true"
+                          [ngStyle]="{
+                            'background-color': '#fff',
+                            'mask-image': 'url(' + service.glyphUrl + ')',
+                            '-webkit-mask-image': 'url(' + service.glyphUrl + ')',
+                          }"
                         ></div>
                       </span>
                       <span>
                         <strong>{{ service.name }}</strong>
                         @if (isServiceUnavailable(service.type)) {
-                          <small class="region-unavailable-reason">{{ regionUnavailableReason }}</small>
-                        } @else {
-                          <small>{{ service.shortName }} · {{ service.category }}</small>
+                          <small class="region-unavailable-reason">{{
+                            regionUnavailableReason
+                          }}</small>
                         }
                       </span>
                     </button>
@@ -483,9 +523,9 @@
               tabindex="0"
               [attr.aria-label]="'Select ' + node.name"
               (mousemove)="onMouseMove($event)"
-              (click)="selectNode(node.id)"
-              (keydown.enter)="selectNode(node.id)"
-              (keydown.space)="$event.preventDefault(); selectNode(node.id)"
+              (click)="onNodeCardClick(node.id)"
+              (keydown.enter)="onNodeCardClick(node.id)"
+              (keydown.space)="$event.preventDefault(); onNodeCardClick(node.id)"
             >
               <button
                 type="button"
@@ -520,21 +560,31 @@
                 ></button>
               }
               <div class="node-top">
-                <span class="node-icon" [style.--service-color]="serviceColor(node.type)">
-                  <img
-                    [src]="awsCatalog.getByType(node.type).iconUrl"
-                    [alt]="node.name + ' icon'"
-                  />
-                  <div class="tint-overlay" [style.background]="serviceColor(node.type)"></div>
+                <span
+                  class="node-icon"
+                  [class.node-icon--flat]="node.type === 'client'"
+                  [style.--service-color]="serviceColor(node.type)"
+                >
+                  <div
+                    class="icon-recolor"
+                    aria-hidden="true"
+                    [ngStyle]="{
+                      'background-color': node.type === 'client' ? serviceColor(node.type) : '#fff',
+                      'mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                      '-webkit-mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                    }"
+                  ></div>
                 </span>
                 <div>
                   <h3>{{ node.name }}</h3>
-                  <small>{{ node.type === 'client' ? 'Users' : node.type }}</small>
+                  <div class="node-subtitle-row">
+                    <small>{{ node.type === 'client' ? 'Users' : node.type }}</small>
+                  </div>
                 </div>
               </div>
               @if (isServiceUnavailable(node.type)) {
                 <div class="node-warning" [title]="regionUnavailableReason">
-                  <i class="fas fa-exclamation-triangle"></i> Region Unavailable
+                  <i class="fas fa-exclamation-triangle"></i> Restricted
                 </div>
               }
               @if (node.type !== 'client') {
@@ -718,7 +768,11 @@
         {{ rightCollapsed ? '‹' : '›' }}
       </button>
       @if (!rightCollapsed) {
-        <div class="sidebar-resizer right-resizer" (mousedown)="startResizeRight($event)" aria-hidden="true"></div>
+        <div
+          class="sidebar-resizer right-resizer"
+          (mousedown)="startResizeRight($event)"
+          aria-hidden="true"
+        ></div>
       }
       @if (loadingRegionCost) {
         <div class="region-cost-loader">
@@ -790,48 +844,73 @@
         </div>
 
         @if (selectedNode; as node) {
-          <div
-            class="panel-heading"
-            [style.borderLeftColor]="serviceColor(node.type)"
-            style="
-              border-left-width: 4px;
-              border-left-style: solid;
-              padding-left: 12px;
-              display: flex;
-              align-items: center;
-              gap: 12px;
-            "
-          >
-            <span class="panel-heading-icon" [style.--service-color]="serviceColor(node.type)">
-              <img
-                [src]="awsCatalog.getByType(node.type).iconUrl"
-                alt=""
-                style="width: 22px; height: 22px; object-fit: contain"
-              />
-              <div
-                class="tint-overlay"
-                [style.background]="serviceColor(node.type)"
-                style="position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.92"
-              ></div>
-            </span>
+          <!-- Redesigned Service Identity Card -->
+          <div class="service-identity-card">
             <div
-              class="panel-heading-text"
-              style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1"
+              class="service-header-row"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                width: 100%;
+              "
             >
-              <span
-                style="
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                  line-height: 1.2;
-                "
-                >{{ node.name }}</span
-              >
-              <div style="display: flex; align-items: center">
-                <small>{{ selectedDefinition?.category }}</small>
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1">
+                <span
+                  class="service-sidebar-icon"
+                  [class.service-sidebar-icon--flat]="node.type === 'client'"
+                  [style.--service-color]="serviceColor(node.type)"
+                >
+                  <!-- CSS-masked flat recolor: white glyph on the category-color tile
+                       background (set via --service-color on .service-sidebar-icon).
+                       Users/client node matches the palette's flat (no-square) style. -->
+                  <div
+                    class="icon-recolor"
+                    aria-hidden="true"
+                    [ngStyle]="{
+                      'background-color': node.type === 'client' ? serviceColor(node.type) : '#fff',
+                      'mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                      '-webkit-mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                    }"
+                  ></div>
+                </span>
+                <div class="service-header-info" style="min-width: 0; flex: 1">
+                  <h4 class="service-header-title">{{ node.name }}</h4>
+                  <div class="service-header-meta">
+                    <span class="service-category-tag">{{ selectedDefinition?.category }}</span>
+                    @if (roleMode === 'architect') {
+                      <span class="service-cost-badge">
+                        <i class="fas fa-coins"></i> {{ getNodeCostFormatted(node) }}/mo
+                      </span>
+                    }
+                  </div>
+                </div>
               </div>
+
+              <!-- Delete Service icon in header row -->
+              <button
+                type="button"
+                class="btn-delete-icon"
+                title="Delete this service and links"
+                (mousemove)="onMouseMove($event)"
+                (click)="deleteSelected()"
+              >
+                <i class="fas fa-trash-can"></i>
+              </button>
+            </div>
+
+            <!-- Full-width Name Field inside identity card -->
+            <div class="name-input-wrapper" (mousemove)="onMouseMove($event)">
+              <span class="name-input-label">Name</span>
+              <input
+                [ngModel]="node.name"
+                (ngModelChange)="updateNodeName($event)"
+                placeholder="Service name"
+              />
             </div>
           </div>
+
           @if (isServiceUnavailable(node.type)) {
             <div class="region-unavailable-banner" role="note">
               <i class="fas fa-triangle-exclamation" style="margin-top: 2px"></i>
@@ -842,64 +921,60 @@
             </div>
           }
           @if (selectedDefinition?.description) {
-            <div
-              class="client-info-msg"
-              style="
-                margin-top: 12px;
-                margin-bottom: 12px;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                align-items: stretch;
-              "
-            >
-              <div style="display: flex; gap: 10px; align-items: flex-start">
-                <i class="fas fa-info-circle" style="margin-top: 2px"></i>
-                <span>{{ selectedDefinition?.description }}</span>
-              </div>
-              <button type="button" (click)="openDocsForService(node.type)" class="docs-action-btn">
-                <i class="fas fa-book-open" style="margin-right: 6px"></i> Learn More
-              </button>
+            <div class="service-desc-section">
+              <p class="desc-text">
+                <i
+                  class="fas fa-circle-info info-bullet-icon"
+                  [style.color]="serviceColor(node.type)"
+                  aria-hidden="true"
+                ></i
+                >{{ selectedDefinition?.description }}
+                <button
+                  type="button"
+                  class="docs-inline-link"
+                  [style.color]="serviceColor(node.type)"
+                  (click)="openDocsForService(node.type)"
+                >
+                  Learn more<i class="fas fa-chevron-right link-arrow" aria-hidden="true"></i>
+                </button>
+              </p>
             </div>
           }
-          <div class="summary-grid">
-            <div>
-              <strong>{{ node.metrics.received | number: '1.2-2' }}</strong
-              ><small>received</small>
+          <!-- Live Metrics Block -->
+          <div class="metrics-block">
+            <div class="metrics-header">
+              <i class="fas fa-wave-square"></i>
+              <span>Live Metrics</span>
             </div>
-            <div>
-              <strong>{{ node.metrics.queueSize | number: '1.2-2' }}</strong
-              ><small>queue</small>
-            </div>
-            <div>
-              <strong>{{ node.metrics.errorRate | number: '1.2-2' }}%</strong><small>errors</small>
-            </div>
-            @if (hasCpuMetric(node)) {
-              <div>
-                <strong>{{ node.metrics.cpuPressure | number: '1.2-2' }}%</strong><small>cpu</small>
+            <div class="summary-grid">
+              <div class="metric-received">
+                <strong>{{ node.metrics.received | number: '1.2-2' }}</strong
+                ><small>received</small>
               </div>
-            }
+              <div class="metric-queue">
+                <strong>{{ node.metrics.queueSize | number: '1.2-2' }}</strong
+                ><small>queue</small>
+              </div>
+              <div class="metric-errors">
+                <strong>{{ node.metrics.errorRate | number: '1.2-2' }}%</strong
+                ><small>errors</small>
+              </div>
+              <div class="metric-processed">
+                <strong>{{ formatCompactNumber(node.metrics.processed) }}</strong>
+                <small>processed</small>
+              </div>
+              <div class="metric-dropped" [class.has-dropped]="node.metrics.dropped > 0">
+                <strong>{{ formatCompactNumber(node.metrics.dropped) }}</strong>
+                <small>dropped</small>
+              </div>
+              @if (hasCpuMetric(node)) {
+                <div class="metric-cpu">
+                  <strong>{{ node.metrics.cpuPressure | number: '1.2-2' }}%</strong
+                  ><small>cpu</small>
+                </div>
+              }
+            </div>
           </div>
-          @if (roleMode === 'architect') {
-            <div class="node-cost-highlight">
-              <div class="cost-badge">
-                <i class="fas fa-coins"></i> {{ getNodeCostFormatted(node) }}
-                <small>/mo</small>
-              </div>
-            </div>
-          }
-          <label class="name-field" (mousemove)="onMouseMove($event)">
-            Name
-            <input [ngModel]="node.name" (ngModelChange)="updateNodeName($event)" />
-          </label>
-          <button
-            type="button"
-            class="delete-panel-button"
-            (mousemove)="onMouseMove($event)"
-            (click)="deleteSelected()"
-          >
-            Delete this service and links
-          </button>
           <!-- Traffic Management: per-edge fan-out shares (only when the node fans out) -->
           @if (selectedOutgoingConnections.length >= 2) {
             <div class="traffic-mgmt">
@@ -1539,10 +1614,14 @@
                             >
                               <div class="svc-row-main">
                                 <div class="svc-row-icon">
-                                  <img [src]="nodeIconUrl(s.type)" [alt]="s.name + ' icon'" />
                                   <div
-                                    class="tint-overlay"
-                                    [style.background]="serviceColor(s.type)"
+                                    class="icon-recolor"
+                                    aria-hidden="true"
+                                    [ngStyle]="{
+                                      'background-color': '#fff',
+                                      'mask-image': 'url(' + nodeGlyphUrl(s.type) + ')',
+                                      '-webkit-mask-image': 'url(' + nodeGlyphUrl(s.type) + ')',
+                                    }"
                                   ></div>
                                 </div>
                                 <div class="svc-row-body">
@@ -1809,12 +1888,12 @@
         <div class="stats-data">
           <div class="metric-block success">
             <small>Processed</small>
-            <strong>{{ totals.processed | number }}</strong>
+            <strong>{{ formatCompactNumber(totals.processed) }}</strong>
           </div>
 
           <div class="metric-block danger" [class.has-dropped]="totals.dropped > 0">
             <small>Dropped</small>
-            <strong>{{ totals.dropped | number }}</strong>
+            <strong>{{ formatCompactNumber(totals.dropped) }}</strong>
           </div>
 
           <div class="metric-block info">

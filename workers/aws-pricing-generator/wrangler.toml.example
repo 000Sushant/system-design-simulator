@@ -20,16 +20,6 @@ id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 
 # ──────────────────────────────────────────────
-# D1 database (challenge thumbs up/down votes)
-# 1. wrangler d1 create challenge-votes (paste the returned database_id below)
-# Frontend points at this Worker via environment.votesApiBase (dev: http://127.0.0.1:8787).
-# ──────────────────────────────────────────────
-[[d1_databases]]
-binding = "DB"
-database_name = "challenge-votes"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
-
-# ──────────────────────────────────────────────
 # Workflow: the weekly pricing rebuild (region × phase steps, engine-managed
 # retries). See src/workflow.ts.
 # ──────────────────────────────────────────────
@@ -56,12 +46,12 @@ crons = ["0 3 * * 7", "0 4 * * *"]
 #   openssl rand -hex 32 | wrangler secret put ADMIN_TOKEN
 # Then call: curl -X POST -H "Authorization: Bearer <token>" .../trigger
 #
-# CORS allowlist for /votes (browser origins, comma-separated).
+# CORS allowlist (browser origins, comma-separated).
 # Defaults to the production site + http://localhost:4200 when unset. Set as a
 # plain var (not a secret), e.g. in a [vars] block:
 #   ALLOWED_ORIGINS = "https://srarchitect.qzz.io,http://localhost:4200"
 #
-# NOTE: project analytics (/stats) and FX rates (/fx) moved to the
-# `daily-analytics` worker (see ../daily-analytics), which owns
-# GITHUB_TOKEN / CF_API_TOKEN / CF_ZONE_TAG now.
+# NOTE: project analytics (/stats), FX rates (/fx) and challenge votes (/votes)
+# moved to the `daily-analytics` worker (see ../daily-analytics), which owns
+# GITHUB_TOKEN / CF_API_TOKEN / CF_ZONE_TAG and the challenge-votes D1 now.
 # ──────────────────────────────────────────────

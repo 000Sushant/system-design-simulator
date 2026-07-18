@@ -20,7 +20,7 @@ export function allowedOrigins(env: Env): string[] {
 
 export function corsHeaders(request: Request, env: Env): Record<string, string> {
   const headers: Record<string, string> = {
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     Vary: 'Origin',
   };
@@ -29,4 +29,9 @@ export function corsHeaders(request: Request, env: Env): Record<string, string> 
     headers['Access-Control-Allow-Origin'] = origin;
   }
   return headers;
+}
+
+export function clampDelta(value: unknown): number {
+  if (value === 1 || value === -1) return value;
+  return 0;
 }

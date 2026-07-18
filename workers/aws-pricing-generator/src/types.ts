@@ -5,7 +5,6 @@ export interface Env {
   AWS_SECRET_ACCESS_KEY: string;
   ADMIN_TOKEN?: string;
   ALLOWED_ORIGINS?: string;
-  DB: D1Database;
 }
 
 export interface WorkerProgress {
