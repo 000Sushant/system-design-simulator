@@ -81,34 +81,7 @@ Rubix is a declarative verification and grading engine that analyzes your visual
 
 Sr. Architect decouples the canvas UI, the simulation iteration loop, and the live AWS pricing pipelines into a highly efficient distributed topology:
 
-```mermaid
-graph TD
-    %% Styling
-    classDef frontend fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff;
-    classDef worker fill:#7c2d12,stroke:#f97316,stroke-width:2px,color:#fff;
-    classDef aws fill:#7e22ce,stroke:#a855f7,stroke-width:2px,color:#fff;
-
-    %% Nodes
-    A["Angular Canvas UI<br/>(@foblex/flow)"]:::frontend
-    B["Simulation Engine<br/>(RxJS, 180ms step loop)"]:::frontend
-    C["Cost Evaluation Service<br/>(evaluateServiceCost)"]:::frontend
-    D["Pricing Generator Worker<br/>(Cloudflare Workflow: weekly rebuild<br/>+ daily repair cron)"]:::worker
-    H["Daily Analytics Worker<br/>(FX rates, project stats)"]:::worker
-    E["Cloudflare KV Store<br/>(PRICING_KV)"]:::worker
-    F["Local Fallback JSON<br/>(us-east-1.json)"]:::frontend
-    G["AWS Pricing API"]:::aws
-    I["ECB Rates API<br/>(Frankfurter)"]:::aws
-
-    %% Connections
-    A <--> B
-    B --> C
-    C -- "1. Reads Rates" --> E
-    C -- "2. Fallback (if KV fails)" --> F
-    D -- "Weekly Workflow (27 regions × 9 phases)" --> G
-    D -- "Writes Regional Pricing" --> E
-    H -- "Daily FX refresh" --> I
-    H -- "Writes FX + analytics" --> E
-```
+![System Architecture Diagram](docs/images/system_architecture_light.png)
 
 ---
 
