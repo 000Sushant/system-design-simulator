@@ -1,12 +1,13 @@
 import { Env, WorkerProgress } from './types';
 import { REGIONS, WEEKLY_INTERVAL_MS, FAILURE_COOLDOWN_MS } from './regions';
 import { PricingFetcher } from './fetcher';
-import { buildPricingFile } from './schema-builder';
+import { buildPricingPhase, PHASE_COUNT } from './schema-builder';
 import { maybeRefreshStats, getPublicStats } from './stats';
 
 // KV keys
 const KV_PROGRESS_KEY = 'worker:progress';
 const KV_PRICING_PREFIX = 'pricing:';
+const KV_PARTIAL_PREFIX = 'pricing-partial:';
 
 // ─── KV helpers ──────────────────────────────────────────────────────────────
 
@@ -56,14 +57,37 @@ async function processOneRegion(env: Env): Promise<void> {
     return;
   }
 
-  // ── Process the next region ──────────────────────────────────────────────
+  // ── Process the next phase of the current region ────────────────────────
   const region = REGIONS[progress.currentIndex];
-  console.log(`[Worker] 🌍 Processing region ${progress.currentIndex + 1}/${REGIONS.length}: ${region.code} (${region.name})`);
+  const phase = progress.phase ?? 0;
+  console.log(`[Worker] 🌍 Region ${progress.currentIndex + 1}/${REGIONS.length}: ${region.code} — phase ${phase + 1}/${PHASE_COUNT}`);
 
   try {
     const fetcher = new PricingFetcher(env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY);
-    const services = await buildPricingFile(region, fetcher);
 
+    // Resume from the partial build unless this is the first phase
+    let partial: Record<string, any> | null = null;
+    if (phase > 0) {
+      const rawPartial = await env.AWS_PRICING_KV.get(`${KV_PARTIAL_PREFIX}${region.code}`);
+      partial = rawPartial ? JSON.parse(rawPartial) : null;
+      if (!partial) console.warn(`[Worker] ⚠ Partial for ${region.code} missing; restarting from baseline.`);
+    }
+
+    const services = await buildPricingPhase(region, fetcher, partial, phase);
+
+    if (phase < PHASE_COUNT - 1) {
+      // Persist the partial and continue on the next tick
+      await env.AWS_PRICING_KV.put(
+        `${KV_PARTIAL_PREFIX}${region.code}`,
+        JSON.stringify(services),
+        { expirationTtl: 24 * 60 * 60 } // partials are short-lived
+      );
+      await saveProgress(env, { ...progress, status: 'running', phase: phase + 1, lastError: undefined, cooldownUntil: undefined });
+      console.log(`[Worker] 💾 Saved phase ${phase + 1} partial for ${region.code}.`);
+      return;
+    }
+
+    // Final phase — write the complete regional pricing file
     const pricingFile = {
       regionCode:   region.code,
       regionName:   region.name,
@@ -71,7 +95,6 @@ async function processOneRegion(env: Env): Promise<void> {
       services,
     };
 
-    // Save to KV
     await env.AWS_PRICING_KV.put(
       `${KV_PRICING_PREFIX}${region.code}`,
       JSON.stringify(pricingFile),
@@ -80,11 +103,12 @@ async function processOneRegion(env: Env): Promise<void> {
 
     console.log(`[Worker] ✅ Saved pricing for ${region.code} to KV.`);
 
-    // Advance to next region
+    // Advance to next region (phase resets to 0)
     await saveProgress(env, {
       ...progress,
       status:              'running',
       currentIndex:        progress.currentIndex + 1,
+      phase:               0,
       lastCompletedRegion: region.code,
       completedCount:      (progress.completedCount ?? 0) + 1,
       lastError:           undefined,

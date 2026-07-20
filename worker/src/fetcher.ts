@@ -42,8 +42,9 @@ function extractMaxPrice(raw: string): number | null {
 }
 
 /**
- * Among all returned price list items, pick the one satisfying `predicate`
- * (falls back to the first item if none matches), then extract the max price.
+ * Among all returned price list items, pick the one satisfying `predicate`,
+ * then extract the max price. Strict: returns null when nothing matches, so
+ * a wrong product is never priced silently (the baseline is used instead).
  */
 function extractMatchingPrice(
   result: RawPriceResult,
@@ -52,8 +53,8 @@ function extractMatchingPrice(
   if (!result.PriceList?.length) return null;
   const match = result.PriceList.find(raw => {
     try { return predicate(JSON.parse(raw)); } catch { return false; }
-  }) ?? result.PriceList[0];
-  return extractMaxPrice(match);
+  });
+  return match === undefined ? null : extractMaxPrice(match);
 }
 
 // ─── Main fetcher class ─────────────────────────────────────────────────────
@@ -357,13 +358,14 @@ export class PricingFetcher {
   }
 
   clbHourly(regionName: string): Promise<number | null> {
+    // The CLB hourly SKU no longer carries the old groupDescription value;
+    // select by usagetype instead.
     return this.query('AWSELB', [
-      { Type: 'TERM_MATCH', Field: 'location',         Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'productFamily',    Value: 'Load Balancer' },
-      { Type: 'TERM_MATCH', Field: 'operation',        Value: 'LoadBalancing' },
-      { Type: 'TERM_MATCH', Field: 'locationType',     Value: 'AWS Region' },
-      { Type: 'TERM_MATCH', Field: 'groupDescription', Value: 'LoadBalancer hourly usage' },
-    ]);
+      { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Load Balancer' },
+      { Type: 'TERM_MATCH', Field: 'operation',     Value: 'LoadBalancing' },
+      { Type: 'TERM_MATCH', Field: 'locationType',  Value: 'AWS Region' },
+    ], p => String(p.product?.attributes?.usagetype ?? '').endsWith('LoadBalancerUsage'), 100);
   }
 
   clbDataGB(regionName: string): Promise<number | null> {
@@ -422,17 +424,22 @@ export class PricingFetcher {
   // DynamoDB
   // ────────────────────────────────────────────────────────────────────────
 
+  // The bare group filter matches BOTH the on-demand request-unit SKU and the
+  // provisioned capacity-unit-hour SKU, in nondeterministic order per region.
+  // readM/writeM are on-demand request prices, so pin PayPerRequestThroughput.
   dynamoDbRead(regionName: string): Promise<number | null> {
     return this.query('AmazonDynamoDB', [
-      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'group',    Value: 'DDB-ReadUnits' },
+      { Type: 'TERM_MATCH', Field: 'location',  Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'group',     Value: 'DDB-ReadUnits' },
+      { Type: 'TERM_MATCH', Field: 'operation', Value: 'PayPerRequestThroughput' },
     ]);
   }
 
   dynamoDbWrite(regionName: string): Promise<number | null> {
     return this.query('AmazonDynamoDB', [
-      { Type: 'TERM_MATCH', Field: 'location', Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'group',    Value: 'DDB-WriteUnits' },
+      { Type: 'TERM_MATCH', Field: 'location',  Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'group',     Value: 'DDB-WriteUnits' },
+      { Type: 'TERM_MATCH', Field: 'operation', Value: 'PayPerRequestThroughput' },
     ]);
   }
 
@@ -456,10 +463,11 @@ export class PricingFetcher {
   }
 
   openSearchStorage(regionName: string): Promise<number | null> {
+    // GP3 is the baseline semantic (us-east-1 gp3 = $0.122/GB-mo).
     return this.query('AmazonES', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Amazon OpenSearch Service Volume' },
-      { Type: 'TERM_MATCH', Field: 'storageMedia',   Value: 'GP2' },
+      { Type: 'TERM_MATCH', Field: 'storageMedia',   Value: 'GP3' },
     ]);
   }
 
@@ -476,28 +484,32 @@ export class PricingFetcher {
   }
 
   redshiftServerless(regionName: string): Promise<number | null> {
+    // The operation also matches capacity-reservation SKUs (e.g. $2,430/RPU-Hr
+    // upfront). Pin the plain on-demand ServerlessUsage SKU.
     return this.query('AmazonRedshift', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Serverless' },
       { Type: 'TERM_MATCH', Field: 'operation',     Value: 'RunServerlessCompute:001' },
-    ]);
+    ], p => String(p.product?.attributes?.usagetype ?? '').endsWith(':ServerlessUsage'), 100);
   }
 
   // ────────────────────────────────────────────────────────────────────────
   // EMR
   // ────────────────────────────────────────────────────────────────────────
 
+  /**
+   * All-in EMR node cost = EC2 Linux on-demand + EMR service fee.
+   * The ElasticMapReduce service code prices only the EMR fee (~25% of the
+   * EC2 rate), while the simulator bills the full node.
+   */
   async emrInstance(regionName: string, instanceType: string): Promise<number | null> {
-    const res = await this.query('ElasticMapReduce', [
+    const fee = await this.query('ElasticMapReduce', [
       { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
       { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
     ]);
-    if (res === null && instanceType === 'm5.large') {
-      // EMR does not offer m5.large in AWS Pricing API. Fallback to 50% of m5.xlarge.
-      const xlargePrice = await this.emrInstance(regionName, 'm5.xlarge');
-      return xlargePrice !== null ? xlargePrice * 0.5 : null;
-    }
-    return res;
+    if (fee === null) return null;
+    const ec2 = await this.ec2Instance(regionName, instanceType);
+    return ec2 === null ? null : ec2 + fee;
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -580,14 +592,18 @@ export class PricingFetcher {
   // ────────────────────────────────────────────────────────────────────────
 
   efsStorage(regionName: string, storageClass: string): Promise<number | null> {
-    const mappedClass = storageClass === 'Standard' ? 'General Purpose' : 'Infrequent Access';
+    if (storageClass === 'Standard') {
+      return this.query('AmazonEFS', [
+        { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
+        { Type: 'TERM_MATCH', Field: 'storageClass', Value: 'General Purpose' },
+      ], p => (p.product?.attributes?.usagetype || '').includes('TimedStorage'));
+    }
+    // IA: the AWS pricing page quotes the Elastic-Throughput IA SKU (-ET),
+    // not the legacy bursting IA SKU (which is ~55% pricier).
     return this.query('AmazonEFS', [
-      { Type: 'TERM_MATCH', Field: 'location',     Value: regionName },
-      { Type: 'TERM_MATCH', Field: 'storageClass', Value: mappedClass },
-    ], p => {
-      const usageType = p.product?.attributes?.usagetype || '';
-      return usageType.includes('TimedStorage');
-    });
+      { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
+      { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'Storage' },
+    ], p => (p.product?.attributes?.usagetype || '').endsWith('IATimedStorage-ET-ByteHrs'), 100);
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -605,11 +621,14 @@ export class PricingFetcher {
   // API Gateway
   // ────────────────────────────────────────────────────────────────────────
 
+  /** Returns the REST first-tier price PER REQUEST (e.g. 0.0000035 in us-east-1).
+   *  The productFamily also contains HTTP-API and $0 SKUs, so the REST request
+   *  SKU is pinned by usagetype. Callers must scale ×1,000,000 for per-million. */
   apiGatewayRest(regionName: string): Promise<number | null> {
     return this.query('AmazonApiGateway', [
       { Type: 'TERM_MATCH', Field: 'location',      Value: regionName },
       { Type: 'TERM_MATCH', Field: 'productFamily', Value: 'API Calls' },
-    ]);
+    ], p => String(p.product?.attributes?.usagetype ?? '').endsWith('ApiGatewayRequest'), 100);
   }
 
   // ────────────────────────────────────────────────────────────────────────

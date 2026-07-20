@@ -19,6 +19,7 @@ export interface WorkerProgress {
   status: 'idle' | 'running' | 'failed';
   /** Index into REGIONS array for the NEXT region to process */
   currentIndex: number;
+  phase?: number;
   /** Unix ms when the current (or last) weekly run started */
   startedAt: number;
   /** Region that most recently succeeded */

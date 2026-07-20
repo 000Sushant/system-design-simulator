@@ -3086,15 +3086,17 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       .toLowerCase();
     const fileName = `${safeName || "architecture"}.json`;
 
-    const dataStr =
-      "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(project, null, 2));
+    const blob = new Blob([JSON.stringify(project, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
     const downloadAnchorNode = document.createElement("a");
-    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("href", url);
     downloadAnchorNode.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+    URL.revokeObjectURL(url);
     this.setMessage(`Project exported as ${fileName}.`, "success");
   }
 
