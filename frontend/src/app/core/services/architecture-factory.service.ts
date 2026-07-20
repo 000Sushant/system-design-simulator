@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ArchitectureConnection, ArchitectureNode, AwsServiceType, ServiceMetrics } from '../models/architecture.model';
+import {
+  ArchitectureConnection,
+  ArchitectureNode,
+  AwsServiceType,
+  ServiceMetrics,
+} from '../models/architecture.model';
 import { AwsCatalogService } from './aws-catalog.service';
+import { newId } from '../utils/graph-clone';
 
 const emptyMetrics: ServiceMetrics = {
   processed: 0,
@@ -12,24 +18,17 @@ const emptyMetrics: ServiceMetrics = {
   cpuPressure: 0,
   memoryPressure: 0,
   errorRate: 0,
-  throughput: 0
+  throughput: 0,
 };
 
 @Injectable({ providedIn: 'root' })
 export class ArchitectureFactoryService {
   constructor(private readonly catalog: AwsCatalogService) {}
 
-  private generateId(): string {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      return crypto.randomUUID();
-    }
-    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 11);
-  }
-
   createNode(type: AwsServiceType, x: number, y: number): ArchitectureNode {
     const definition = this.catalog.getByType(type);
     return {
-      id: this.generateId(),
+      id: newId(),
       type,
       name: definition.name,
       x,
@@ -37,7 +36,7 @@ export class ArchitectureFactoryService {
       config: { ...definition.defaults },
       ports: definition.ports.map((port) => ({ ...port })),
       status: 'normal',
-      metrics: { ...emptyMetrics }
+      metrics: { ...emptyMetrics },
     };
   }
 
@@ -47,10 +46,10 @@ export class ArchitectureFactoryService {
     targetNodeId: string,
     targetPortId: string,
     type: ArchitectureConnection['type'],
-    label = ''
+    label = '',
   ): ArchitectureConnection {
     return {
-      id: this.generateId(),
+      id: newId(),
       sourceNodeId,
       sourcePortId,
       targetNodeId,
@@ -62,9 +61,9 @@ export class ArchitectureFactoryService {
         requestsPerSecond: 0,
         latency: 0,
         errorRate: 0,
-        intensity: 0
+        intensity: 0,
       },
-      animationOffset: Math.random()
+      animationOffset: Math.random(),
     };
   }
 

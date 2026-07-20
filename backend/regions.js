@@ -1,10 +1,3 @@
-/**
- * Region allowlist shared by the backend routes.
- *
- * Mirrors the regions the UI offers (frontend CostService.regions) and the
- * Worker generates (worker/src/regions.ts). Used to reject unknown/garbage
- * region codes before they reach the KV lookup.
- */
 const SUPPORTED_REGIONS = new Set([
   'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'ca-central-1',
   'eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-central-1', 'eu-central-2',

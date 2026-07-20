@@ -20,9 +20,10 @@ Learn cloud engineering and system design by solving real-world challenges direc
 
 ### 📐 Interactive Architecture Dashboard
 Model production-grade topologies with a comprehensive, interactive service palette:
-- **60+ Hand-Crafted AWS Services**: Exposes compute, database, networking, serverless, storage, analytics, and security services.
-- **Hardware-Level Configurations**: Customize instance sizes (e.g. EC2 `t3.medium` vs `c6g.xlarge`), storage volumes (gp3/io2), DB engine families, read replicas, and caching states.
-- **Multi-Canvas Workspace**: Organize your architectures using tabbed views, enabling you to design and compare alternative topologies side-by-side.
+- **74 Hand-Crafted AWS Services**: Exposes compute, database, networking, serverless, storage, analytics, and security services — including Amplify, SES, DocumentDB, Neptune, Timestream, AppConfig, App Mesh, Cloud Map, QuickSight, and Lightsail.
+- **Hardware-Level Configurations**: Customize instance sizes (e.g. EC2 `t3.medium` vs `c6g.xlarge`, GPU families like `g5`/`g6`), storage volumes (gp3/io2), DB engine families, read replicas, and caching states.
+- **Regional Availability Awareness**: The UI detects real AWS regional service gaps (e.g. Timestream missing in 19 of 27 regions) and flags unsupported services to prevent invalid architectures.
+- **Multi-Canvas Workspace**: Organize your architectures using tabbed views, enabling you to design and compare alternative topologies side-by-side, with resizable service palette and dashboard panels.
 
 ### ⚡ Real-Time Traffic & Bottleneck Simulation
 Observe how your system behaves under variable workloads with a built-in step simulator:
@@ -32,9 +33,16 @@ Observe how your system behaves under variable workloads with a built-in step si
 
 ### 💰 Live AWS Cost Estimation Engine
 Design cost-efficient architectures with a real-time billing dashboard:
-- **Live AWS Pricing Sync**: Utilizes a Cloudflare Worker CRON scheduler that pulls regional rate tables from the live AWS Pricing API weekly.
-- **Granular Billing Formulas**: Calculates monthly cost estimates reflecting request counts, provisioned throughput, database engines, regional transfer, and tier configurations.
+- **Live AWS Pricing Sync**: A weekly Cloudflare **Workflow** durably rebuilds regional rate tables from the live AWS Pricing API (27 regions × 9 phases, with automatic step retries and a daily repair run for failed regions).
+- **Benchmarked 100% Pricing Accuracy**: Independently audited against the AWS Price List API — all 7,511 active cost parameters across 27 regions match ground truth exactly, with a 92.4% weighted cost-realism score (see the in-app Reports page).
+- **Granular Billing Formulas**: Calculates monthly cost estimates reflecting request counts, provisioned throughput, database engines, regional transfer, and advanced tier configurations — Aurora I/O-Optimized, Kinesis On-Demand, MSK Serverless/Express, DynamoDB Global Tables & PITR, ElastiCache Valkey, Lambda SnapStart, MediaConvert codec tiers, and more.
 - **Cost Breakdown**: View a detailed, itemized cost panel showing the exact billing impact of each node in your architecture.
+- **Multi-Currency Display**: Convert bills into EUR, GBP, INR, or JPY using ECB reference rates refreshed daily by a dedicated analytics worker.
+
+### 📊 In-App Engineering Reports
+A built-in Reports page (`/reports`) publishes the project's own audit artifacts:
+- **Cost-Accuracy Benchmark v5**: The full audit methodology, per-service coverage matrix, and regional gap analysis.
+- **Engine Deep-Dive**: An engineering write-up of the PulseFlow traffic engine and the Rubix grading engine internals.
 
 ---
 
@@ -43,10 +51,23 @@ Design cost-efficient architectures with a real-time billing dashboard:
 Sr. Architect's interactive simulator runs on two custom, deterministic engines:
 
 ### 💓 PulseFlow: Reactive Traffic Simulation Engine
-PulseFlow is the reactive heartbeat of the visual workspace, running about 5 times a second (at a steady ~180ms tick interval):
+PulseFlow is the reactive heartbeat of the visual workspace, running about 5 times a second (at a steady ~180ms tick interval). It is designed to mimic realistic production environment characteristics:
 - **Reactive Stream Traversal**: Traverses your active canvas node graph in logical topological flow order using RxJS, ensuring upstream loads accurately cascade down to child nodes.
 - **Compounding Backlog Latency**: Rather than simple static metrics, it simulates request queues over time. If a service experiences traffic past its capacity, queue delays build up and latency compounds exponentially tick-by-tick.
-- **Hard Server Collapses**: Models physical compute limitations (EC2, ECS, RDS). If load exceeds 150% capacity for more than 1 second, PulseFlow triggers a server crash, forcing the node into a terminal `offline` state.
+- **Cascading Backpressure**: Bottlenecks propagate backward up the stack. If a database is slow, it blocks database connection pools, which in turn blocks app servers, degrading API Gateway response times tick-by-tick.
+- **Dynamic Workloads**: Clients sample new request rates using random walk intervals to simulate real-world user traffic spikes and noise.
+- **Sustained Pressure Collapses**: Compute nodes (EC2, ECS, RDS) tolerate short, transient load spikes, but trigger a hard offline crash if they remain overloaded past a sustained duration.
+- **Auto Scaling & Provisioning Delay**: A crashed node undergoes a boot/provisioning loop, only recovering once incoming load stays below safe limits for a set duration.
+
+#### ⚙️ Realism Modeling & Mathematical Assumptions
+To model actual hardware and network constraints, PulseFlow enforces the following constants:
+*   **Tick Interval (`180ms`)**: The discrete time step at which all queues and network states are recalculated.
+*   **Request Timeout (`DEFAULT_TIMEOUT_MS = 60s`, per-node `timeoutMs` override)**: Under sustained overload, latency compounds (`+12ms` growth × `1.12` acceleration per tick) until it reaches the request timeout — at which point requests time out and shed, clearing the backlog.
+*   **Crash Sustain Limit (`OFFLINE_SUSTAIN_TICKS = 6` / `~1.1s`)**: The number of consecutive timed-out ticks required to collapse a resource-bound node offline; managed services (throttle-class) keep shedding and stay up.
+*   **Auto Scaling Boot Delay (`RECOVERY_TICKS = 10` / `~1.8s`)**: The provisioning window required for a collapsed server to initialize and come back online.
+*   **Auto Scaling Safe Headroom (`RECOVERY_HEADROOM = 0.9`)**: A collapsed node only restarts once demand stays at or below 90% of the capacity its current configuration would provide.
+*   **Max Queue Buffer (`MAX_QUEUE_TICKS = 8`)**: Bounded queue size of 8 ticks-worth of request capacity to prevent infinite queue growth.
+*   **Overload Latency Decay (`OVERLOAD_LATENCY_DECAY = 0.6`)**: Once load drops back under capacity, accumulated overload latency decays at 0.6 per tick (~40% per 180ms), so latency visibly recovers within about a second.
 
 ### 🧩 Rubix: Automated Architecture Rubric Engine
 Rubix is a declarative verification and grading engine that analyzes your visual topologies against design challenges:
@@ -60,30 +81,7 @@ Rubix is a declarative verification and grading engine that analyzes your visual
 
 Sr. Architect decouples the canvas UI, the simulation iteration loop, and the live AWS pricing pipelines into a highly efficient distributed topology:
 
-```mermaid
-graph TD
-    %% Styling
-    classDef frontend fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff;
-    classDef worker fill:#7c2d12,stroke:#f97316,stroke-width:2px,color:#fff;
-    classDef aws fill:#7e22ce,stroke:#a855f7,stroke-width:2px,color:#fff;
-
-    %% Nodes
-    A["Angular Canvas UI<br/>(@foblex/flow)"]:::frontend
-    B["Simulation Engine<br/>(RxJS, 180ms step loop)"]:::frontend
-    C["Cost Evaluation Service<br/>(evaluateServiceCost)"]:::frontend
-    D["Cloudflare Worker<br/>(AWS Pricing Fetcher)"]:::worker
-    E["Cloudflare KV Store<br/>(PRICING_KV)"]:::worker
-    F["Local Fallback JSON<br/>(us-east-1.json)"]:::frontend
-    G["AWS Pricing API"]:::aws
-
-    %% Connections
-    A <--> B
-    B --> C
-    C -- "1. Reads Rates" --> E
-    C -- "2. Fallback (if KV fails)" --> F
-    D -- "Weekly CRON" --> G
-    D -- "Writes Regional Pricing" --> E
-```
+![System Architecture Diagram](docs/images/system_architecture_light.png)
 
 ---
 
@@ -114,10 +112,11 @@ sequenceDiagram
 
 ## 💻 Tech Stack
 
-- **Frontend Core**: Angular 19 (Standalone Components, Signals, RxJS streams)
+- **Frontend Core**: Angular 21 (Standalone Components, Signals, RxJS streams)
 - **Canvas Engine**: `@foblex/flow` (interactive drawing, port bindings)
-- **Worker Infrastructure**: Cloudflare Worker running Wrangler, storing rates in Cloudflare KV.
+- **Worker Infrastructure**: Two Cloudflare Workers managed with Wrangler — a weekly pricing rebuild running as a durable **Cloudflare Workflow** (automatic step retries, failure queue + daily repair cron), and a daily analytics worker (ECB FX rates, project stats) — both storing data in Cloudflare KV.
 - **AWS API Integration**: `aws4fetch` for signing requests to the AWS Price List API.
+- **Testing**: Vitest unit and characterization suites across the frontend engines and both workers.
 - **Styling**: Premium CSS Glassmorphism Design System.
 
 ---
@@ -132,9 +131,11 @@ frontend/src/app/
     models/        # Domain — pure types (no logic, no deps)
     services/      # Application — simulation, cost & validation engines
     constants/     # Shared configuration and magic constants
-    data/ config/  # Data-driven core: 64 services described in JSON
-  features/        # Presentation — Angular components (canvas, docs, landing)
-worker/            # Infrastructure — Cloudflare Worker (pricing scraper)
+    data/ config/  # Data-driven core: 74 services described in JSON, region availability map
+  features/        # Presentation — Angular components (canvas, docs, landing, reports)
+workers/
+  aws-pricing-generator/  # Infrastructure — weekly AWS pricing rebuild (Cloudflare Workflow)
+  daily-analytics/        # Infrastructure — daily FX rates + project analytics worker
 backend/           # Infrastructure — Express reader serving regional pricing from KV
 ```
 
@@ -162,9 +163,15 @@ npm run start
 ```
 The application will launch locally at `http://localhost:4200/`.
 
-#### 3. Run the Cloudflare Worker (Pricing Scraper)
+Run the unit/characterization test suite (Vitest) and lint:
 ```bash
-cd ../worker
+npm test
+npm run lint
+```
+
+#### 3. Run the Cloudflare Workers (Pricing Scraper / Daily Analytics)
+```bash
+cd ../workers/aws-pricing-generator   # or ../workers/daily-analytics
 npm install
 npm run dev
 ```

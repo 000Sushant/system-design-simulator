@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseFlow &amp; Rubix — Engine Deep Dive</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --bg:#f8fafc; --surface:#fff; --border:#e2e8f0; --text:#1e293b; --muted:#64748b;
+    --accent:#0369a1; --accent-soft:#e0f2fe; --good:#047857; --good-soft:#d1fae5;
+    --warn:#b45309; --warn-soft:#fef3c7; --bad:#be123c; --bad-soft:#ffe4e6;
+    --purple:#6d28d9; --purple-soft:#ede9fe; --code:#f1f5f9;
+    --pulse:#4338ca; --pulse-soft:#e0e7ff; --rubix:#0e7490; --rubix-soft:#cffafe;
+  }
+  *{box-sizing:border-box}
+  
+  /* ── Standalone Docs Navbar ────────────────────────────────── */
+  .docs-nav {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: calc(100% - 48px);
+    max-width: 1200px;
+    height: 56px;
+    border-radius: 20px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+    transition: all 0.3s ease;
+  }
+  
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .back-btn {
+    position: relative;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.5);
+    color: #4b5563;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    outline: none;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 1px #fff;
+    transition: all 0.25s ease;
+  }
+  
+  .back-btn:hover {
+    border-color: rgba(124, 58, 237, 0.6);
+    color: #7c3aed;
+    background: #fff;
+  }
+  
+  .brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 800;
+    color: #1f2937;
+    font-size: 15px;
+  }
+  
+  .brand-dot {
+    color: #7c3aed;
+  }
+  
+  .brand-mark small {
+    display: inline-block;
+    padding: 2.5px 7px;
+    border-radius: 999px;
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(124, 58, 237, 0.15);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+
+  body.dark {
+    --bg: #09090c;
+    --surface: rgba(15, 23, 42, 0.4);
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-soft: rgba(56, 189, 248, 0.05);
+    --good: #34d399;
+    --good-soft: rgba(52, 211, 153, 0.05);
+    --warn: #fbbf24;
+    --warn-soft: rgba(251, 191, 36, 0.05);
+    --bad: #f87171;
+    --bad-soft: rgba(248, 113, 113, 0.05);
+    --purple: #a78bfa;
+    --purple-soft: rgba(167, 139, 250, 0.05);
+    --code: #0f172a;
+    --pulse: #a78bfa;
+    --pulse-soft: rgba(167, 139, 250, 0.05);
+    --rubix: #22d3ee;
+    --rubix-soft: rgba(34, 211, 238, 0.05);
+    
+    background:
+      radial-gradient(circle at 18% 8%, rgba(124, 58, 237, 0.08), transparent 28%),
+      radial-gradient(circle at 86% 10%, rgba(6, 182, 212, 0.07), transparent 28%),
+      #09090c !important;
+  }
+  
+  body.dark header.hero {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #155e75 100%) !important;
+    color: #e2e8f0 !important;
+  }
+  
+  body.dark h2 {
+    color: #a78bfa !important;
+    border-top-color: rgba(167, 139, 250, 0.1) !important;
+  }
+  
+  body.dark h2.rx {
+    color: #22d3ee !important;
+    border-top-color: rgba(34, 211, 238, 0.1) !important;
+  }
+  
+  body.dark table, body.dark th, body.dark td, body.dark .card, body.dark .kpi, body.dark .callout, body.dark .eqbox, body.dark .chart-card {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  body.dark th {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  body.dark td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  }
+  
+  body.dark .kpi {
+    background: rgba(15, 23, 42, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  body.dark .eq {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  }
+  
+  body.dark .eq .m {
+    color: #f1f5f9 !important;
+  }
+  
+  body.dark .chart-card svg text {
+    fill: #f1f5f9 !important;
+  }
+  body.dark .chart-card svg rect {
+    fill: #0f172a !important;
+    stroke: rgba(255, 255, 255, 0.08) !important;
+  }
+  body.dark .chart-card svg circle {
+    fill: #1e1b4b !important;
+  }
+  body.dark .chart-card svg path {
+    stroke: #a78bfa !important;
+  }
+  
+  body.dark .back-btn {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(241, 245, 249, 0.9);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  }
+  
+  body.dark .back-btn:hover {
+    background: #0f172a;
+    border-color: #a78bfa;
+    color: #a78bfa;
+  }
+  
+  body.dark .brand-mark {
+    color: #f1f5f9;
+  }
+  
+  body.dark .docs-nav {
+    background: rgba(9, 9, 12, 0.82);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+  }
+
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;padding-top:96px !important}
+  .wrap{max-width:1150px;margin:0 auto;padding:32px 24px 80px}
+  header.hero{background:linear-gradient(135deg,#1e1b4b 0%,#4338ca 55%,#0e7490 100%);color:#e0e7ff;border-radius:14px;padding:36px 40px;margin-bottom:28px}
+  header.hero h1{margin:0 0 8px;font-size:26px;font-weight:700;letter-spacing:-.02em;color:#fff}
+  header.hero p{margin:0;opacity:.92;max-width:920px}
+  header.hero .meta{margin-top:14px;font-size:12.5px;opacity:.8}
+  h2{font-size:21px;margin:44px 0 6px;padding-top:12px;letter-spacing:-.01em;color:#312e81;border-top:3px solid var(--pulse-soft)}
+  h2.rx{color:#155e75;border-top-color:var(--rubix-soft)}
+  h3{font-size:16.5px;margin:26px 0 6px}
+  p{margin:8px 0} .sub{color:var(--muted);font-size:13.5px;margin-bottom:14px}
+  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0}
+  @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center}
+  .kpi .num{font-size:26px;font-weight:700;color:var(--pulse)} .kpi .lbl{font-size:12px;color:var(--muted);margin-top:2px}
+  .kpi.rx .num{color:var(--rubix)}
+  .kpi.hero-kpi .num{font-size:34px}
+  table{width:100%;border-collapse:collapse;margin:12px 0 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:13.5px}
+  th{background:#f1f5f9;text-align:left;padding:9px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#475569;border-bottom:2px solid var(--border)}
+  td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.num{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+  .badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+  .b-good{background:var(--good-soft);color:var(--good)} .b-warn{background:var(--warn-soft);color:var(--warn)}
+  .b-bad{background:var(--bad-soft);color:var(--bad)} .b-info{background:var(--accent-soft);color:var(--accent)}
+  .b-purple{background:var(--purple-soft);color:var(--purple)} .b-gray{background:#f1f5f9;color:#64748b}
+  .b-pulse{background:var(--pulse-soft);color:var(--pulse)} .b-rubix{background:var(--rubix-soft);color:var(--rubix)}
+  code{font-family:"SF Mono",Consolas,Menlo,monospace;font-size:12.5px;background:var(--code);padding:1px 5px;border-radius:4px}
+  pre{background:#0f172a;color:#e2e8f0;border-radius:10px;padding:14px 18px;overflow-x:auto;font-size:12.5px;line-height:1.55}
+  pre code{background:none;padding:0;color:inherit}
+  .callout{border-left:4px solid var(--pulse);background:var(--pulse-soft);border-radius:0 10px 10px 0;padding:12px 18px;margin:14px 0;font-size:14px}
+  .callout.rx{border-left-color:var(--rubix);background:var(--rubix-soft)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:14px 0}
+  footer{margin-top:60px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:12.5px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:800px){.grid2{grid-template-columns:1fr}}
+  ul.plain{padding-left:22px;margin:6px 0} ul.plain li{margin:5px 0}
+  ol.pipe{padding-left:22px;margin:6px 0} ol.pipe li{margin:7px 0}
+  .flow{background:#0f172a;color:#a5b4fc;border-radius:10px;padding:16px 20px;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:12.5px;line-height:1.7;overflow-x:auto;white-space:pre}
+  .eqbox{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:2px 20px;margin:14px 0}
+  .eq{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid #f1f5f9}
+  .eq:last-child{border-bottom:none}
+  .eq .no{font-family:"SF Mono",Consolas,Menlo,monospace;font-size:11px;font-weight:700;color:var(--pulse);min-width:24px;flex:none}
+  .eq.rx .no{color:var(--rubix)} .eq.em .no{color:var(--bad)}
+  .eq .m{font-family:"Cambria Math",Cambria,"Times New Roman",Georgia,serif;font-style:italic;font-size:17px;color:var(--text);white-space:nowrap;overflow-x:auto;padding:2px 0}
+  .eq .m b{font-style:normal;font-weight:400}
+  .eq .lbl{margin-left:auto;font-size:10.5px;color:var(--muted);font-family:"SF Mono",Consolas,Menlo,monospace;text-align:right;flex:none;max-width:34%;line-height:1.5;text-transform:uppercase;letter-spacing:.03em}
+  .frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:-0.7em;margin:0 3px;line-height:1.25}
+  .frac>span{padding:0 5px}
+  .frac>span:first-child{border-bottom:1px solid currentColor}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px 8px;margin:14px 0}
+  .chart-card .ct{font-family:"SF Mono",Consolas,Menlo,monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .chart-card svg{width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1>PulseFlow &amp; Rubix — Engine Deep Dive</h1>
+  <p>A technical deep dive into the two deterministic engines that power the AWS System Design Simulator: <strong>PulseFlow</strong>, the reactive traffic-and-failure simulation engine that re-evaluates the entire architecture graph every 180&nbsp;ms, and <strong>Rubix</strong>, the declarative rule engine that grades user-drawn architectures against design challenges in real time.</p>
+  <div class="meta">Engines: <code style="background:rgba(255,255,255,.15);color:#e0e7ff">simulation.service.ts</code> · <code style="background:rgba(255,255,255,.15);color:#e0e7ff">evaluation/graph-rules.ts</code> · Specs: <code style="background:rgba(255,255,255,.15);color:#e0e7ff">service-bottleneck.json</code>, <code style="background:rgba(255,255,255,.15);color:#e0e7ff">challenges.json</code> · Published 2026-07-12</div>
+</header>
+
+<div class="kpi-row">
+  <div class="kpi hero-kpi"><div class="num">180ms</div><div class="lbl">PulseFlow tick — ~5.5 full-graph passes/sec</div></div>
+  <div class="kpi"><div class="num">74</div><div class="lbl">service behavior classes modeled</div></div>
+  <div class="kpi"><div class="num">56+</div><div class="lbl">config parameters driving capacity &amp; latency</div></div>
+  <div class="kpi rx"><div class="num">156</div><div class="lbl">Rubix grading rules across 10 challenges</div></div>
+  <div class="kpi rx"><div class="num">456</div><div class="lbl">topology compliance rules</div></div>
+</div>
+
+<h2 style="border-top-color:#e2e8f0;color:#1e293b">1 · Why Two Engines Exist</h2>
+<p>Most system-design learning tools are either static diagramming canvases (no feedback at all) or cloud calculators (cost only, no behavior). The simulator needed two things neither provides:</p>
+<ul class="plain">
+  <li><strong>Time-domain behavior</strong> — what actually happens to a real architecture <em>over time</em> when demand exceeds capacity: queues build, latency compounds, connection pools exhaust, services collapse, and replacement capacity boots. A static "utilization %" label cannot teach this. <span class="badge b-pulse">PulseFlow</span> was built to make saturation dynamics observable, tick by tick.</li>
+  <li><strong>Objective, instant grading</strong> — a way to score a user-drawn architecture against a design challenge <em>deterministically, offline, and in real time</em>, without shipping designs to an LLM or a backend. <span class="badge b-rubix">Rubix</span> was built as a declarative rule engine so that challenges are pure data (JSON), not code — new challenges require zero engine changes.</li>
+</ul>
+
+<div class="card">
+<h3 style="margin-top:0">Shared design constraints</h3>
+<ul class="plain">
+  <li><strong>Deterministic.</strong> Same graph + same config ⇒ same outcome. This is what makes the behavioral benchmark (and regression testing) possible at all. The only randomness is opt-in variable client traffic — bounded random-walk sampling.</li>
+  <li><strong>Fully client-side.</strong> Everything runs in the browser at interactive rates. No inference calls, no server round-trips between "user drags a slider" and "the system reacts."</li>
+  <li><strong>Data-driven.</strong> Service behavior lives in JSON specs, not engine branches. The engine implements <em>classes of behavior</em>; the data assigns each of the 74 catalog services to a class.</li>
+</ul>
+</div>
+
+<h2>2 · PulseFlow — Reactive Traffic Simulation Engine</h2>
+
+<h3>2.1 Scale of the model</h3>
+<table>
+<tr><th>Dimension</th><th style="text-align:right">Count</th><th>What it means</th></tr>
+<tr><td>Tick interval</td><td class="num">180 ms</td><td>~5.5 full-graph re-evaluations per second</td></tr>
+<tr><td>Service behavior classes</td><td class="num">74</td><td>Every catalog service classified in <code>service-bottleneck.json</code></td></tr>
+<tr><td>Failure modes</td><td class="num">3</td><td><span class="badge b-info">throttle</span> 43 · <span class="badge b-bad">offline</span> 15 · <span class="badge b-gray">none</span> 16</td></tr>
+<tr><td>Saturation behaviors</td><td class="num">4</td><td>reject (33) · queue (9) · degrade (16) · unbounded (15)</td></tr>
+<tr><td>AWS default quota ceilings</td><td class="num">40</td><td>Real service quotas — API Gateway 10,000 rps, SES 14 rps, Athena 20 concurrent…</td></tr>
+<tr><td>Native capacity formulas</td><td class="num">18</td><td>Little's-Law concurrency, connection pools, shards, RCU/WCU, WLM slots</td></tr>
+<tr><td>Config parameters read</td><td class="num">56</td><td>49 service-specific keys + 7 shared keys — plus per-edge traffic weights</td></tr>
+<tr><td>Calibrated engine constants</td><td class="num">~30</td><td>Crash sustain, recovery headroom, queue caps, latency growth/decay, vCPU tables…</td></tr>
+<tr><td>Metrics per node per tick</td><td class="num">10</td><td>received, processed, dropped, retried, queueSize, avgLatency, cpuPressure, memoryPressure, errorRate, throughput</td></tr>
+<tr><td>Health states</td><td class="num">5</td><td>normal → busy → overloaded → failing → offline</td></tr>
+</table>
+
+<div class="callout"><strong>Perspective:</strong> a 20-node architecture at 5.5 ticks/second means PulseFlow resolves <strong>~110 capacity computations and ~1,100 metric updates every second</strong> — each derived from the node's live config, its bottleneck class, its inherited backpressure, and its queue state from the previous tick.</div>
+
+<h3>2.2 The tick pipeline — 8 stages every 180 ms</h3>
+<ol class="pipe">
+  <li><strong>Backpressure pass</strong> — from the <em>previous</em> tick's state, every request-holding node sums the latency of its synchronous dependencies (weighted by call share) and the fraction of its calls aimed at offline dependencies. Chains propagate one hop per tick, so a slow database ripples up through the app tier to the gateway over a few ticks — exactly like a real cascading brownout.</li>
+  <li><strong>Variable-traffic sampling</strong> — every 6 ticks (~1 s), clients with variable traffic sample a new RPS from their configured band; the realized mean is written back on pause/stop so the cost panel reflects what actually ran.</li>
+  <li><strong>Topological ordering</strong> — Kahn's algorithm orders producers before consumers so each node sees its full upstream demand in a single pass, with a deterministic fallback for cyclic graphs.</li>
+  <li><strong>Offline recovery check</strong> — a collapsed node restarts only after the capacity its <em>current</em> configuration would provide covers demand with ≥10% headroom for <strong>10 consecutive ticks</strong> (~1.8 s) — modeling replacement instances booting after a scale-out or a load drop.</li>
+  <li><strong>Capacity resolution</strong> — a strict 5-level precedence decides each node's ceiling (§2.3).</li>
+  <li><strong>Metrics + health resolution</strong> — demand vs. capacity settled through one of three saturation branches (§2.4), producing all 10 per-node metrics and a health state.</li>
+  <li><strong>Output propagation</strong> — processed traffic fans out across outgoing edges honoring per-edge traffic weights, cache hit-rate offload (CloudFront / ElastiCache / API Gateway cache), and a CDN attenuation factor; edge glow intensity is computed against the <em>target's real capacity</em>, not its raw knob.</li>
+  <li><strong>Offline cascade</strong> — a BFS from every live client marks reachability; any subgraph cut off by an offline node is starved (zeroed), so a dead load balancer correctly takes its whole downstream tree dark while an alternate live path keeps its branch alive.</li>
+</ol>
+
+<h3>2.3 Capacity: five levels of precedence</h3>
+<p>The single most important architectural decision in PulseFlow is that <strong>demand can never define capacity</strong>. Capacity is resolved in strict order:</p>
+<table>
+<tr><th style="width:36px">#</th><th>Source</th><th>Applies to</th><th>How it works</th></tr>
+<tr><td class="num">1</td><td><strong>Load source</strong></td><td>Client nodes</td><td>The request rate <em>is</em> the source load (or the variable-traffic peak)</td></tr>
+<tr><td class="num">2</td><td><strong>Unbounded</strong></td><td>16 services (<code>failureMode: none</code>)</td><td>Control-plane, storage &amp; out-of-band services (IAM, S3, VPC, Shield…) are never load bottlenecks</td></tr>
+<tr><td class="num">3</td><td><strong>Native sizing formula</strong></td><td>18 services</td><td>Compute: Little's Law — <code>instances × vCPU × 10 conc/vCPU ÷ request time</code> with an 8-entry vCPU table. Lambda: <code>concurrency ÷ execution time</code>. Databases: <code>min(max_connections, 64 core-bounded queries × replica boost) ÷ query time</code>. DynamoDB: RCU/WCU with item-size rounding. Kinesis: 1,000 rec/s per shard. SQS FIFO: 300/3,000 msg/s. Redshift: 15 WLM slots/node. ElastiCache: 40,000 ops/s per node. OpenSearch: 6 concurrent queries per data node.</td></tr>
+<tr><td class="num">4</td><td><strong>AWS default quota</strong></td><td>40 services</td><td>Real published quota ceilings (<code>capacityRps</code>) — Route 53's 1M qps down to SES's 14 TPS</td></tr>
+<tr><td class="num">5</td><td><strong>Legacy knob</strong></td><td>remaining untagged</td><td>Fallback only — the throughput setting</td></tr>
+</table>
+
+<p style="margin-top:16px"><strong>The capacity formulas, exactly as the engine computes them</strong> — <span style="font-family:'Cambria Math',Cambria,Georgia,serif;font-style:italic">C</span> is capacity in requests/second, <span style="font-family:'Cambria Math',Cambria,Georgia,serif;font-style:italic">T</span> is effective request time in seconds:</p>
+<div class="eqbox">
+  <div class="eq"><span class="no">01</span><span class="m">C = <span class="frac"><span>n · v · κ</span><span>T<sub>s</sub></span></span>,&nbsp;&nbsp; κ = 10</span><span class="lbl">Little's Law · EC2 / ECS / EKS / EMR / SageMaker · n instances × v vCPU</span></div>
+  <div class="eq"><span class="no">02</span><span class="m">C = <span class="frac"><span>λ<sub>conc</sub></span><span>T<sub>s</sub></span></span></span><span class="lbl">Lambda · reserved concurrency ÷ execution time</span></div>
+  <div class="eq"><span class="no">03</span><span class="m">C = <span class="frac"><span><b>min</b>( χ<sub>max</sub>,&nbsp; 64 (1 + 0.9 r) )</span><span>T<sub>q</sub></span></span></span><span class="lbl">RDS / Aurora / DocDB / Neptune · core-bound pool · r read replicas</span></div>
+  <div class="eq"><span class="no">04</span><span class="m">C = <span class="frac"><span>RCU</span><span>⌈ s / 4 ⌉</span></span> + <span class="frac"><span>WCU</span><span>⌈ s ⌉</span></span></span><span class="lbl">DynamoDB provisioned · s = item size, KB</span></div>
+  <div class="eq"><span class="no">05</span><span class="m">C = 10<sup>3</sup> k &nbsp;|&nbsp; 4·10<sup>4</sup> n &nbsp;|&nbsp; <span class="frac"><span>6 n</span><span>T<sub>q</sub></span></span> &nbsp;|&nbsp; <span class="frac"><span>15 n</span><span>T<sub>q</sub></span></span></span><span class="lbl">Kinesis shards · ElastiCache nodes · OpenSearch · Redshift WLM</span></div>
+  <div class="eq"><span class="no">06</span><span class="m">C ← C · (1 + 0.55 (r̄ − 1)) (1 + <span class="frac"><span>h</span><span>150</span></span>) (1 + <span class="frac"><span><b>min</b>(b, 100)</span><span>220</span></span>)</span><span class="lbl">quota multipliers · replication · cache hit h · batch size b</span></div>
+</div>
+
+<div class="callout"><strong>The coupling that creates emergent backpressure:</strong> formulas use <em>effective latency</em> — the node's own service time <em>plus</em> the wait inherited from slow synchronous dependencies: <span style="font-family:'Cambria Math',Cambria,Georgia,serif;font-style:italic;font-size:15.5px">T<sub>eff</sub> = L + Σ<sub>j</sub> w<sub>j</sub> · min(L<sub>j</sub>, 6·10<sup>4</sup>)</span>. That is what makes a slow RDS exhaust its EC2 callers' concurrency: the caller's capacity formula divides by a growing request time, so its ceiling drops tick by tick while the database struggles. Backpressure is not a scripted animation; it falls out of the math.</div>
+
+<h3>2.4 Three saturation behaviors</h3>
+<table>
+<tr><th>Class</th><th>Services</th><th>Behavior past capacity</th></tr>
+<tr><td><span class="badge b-info">reject</span></td><td class="num">33</td><td>Managed-quota throttling: 100% of the excess fails immediately (429/ThrottlingException), no backlog, accepted requests stay fast, recovery is instant when load drops — the defining behavior of AWS managed services (API Gateway, SNS, Cognito, KMS, Bedrock…).</td></tr>
+<tr><td><span class="badge b-purple">queue</span></td><td class="num">9</td><td>Buffering services (SQS, Kinesis, Batch, Glue, MediaConvert…): excess work backlogs instead of erroring; producers never fail. Health signal = <strong>backlog age</strong>, with a deep 60-ticks-of-capacity buffer — buffering is the entire point of these services.</td></tr>
+<tr><td><span class="badge b-bad">degrade</span></td><td class="num">16</td><td>Resource-bound services (EC2, ECS, RDS, ElastiCache, OpenSearch…): below saturation, latency follows an <strong>M/M/1-style queueing curve</strong> — <code>base × ρ²/(2(1−ρ))</code> — the hockey-stick that makes 85% utilization visibly slower than 50%. Past saturation, a compounding penalty (seed 12 ms/tick, ×1.12 acceleration) escalates latency toward the request timeout; at the timeout in-flight requests are shed; after <strong>6 sustained overloaded ticks</strong> (~1.1 s) past the service's <code>offlineAtRatio</code> (1.4–1.6×), the node collapses <strong>offline</strong>. When relieved, the penalty decays at 0.6/tick — recovery is visible within ~1 s.</td></tr>
+</table>
+<div class="chart-card">
+<div class="ct">Latency vs. utilization — the two regimes of a resource-bound service</div>
+<svg viewBox="0 0 860 400" xmlns="http://www.w3.org/2000/svg" font-family="Consolas,Menlo,monospace">
+  <!-- grid -->
+  <g stroke="#eef2f7" stroke-width="1">
+    <line x1="155" y1="30" x2="155" y2="330"/><line x1="250" y1="30" x2="250" y2="330"/><line x1="345" y1="30" x2="345" y2="330"/><line x1="535" y1="30" x2="535" y2="330"/><line x1="630" y1="30" x2="630" y2="330"/><line x1="725" y1="30" x2="725" y2="330"/>
+    <line x1="60" y1="100" x2="820" y2="100"/><line x1="60" y1="170" x2="820" y2="170"/><line x1="60" y1="240" x2="820" y2="240"/>
+  </g>
+  <!-- collapse band 1.40-1.60 -->
+  <rect x="592" y="30" width="76" height="300" fill="#be123c" opacity="0.05"/>
+  <text x="630" y="46" font-size="10" fill="#be123c" text-anchor="middle">ρ* ∈ [1.40, 1.60]</text>
+  <text x="630" y="59" font-size="9" fill="#94a3b8" text-anchor="middle">collapse band</text>
+  <!-- threshold meridians -->
+  <g stroke-dasharray="4 4" stroke-width="1">
+    <line x1="356" y1="30" x2="356" y2="330" stroke="#4338ca" opacity="0.45"/>
+    <line x1="486" y1="30" x2="486" y2="330" stroke="#be123c" opacity="0.4"/>
+    <line x1="592" y1="30" x2="592" y2="330" stroke="#be123c" opacity="0.4"/>
+  </g>
+  <!-- saturation meridian -->
+  <line x1="440" y1="30" x2="440" y2="330" stroke="#334155" stroke-width="1" stroke-dasharray="1 4"/>
+  <text x="440" y="22" font-size="10.5" fill="#334155" text-anchor="middle">ρ = 1 · saturation</text>
+  <!-- timeout ceiling -->
+  <line x1="60" y1="58.6" x2="820" y2="58.6" stroke="#be123c" stroke-width="1" stroke-dasharray="7 5" opacity="0.55"/>
+  <text x="66" y="52" font-size="10" fill="#be123c">6·10⁴ ms — timeout · backlog shed</text>
+  <!-- axis -->
+  <line x1="60" y1="330" x2="820" y2="330" stroke="#cbd5e1" stroke-width="1"/>
+  <g font-size="10" fill="#94a3b8" text-anchor="middle">
+    <text x="60" y="348">0</text><text x="250" y="348">0.5</text><text x="440" y="348">1.0</text><text x="630" y="348">1.5</text><text x="820" y="348">2.0</text>
+  </g>
+  <g font-size="9.5" text-anchor="middle">
+    <text x="356" y="366" fill="#4338ca">0.78 · busy</text>
+    <text x="486" y="366" fill="#be123c">1.12 · overloaded</text>
+    <text x="592" y="366" fill="#be123c">1.40 · failing</text>
+  </g>
+  <text x="820" y="385" font-size="10" fill="#64748b" text-anchor="end">ρ = λ / C  →</text>
+  <text x="46" y="34" font-size="10" fill="#64748b" transform="rotate(-90 46 34)" text-anchor="end">latency →</text>
+  <!-- M/M/1 regime -->
+  <polyline fill="none" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" points="60.0,330.0 66.4,330.0 72.9,330.0 79.3,330.0 85.8,330.0 92.2,330.0 98.6,329.9 105.1,329.9 111.5,329.9 118.0,329.9 124.4,329.8 130.8,329.8 137.3,329.8 143.7,329.7 150.2,329.7 156.6,329.6 163.1,329.5 169.5,329.5 175.9,329.4 182.4,329.3 188.8,329.2 195.3,329.1 201.7,329.0 208.1,328.9 214.6,328.8 221.0,328.6 227.5,328.4 233.9,328.3 240.3,328.1 246.8,327.9 253.2,327.6 259.7,327.4 266.1,327.1 272.5,326.8 279.0,326.5 285.4,326.1 291.9,325.7 298.3,325.3 304.7,324.8 311.2,324.2 317.6,323.6 324.1,322.9 330.5,322.1 336.9,321.2 343.4,320.2 349.8,319.0 356.3,317.6 362.7,316.0 369.2,314.1 375.6,311.8 382.0,308.9 388.5,305.3 394.9,300.7 401.4,294.5 407.8,285.7 414.2,272.6 420.7,250.7 427.1,206.7 433.6,185.7 440.0,180.7"/>
+  <!-- compounding regime -->
+  <polyline fill="none" stroke="#be123c" stroke-width="2.5" stroke-linecap="round" points="440.0,180.7 446.4,180.4 452.9,180.0 459.3,179.6 465.8,179.2 472.2,178.8 478.6,178.3 485.1,177.9 491.5,177.4 498.0,176.9 504.4,176.3 510.8,175.8 517.3,175.2 523.7,174.5 530.2,173.9 536.6,173.2 543.1,172.4 549.5,171.7 555.9,170.8 562.4,170.0 568.8,169.1 575.3,168.2 581.7,167.2 588.1,166.1 594.6,165.0 601.0,163.9 607.5,162.7 613.9,161.4 620.3,160.1 626.8,158.7 633.2,157.2 639.7,155.6 646.1,154.0 652.5,152.3 659.0,150.5 665.4,148.6 671.9,146.6 678.3,144.5 684.7,142.3 691.2,140.0 697.6,137.6 704.1,135.0 710.5,132.3 716.9,129.5 723.4,126.5 729.8,123.4 736.3,120.1 742.7,116.7 749.2,113.1 755.6,109.2 762.0,105.2 768.5,101.0 774.9,96.6 781.4,91.9 787.8,87.1 794.2,81.9 800.7,76.5 807.1,70.8 813.6,64.9 820.0,58.6"/>
+  <!-- junction bead -->
+  <circle cx="440" cy="180.7" r="4.5" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+  <!-- regime labels -->
+  <text x="235" y="256" font-size="11" fill="#4338ca" text-anchor="middle" letter-spacing="2">M/M/1 QUEUEING</text>
+  <text x="235" y="274" font-size="12.5" fill="#334155" text-anchor="middle" font-style="italic" font-family="Cambria Math,Cambria,Georgia,serif">W(ρ) = L · ρ² / 2(1−ρ)</text>
+  <text x="650" y="205" font-size="11" fill="#be123c" text-anchor="middle" letter-spacing="2">COMPOUNDING OVERLOAD</text>
+  <text x="650" y="223" font-size="12.5" fill="#334155" text-anchor="middle" font-style="italic" font-family="Cambria Math,Cambria,Georgia,serif">P(t+1) = 1.12 · ( P(t) + 12 (ρ−1) )</text>
+</svg>
+<p class="note">Below saturation, wait time follows the M/M/1 curve — near-flat until ~70% utilization, then the hockey-stick. At ρ = 1 the model hands over to the per-tick compounding penalty, which escalates latency toward the 60-second timeout; sustained residence past ρ* collapses the node offline.</p>
+</div>
+
+<p style="margin-top:16px"><strong>The delay and pressure relations:</strong></p>
+<div class="eqbox">
+  <div class="eq"><span class="no">07</span><span class="m">W(ρ) = L · <span class="frac"><span>ρ²</span><span>2 (1 − ρ)</span></span>,&nbsp;&nbsp; ρ = <span class="frac"><span>λ</span><span>C</span></span></span><span class="lbl">M/M/1 wait · clamped at 1−ρ ≥ 0.03</span></div>
+  <div class="eq"><span class="no">08</span><span class="m">T<sub>eff</sub> = L + Σ<sub>j</sub> w<sub>j</sub> · <b>min</b>(L<sub>j</sub>, 6·10<sup>4</sup>)</span><span class="lbl">synchronous backpressure · 1 hop per tick · feeds 01–05</span></div>
+  <div class="eq em"><span class="no">09</span><span class="m">P<sub>t+1</sub> = 1.12 (P<sub>t</sub> + 12 (ρ − 1))&nbsp; <b>if</b> ρ &gt; 1&nbsp;&nbsp;·&nbsp;&nbsp;0.6 P<sub>t</sub>&nbsp; <b>otherwise</b></span><span class="lbl">overload penalty · compound growth / exponential relief (~1 s)</span></div>
+  <div class="eq"><span class="no">10</span><span class="m">A = 10<sup>3</sup> · <span class="frac"><span>Q</span><span>C</span></span>,&nbsp;&nbsp; Q ≤ β C,&nbsp; β ∈ {8, 60}</span><span class="lbl">backlog age, ms · request-path cap 8 · queue-class buffer 60</span></div>
+  <div class="eq"><span class="no">11</span><span class="m">h = 95 (1 − e<sup>−g/W</sup>),&nbsp;&nbsp; W = <b>max</b>(0.1,&nbsp; 2·10<sup>−4</sup> λ s)</span><span class="lbl">API GW cache hit % · g = cache GB · W = working set</span></div>
+  <div class="eq"><span class="no">12</span><span class="m">ε = 100 · <span class="frac"><span>f + d</span><span><b>max</b>(1,&nbsp; λ + Q)</span></span></span><span class="lbl">error rate · failures + drops over total demand</span></div>
+</div>
+
+<div class="grid2">
+<div class="chart-card">
+<div class="ct">Relief decay — P ← 0.6 P per tick (~1 s recovery)</div>
+<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg" font-family="Consolas,Menlo,monospace">
+  <g stroke="#eef2f7" stroke-width="1"><line x1="96.7" y1="20" x2="96.7" y2="150"/><line x1="153.3" y1="20" x2="153.3" y2="150"/><line x1="210" y1="20" x2="210" y2="150"/><line x1="266.7" y1="20" x2="266.7" y2="150"/><line x1="323.3" y1="20" x2="323.3" y2="150"/></g>
+  <line x1="40" y1="150" x2="380" y2="150" stroke="#cbd5e1"/>
+  <polyline fill="none" stroke="#0e7490" stroke-width="2.2" stroke-linecap="round" points="40.0,30.0 46.9,44.1 53.9,56.6 60.8,67.6 67.8,77.2 74.7,85.8 81.6,93.4 88.6,100.0 95.5,105.9 102.4,111.1 109.4,115.7 116.3,119.7 123.3,123.3 130.2,126.4 137.1,129.2 144.1,131.6 151.0,133.8 158.0,135.7 164.9,137.4 171.8,138.9 178.8,140.2 185.7,141.3 192.7,142.3 199.6,143.2 206.5,144.0 213.5,144.7 220.4,145.4 227.3,145.9 234.3,146.4 241.2,146.8 248.2,147.2 255.1,147.5 262.0,147.8 269.0,148.1 275.9,148.3 282.9,148.5 289.8,148.7 296.7,148.8 303.7,149.0 310.6,149.1 317.6,149.2 324.5,149.3 331.4,149.4 338.4,149.4 345.3,149.5 352.2,149.6 359.2,149.6 366.1,149.7 373.1,149.7 380.0,149.7"/>
+  <g font-size="9.5" fill="#94a3b8" text-anchor="middle"><text x="40" y="166">0</text><text x="153.3" y="166">4</text><text x="266.7" y="166">8</text><text x="380" y="166">12</text></g>
+  <text x="380" y="178" font-size="9.5" fill="#64748b" text-anchor="end">ticks →</text>
+</svg>
+</div>
+<div class="chart-card">
+<div class="ct">Cache absorption — h = 95 (1 − e⁻ᵍ/ᵂ)</div>
+<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg" font-family="Consolas,Menlo,monospace">
+  <g stroke="#eef2f7" stroke-width="1"><line x1="125" y1="20" x2="125" y2="150"/><line x1="210" y1="20" x2="210" y2="150"/><line x1="295" y1="20" x2="295" y2="150"/></g>
+  <line x1="40" y1="150" x2="380" y2="150" stroke="#cbd5e1"/>
+  <line x1="40" y1="36" x2="380" y2="36" stroke="#0e7490" stroke-width="1" stroke-dasharray="2 4" opacity="0.6"/>
+  <text x="378" y="30" font-size="9.5" fill="#0e7490" text-anchor="end">95% ceiling</text>
+  <polyline fill="none" stroke="#0e7490" stroke-width="2.2" stroke-linecap="round" points="40.0,150.0 46.9,141.1 53.9,132.8 60.8,125.2 67.8,118.2 74.7,111.8 81.6,105.9 88.6,100.4 95.5,95.3 102.4,90.7 109.4,86.4 116.3,82.4 123.3,78.8 130.2,75.4 137.1,72.4 144.1,69.5 151.0,66.9 158.0,64.5 164.9,62.2 171.8,60.2 178.8,58.3 185.7,56.5 192.7,54.9 199.6,53.4 206.5,52.1 213.5,50.8 220.4,49.7 227.3,48.6 234.3,47.6 241.2,46.7 248.2,45.8 255.1,45.1 262.0,44.4 269.0,43.7 275.9,43.1 282.9,42.5 289.8,42.0 296.7,41.6 303.7,41.1 310.6,40.7 317.6,40.4 324.5,40.0 331.4,39.7 338.4,39.4 345.3,39.1 352.2,38.9 359.2,38.7 366.1,38.5 373.1,38.3 380.0,38.1"/>
+  <g font-size="9.5" fill="#94a3b8" text-anchor="middle"><text x="40" y="166">0</text><text x="210" y="166">2</text><text x="380" y="166">4</text></g>
+  <text x="380" y="178" font-size="9.5" fill="#64748b" text-anchor="end">g / W →</text>
+</svg>
+</div>
+</div>
+
+<p>Failures don't stop at the failing node: calls routed into an offline synchronous dependency <strong>fail at the caller</strong>, and async targets (SNS, EventBridge, CloudWatch, queue-class services, control plane) are correctly exempt from backpressure inheritance — decoupling producers from slow consumers is what queues are for, and the engine honors that.</p>
+
+<h3>2.5 Crash and recovery lifecycle</h3>
+<div class="flow">normal → busy (ρ&gt;0.78) → overloaded (ρ&gt;1.12) → failing (ρ&gt;1.4)
+      → OFFLINE after 6 sustained ticks past offlineAtRatio (~1.1 s)
+      → recovery once demand ≤ 90% of would-be capacity for 10 ticks (~1.8 s)
+      → normal (metrics reset, streaks cleared)</div>
+<p>Collapse and recovery are streak conditions, not instantaneous flips — <span style="font-family:'Cambria Math',Cambria,Georgia,serif;font-style:italic">𝟙[·]</span> is the indicator over consecutive ticks:</p>
+<div class="eqbox">
+  <div class="eq em"><span class="no">13</span><span class="m"><b>offline</b> ⇐ Σ<sub>t</sub> 𝟙[ ρ<sub>t</sub> &gt; ρ* ] ≥ 6,&nbsp;&nbsp; ρ* ∈ [1.4, 1.6]</span><span class="lbl">sustained collapse · ≈ 1.1 s @ 180 ms tick</span></div>
+  <div class="eq em"><span class="no">14</span><span class="m"><b>normal</b> ⇐ Σ<sub>t</sub> 𝟙[ λ<sub>t</sub> ≤ 0.9 C ] ≥ 10</span><span class="lbl">recovery · replacement capacity boot · ≈ 1.8 s</span></div>
+</div>
+<p>The health state machine resolves from <strong>8 thresholds</strong> over CPU pressure, error rate, and overload ratio, then <em>clamps</em> by class: <code>throttle</code>/<code>none</code> services can never show <code>failing</code>/<code>offline</code> (they shed load and stay up), while <code>offline</code>-class services surface stress before collapsing. Queue caps (8 ticks of capacity for request-path services) bound backlog growth so a relieved node recovers promptly instead of draining an unbounded fantasy queue.</p>
+
+<h3>2.6 The Dynamic RPS auto-sizer</h3>
+<p>PulseFlow also runs <em>in reverse</em>. <code>estimateDemand()</code> propagates every client's request rate through the graph topologically (traffic weights, CDN factor, cache-hit offload) to compute the arrival rate each service must absorb — then <code>autoSizeForDemand()</code> inverts each capacity formula to emit the config that carries that demand at <strong>65% target utilization</strong>: ECS task counts, ASG sizes, Lambda concurrency, read-replica counts, DynamoDB RCU/WCU (with item-size rounding), Kinesis shards. One click sizes an entire architecture the way a capacity-planning spreadsheet would — using the same formulas the simulation enforces, so the sized system actually holds up under the simulated load.</p>
+<div class="eqbox">
+  <div class="eq"><span class="no">15</span><span class="m">D(u) = Σ<sub>v→u</sub> D(v) · (1 − <span class="frac"><span>h<sub>v</sub></span><span>100</span></span>) · w<sub>vu</sub> · c,&nbsp;&nbsp; c = 0.72 <b>if CDN edge</b></span><span class="lbl">demand propagation · cache offload · traffic weights</span></div>
+  <div class="eq"><span class="no">16</span><span class="m">x* = ⌈ <span class="frac"><span>D(u)</span><span>0.65 · c<sub>unit</sub></span></span> ⌉</span><span class="lbl">auto-size · 65% target utilization · inverse of 01–05</span></div>
+</div>
+
+<h3>2.7 How it was calibrated</h3>
+<p>PulseFlow's constants weren't guessed once and frozen. The engine is wrapped by a benchmark harness that drives <strong>every catalog service</strong> through a standardized deterministic scenario suite — UNDER (ρ=0.5), NEAR (ρ=0.92), OVER (ρ=1.6/2.0), RECOVER (ρ=0.3) — and scores observed behavior against the documented AWS saturation semantics for that service's class: fail-fast services must show flat latency and instant recovery; queues must show backlog-age growth and zero producer errors; resource-bound services must show the queueing hockey-stick, ≥3× latency escalation, then collapse.</p>
+<div class="callout"><strong>Current result: 453/453 checks passed — 100% behavioral accuracy across 73 benchmarked services</strong> (see the Simulation Accuracy Benchmark report). This harness is what turned early knob-driven behavior — where the user's throughput setting silently <em>was</em> the capacity — into today's quota/formula model: the harness made the unrealistic cases measurable, and the engine was reworked until they passed.</div>
+
+<h2 class="rx">3 · Rubix — Declarative Architecture Rubric Engine</h2>
+
+<h3>3.1 Scale of the model</h3>
+<table>
+<tr><th>Dimension</th><th style="text-align:right">Count</th><th>What it means</th></tr>
+<tr><td>Rule grammar operators</td><td class="num">6</td><td><code>hasService</code> · <code>hasEdge</code> · <code>configAtLeast</code> · <code>countAtLeast</code> · <code>noOverload</code> · <code>allOf</code> (recursive)</td></tr>
+<tr><td>Authored challenges</td><td class="num">10</td><td>easy ×5 · medium ×3 · hard ×2</td></tr>
+<tr><td>Milestones</td><td class="num">61</td><td>10 of them hidden (surprise achievements)</td></tr>
+<tr><td>Weighted rubric checks</td><td class="num">95</td><td>20 are optional bonus checks</td></tr>
+<tr><td>Guided hints</td><td class="num">61</td><td>1:1-mapped to milestones, revealed in gap order</td></tr>
+<tr><td>Total authored rules</td><td class="num">156</td><td>usage: hasService 95 · hasEdge 53 · noOverload 10 · allOf 2</td></tr>
+<tr><td>Topology compliance rules</td><td class="num">456</td><td>port-typed connection rules across all 74 services</td></tr>
+<tr><td>Pass threshold</td><td class="num">70/100</td><td>uniform across the catalog</td></tr>
+</table>
+
+<h3>3.2 Why declarative</h3>
+<p>The alternative designs were (a) hand-coded validation per challenge — unmaintainable, or (b) LLM review — non-deterministic, slow, online-only, and impossible to run on every canvas mutation. Rubix instead defines a tiny JSON rule grammar and one pure evaluator. A challenge is entirely data:</p>
+<pre><code>{ "kind": "hasService", "anyOf": ["elastiCache"], "mustBeConnected": true }
+{ "kind": "hasEdge", "fromAnyOf": ["apiGateway"], "toAnyOf": ["lambda"] }
+{ "kind": "noOverload" }
+{ "kind": "allOf", "rules": [ ... ] }</code></pre>
+<p>The evaluator is pure and deterministic, with a TypeScript exhaustiveness guard so a new operator cannot be added to the grammar without being handled. Adding a challenge means writing JSON (validated by a schema script in CI), never touching the engine.</p>
+
+<h3>3.3 The insight that makes grading honest: reachability</h3>
+<div class="callout rx">A service only counts if it's <strong>actually wired into the request path</strong>. Before any rule evaluates, Rubix runs a BFS from every client node following allowed connection direction, producing the reachable set — <code>hasService</code> rules with <code>mustBeConnected</code> filter against it. Dropping an ElastiCache node on the canvas next to your architecture earns nothing; wiring it between the app tier and the database does. This closes the "decorative architecture" loophole that a naive node-count grader would reward.</div>
+
+<h3>3.4 Live coupling to PulseFlow</h3>
+<p>Rubix's <code>noOverload</code> operator reads the <strong>live health states PulseFlow computed</strong> — a node in <code>overloaded</code>, <code>failing</code>, or <code>offline</code> fails the check. This is where the two engines compose: a challenge can require not just the right <em>shape</em> (services + edges) but the right <em>sizing</em> — the design must actually survive the simulated load. All ten authored challenges use it. Grading re-runs on <strong>every canvas change</strong>, so milestones toast the moment the graph earns them, with completed-challenge downgrade protection so loading a blank canvas can't silently revoke progress.</p>
+
+<h3>3.5 Scoring model</h3>
+<div class="eqbox">
+  <div class="eq rx"><span class="no">17</span><span class="m">S = 100 · <span class="frac"><span>Σ<sub>passed</sub> w<sub>i</sub></span><span>Σ<sub>mandatory</sub> w<sub>j</sub></span></span>,&nbsp;&nbsp; <b>pass</b> ⇔ S ≥ 70</span><span class="lbl">weighted rubric · optional bonuses permit S &gt; 100</span></div>
+  <div class="eq rx"><span class="no">18</span><span class="m">ℛ = <b>BFS</b>(clients);&nbsp;&nbsp; <b>counts</b>(s) ⇔ s ∈ ℛ</span><span class="lbl">reachability gate · wired, not decorative</span></div>
+  <div class="eq rx"><span class="no">19</span><span class="m"><b>noOverload</b> ⇔ ∀ n : σ(n) ∉ { overloaded, failing, offline }</span><span class="lbl">live coupling · Rubix reads PulseFlow health states</span></div>
+</div>
+<ul class="plain">
+  <li>Each of the 95 checks carries a <strong>weight (1–3)</strong>; failed mandatory checks return their authored <code>failHint</code>.</li>
+  <li>The score normalizes earned weight against <strong>mandatory weight only</strong> — so the 20 optional bonus checks (read replicas, multi-AZ patterns, cache layers…) can push a score <strong>above 100%</strong>, rewarding best practices without punishing their absence.</li>
+  <li>Pass = score ≥ 70. Milestones are evaluated in the same pass from the same reachability set, so the rubric and the milestone tracker can never disagree about the graph.</li>
+  <li>Hints are revealed against the <em>first missing milestone</em> — the engine computes exactly which gap the user should close next, rather than dumping a hint list.</li>
+</ul>
+<p>The reviewer sits behind a strategy interface (<code>ArchitectureReviewer</code>), with an <code>AiReviewer</code> seam already reserved: the long-term plan is hybrid review — Rubix for deterministic structural truth, an LLM for qualitative critique — without touching any caller.</p>
+
+<h3>3.6 The third layer: topology compliance</h3>
+<p>Below the challenge rubric sits an always-on compliance engine that governs what can be drawn at all: <strong>456 port-typed connection rules</strong> generated from the 74-service catalog. Every attempted edge is validated for direction (output→input), self-loops, duplicates, port-type compatibility, and semantic legality — a client cannot connect straight to an internal database node, and a VPC boundary only accepts the <strong>19 service types</strong> that can actually live inside a VPC. Illegal edges are rejected at draw time with an explanation, which means Rubix's grading rules never need to police physically-impossible graphs; the compliance layer already guaranteed structural sanity.</p>
+
+<h2 style="border-top-color:#e2e8f0;color:#1e293b">4 · How the Engines Compose</h2>
+<div class="chart-card">
+  <div class="ct">Engine Composition &amp; Execution Flow</div>
+  <svg viewBox="0 0 760 380" class="engine-arch-svg" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block;">
+    <defs>
+      <!-- Gradients -->
+      <linearGradient id="flow-grad-1" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4f46e5" />
+        <stop offset="100%" stop-color="#0e7490" />
+      </linearGradient>
+      <linearGradient id="flow-grad-2" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#0e7490" />
+        <stop offset="100%" stop-color="#10b981" />
+      </linearGradient>
+      <filter id="shadow-soft" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.1" />
+      </filter>
+    </defs>
+    
+    <!-- Flow Lines -->
+    <path d="M 120 190 L 210 190" fill="none" stroke="url(#flow-grad-1)" stroke-width="2.5" stroke-dasharray="6 4" />
+    <path d="M 330 190 L 430 190" fill="none" stroke="url(#flow-grad-1)" stroke-width="2.5" stroke-dasharray="6 4" />
+    <path d="M 550 190 L 640 190" fill="none" stroke="url(#flow-grad-2)" stroke-width="2.5" stroke-dasharray="6 4" />
+    <path d="M 490 300 L 490 330 L 370 330 L 370 340" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+    
+    <!-- Step 1: Canvas Editor -->
+    <g transform="translate(10, 140)" filter="url(#shadow-soft)">
+      <rect width="110" height="100" rx="16" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <rect width="110" height="6" fill="#4f46e5" rx="3" />
+      <circle cx="55" cy="40" r="16" fill="var(--accent-soft)" />
+      <path d="M 50 40 L 60 40 M 55 35 L 55 45" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" />
+      <text x="55" y="74" font-size="11" font-weight="800" text-anchor="middle" fill="var(--text)">Canvas Editor</text>
+      <text x="55" y="86" font-size="9" text-anchor="middle" fill="var(--muted)">User Interactions</text>
+    </g>
+    
+    <!-- Step 2: Topology Compliance -->
+    <g transform="translate(210, 110)" filter="url(#shadow-soft)">
+      <rect width="120" height="160" rx="16" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <rect width="120" height="6" fill="#4f46e5" rx="3" />
+      <circle cx="60" cy="45" r="18" fill="var(--accent-soft)" />
+      <path d="M 52 45 L 57 50 L 68 39" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="60" y="86" font-size="12" font-weight="800" text-anchor="middle" fill="var(--text)">1. Compliance</text>
+      <text x="60" y="102" font-size="9.5" text-anchor="middle" fill="var(--muted)">456 Connection Rules</text>
+      <rect x="12" y="118" width="96" height="28" rx="6" fill="var(--code)" stroke="var(--border)" stroke-width="1" />
+      <text x="60" y="135" font-size="9" font-weight="700" text-anchor="middle" fill="var(--text)">Validates Edges</text>
+    </g>
+    
+    <!-- Step 3: PulseFlow Engine -->
+    <g transform="translate(430, 80)" filter="url(#shadow-soft)">
+      <rect width="120" height="220" rx="16" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <rect width="120" height="6" fill="#0e7490" rx="3" />
+      <circle cx="60" cy="45" r="18" fill="var(--rubix-soft)" />
+      <path d="M 54 45 A 6 6 0 0 1 66 45 A 6 6 0 0 1 54 45 Z" fill="none" stroke="#0e7490" stroke-width="2" />
+      <path d="M 60 33 L 60 57" stroke="#0e7490" stroke-width="1.5" />
+      <path d="M 48 45 L 72 45" stroke="#0e7490" stroke-width="1.5" />
+      <text x="60" y="86" font-size="12" font-weight="800" text-anchor="middle" fill="var(--text)">2. PulseFlow</text>
+      <text x="60" y="102" font-size="9.5" text-anchor="middle" fill="#0e7490" font-weight="600">180ms Sim Loop</text>
+      
+      <!-- Inside tasks -->
+      <rect x="10" y="118" width="100" height="88" rx="8" fill="var(--code)" stroke="var(--border)" stroke-width="1" />
+      <text x="60" y="134" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--text)">Topological Solve</text>
+      <text x="60" y="150" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--text)">Resolve Capacity</text>
+      <text x="60" y="166" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--text)">Compute Queue</text>
+      <text x="60" y="182" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--text)">Emit Node Health</text>
+    </g>
+    
+    <!-- Step 4: Rubix Engine -->
+    <g transform="translate(640, 110)" filter="url(#shadow-soft)">
+      <rect width="110" height="160" rx="16" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <rect width="110" height="6" fill="#10b981" rx="3" />
+      <circle cx="55" cy="45" r="18" fill="var(--good-soft)" />
+      <polygon points="55,36 63,44 55,52 47,44" fill="none" stroke="#10b981" stroke-width="2" />
+      <text x="55" y="86" font-size="12" font-weight="800" text-anchor="middle" fill="var(--text)">3. Rubix</text>
+      <text x="55" y="102" font-size="9.5" text-anchor="middle" fill="#10b981" font-weight="600">Grading Engine</text>
+      <rect x="10" y="118" width="90" height="28" rx="6" fill="var(--code)" stroke="var(--border)" stroke-width="1" />
+      <text x="55" y="135" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--text)">156 Grading Rules</text>
+    </g>
+    
+    <!-- Step 5: Cost Engine -->
+    <g transform="translate(290, 310)" filter="url(#shadow-soft)">
+      <rect width="160" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <rect width="160" height="4" fill="#10b981" rx="2" />
+      <text x="80" y="24" font-size="11" font-weight="800" text-anchor="middle" fill="var(--text)">4. Billing &amp; Cost Engine</text>
+      <text x="80" y="40" font-size="9.5" text-anchor="middle" fill="var(--muted)">7,511 pricing parameters</text>
+    </g>
+  </svg>
+</div>
+<p>One graph, four consumers, zero servers. The layering is strict: compliance guarantees structural sanity so grading rules stay small; simulation computes behavior so grading can assert on <em>performance</em>, not just shape; and cost reads the same config the simulation validated, so the bill and the behavior can never describe two different systems.</p>
+
+<h2 style="border-top-color:#e2e8f0;color:#1e293b">5 · Verification Summary</h2>
+<table>
+<tr><th>Engine</th><th>Method</th><th>Result</th></tr>
+<tr><td><span class="badge b-pulse">PulseFlow</span></td><td>Standardized 4-scenario saturation suite, every catalog service, deterministic</td><td><strong>100%</strong> — 453/453 checks (Simulation Accuracy Benchmark)</td></tr>
+<tr><td><span class="badge b-good">Cost engine</span> <span style="font-size:11.5px;color:var(--muted)">(companion report)</span></td><td>Live AWS Price List API audit, 27 regions</td><td><strong>100%</strong> pricing accuracy · 92.4% weighted coverage (Cost-Accuracy Benchmark v5)</td></tr>
+<tr><td><span class="badge b-rubix">Rubix</span></td><td>Unit + characterization specs, plus a challenge schema validator in CI</td><td>All 6 operators covered; all 10 challenges schema-validated</td></tr>
+</table>
+
+<footer>
+Built and maintained by Sushant Kumar · <a href="https://github.com/000Sushant/system-design-simulator">github.com/000Sushant/system-design-simulator</a> · Published 2026-07-12
+</footer>
+
+</div>
+</body>
+</html>

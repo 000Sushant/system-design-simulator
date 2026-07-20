@@ -10,13 +10,6 @@ export interface BuiltGraph {
   nodeByKey: Map<string, ArchitectureNode>;
 }
 
-/**
- * Builds a connected architecture from a declarative layout + logical edges.
- *
- * Shared by presets, challenge reference solutions, and scaffolds so they all
- * create connections the same way: every edge is resolved to a concrete,
- * rule-valid port pair via ValidationRuleService (no hardcoded port ids).
- */
 @Injectable({ providedIn: 'root' })
 export class GraphBuilderService {
   constructor(
@@ -53,7 +46,13 @@ export class GraphBuilderService {
           targetPorts.map((targetPort) => ({
             sourcePort,
             targetPort,
-            result: this.validation.validate(sourceNode, sourcePort, targetNode, targetPort, connections),
+            result: this.validation.validate(
+              sourceNode,
+              sourcePort,
+              targetNode,
+              targetPort,
+              connections,
+            ),
           })),
         )
         .find((candidate) => candidate.result.allowed);

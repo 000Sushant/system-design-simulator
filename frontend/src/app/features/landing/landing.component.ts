@@ -1,5 +1,14 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { SimulationCanvasComponent } from '../canvas animation/simulation-canvas.component';
 import { ThemeService } from '../../core/services/theme.service';
 import { environment } from '../../../environments/environment';
@@ -7,37 +16,46 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, SimulationCanvasComponent],
+  imports: [SimulationCanvasComponent],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css'],
 })
-export class LandingComponent implements OnInit {
+export class LandingComponent implements OnInit, OnDestroy {
+  private themeService = inject(ThemeService);
+  private zone = inject(NgZone);
+  private scrollTicking = false;
+  private readonly onScrollBound = (): void => this.handleScroll();
+
   @Output() launch = new EventEmitter<'developer' | 'architect' | undefined>();
   @ViewChild('shell', { static: true }) shellRef!: ElementRef<HTMLElement>;
 
-  /** Live project stats from the Worker. Null until loaded; hidden if it stays null. */
   liveStats: { icon: string; value: string; label: string }[] | null = null;
   githubStars: string | null = null;
 
   ngOnInit(): void {
     this.loadLiveStats();
+    this.zone.runOutsideAngular(() => {
+      this.shellRef.nativeElement.addEventListener('scroll', this.onScrollBound, { passive: true });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.shellRef.nativeElement.removeEventListener('scroll', this.onScrollBound);
   }
 
   private async loadLiveStats(): Promise<void> {
-    const base = environment.votesApiBase;
+    const base = (environment as { dailyApiBase?: string }).dailyApiBase;
     if (base) {
       try {
         const res = await fetch(`${base}/stats`);
         if (res.ok) {
           const s = await res.json();
-          // Only show the strip once there is something real to show.
           if (s && (s.stars || s.clones || s.visitors)) {
             this.liveStats = this.toStats(s);
             return;
           }
         }
       } catch {
-        // Network/Worker unavailable: fall through to the dev fallback below.
       }
     }
     const host = window.location.hostname;
@@ -76,8 +94,6 @@ export class LandingComponent implements OnInit {
     },
   ];
 
-  constructor(private themeService: ThemeService) { }
-
   get isDarkMode(): boolean {
     return this.themeService.isDark;
   }
@@ -89,19 +105,37 @@ export class LandingComponent implements OnInit {
   navScrolled = false;
   showBackToTop = false;
 
-  onShellScroll(event: Event) {
-    const el = event.target as HTMLElement;
-    this.navScrolled = el.scrollTop > 60;
-    this.showBackToTop = el.scrollTop > 400;
+  private handleScroll(): void {
+    if (this.scrollTicking) return;
+    this.scrollTicking = true;
+    requestAnimationFrame(() => {
+      this.scrollTicking = false;
+      const top = this.shellRef.nativeElement.scrollTop;
+      const navScrolled = top > 60;
+      const showBackToTop = top > 400;
+      if (navScrolled === this.navScrolled && showBackToTop === this.showBackToTop) return;
+      this.zone.run(() => {
+        this.navScrolled = navScrolled;
+        this.showBackToTop = showBackToTop;
+      });
+    });
   }
 
   scrollToTop(): void {
     this.shellRef.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  openDocs(event: Event) {
+  openDocs(event: Event, queryParams: string = '') {
     event.preventDefault();
-    window.history.pushState(null, '', '/docs');
+    sessionStorage.setItem('docsOrigin', '/');
+    window.history.pushState(null, '', queryParams ? `/docs${queryParams}` : '/docs');
+    window.dispatchEvent(new Event('popstate'));
+  }
+
+  openReport(reportId: string, event: Event) {
+    event?.preventDefault();
+    sessionStorage.setItem('docsOrigin', '/');
+    window.history.pushState(null, '', `/benchmarks?report=${reportId}`);
     window.dispatchEvent(new Event('popstate'));
   }
 
@@ -111,22 +145,20 @@ export class LandingComponent implements OnInit {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    // Relative coordinates from center (-1 to 1)
     const rx = (x - rect.width / 2) / (rect.width / 2);
     const ry = (y - rect.height / 2) / (rect.height / 2);
 
-    // Cast shadow in opposite direction of mouse
-    const shadowX = -rx * 8; // max 8px shift
-    const shadowY = -ry * 8; // max 8px shift
+    const maxRotation = 6;
+    const tiltX = -ry * maxRotation;
+    const tiltY = rx * maxRotation;
+
+    const shadowX = rx * 8;
+    const shadowY = ry * 8;
 
     btn.style.setProperty('--mouse-x', `${x}px`);
     btn.style.setProperty('--mouse-y', `${y}px`);
     btn.style.setProperty('--shadow-x', `${shadowX}px`);
     btn.style.setProperty('--shadow-y', `${shadowY}px`);
-
-    // Subtle 3D tilt
-    const tiltX = ry * 4; // rotate around X axis
-    const tiltY = -rx * 4; // rotate around Y axis
     btn.style.setProperty('--tilt-x', `${tiltX}deg`);
     btn.style.setProperty('--tilt-y', `${tiltY}deg`);
   }
@@ -149,7 +181,6 @@ export class LandingComponent implements OnInit {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    // fallback: find first mode-section
     const section = shell.querySelector('.mode-section') as HTMLElement | null;
     if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -220,7 +251,7 @@ export class LandingComponent implements OnInit {
     {
       label: 'Email',
       icon: 'fa fa-envelope',
-      href: 'mailto:[000susahntkumar@gmail.com]',
+      href: 'mailto:000sushantkumar@gmail.com',
     },
     {
       label: 'LinkedIn',
@@ -260,20 +291,21 @@ export class LandingComponent implements OnInit {
     },
     {
       id: 'architect' as const,
-      badge: 'Design + Cost Analytics',
+      badge: 'Architecture Cost Analytics',
       title: 'Architect',
       description:
-        'Model production grade systems with 60+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.',
+        'Model production grade systems with 70+ AWS services and a live cost analytics dashboard that turns your design into a monthly bill you can defend.',
       button: 'Design Infrastructure',
       icon: 'fas fa-building-columns',
       visual: 'architect-visual',
       features: [
-        '60+ real AWS services',
-        '20+ real AWS regions with precise pricing',
+        '70+ real AWS services',
+        '25+ real AWS regions with precise pricing',
         'Live cost analytics dashboard',
         'Accurate per service monthly estimates',
         'Stress test production workloads',
         'Granular performance tuning',
+        'Cost estimates in 5 currencies',
       ],
     },
   ];

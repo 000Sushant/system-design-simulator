@@ -1,14 +1,8 @@
 import { GraphContext, GraphRule } from '../../models/challenge.model';
 import { AwsServiceType } from '../../models/architecture.model';
 
-/** Node statuses that mean a node is not coping with its load. */
 const UNHEALTHY_STATUSES = new Set(['overloaded', 'failing', 'offline']);
 
-/**
- * Node ids reachable forward from any client node, following connection
- * direction. Used so a required service only "counts" when it is actually
- * wired into the request path — not just dropped on the canvas.
- */
 export function reachableFromClient(ctx: GraphContext): Set<string> {
   const adjacency = new Map<string, string[]>();
   for (const conn of ctx.connections) {
@@ -39,10 +33,6 @@ function nodesOfTypes(ctx: GraphContext, types: AwsServiceType[]) {
   return ctx.nodes.filter((n) => set.has(n.type));
 }
 
-/**
- * Evaluates a single declarative rule against the architecture. Pure and
- * deterministic. `reachable` is precomputed once per evaluation pass.
- */
 export function evaluateRule(rule: GraphRule, ctx: GraphContext, reachable: Set<string>): boolean {
   switch (rule.kind) {
     case 'hasService': {
@@ -73,14 +63,12 @@ export function evaluateRule(rule: GraphRule, ctx: GraphContext, reachable: Set<
       return nodesOfTypes(ctx, rule.anyOf).length >= rule.min;
     }
     case 'noOverload': {
-      // Only meaningful once at least one node exists; an empty canvas is not "healthy".
       return ctx.nodes.length > 0 && !ctx.nodes.some((n) => UNHEALTHY_STATUSES.has(n.status));
     }
     case 'allOf': {
       return rule.rules.every((sub) => evaluateRule(sub, ctx, reachable));
     }
     default: {
-      // Exhaustiveness guard — a new rule kind must be handled above.
       const _never: never = rule;
       return _never;
     }
