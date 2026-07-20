@@ -1073,6 +1073,12 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       Array.isArray(workspace.tabs) &&
       workspace.tabs.some((t) => (t.nodes?.length ?? 0) > 0);
 
+    const workspace = this.storage.loadWorkspace();
+    const hasWorkspaceContent =
+      !!workspace &&
+      Array.isArray(workspace.tabs) &&
+      workspace.tabs.some((t) => (t.nodes?.length ?? 0) > 0);
+
     const local = this.storage.loadLocal();
     // Prefer the full multi-tab workspace so every saved canvas is restored.
     // Fall back to the single saved project, then to the preset/dev blank.
@@ -1241,10 +1247,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.annotations = this.annotations.map((a) =>
         a.id === id
           ? {
-              ...a,
-              width: Math.max(100, startW + dx),
-              height: Math.max(40, startH + dy),
-            }
+            ...a,
+            width: Math.max(100, startW + dx),
+            height: Math.max(40, startH + dy),
+          }
           : a,
       );
     };
@@ -2256,6 +2262,198 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.roleMenuOpen) this.roleMenuOpen = false;
   }
 
+  /** True when the active canvas has any services, connections, or notes. */
+  private canvasHasContent(): boolean {
+    return (
+      this.nodes.length > 0 ||
+      this.connections.length > 0 ||
+      this.annotations.length > 0
+    );
+  }
+
+  /** True when a given tab (active or not) holds any content. */
+  private tabHasContent(index: number): boolean {
+    if (index === this.activeTabIndex) return this.canvasHasContent();
+    const t = this.tabs[index];
+    return (
+      !!t &&
+      ((t.nodes?.length ?? 0) > 0 ||
+        (t.connections?.length ?? 0) > 0 ||
+        (t.annotations?.length ?? 0) > 0)
+    );
+  }
+
+  /** True when a tab has content AND unsaved edits (orange dot). New empty
+   *  tabs start dirty but have no content, so they never trip the guard. */
+  private tabIsUnsaved(index: number): boolean {
+    const t = this.tabs[index];
+    return !!t && t.dirty && this.tabHasContent(index);
+  }
+
+  /** True when any tab (active or background) has unsaved content. Used so we
+   *  never silently lose work that lives on a non-active canvas. */
+  private anyTabUnsaved(): boolean {
+    return this.tabs.some((_, i) => this.tabIsUnsaved(i));
+  }
+
+  /** True when any tab holds content (saved or not). Used by the mode switch so
+   *  an empty active tab doesn't hide work on other canvases. */
+  private anyTabHasContent(): boolean {
+    return this.tabs.some((_, i) => this.tabHasContent(i));
+  }
+
+  /** Collapse every canvas down to a single fresh, empty tab. */
+  private resetAllCanvases(): void {
+    this.simulation.stop();
+    this.tabs = [];
+    this.activeTabIndex = 0;
+    this.applyProject({
+      id: "local-project",
+      name: "Canvas 1",
+      nodes: [],
+      connections: [],
+      annotations: [],
+      currency: this.globalCurrency,
+      region: this.globalRegion,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  /** Persist every tab (not just the active one) so no canvas is lost. */
+  private persistWorkspace(): void {
+    this.saveActiveTabState();
+    // Keep the single-project key in sync for the active canvas (back-compat).
+    this.storage.save(this.currentProject()).subscribe();
+    const workspace: PersistedWorkspace = {
+      activeIndex: this.activeTabIndex,
+      tabs: this.tabs.map((t) => ({
+        id: t.id,
+        name: t.name,
+        projectName: t.projectName,
+        nodes: t.nodes,
+        connections: t.connections,
+        annotations: t.annotations,
+        currency: t.globalCurrency,
+        region: t.globalRegion,
+      })),
+    };
+    this.storage.saveWorkspace(workspace);
+    this.tabs.forEach((t) => (t.dirty = false));
+  }
+
+  /** Save all canvases immediately (no loader) for the leave-guard flow. */
+  private saveNow(): void {
+    this.persistWorkspace();
+    this.setMessage("All canvases saved.", "success");
+  }
+
+  /** Rebuild every tab from a saved workspace on load. */
+  private restoreWorkspace(ws: PersistedWorkspace): void {
+    this.tabs = ws.tabs.map((pt, i) => ({
+      id: pt.id || `tab-${Date.now()}-${i}`,
+      name: pt.name || `Canvas ${i + 1}`,
+      projectName: pt.projectName || pt.name || "Untitled AWS Architecture",
+      nodes: pt.nodes || [],
+      connections: pt.connections || [],
+      annotations: pt.annotations || [],
+      packets: [],
+      selectedNodeIds: [],
+      selectedConnectionIds: [],
+      zoom: this.isMobileViewport ? 0.65 : 0.85,
+      pan: { x: 40, y: 40 },
+      globalCurrency: pt.currency || "USD",
+      globalRegion: pt.region || "us-east-1",
+      simulationMode: "idle" as SimulationMode,
+      totals: { processed: 0, dropped: 0, avgLatency: 0 },
+      tick: 0,
+      dirty: false,
+    }));
+    const idx = Math.min(
+      Math.max(ws.activeIndex ?? 0, 0),
+      this.tabs.length - 1,
+    );
+    this.loadTabState(idx);
+    this.resetHistory();
+    this.tabs.forEach((t) => (t.dirty = false));
+  }
+
+  /** Handles a button choice from the unsaved-work guard popup. */
+  resolveLeaveGuard(
+    choice: "keep" | "fresh" | "saveFresh" | "save" | "discard" | "cancel",
+  ): void {
+    const g = this.leaveGuard;
+    this.leaveGuard = null;
+    if (!g || choice === "cancel") return;
+
+    const proceed = () => {
+      if (g.action === "switch" && g.mode) this.applyRoleSwitch(g.mode);
+      else if (g.action === "home") this.doGoHome();
+      else if (g.action === "closeTab" && g.tabIndex != null)
+        this.doCloseTab(g.tabIndex);
+    };
+
+    switch (choice) {
+      case "keep": // mode switch: carry the canvas into the new mode
+        proceed();
+        break;
+      case "fresh": // mode switch: clear every canvas, then switch
+        this.resetAllCanvases();
+        proceed();
+        break;
+      case "saveFresh": // mode switch: save all, clear every canvas, then switch
+        this.saveNow();
+        this.resetAllCanvases();
+        proceed();
+        break;
+      case "save": // home / closeTab: save first, then leave/close
+        this.saveNow();
+        proceed();
+        break;
+      case "discard": // home / closeTab: leave/close without saving
+        proceed();
+        break;
+    }
+  }
+
+  /** Toggles the navbar role-switcher dropdown. */
+  toggleRoleMenu(event: Event): void {
+    event.stopPropagation();
+    this.roleMenuOpen = !this.roleMenuOpen;
+  }
+
+  /** Switches the playground role (architect ↔ developer) in place, keeping the
+   *  current canvas. Persists the choice in the URL so a reload stays put. */
+  switchRole(mode: "developer" | "architect"): void {
+    this.roleMenuOpen = false;
+    if (this.roleMode === mode) return;
+    if (this.anyTabHasContent()) {
+      this.leaveGuard = {
+        action: "switch",
+        mode,
+        title: `Switch to ${mode} mode`,
+        message:
+          "Your current canvases will carry over. Bring them with you, start fresh, or save your work first.",
+      };
+      return;
+    }
+    this.applyRoleSwitch(mode);
+  }
+
+  private applyRoleSwitch(mode: "developer" | "architect"): void {
+    this.roleMode = mode;
+    if (typeof window !== "undefined" && window.history) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("mode", mode);
+      window.history.replaceState(null, "", url.toString());
+    }
+  }
+
+  /** Closes the role-switcher dropdown when clicking anywhere else. */
+  @HostListener("document:click")
+  closeRoleMenu(): void {
+    if (this.roleMenuOpen) this.roleMenuOpen = false;
+  }
+
   goDocs(): void {
     // Record origin so the docs "Back" button returns to the playground.
     sessionStorage.setItem('docsOrigin', '/playground');
@@ -3232,15 +3430,15 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
           this.nodes = this.nodes.map((n) =>
             n.id === selectedId
               ? {
-                  ...n,
-                  config: {
-                    ...n.config,
-                    variableTraffic: true,
-                    variableMinRps: min,
-                    variableMaxRps: max,
-                    requestRate: mid,
-                  },
-                }
+                ...n,
+                config: {
+                  ...n.config,
+                  variableTraffic: true,
+                  variableMinRps: min,
+                  variableMaxRps: max,
+                  requestRate: mid,
+                },
+              }
               : n,
           );
           if (clientNode.config['syncRpsToServices']) {

@@ -125,6 +125,14 @@
   pointer-events: none;
 }
 
+/* SVG filter defs are referenced by id only; keep them out of layout */
+.liquid-glass-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
 /* ── Dynamic Island Navbar ─────────────────────────────────── */
 
 .landing-nav {

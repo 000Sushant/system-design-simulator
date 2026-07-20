@@ -1291,6 +1291,178 @@ select {
   color: #fbbf24;
 }
 
+/* ── Role switcher (Architect ↔ Developer) ──────────────────────────────── */
+.role-switcher {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+}
+
+/* These live inside `.toolbar`, so `.toolbar button` (min-height, padding, glass
+   bg, and a white/purple :hover) applies to them. Selectors are `.toolbar`-scoped
+   and hover uses !important to win over `.toolbar button:hover` in both themes. */
+.toolbar .role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 0.18s ease;
+}
+
+.toolbar .role-badge::after {
+  display: none;
+}
+
+.toolbar .role-badge i {
+  font-size: 7px;
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.toolbar .role-badge:hover {
+  color: #92400e !important;
+  background: rgba(245, 158, 11, 0.24) !important;
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  transform: none !important;
+}
+
+.role-badge.menu-open i {
+  transform: rotate(180deg);
+}
+
+.role-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  z-index: 250;
+  min-width: 140px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: roleMenuIn 0.16s ease-out;
+}
+
+@keyframes roleMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toolbar .role-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: background 0.15s ease;
+}
+
+.toolbar .role-menu-item::after {
+  display: none;
+}
+
+.toolbar .role-menu-item:hover {
+  color: #92400e !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: transparent !important;
+  transform: none !important;
+}
+
+.toolbar .role-menu-item.active {
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.role-menu-item > i:first-child {
+  width: 13px;
+  font-size: 11px;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.role-menu-item > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.role-check {
+  font-size: 9px;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+/* Dark mode — keep the orange identity, brighten the ink. */
+:host-context(.dark) .toolbar .role-badge {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+:host-context(.dark) .toolbar .role-badge:hover {
+  color: #fcd34d !important;
+  background: rgba(245, 158, 11, 0.26) !important;
+  border-color: rgba(245, 158, 11, 0.65) !important;
+}
+
+:host-context(.dark) .role-menu {
+  background: rgba(20, 26, 40, 0.97);
+  border-color: rgba(245, 158, 11, 0.22);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+}
+
+:host-context(.dark) .toolbar .role-menu-item {
+  color: #f1f5f9;
+}
+
+:host-context(.dark) .toolbar .role-menu-item:hover {
+  color: #fcd34d !important;
+  background: rgba(245, 158, 11, 0.16) !important;
+}
+
+:host-context(.dark) .toolbar .role-menu-item.active {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+:host-context(.dark) .role-menu-item > i:first-child,
+:host-context(.dark) .role-check {
+  color: #fbbf24;
+}
+
 .brand input {
   width: 100%;
   max-width: 220px;
@@ -1717,6 +1889,18 @@ select {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
+/* Service heading title + category tag use neutral ink (black on light, white on
+   dark) so they read consistently regardless of the per-service accent color. */
+.panel-heading-text span {
+  color: #111827;
+}
+
+.panel-heading-text small {
+  color: #475569;
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 .app-shell.left-collapsed .left-toggle,
 .app-shell.right-collapsed .right-toggle {
   left: 50%;
@@ -2003,6 +2187,11 @@ small {
 
 .service-tile:active {
   cursor: grabbing;
+}
+
+.service-tile:active {
+  cursor: grabbing;
+  transform: translateY(0);
 }
 
 .service-tile>span {

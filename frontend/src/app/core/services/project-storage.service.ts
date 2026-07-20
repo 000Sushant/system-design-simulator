@@ -63,4 +63,22 @@ export class ProjectStorageService {
   clearWorkspace(): void {
     localStorage.removeItem(workspaceKey);
   }
+
+  saveWorkspace(workspace: PersistedWorkspace): void {
+    localStorage.setItem(workspaceKey, JSON.stringify(workspace));
+  }
+
+  loadWorkspace(): PersistedWorkspace | null {
+    const raw = localStorage.getItem(workspaceKey);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as PersistedWorkspace;
+    } catch {
+      return null;
+    }
+  }
+
+  clearWorkspace(): void {
+    localStorage.removeItem(workspaceKey);
+  }
 }

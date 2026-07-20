@@ -28,6 +28,8 @@ export class AppComponent implements OnInit, OnDestroy {
   docsOpen = false;
   reportsOpen = false;
 
+  constructor(private themeService: ThemeService) {}
+
   private onPop = () => {
     this.handleRouting();
   };

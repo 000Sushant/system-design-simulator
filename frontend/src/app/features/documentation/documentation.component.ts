@@ -264,6 +264,9 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       practicalExample: docData.practicalScenario || '',
       keyCapabilities: docData.keyCharacteristics || [],
       useCases: docData.commonIntegrationPatterns || [],
+      // SAFE: rawSvg is build-time-static — either a hand-authored illustration
+      // from the serviceDocs map or buildServiceIllustration() output derived
+      // from static service definitions. It must never carry user input.
       illustrationSvg: this.sanitizer.bypassSecurityTrustHtml(rawSvg),
       bottleneck,
     };
