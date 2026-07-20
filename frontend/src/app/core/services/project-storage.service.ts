@@ -11,7 +11,6 @@ import {
 const storageKey = 'aws-system-design-simulator-project';
 const workspaceKey = 'aws-system-design-simulator-workspace';
 
-/** One canvas tab's persistable content (runtime-only fields are dropped). */
 export interface PersistedTab {
   id: string;
   name: string;
@@ -23,7 +22,6 @@ export interface PersistedTab {
   region: string;
 }
 
-/** The full multi-tab workspace, so no canvas is lost on navigation. */
 export interface PersistedWorkspace {
   activeIndex: number;
   tabs: PersistedTab[];
@@ -40,7 +38,12 @@ export class ProjectStorageService {
 
   loadLocal(): ArchitectureProject | null {
     const raw = localStorage.getItem(storageKey);
-    return raw ? JSON.parse(raw) as ArchitectureProject : null;
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as ArchitectureProject;
+    } catch {
+      return null;
+    }
   }
 
   saveWorkspace(workspace: PersistedWorkspace): void {

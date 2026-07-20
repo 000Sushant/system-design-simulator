@@ -1,17 +1,16 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { OnboardingStep } from '../../../core/models/challenge.model';
 import { OnboardingService } from '../../../core/services/onboarding.service';
 
 @Component({
   selector: 'app-onboarding-overlay',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './onboarding-overlay.component.html',
   styleUrls: ['./onboarding-overlay.component.css'],
 })
 export class OnboardingOverlayComponent {
-  constructor(readonly onboarding: OnboardingService) {}
+  readonly onboarding = inject(OnboardingService);
 
   get step(): OnboardingStep | null {
     return this.onboarding.currentStep;
@@ -25,7 +24,6 @@ export class OnboardingOverlayComponent {
     return this.onboarding.steps.length;
   }
 
-  /** Manual steps are advanced with the Next button; action steps auto-advance. */
   get isManual(): boolean {
     return this.step?.completeOn === 'manual';
   }

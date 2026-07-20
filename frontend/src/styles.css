@@ -40,6 +40,76 @@ body {
   --input-bg: #ffffff;
   --input-text: #1e293b;
   --button-hover: rgba(0, 0, 0, 0.05);
+
+  /* Global palette tokens — fixed (theme-independent) source for repeated colors. */
+  --c-white: #ffffff;
+  --c-ink: #111827;
+  --c-violet: #7c3aed;
+  --c-violet-300: #a78bfa;
+  --c-cyan: #06b6d4;
+  --c-emerald: #10b981;
+  --c-red: #ef4444;
+  --c-gray-700: #374151;
+  --c-slate-100: #f1f5f9;
+  --c-slate-300: #cbd5e1;
+  --c-slate-400: #94a3b8;
+  --c-slate-500: #64748b;
+  --c-slate-600: #475569;
+  --c-slate-800: #1e293b;
+  --c-slate-900: #0f172a;
+  --c-white-95: rgba(255, 255, 255, 0.95);
+  --c-white-90: rgba(255, 255, 255, 0.9);
+  --c-white-45: rgba(255, 255, 255, 0.45);
+  --c-white-40: rgba(255, 255, 255, 0.4);
+  --c-white-34: rgba(255, 255, 255, 0.34);
+  --c-white-10: rgba(255, 255, 255, 0.1);
+  --c-white-08: rgba(255, 255, 255, 0.08);
+  --c-white-06: rgba(255, 255, 255, 0.06);
+  --c-white-05: rgba(255, 255, 255, 0.05);
+  --c-violet-12: rgba(124, 58, 237, 0.12);
+  --c-violet-08: rgba(124, 58, 237, 0.08);
+  --c-amber: #d97706;
+  --c-emerald-600: #059669;
+  --c-white-20: rgba(255, 255, 255, 0.2);
+  --c-white-12: rgba(255, 255, 255, 0.12);
+  --c-white-04: rgba(255, 255, 255, 0.04);
+
+  /* rgba alpha tokens (second tokenization pass - values identical to the literals they replaced) */
+  --c-white-98: rgba(255, 255, 255, 0.98);
+  --c-white-92: rgba(255, 255, 255, 0.92);
+  --c-white-85: rgba(255, 255, 255, 0.85);
+  --c-white-82: rgba(255, 255, 255, 0.82);
+  --c-white-60: rgba(255, 255, 255, 0.6);
+  --c-white-55: rgba(255, 255, 255, 0.55);
+  --c-white-50: rgba(255, 255, 255, 0.5);
+  --c-white-32: rgba(255, 255, 255, 0.32);
+  --c-white-30: rgba(255, 255, 255, 0.3);
+  --c-white-25: rgba(255, 255, 255, 0.25);
+  --c-white-18: rgba(255, 255, 255, 0.18);
+  --c-white-15: rgba(255, 255, 255, 0.15);
+  --c-white-03: rgba(255, 255, 255, 0.03);
+  --c-white-02: rgba(255, 255, 255, 0.02);
+  --c-black-50: rgba(0, 0, 0, 0.5);
+  --c-black-45: rgba(0, 0, 0, 0.45);
+  --c-black-40: rgba(0, 0, 0, 0.4);
+  --c-black-35: rgba(0, 0, 0, 0.35);
+  --c-black-30: rgba(0, 0, 0, 0.3);
+  --c-black-25: rgba(0, 0, 0, 0.25);
+  --c-black-05: rgba(0, 0, 0, 0.05);
+  --c-black-04: rgba(0, 0, 0, 0.04);
+  --c-black-02: rgba(0, 0, 0, 0.02);
+  --c-s900-60: rgba(15, 23, 42, 0.6);
+  --c-s900-50: rgba(15, 23, 42, 0.5);
+  --c-s900-40: rgba(15, 23, 42, 0.4);
+  --c-s900-06: rgba(15, 23, 42, 0.06);
+  --c-s900-04: rgba(15, 23, 42, 0.04);
+  --c-violet-20a: rgba(124, 58, 237, 0.2);
+  --c-violet-15a: rgba(124, 58, 237, 0.15);
+  --c-violet-10a: rgba(124, 58, 237, 0.1);
+  --c-emerald-30a: rgba(16, 185, 129, 0.3);
+  --c-emerald-10a: rgba(16, 185, 129, 0.1);
+  --c-violet300-38: rgba(167, 139, 250, 0.38);
+  --c-night-90: rgba(8, 11, 22, 0.9);
 }
 
 :root.dark {

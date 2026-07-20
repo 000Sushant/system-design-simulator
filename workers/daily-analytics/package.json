@@ -1,0 +1,23 @@
+{
+  "name": "daily-analytics-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloudflare Worker that refreshes project analytics and USD exchange rates once a day",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "kv:create": "wrangler kv namespace create DAILY_KV",
+    "status": "wrangler tail",
+    "build": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "eslint": "^9.39.4",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.61.1",
+    "vitest": "^4.1.9",
+    "wrangler": "~4.107.0"
+  }
+}

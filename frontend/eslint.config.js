@@ -2,11 +2,6 @@
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 
-/**
- * Flat ESLint config for the Angular app. Noisy rules that the existing
- * codebase has not yet adopted are set to "warn" so lint is informative
- * without blocking; tighten them to "error" as the code is cleaned up.
- */
 module.exports = tseslint.config(
   {
     files: ['**/*.ts'],
@@ -25,7 +20,11 @@ module.exports = tseslint.config(
         { type: 'element', prefix: 'app', style: 'kebab-case' },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@angular-eslint/prefer-inject': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },

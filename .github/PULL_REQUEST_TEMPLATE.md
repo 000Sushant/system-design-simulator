@@ -19,7 +19,7 @@
 ## Checklist
 
 - [ ] The frontend type-checks cleanly (`cd frontend && npx tsc --noEmit`)
-- [ ] If I changed a pricing factor, I mirrored it in both `regions/us-east-1.json` and `worker/src/schema-builder.ts`
+- [ ] If I changed a pricing factor, I mirrored it in both `regions/us-east-1.json` and `workers/aws-pricing-generator/src/schema-builder.ts`
 - [ ] I tested my change locally
 - [ ] My change keeps the simulation and cost numbers accurate
 

@@ -21,7 +21,7 @@
     {
       "id": "configure",
       "title": "3. Configure a node",
-      "body": "Click a node to select it, then change a value in the right panel — like throughput or capacity.",
+      "body": "Click a node to select it, then change a value in the right panel, like throughput or capacity.",
       "completeOn": "configChanged"
     },
     {

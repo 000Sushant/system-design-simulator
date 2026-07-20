@@ -8,6 +8,8 @@
 export const environment = {
   production: true,
   apiBaseUrl: '',
-  /** Deployed Worker URL that serves /votes and /stats. */
-  votesApiBase: 'https://aws-pricing-generator.sr-architect.workers.dev',
+  /** Deployed Worker URL that serves /votes (daily-analytics worker). */
+  votesApiBase: 'https://daily-analytics.sr-architect.workers.dev',
+  /** Deployed Worker URL that serves /stats and /fx (daily-analytics worker). */
+  dailyApiBase: 'https://daily-analytics.sr-architect.workers.dev',
 };

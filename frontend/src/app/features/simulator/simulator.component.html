@@ -1,62 +1,135 @@
-<main class="app-shell" [class.left-collapsed]="leftCollapsed" [class.right-collapsed]="rightCollapsed"
-  [class.mobile-layout]="isMobileViewport" [class.run-stats-expanded-mobile]="isMobileViewport && runStatsExpanded"
-  [class.sim-running]="mode === 'running'" [class.selection-mode]="ctrlPressed"
-  [class.developer-mode]="roleMode === 'developer'">
+<main
+  class="app-shell"
+  [class.left-collapsed]="leftCollapsed"
+  [class.right-collapsed]="rightCollapsed"
+  [class.mobile-layout]="isMobileViewport"
+  [class.run-stats-expanded-mobile]="isMobileViewport && runStatsExpanded"
+  [class.sim-running]="mode === 'running'"
+  [class.selection-mode]="ctrlPressed"
+  [class.developer-mode]="roleMode === 'developer'"
+  [class.is-resizing]="isResizingLeft || isResizingRight"
+  [style.--palette-width]="(leftCollapsed ? 44 : paletteWidth) + 'px'"
+  [style.--inspector-width]="(rightCollapsed ? 44 : inspectorWidth) + 'px'"
+>
   <header class="toolbar" (mousemove)="onMouseMove($event)">
     <div class="brand">
-      <a class="brand-mark" (click)="goHome()" style="cursor: pointer;" aria-label="Sr. Architect home">
+      <a
+        class="brand-mark"
+        role="button"
+        tabindex="0"
+        (click)="goHome()"
+        (keydown.enter)="goHome()"
+        (keydown.space)="$event.preventDefault(); goHome()"
+        style="cursor: pointer"
+        aria-label="Sr. Architect home"
+      >
         <img src="favicon.svg" alt="" />
         <span>Sr<span class="brand-dot">.</span> Architect</span>
       </a>
       <div class="role-switcher">
-        <button type="button" class="role-badge" (click)="toggleRoleMenu($event)"
-          [class.menu-open]="roleMenuOpen" aria-haspopup="true" [attr.aria-expanded]="roleMenuOpen"
-          title="Switch mode">
+        <button
+          type="button"
+          class="role-badge"
+          (click)="toggleRoleMenu($event)"
+          [class.menu-open]="roleMenuOpen"
+          aria-haspopup="true"
+          [attr.aria-expanded]="roleMenuOpen"
+          title="Switch mode"
+        >
           {{ roleMode | titlecase }}
           <i class="fas fa-chevron-down"></i>
         </button>
-        <div class="role-menu" *ngIf="roleMenuOpen" (click)="$event.stopPropagation()">
-          <button type="button" class="role-menu-item" [class.active]="roleMode === 'architect'"
-            (click)="switchRole('architect')">
-            <i class="fas fa-drafting-compass"></i>
-            <span>Architect</span>
-            <i class="fas fa-check role-check" *ngIf="roleMode === 'architect'"></i>
-          </button>
-          <button type="button" class="role-menu-item" [class.active]="roleMode === 'developer'"
-            (click)="switchRole('developer')">
-            <i class="fas fa-code"></i>
-            <span>Developer</span>
-            <i class="fas fa-check role-check" *ngIf="roleMode === 'developer'"></i>
-          </button>
-        </div>
+        <!-- Menu container: click only stops propagation so an inside click doesn't close the menu via
+        the document click handler. Not itself a control (items are buttons); no focus/keyboard needed. -->
+        @if (roleMenuOpen) {
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+          <div class="role-menu" (click)="$event.stopPropagation()">
+            <button
+              type="button"
+              class="role-menu-item"
+              [class.active]="roleMode === 'architect'"
+              (click)="switchRole('architect')"
+            >
+              <i class="fas fa-drafting-compass"></i>
+              <span>Architect</span>
+              @if (roleMode === 'architect') {
+                <i class="fas fa-check role-check"></i>
+              }
+            </button>
+            <button
+              type="button"
+              class="role-menu-item"
+              [class.active]="roleMode === 'developer'"
+              (click)="switchRole('developer')"
+            >
+              <i class="fas fa-code"></i>
+              <span>Developer</span>
+              @if (roleMode === 'developer') {
+                <i class="fas fa-check role-check"></i>
+              }
+            </button>
+          </div>
+        }
       </div>
     </div>
 
     <div class="toolbar-actions">
       <div class="toolbar-actions-inner">
-        <button type="button" class="action-btn" (mousemove)="onMouseMove($event)" (click)="goHome()">
+        <button
+          type="button"
+          class="action-btn"
+          (mousemove)="onMouseMove($event)"
+          (click)="goHome()"
+        >
           <i class="fas fa-home"></i> Home
         </button>
-        <button type="button" class="action-btn" (mousemove)="onMouseMove($event)" (click)="goDocs()">
+        <button
+          type="button"
+          class="action-btn"
+          (mousemove)="onMouseMove($event)"
+          (click)="goDocs()"
+        >
           <i class="fas fa-book"></i> Docs
         </button>
         <span class="divider"></span>
-        <button type="button" class="icon-button" (mousemove)="onMouseMove($event)" title="Zoom out"
-          (click)="setZoom(-0.1)">
+        <button
+          type="button"
+          class="icon-button"
+          (mousemove)="onMouseMove($event)"
+          title="Zoom out"
+          (click)="setZoom(-0.1)"
+        >
           <i class="fas fa-search-minus"></i>
         </button>
-        <span class="zoom">{{ zoom * 100 | number: "1.0-0" }}%</span>
-        <button type="button" class="icon-button" (mousemove)="onMouseMove($event)" title="Zoom in"
-          (click)="setZoom(0.1)">
+        <span class="zoom">{{ zoom * 100 | number: '1.0-0' }}%</span>
+        <button
+          type="button"
+          class="icon-button"
+          (mousemove)="onMouseMove($event)"
+          title="Zoom in"
+          (click)="setZoom(0.1)"
+        >
           <i class="fas fa-search-plus"></i>
         </button>
         <span class="divider"></span>
-        <button type="button" class="icon-button" (mousemove)="onMouseMove($event)" title="Undo (Ctrl+Z)"
-          [disabled]="!canUndo" (click)="undo()">
+        <button
+          type="button"
+          class="icon-button"
+          (mousemove)="onMouseMove($event)"
+          title="Undo (Ctrl+Z)"
+          [disabled]="!canUndo"
+          (click)="undo()"
+        >
           <i class="fas fa-rotate-left"></i>
         </button>
-        <button type="button" class="icon-button" (mousemove)="onMouseMove($event)" title="Redo (Ctrl+Y)"
-          [disabled]="!canRedo" (click)="redo()">
+        <button
+          type="button"
+          class="icon-button"
+          (mousemove)="onMouseMove($event)"
+          title="Redo (Ctrl+Y)"
+          [disabled]="!canRedo"
+          (click)="redo()"
+        >
           <i class="fas fa-rotate-right"></i>
         </button>
         <span class="divider"></span>
@@ -66,27 +139,67 @@
         <button type="button" class="action-btn" (click)="fileInput.click()">
           <i class="fas fa-file-import"></i> Import
         </button>
-        <input type="file" #fileInput style="display: none" accept=".json" (change)="importProject($event)" />
+        <input
+          type="file"
+          #fileInput
+          style="display: none"
+          accept=".json"
+          (change)="importProject($event)"
+        />
 
-        <button type="button" class="action-btn" (mousemove)="onMouseMove($event)" (click)="downloadProject()">
+        <button
+          type="button"
+          class="action-btn"
+          (mousemove)="onMouseMove($event)"
+          (click)="downloadProject()"
+        >
           <i class="fas fa-download"></i> Export
         </button>
-        <button type="button" class="action-btn outline" (mousemove)="onMouseMove($event)" (click)="resetCanvas()">
+        <button
+          type="button"
+          class="action-btn outline"
+          (mousemove)="onMouseMove($event)"
+          (click)="resetCanvas()"
+        >
           <i class="fas fa-undo"></i> Clear
         </button>
         <span class="divider"></span>
-        <button type="button" class="icon-button hotkeys-btn" *ngIf="!isMobileViewport" (click)="openHotkeys()"
-          title="Keyboard shortcuts (?)" aria-label="Open keyboard shortcuts">
-          <i class="fas fa-question"></i>
-        </button>
-        <button type="button" class="icon-button theme-toggle-btn" (mousemove)="onMouseMove($event)"
+        @if (!isMobileViewport) {
+          <button
+            type="button"
+            class="icon-button hotkeys-btn"
+            (click)="openHotkeys()"
+            title="Keyboard shortcuts (?)"
+            aria-label="Open keyboard shortcuts"
+          >
+            <i class="fas fa-question"></i>
+          </button>
+        }
+        <button
+          type="button"
+          class="icon-button theme-toggle-btn"
+          (mousemove)="onMouseMove($event)"
           [class.show-moon]="!isDarkMode"
-          [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'" (click)="toggleTheme()">
-          <svg class="sun-moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
+          [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          (click)="toggleTheme()"
+        >
+          <svg
+            class="sun-moon-svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <mask id="sim-moon-mask">
               <rect x="0" y="0" width="100%" height="100%" fill="white" />
-              <circle [attr.cx]="!isDarkMode ? 6 : -10" [attr.cy]="!isDarkMode ? 18 : 34" r="7" fill="black" />
+              <circle
+                [attr.cx]="!isDarkMode ? 6 : -10"
+                [attr.cy]="!isDarkMode ? 18 : 34"
+                r="7"
+                fill="black"
+              />
             </mask>
             <circle cx="12" cy="12" r="5" mask="url(#sim-moon-mask)" fill="currentColor" />
             <g class="sun-rays" stroke="currentColor">
@@ -105,119 +218,252 @@
     </div>
   </header>
 
-  <div class="sidebar-backdrop" *ngIf="isMobileViewport && mobileSidebarOpen" (click)="closeMobileSidebars()"
-    aria-hidden="true"></div>
+  @if (isMobileViewport && mobileSidebarOpen) {
+    <div class="sidebar-backdrop" (click)="closeMobileSidebars()" aria-hidden="true"></div>
+  }
 
   <section class="workspace">
     <aside class="palette">
-      <button type="button" class="sidebar-toggle left-toggle" title="Collapse service palette"
-        (click)="toggleLeftSidebar()">
-        {{ leftCollapsed ? "›" : "‹" }}
+      <button
+        type="button"
+        class="sidebar-toggle left-toggle"
+        title="Collapse service palette"
+        (click)="toggleLeftSidebar()"
+      >
+        {{ leftCollapsed ? '›' : '‹' }}
       </button>
+      @if (!leftCollapsed) {
+        <div
+          class="sidebar-resizer left-resizer"
+          (mousedown)="startResizeLeft($event)"
+          aria-hidden="true"
+        ></div>
+      }
       <div class="sidebar-content">
         <div class="panel-heading">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-cubes" style="color: #7c3aed; font-size: 14px;"></i>
-            <span>Service Palette</span>
+          <div class="panel-heading-brand">
+            <i class="fas fa-shapes palette-heading-icon"></i>
+            <span class="panel-heading-title">Service Palette</span>
           </div>
-          <small>{{ filteredCatalog.length }} / {{ catalog.length }}</small>
+          <small class="panel-heading-badge"
+            >{{ filteredCatalog.length }} / {{ catalog.length }}</small
+          >
         </div>
         <label class="search-box" (mousemove)="onMouseMove($event)">
           <span>⌕</span>
-          <input [(ngModel)]="paletteSearch" placeholder="Search AWS services" aria-label="Search services" />
+          <input
+            [(ngModel)]="paletteSearch"
+            placeholder="Search AWS services"
+            aria-label="Search services"
+          />
         </label>
-        <div class="all-services-toggle-container" *ngIf="roleMode === 'architect'">
-          <span class="toggle-label">Show More Services</span>
-          <label class="glass-switch">
-            <input type="checkbox" [(ngModel)]="showAllServices" />
-            <span class="glass-slider"></span>
-          </label>
-        </div>
+        @if (roleMode === 'architect') {
+          <div class="all-services-toggle-container">
+            <span class="toggle-label">Show More Services</span>
+            <label class="glass-switch">
+              <input type="checkbox" [(ngModel)]="showAllServices" />
+              <span class="glass-slider"></span>
+            </label>
+          </div>
+        }
         <div class="service-list">
           <!-- Built-in Tools Category -->
           <section class="service-category">
             <button type="button" class="category-header" (click)="toggleCategory('Built-in')">
               <span class="category-indicator" style="background: #6366f1"></span>
               <span class="category-name">Built-in</span>
-              <small>1</small>
-              <b>{{ isCategoryCollapsed("Built-in") ? "+" : "−" }}</b>
+              <small>2</small>
+              <b>{{ isCategoryCollapsed('Built-in') ? '+' : '−' }}</b>
             </button>
-            <div class="category-services" *ngIf="!isCategoryCollapsed('Built-in')">
-              <button type="button" class="service-tile" draggable="true" (dragstart)="onAnnotationDragStart($event)"
-                (click)="addAnnotation()" style="
-                  background-color: rgba(99, 102, 241, 0.08);
-                  border-color: rgba(99, 102, 241, 0.2);
-                ">
-                <span class="service-icon" style="
-                    --service-color: #6366f1;
-                    display: grid;
-                    place-items: center;
-                  ">
-                  <i class="fas fa-font" style="font-size: 18px; color: #6366f1"></i>
-                </span>
-                <span>
-                  <strong>Note</strong>
-                  <small>Built-in · Canvas Annotation</small>
-                </span>
-              </button>
-            </div>
+            @if (!isCategoryCollapsed('Built-in')) {
+              <div class="category-services">
+                <button
+                  type="button"
+                  class="service-tile"
+                  draggable="true"
+                  (dragstart)="onAnnotationDragStart($event)"
+                  (click)="addAnnotation()"
+                  style="--service-color: #6366f1"
+                >
+                  <span
+                    class="service-tile-icon service-tile-icon--flat"
+                    style="display: grid; place-items: center"
+                  >
+                    <i class="fas fa-font" style="color: #6366f1"></i>
+                  </span>
+                  <span>
+                    <strong>Note</strong>
+                  </span>
+                </button>
+
+                <!-- Users / Client Tile -->
+                @let client = clientService;
+                <button
+                  type="button"
+                  class="service-tile"
+                  draggable="true"
+                  [class.region-unavailable]="isServiceUnavailable(client.type)"
+                  [title]="isServiceUnavailable(client.type) ? regionUnavailableReason : ''"
+                  (mousemove)="onMouseMove($event)"
+                  (dragstart)="onPaletteDragStart($event, client.type)"
+                  (click)="addService(client.type)"
+                  [style.--service-color]="serviceColor(client.type)"
+                >
+                  <span
+                    class="service-tile-icon service-tile-icon--flat"
+                    [style.--service-color]="serviceColor(client.type)"
+                  >
+                    <div
+                      class="icon-recolor"
+                      aria-hidden="true"
+                      [ngStyle]="{
+                        'background-color': serviceColor(client.type),
+                        'mask-image': 'url(' + client.glyphUrl + ')',
+                        '-webkit-mask-image': 'url(' + client.glyphUrl + ')',
+                      }"
+                    ></div>
+                  </span>
+                  <span>
+                    <strong>{{ client.name }}</strong>
+                    @if (isServiceUnavailable(client.type)) {
+                      <small class="region-unavailable-reason">{{ regionUnavailableReason }}</small>
+                    }
+                  </span>
+                </button>
+              </div>
+            }
           </section>
 
-          <section class="service-category" *ngFor="let category of catalogCategories; trackBy: trackByCategory">
-            <button type="button" class="category-header" (click)="toggleCategory(category.name)">
-              <span class="category-indicator" [style.background]="awsCatalog.categoryColor(category.name)"></span>
-              <span class="category-name">{{ category.name }}</span>
-              <small>{{ category.services.length }}</small>
-              <b>{{ isCategoryCollapsed(category.name) ? "+" : "−" }}</b>
-            </button>
-            <div class="category-services" *ngIf="!isCategoryCollapsed(category.name)">
-              <button *ngFor="
-                  let service of category.services;
-                  trackBy: trackByService
-                " type="button" class="service-tile" draggable="true" (mousemove)="onMouseMove($event)"
-                (dragstart)="onPaletteDragStart($event, service.type)" (click)="addService(service.type)"
-                [style.background-color]="serviceColor(service.type) + '14'"
-                [style.border-color]="serviceColor(service.type) + '33'">
-                <span class="service-icon" [style.--service-color]="serviceColor(service.type)">
-                  <img [src]="service.iconUrl" [alt]="service.name + ' icon'" />
-                  <div class="tint-overlay" [style.background]="serviceColor(service.type)"></div>
-                </span>
-                <span>
-                  <strong>{{ service.name }}</strong>
-                  <small>{{ service.shortName }} · {{ service.category }}</small>
-                </span>
+          @for (category of catalogCategories; track trackByCategory($index, category)) {
+            <section class="service-category">
+              <button type="button" class="category-header" (click)="toggleCategory(category.name)">
+                <span
+                  class="category-indicator"
+                  [style.background]="awsCatalog.categoryColor(category.name)"
+                ></span>
+                <span class="category-name">{{ category.name }}</span>
+                <small>{{ category.services.length }}</small>
+                <b>{{ isCategoryCollapsed(category.name) ? '+' : '−' }}</b>
               </button>
-            </div>
-          </section>
+              @if (!isCategoryCollapsed(category.name)) {
+                <div class="category-services">
+                  @for (service of category.services; track trackByService($index, service)) {
+                    <button
+                      type="button"
+                      class="service-tile"
+                      draggable="true"
+                      [class.region-unavailable]="isServiceUnavailable(service.type)"
+                      [title]="isServiceUnavailable(service.type) ? regionUnavailableReason : ''"
+                      (mousemove)="onMouseMove($event)"
+                      (dragstart)="onPaletteDragStart($event, service.type)"
+                      (click)="addService(service.type)"
+                      [style.--service-color]="serviceColor(service.type)"
+                    >
+                      <span
+                        class="service-tile-icon"
+                        [style.--service-color]="serviceColor(service.type)"
+                      >
+                        <div
+                          class="icon-recolor"
+                          aria-hidden="true"
+                          [ngStyle]="{
+                            'background-color': '#fff',
+                            'mask-image': 'url(' + service.glyphUrl + ')',
+                            '-webkit-mask-image': 'url(' + service.glyphUrl + ')',
+                          }"
+                        ></div>
+                      </span>
+                      <span>
+                        <strong>{{ service.name }}</strong>
+                        @if (isServiceUnavailable(service.type)) {
+                          <small class="region-unavailable-reason">{{
+                            regionUnavailableReason
+                          }}</small>
+                        }
+                      </span>
+                    </button>
+                  }
+                </div>
+              }
+            </section>
+          }
         </div>
       </div>
     </aside>
 
-    <section #canvas class="canvas" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)"
-      (pointerdown)="onCanvasPointerDown($event)" (pointermove)="onCanvasPointerMove($event)"
-      (pointerup)="onCanvasPointerUp($event)" (pointercancel)="onCanvasPointerUp($event)"
-      (click)="onCanvasBackgroundClick($event)" (touchstart)="onCanvasTouchStart($event)">
+    <!-- Canvas surface: background click clears the current selection; the keyboard equivalent is the
+    global Escape handler. Pointer/drag handlers drive canvas panning/selection, not activation. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <section
+      #canvas
+      class="canvas"
+      (dragover)="$event.preventDefault()"
+      (drop)="onCanvasDrop($event)"
+      (pointerdown)="onCanvasPointerDown($event)"
+      (pointermove)="onCanvasPointerMove($event)"
+      (pointerup)="onCanvasPointerUp($event)"
+      (pointercancel)="onCanvasPointerUp($event)"
+      (click)="onCanvasBackgroundClick($event)"
+      (touchstart)="onCanvasTouchStart($event)"
+    >
       <!-- Canvas-level Browser Tab Bar -->
       <div class="canvas-tab-bar">
         <div class="canvas-tabs-container">
-          <div *ngFor="let tab of tabs; let i = index" class="canvas-tab" [class.active]="i === activeTabIndex"
-            (click)="switchCanvasTab(i)" (dblclick)="startRenameTab(i, $event)">
-            <span class="tab-status-dot" [class.modified]="tab.dirty" [class.saved]="!tab.dirty"
-              [title]="tab.dirty ? 'Unsaved changes. Press Ctrl+S to save' : 'All changes saved'"
-              aria-hidden="true"></span>
-            <span *ngIf="editingTabIndex !== i" class="tab-title-text">{{ tab.name }}</span>
-            <input *ngIf="editingTabIndex === i" #renameInput type="text" [value]="tab.name"
-              (blur)="finishRenameTab(i, renameInput.value)" (keydown.enter)="finishRenameTab(i, renameInput.value)"
-              (keydown.escape)="editingTabIndex = null" class="tab-rename-input" autofocus />
-            <button *ngIf="editingTabIndex !== i" type="button" class="tab-rename-btn" title="Rename canvas"
-              (click)="startRenameTab(i, $event)">
-              <i class="fas fa-pen"></i>
-            </button>
-            <button *ngIf="tabs.length > 1" type="button" class="tab-close-btn" title="Close canvas"
-              (click)="closeTab(i, $event)">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
+          @for (tab of tabs; track tab; let i = $index) {
+            <div
+              class="canvas-tab"
+              [class.active]="i === activeTabIndex"
+              tabindex="0"
+              [attr.aria-label]="'Switch to canvas ' + tab.name"
+              [attr.aria-current]="i === activeTabIndex"
+              (click)="switchCanvasTab(i)"
+              (keydown.enter)="switchCanvasTab(i)"
+              (keydown.space)="$event.preventDefault(); switchCanvasTab(i)"
+              (dblclick)="startRenameTab(i, $event)"
+            >
+              <span
+                class="tab-status-dot"
+                [class.modified]="tab.dirty"
+                [class.saved]="!tab.dirty"
+                [title]="tab.dirty ? 'Unsaved changes. Press Ctrl+S to save' : 'All changes saved'"
+                aria-hidden="true"
+              ></span>
+              @if (editingTabIndex !== i) {
+                <span class="tab-title-text">{{ tab.name }}</span>
+              }
+              @if (editingTabIndex === i) {
+                <input
+                  #renameInput
+                  type="text"
+                  [value]="tab.name"
+                  (blur)="finishRenameTab(i, renameInput.value)"
+                  (keydown.enter)="finishRenameTab(i, renameInput.value)"
+                  (keydown.escape)="editingTabIndex = null"
+                  class="tab-rename-input"
+                />
+              }
+              @if (editingTabIndex !== i) {
+                <button
+                  type="button"
+                  class="tab-rename-btn"
+                  title="Rename canvas"
+                  (click)="startRenameTab(i, $event)"
+                >
+                  <i class="fas fa-pen"></i>
+                </button>
+              }
+              @if (tabs.length > 1) {
+                <button
+                  type="button"
+                  class="tab-close-btn"
+                  title="Close canvas"
+                  (click)="closeTab(i, $event)"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              }
+            </div>
+          }
           <button type="button" class="add-tab-btn" title="Add new canvas" (click)="addNewTab()">
             <i class="fas fa-plus"></i>
           </button>
@@ -225,506 +471,1048 @@
       </div>
 
       <div class="canvas-surface" (contextmenu)="$event.preventDefault()"></div>
-      <f-flow class="flow-host" fDraggable (fMoveNodes)="onFoblexMoveNodes($event)"
-        (fSelectionChange)="onFoblexSelection($event)" (fCreateConnection)="onFoblexCreateConnection($event)">
+      <f-flow
+        class="flow-host"
+        fDraggable
+        (fMoveNodes)="onFoblexMoveNodes($event)"
+        (fSelectionChange)="onFoblexSelection($event)"
+        (fCreateConnection)="onFoblexCreateConnection($event)"
+      >
         <f-selection-area [fTrigger]="selectionTrigger"></f-selection-area>
-        <f-canvas #flowCanvas fZoom [fZoomMinimum]="0.35" [fZoomMaximum]="2" [fZoomStep]="0.12"
-          (fCanvasChange)="onFoblexCanvasChange($event)">
-          <f-connection *ngFor="let connection of connections; trackBy: trackById" [fConnectionId]="connection.id"
-            [fOutputId]="
-              connectorId(connection.sourceNodeId, connection.sourcePortId)
-            " [fInputId]="
-              connectorId(connection.targetNodeId, connection.targetPortId)
-            " fType="bezier" fBehavior="floating" [fOffset]="20" [fRadius]="18"
-            [class.selected]="selectedConnectionIds.includes(connection.id)"
-            [class.edge-active]="connection.traffic.requestsPerSecond > 0"
-            [style.--edge-intensity]="connection.traffic.intensity" [style.--edge-color]="connectionColor(connection)"
-            (click)="selectConnection(connection.id)">
-          </f-connection>
+        <f-canvas
+          #flowCanvas
+          fZoom
+          [fZoomMinimum]="0.35"
+          [fZoomMaximum]="2"
+          [fZoomStep]="0.12"
+          (fCanvasChange)="onFoblexCanvasChange($event)"
+        >
+          @for (connection of connections; track trackById($index, connection)) {
+            <f-connection
+              [fConnectionId]="connection.id"
+              [fOutputId]="connectorId(connection.sourceNodeId, connection.sourcePortId)"
+              [fInputId]="connectorId(connection.targetNodeId, connection.targetPortId)"
+              fType="bezier"
+              fBehavior="floating"
+              [fOffset]="20"
+              [fRadius]="18"
+              [class.selected]="selectedConnectionIds.includes(connection.id)"
+              [class.edge-active]="connection.traffic.requestsPerSecond > 0"
+              [style.--edge-intensity]="connection.traffic.intensity"
+              [style.--edge-color]="connectionColor(connection)"
+              (click)="selectConnection(connection.id)"
+            >
+            </f-connection>
+          }
 
-          <article *ngFor="let node of nodes; trackBy: trackById" fNode fDragHandle [fNodeId]="node.id"
-            [fNodePosition]="nodePos(node)" class="node-card" [class.vpc-card]="node.type === 'vpc'"
-            [class.selected]="node.selected" [class.offline]="node.status === 'offline'"
-            [style.borderColor]="node.type === 'client' ? serviceColor(node.type) : statusColor(node.status)"
-            [style.backgroundColor]="serviceColor(node.type) + '14'" (mousemove)="onMouseMove($event)"
-            (click)="selectNode(node.id)">
-            <button type="button" class="node-delete" title="Delete service and links"
-              (click)="deleteNode($event, node.id)">
-              Delete
-            </button>
-            <button *ngFor="let port of inputPorts(node)" type="button" class="port input"
-              [class.selected]="isPortSelected(node.id, port.id)" [title]="port.direction + ' ' + port.type" fNodeInput
-              [fInputId]="connectorId(node.id, port.id)" fInputConnectableSide="left"
-              (click)="onPortClick($event, node, port)"></button>
-            <button *ngFor="let port of outputPorts(node)" type="button" class="port output"
-              [class.selected]="isPortSelected(node.id, port.id)" [title]="port.direction + ' ' + port.type" fNodeOutput
-              [fOutputId]="connectorId(node.id, port.id)" fOutputConnectableSide="right"
-              (click)="onPortClick($event, node, port)"></button>
-            <div class="node-top">
-              <span class="node-icon" [style.--service-color]="serviceColor(node.type)">
-                <img [src]="awsCatalog.getByType(node.type).iconUrl" [alt]="node.name + ' icon'" />
-                <div class="tint-overlay" [style.background]="serviceColor(node.type)"></div>
-              </span>
-              <div>
-                <h3>{{ node.name }}</h3>
-                <small>{{node.type == 'client'? 'Users': node.type}}</small>
+          @for (node of nodes; track trackById($index, node)) {
+            <article
+              fNode
+              fDragHandle
+              [fNodeId]="node.id"
+              [fNodePosition]="nodePos(node)"
+              class="node-card"
+              [class.vpc-card]="node.type === 'vpc'"
+              [class.selected]="node.selected"
+              [class.offline]="node.status === 'offline'"
+              [class.region-unavailable]="isServiceUnavailable(node.type)"
+              [style.borderColor]="
+                node.type === 'client' ? serviceColor(node.type) : statusColor(node.status)
+              "
+              [style.backgroundColor]="serviceColor(node.type) + '14'"
+              tabindex="0"
+              [attr.aria-label]="'Select ' + node.name"
+              (mousemove)="onMouseMove($event)"
+              (click)="onNodeCardClick(node.id)"
+              (keydown.enter)="onNodeCardClick(node.id)"
+              (keydown.space)="$event.preventDefault(); onNodeCardClick(node.id)"
+            >
+              <button
+                type="button"
+                class="node-delete"
+                title="Delete service and links"
+                (click)="deleteNode($event, node.id)"
+              >
+                Delete
+              </button>
+              @for (port of inputPorts(node); track port) {
+                <button
+                  type="button"
+                  class="port input"
+                  [class.selected]="isPortSelected(node.id, port.id)"
+                  [title]="port.direction + ' ' + port.type"
+                  fNodeInput
+                  [fInputId]="connectorId(node.id, port.id)"
+                  fInputConnectableSide="left"
+                  (click)="onPortClick($event, node, port)"
+                ></button>
+              }
+              @for (port of outputPorts(node); track port) {
+                <button
+                  type="button"
+                  class="port output"
+                  [class.selected]="isPortSelected(node.id, port.id)"
+                  [title]="port.direction + ' ' + port.type"
+                  fNodeOutput
+                  [fOutputId]="connectorId(node.id, port.id)"
+                  fOutputConnectableSide="right"
+                  (click)="onPortClick($event, node, port)"
+                ></button>
+              }
+              <div class="node-top">
+                <span
+                  class="node-icon"
+                  [class.node-icon--flat]="node.type === 'client'"
+                  [style.--service-color]="serviceColor(node.type)"
+                >
+                  <div
+                    class="icon-recolor"
+                    aria-hidden="true"
+                    [ngStyle]="{
+                      'background-color': node.type === 'client' ? serviceColor(node.type) : '#fff',
+                      'mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                      '-webkit-mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                    }"
+                  ></div>
+                </span>
+                <div>
+                  <h3>{{ node.name }}</h3>
+                  <div class="node-subtitle-row">
+                    <small>{{ node.type === 'client' ? 'Users' : node.type }}</small>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="node-status" *ngIf="node.type !== 'client'" [style.color]="statusColor(node.status)">
-              {{ node.status | titlecase }}
-            </div>
-            <div class="metric-row" *ngIf="node.type !== 'client'">
-              <span>{{
-                (mode === 'idle'
-                ? (node.metrics.throughput || node.config.throughput)
-                : (node.status === 'offline' ? node.metrics.received : node.metrics.throughput)
-                ) | number: "1.0-0"
-                }}
-                rps</span>
-              <span>{{ formatLatency(mode === 'idle' ? (node.metrics.avgLatency || node.config.latency) :
-                node.metrics.avgLatency) }}</span>
-            </div>
-            <!-- Users node is a traffic source: show only the outgoing rate, no latency/health. -->
-            <div class="source-rate" *ngIf="node.type === 'client'">
-              <i class="fas fa-arrow-up source-arrow" aria-hidden="true"></i>
-              <ng-container *ngIf="node.config['variableTraffic']; else steadyRate">
-                <span class="source-value" *ngIf="mode === 'idle'">{{ node.config['variableMinRps'] | number: "1.0-0" }}
-                  to {{ node.config['variableMaxRps'] | number: "1.0-0" }} <small>rps</small></span>
-                <span class="source-value" *ngIf="mode !== 'idle'">{{ node.metrics.throughput | number: "1.0-0" }}
-                  <small>rps</small></span>
-                <span class="source-tag">VARIABLE</span>
-              </ng-container>
-              <ng-template #steadyRate>
-                <span class="source-value">{{ (mode === 'idle' ? node.config['requestRate'] : node.metrics.throughput) |
-                  number: "1.0-0" }} <small>rps</small></span>
-              </ng-template>
-            </div>
-            <div class="load-bar" *ngIf="node.type !== 'client'">
-              <span
-                [style.width.%]="mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure"
-                [style.background]="statusColor(node.status)"
-                [title]="(mode === 'idle' ? (node.metrics.cpuPressure || node.config.cpu) : node.metrics.cpuPressure) + '%'"></span>
-            </div>
-          </article>
+              @if (isServiceUnavailable(node.type)) {
+                <div class="node-warning" [title]="regionUnavailableReason">
+                  <i class="fas fa-exclamation-triangle"></i> Restricted
+                </div>
+              }
+              @if (node.type !== 'client') {
+                <div class="node-status" [style.color]="statusColor(node.status)">
+                  {{ node.status | titlecase }}
+                </div>
+              }
+              @if (node.type !== 'client') {
+                <div class="metric-row">
+                  <span
+                    >{{
+                      (mode === 'idle'
+                        ? node.metrics.throughput || node.config.throughput
+                        : node.status === 'offline'
+                          ? node.metrics.received
+                          : node.metrics.throughput
+                      ) | number: '1.0-0'
+                    }}
+                    rps</span
+                  >
+                  <span>{{
+                    formatLatency(
+                      mode === 'idle'
+                        ? node.metrics.avgLatency || node.config.latency
+                        : node.metrics.avgLatency
+                    )
+                  }}</span>
+                </div>
+              }
+              <!-- Users node is a traffic source: show only the outgoing rate, no latency/health. -->
+              @if (node.type === 'client') {
+                <div class="source-rate">
+                  <i class="fas fa-arrow-up source-arrow" aria-hidden="true"></i>
+                  @if (node.config['variableTraffic']) {
+                    @if (mode === 'idle') {
+                      <span class="source-value"
+                        >{{ node.config['variableMinRps'] | number: '1.0-0' }} to
+                        {{ node.config['variableMaxRps'] | number: '1.0-0' }}
+                        <small>rps</small></span
+                      >
+                    }
+                    @if (mode !== 'idle') {
+                      <span class="source-value"
+                        >{{ node.metrics.throughput | number: '1.0-0' }} <small>rps</small></span
+                      >
+                    }
+                    <span class="source-tag">VARIABLE</span>
+                  } @else {
+                    <span class="source-value"
+                      >{{
+                        (mode === 'idle' ? node.config['requestRate'] : node.metrics.throughput)
+                          | number: '1.0-0'
+                      }}
+                      <small>rps</small></span
+                    >
+                  }
+                </div>
+              }
+              @if (node.type !== 'client') {
+                <div class="load-bar">
+                  <span
+                    [style.width.%]="
+                      mode === 'idle'
+                        ? node.metrics.cpuPressure || node.config.cpu
+                        : node.metrics.cpuPressure
+                    "
+                    [style.background]="statusColor(node.status)"
+                    [title]="
+                      (mode === 'idle'
+                        ? node.metrics.cpuPressure || node.config.cpu
+                        : node.metrics.cpuPressure) + '%'
+                    "
+                  ></span>
+                </div>
+              }
+            </article>
+          }
 
           <!-- Annotations Layer -->
-          <div *ngFor="let anno of annotations; trackBy: trackById" fNode fDragHandle [fNodeId]="anno.id"
-            [fNodePosition]="nodePos(anno)" class="annotation-node" [class.selected]="anno.selected"
-            [style.width.px]="anno.width" [style.height.px]="anno.height"
-            (pointerdown)="selectAnnotation(anno.id); $event.stopPropagation()">
-            <div class="annotation-controls" *ngIf="anno.selected">
-              <button type="button" (click)="toggleAnnotationBold(anno.id, $event)"
-                [class.active]="anno.fontWeight === 'bold'" title="Bold">
-                <i class="fas fa-bold"></i>
-              </button>
-              <button type="button" (click)="changeAnnotationFontSize(anno.id, 2, $event)" title="Increase size">
-                <i class="fas fa-plus"></i>
-              </button>
-              <button type="button" (click)="changeAnnotationFontSize(anno.id, -2, $event)" title="Decrease size">
-                <i class="fas fa-minus"></i>
-              </button>
+          @for (anno of annotations; track trackById($index, anno)) {
+            <div
+              fNode
+              fDragHandle
+              [fNodeId]="anno.id"
+              [fNodePosition]="nodePos(anno)"
+              class="annotation-node"
+              [class.selected]="anno.selected"
+              [style.width.px]="anno.width"
+              [style.height.px]="anno.height"
+              (pointerdown)="selectAnnotation(anno.id); $event.stopPropagation()"
+            >
+              @if (anno.selected) {
+                <div class="annotation-controls">
+                  <button
+                    type="button"
+                    (click)="toggleAnnotationBold(anno.id, $event)"
+                    [class.active]="anno.fontWeight === 'bold'"
+                    title="Bold"
+                  >
+                    <i class="fas fa-bold"></i>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="changeAnnotationFontSize(anno.id, 2, $event)"
+                    title="Increase size"
+                  >
+                    <i class="fas fa-plus"></i>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="changeAnnotationFontSize(anno.id, -2, $event)"
+                    title="Decrease size"
+                  >
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              }
+              <!-- Natively editable (contenteditable): keyboard editing is inherent and the element is
+                    focusable. The click only stops propagation so a click-to-edit doesn't deselect the
+                    annotation; a matching keydown handler would swallow global hotkeys while typing. -->
+              <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
+              <div
+                class="annotation-text"
+                contenteditable="true"
+                [style.fontSize.px]="anno.fontSize"
+                [style.fontWeight]="anno.fontWeight"
+                (blur)="updateAnnotationText(anno.id, $event)"
+                spellcheck="false"
+                (click)="$event.stopPropagation()"
+                (pointerdown)="$event.stopPropagation()"
+              >
+                {{ anno.text }}
+              </div>
+              @if (anno.selected) {
+                <button
+                  type="button"
+                  class="anno-delete-btn"
+                  (click)="deleteAnnotation(anno.id, $event)"
+                  title="Delete label"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              }
+              @if (anno.selected) {
+                <div
+                  class="annotation-resize-handle"
+                  (pointerdown)="startResizingAnnotation(anno.id, $event)"
+                >
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </div>
+              }
             </div>
-            <div class="annotation-text" contenteditable="true" [style.fontSize.px]="anno.fontSize"
-              [style.fontWeight]="anno.fontWeight" (blur)="updateAnnotationText(anno.id, $event)" spellcheck="false"
-              (click)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()">
-              {{ anno.text }}
-            </div>
-            <button type="button" class="anno-delete-btn" *ngIf="anno.selected"
-              (click)="deleteAnnotation(anno.id, $event)" title="Delete label">
-              <i class="fas fa-times"></i>
-            </button>
-            <div class="annotation-resize-handle" *ngIf="anno.selected"
-              (pointerdown)="startResizingAnnotation(anno.id, $event)">
-              <i class="fas fa-expand-arrows-alt"></i>
-            </div>
-          </div>
+          }
         </f-canvas>
-        <div class="mini-map" [class.minimap-mobile]="isMobileViewport" [class.minimap-visible]="minimapVisible"
-          aria-label="Canvas minimap" (pointerdown)="onMinimapInteract($event)">
+        <div
+          class="mini-map"
+          [class.minimap-mobile]="isMobileViewport"
+          [class.minimap-visible]="minimapVisible"
+          aria-label="Canvas minimap"
+          (pointerdown)="onMinimapInteract($event)"
+        >
           <f-minimap [fMinSize]="minimapMinSize"></f-minimap>
         </div>
       </f-flow>
     </section>
 
-    <aside class="inspector"
+    <aside
+      class="inspector"
       [style.--service-theme-color]="selectedNode ? serviceColor(selectedNode.type) + '08' : null"
-      [style.--service-theme-color-solid]="selectedNode ? serviceColor(selectedNode.type) : null">
-      <button type="button" class="sidebar-toggle right-toggle" title="Toggle inspector" [class.has-selection-alert]="
-          rightCollapsed &&
-          (selectedNodeIds.length > 0 || selectedConnectionIds.length > 0)
-        " (click)="toggleRightSidebar()">
-        {{ rightCollapsed ? "‹" : "›" }}
+      [style.--service-theme-color-solid]="selectedNode ? serviceColor(selectedNode.type) : null"
+    >
+      <button
+        type="button"
+        class="sidebar-toggle right-toggle"
+        title="Toggle inspector"
+        [class.has-selection-alert]="
+          rightCollapsed && (selectedNodeIds.length > 0 || selectedConnectionIds.length > 0)
+        "
+        (click)="toggleRightSidebar()"
+      >
+        {{ rightCollapsed ? '‹' : '›' }}
       </button>
-      <div class="region-cost-loader" *ngIf="loadingRegionCost">
-        <div class="loader-spinner"></div>
-        <span>Syncing Edge Pricing...</span>
-      </div>
+      @if (!rightCollapsed) {
+        <div
+          class="sidebar-resizer right-resizer"
+          (mousedown)="startResizeRight($event)"
+          aria-hidden="true"
+        ></div>
+      }
+      @if (loadingRegionCost) {
+        <div class="region-cost-loader">
+          <div class="loader-spinner"></div>
+          <span>Syncing Edge Pricing...</span>
+        </div>
+      }
       <div class="sidebar-content">
         <!-- COMPACT VALIDATION SECTION -->
         <div class="validation-container">
           <!-- DETAIL VIEW (When node selected) -->
-          <div *ngIf="selectedNode" class="validation-card detail" [class.success]="inspectorHealth.tone === 'success'"
-            [class.error]="inspectorHealth.tone === 'error'" [class.neutral]="inspectorHealth.tone === 'neutral'"
-            [class.warning]="inspectorHealth.tone === 'warning'">
-            <div class="validation-icon"><i class="fas fa-heartbeat"></i></div>
-            <div class="validation-body">
-              <strong>Service Health</strong>
-              <p>{{ inspectorHealth.message }}</p>
+          @if (selectedNode) {
+            <div
+              class="validation-card detail"
+              [class.success]="inspectorHealth.tone === 'success'"
+              [class.error]="inspectorHealth.tone === 'error'"
+              [class.neutral]="inspectorHealth.tone === 'neutral'"
+              [class.warning]="inspectorHealth.tone === 'warning'"
+            >
+              <div class="validation-icon"><i class="fas fa-heartbeat"></i></div>
+              <div class="validation-body">
+                <strong>Service Health</strong>
+                <p>{{ inspectorHealth.message }}</p>
+              </div>
             </div>
-          </div>
+          }
 
           <!-- SUMMARY VIEW (List of errors when nothing selected AND in developer mode) -->
-          <div *ngIf="!selectedNode && roleMode === 'developer'" class="error-pills">
-            <div *ngFor="let node of erroredNodes; trackBy: trackByNodeId" class="error-pill"
-              (click)="selectNode(node.id)">
-              <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
-              <span class="pill-name">{{ node.name }}</span>
-              <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+          @if (!selectedNode && roleMode === 'developer') {
+            <div class="error-pills">
+              @for (node of erroredNodes; track trackByNodeId($index, node)) {
+                <div
+                  class="error-pill"
+                  role="button"
+                  tabindex="0"
+                  [attr.aria-label]="'Select ' + node.name"
+                  (click)="selectNode(node.id)"
+                  (keydown.enter)="selectNode(node.id)"
+                  (keydown.space)="$event.preventDefault(); selectNode(node.id)"
+                >
+                  <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
+                  <span class="pill-name">{{ node.name }}</span>
+                  <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+                </div>
+              }
+              @for (node of warnedNodes; track trackByNodeId($index, node)) {
+                <div
+                  class="error-pill warning"
+                  role="button"
+                  tabindex="0"
+                  [attr.aria-label]="'Select ' + node.name"
+                  (click)="selectNode(node.id)"
+                  (keydown.enter)="selectNode(node.id)"
+                  (keydown.space)="$event.preventDefault(); selectNode(node.id)"
+                >
+                  <span class="pill-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                  <span class="pill-name">{{ node.name }}</span>
+                  <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+                </div>
+              }
+              <!-- Overall Success Pill if no errors or warnings -->
+              @if (erroredNodes.length === 0 && warnedNodes.length === 0 && nodes.length > 0) {
+                <div class="status-pill success">
+                  <i class="fas fa-check-circle"></i> Architecture Healthy
+                </div>
+              }
             </div>
-
-            <div *ngFor="let node of warnedNodes; trackBy: trackByNodeId" class="error-pill warning"
-              (click)="selectNode(node.id)">
-              <span class="pill-icon"><i class="fas fa-exclamation-triangle"></i></span>
-              <span class="pill-name">{{ node.name }}</span>
-              <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
-            </div>
-
-            <!-- Overall Success Pill if no errors or warnings -->
-            <div *ngIf="erroredNodes.length === 0 && warnedNodes.length === 0 && nodes.length > 0"
-              class="status-pill success">
-              <i class="fas fa-check-circle"></i> Architecture Healthy
-            </div>
-          </div>
+          }
         </div>
 
-        <ng-container *ngIf="selectedNode as node; else emptyInspector">
-          <div class="panel-heading" [style.borderLeftColor]="serviceColor(node.type)" style="
-              border-left-width: 4px;
-              border-left-style: solid;
-              padding-left: 12px;
-              display: flex;
-              align-items: center;
-              gap: 12px;
-            ">
-            <span class="panel-heading-icon" [style.--service-color]="serviceColor(node.type)">
-              <img [src]="awsCatalog.getByType(node.type).iconUrl" alt=""
-                style="width: 22px; height: 22px; object-fit: contain;" />
-              <div class="tint-overlay" [style.background]="serviceColor(node.type)"
-                style="position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.92;"></div>
-            </span>
-            <div class="panel-heading-text"
-              style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2;">{{
-                node.name }}</span>
-              <div style="display: flex; align-items: center;">
-                <small>{{ selectedDefinition?.category }}</small>
+        @if (selectedNode; as node) {
+          <!-- Redesigned Service Identity Card -->
+          <div class="service-identity-card">
+            <div
+              class="service-header-row"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                width: 100%;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1">
+                <span
+                  class="service-sidebar-icon"
+                  [class.service-sidebar-icon--flat]="node.type === 'client'"
+                  [style.--service-color]="serviceColor(node.type)"
+                >
+                  <!-- CSS-masked flat recolor: white glyph on the category-color tile
+                       background (set via --service-color on .service-sidebar-icon).
+                       Users/client node matches the palette's flat (no-square) style. -->
+                  <div
+                    class="icon-recolor"
+                    aria-hidden="true"
+                    [ngStyle]="{
+                      'background-color': node.type === 'client' ? serviceColor(node.type) : '#fff',
+                      'mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                      '-webkit-mask-image': 'url(' + awsCatalog.getByType(node.type).glyphUrl + ')',
+                    }"
+                  ></div>
+                </span>
+                <div class="service-header-info" style="min-width: 0; flex: 1">
+                  <h4 class="service-header-title">{{ node.name }}</h4>
+                  <div class="service-header-meta">
+                    <span class="service-category-tag">{{ selectedDefinition?.category }}</span>
+                    @if (roleMode === 'architect') {
+                      <span class="service-cost-badge">
+                        <i class="fas fa-coins"></i> {{ getNodeCostFormatted(node) }}/mo
+                      </span>
+                    }
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div *ngIf="selectedDefinition?.description" class="client-info-msg"
-            style="margin-top: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; align-items: stretch;">
-            <div style="display: flex; gap: 10px; align-items: flex-start;">
-              <i class="fas fa-info-circle" style="margin-top: 2px;"></i>
-              <span>{{ selectedDefinition?.description }}</span>
-            </div>
-            <button type="button" (click)="openDocsForService(node.type)" class="docs-action-btn">
-              <i class="fas fa-book-open" style="margin-right: 6px;"></i> Learn More
-            </button>
-          </div>
-          <div class="summary-grid">
-            <div>
-              <strong>{{ node.metrics.received | number: "1.2-2" }}</strong><small>received</small>
-            </div>
-            <div>
-              <strong>{{ node.metrics.queueSize | number: "1.2-2" }}</strong><small>queue</small>
-            </div>
-            <div>
-              <strong>{{ node.metrics.errorRate | number: "1.2-2" }}%</strong><small>errors</small>
-            </div>
-            <div *ngIf="hasCpuMetric(node)">
-              <strong>{{ node.metrics.cpuPressure | number: "1.2-2" }}%</strong><small>cpu</small>
-            </div>
-          </div>
-          <div class="node-cost-highlight" *ngIf="roleMode === 'architect'">
-            <div class="cost-badge">
-              <i class="fas fa-coins"></i> {{ getNodeCostFormatted(node) }}
-              <small>/mo</small>
-            </div>
-          </div>
-          <label class="name-field" (mousemove)="onMouseMove($event)">
-            Name
-            <input [ngModel]="node.name" (ngModelChange)="updateNodeName($event)" />
-          </label>
-          <button type="button" class="delete-panel-button" (mousemove)="onMouseMove($event)"
-            (click)="deleteSelected()">
-            Delete this service and links
-          </button>
 
+              <!-- Delete Service icon in header row -->
+              <button
+                type="button"
+                class="btn-delete-icon"
+                title="Delete this service and links"
+                (mousemove)="onMouseMove($event)"
+                (click)="deleteSelected()"
+              >
+                <i class="fas fa-trash-can"></i>
+              </button>
+            </div>
+
+            <!-- Full-width Name Field inside identity card -->
+            <div class="name-input-wrapper" (mousemove)="onMouseMove($event)">
+              <span class="name-input-label">Name</span>
+              <input
+                [ngModel]="node.name"
+                (ngModelChange)="updateNodeName($event)"
+                placeholder="Service name"
+              />
+            </div>
+          </div>
+
+          @if (isServiceUnavailable(node.type)) {
+            <div class="region-unavailable-banner" role="note">
+              <i class="fas fa-triangle-exclamation" style="margin-top: 2px"></i>
+              <span
+                >{{ regionUnavailableReason }} ({{ globalRegion }}). Simulation stays enabled using
+                us-east-1 baseline pricing.</span
+              >
+            </div>
+          }
+          @if (selectedDefinition?.description) {
+            <div class="service-desc-section">
+              <p class="desc-text">
+                <i
+                  class="fas fa-circle-info info-bullet-icon"
+                  [style.color]="serviceColor(node.type)"
+                  aria-hidden="true"
+                ></i
+                >{{ selectedDefinition?.description }}
+                <button
+                  type="button"
+                  class="docs-inline-link"
+                  [style.color]="serviceColor(node.type)"
+                  (click)="openDocsForService(node.type)"
+                >
+                  Learn more<i class="fas fa-chevron-right link-arrow" aria-hidden="true"></i>
+                </button>
+              </p>
+            </div>
+          }
+          <!-- Live Metrics Block -->
+          <div class="metrics-block">
+            <div class="metrics-header">
+              <i class="fas fa-wave-square"></i>
+              <span>Live Metrics</span>
+            </div>
+            <div class="summary-grid">
+              <div class="metric-received">
+                <strong>{{ node.metrics.received | number: '1.2-2' }}</strong
+                ><small>received</small>
+              </div>
+              <div class="metric-queue">
+                <strong>{{ node.metrics.queueSize | number: '1.2-2' }}</strong
+                ><small>queue</small>
+              </div>
+              <div class="metric-errors">
+                <strong>{{ node.metrics.errorRate | number: '1.2-2' }}%</strong
+                ><small>errors</small>
+              </div>
+              <div class="metric-processed">
+                <strong>{{ formatCompactNumber(node.metrics.processed) }}</strong>
+                <small>processed</small>
+              </div>
+              <div class="metric-dropped" [class.has-dropped]="node.metrics.dropped > 0">
+                <strong>{{ formatCompactNumber(node.metrics.dropped) }}</strong>
+                <small>dropped</small>
+              </div>
+              @if (hasCpuMetric(node)) {
+                <div class="metric-cpu">
+                  <strong>{{ node.metrics.cpuPressure | number: '1.2-2' }}%</strong
+                  ><small>cpu</small>
+                </div>
+              }
+            </div>
+          </div>
           <!-- Traffic Management: per-edge fan-out shares (only when the node fans out) -->
-          <div class="traffic-mgmt" *ngIf="selectedOutgoingConnections.length >= 2">
-            <div class="traffic-heading">
-              <i class="fas fa-code-branch"></i>
-              <span>Traffic Split</span>
-              <small>{{ selectedOutgoingConnections.length }} targets</small>
+          @if (selectedOutgoingConnections.length >= 2) {
+            <div class="traffic-mgmt">
+              <div class="traffic-heading">
+                <i class="fas fa-code-branch"></i>
+                <span>Traffic Split</span>
+                <small>{{ selectedOutgoingConnections.length }} targets</small>
+              </div>
+              <p class="traffic-hint">
+                Share of this node's output sent to each downstream, set per edge.
+              </p>
+              <div class="field-list traffic-rows">
+                @for (item of selectedOutgoingConnections; track trackByConnId($index, item)) {
+                  <label (mousemove)="onMouseMove($event)">
+                    <span class="traffic-target" [title]="item.targetName">{{
+                      item.targetName
+                    }}</span>
+                    <div class="number-control pct-control">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="5"
+                        [ngModel]="item.connection.trafficWeight ?? 100"
+                        (ngModelChange)="updateConnectionWeight(item.connection.id, $event)"
+                      />
+                      <span class="pct-suffix">%</span>
+                    </div>
+                  </label>
+                }
+              </div>
             </div>
-            <p class="traffic-hint">Share of this node's output sent to each downstream — set per edge.</p>
-            <div class="field-list traffic-rows">
-              <label *ngFor="let item of selectedOutgoingConnections; trackBy: trackByConnId"
-                (mousemove)="onMouseMove($event)">
-                <span class="traffic-target" [title]="item.targetName">{{ item.targetName }}</span>
-                <div class="number-control pct-control">
-                  <input type="number" min="0" max="100" step="5" [ngModel]="item.connection.trafficWeight ?? 100"
-                    (ngModelChange)="updateConnectionWeight(item.connection.id, $event)" />
-                  <span class="pct-suffix">%</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <ng-container *ngIf="!hasJsonModel">
-            <div class="field-list select-list" *ngIf="selectedSelectFields.length">
-              <label *ngFor="let field of selectedSelectFields" (mousemove)="onMouseMove($event)">
-                <span [title]="field.description" class="field-label-with-info"
-                  [class.cost-field]="field.affectsCost && roleMode === 'architect'">
-                  {{ field.label }}
-                  <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
-                    title="Affects monthly cost"></i>
-                  <i *ngIf="(field.affectsCost && roleMode === 'architect') || field.description"
-                    class="fas fa-info-circle info-icon"
-                    [title]="field.description || (roleMode === 'architect' ? 'Affects monthly cost' : '')"></i>
+          }
+          <!-- Effective capacity: what the engine actually lets this service absorb.
+               Decoupled from the Requests/Second cost param so billing volume and
+               capacity can't be confused for each other. -->
+          @if (selectedCapacityInfo; as capInfo) {
+            <div
+              class="capacity-banner"
+              [class.overloaded]="capInfo.utilization > 100"
+              [class.hot]="capInfo.utilization > 78 && capInfo.utilization <= 100"
+            >
+              <i class="fas fa-tachometer-alt"></i>
+              <div class="capacity-banner-text">
+                <span class="capacity-banner-value">
+                  Effective capacity:
+                  <strong>
+                    @if (capInfo.capacity >= 100000000) {
+                      Unlimited
+                    } @else {
+                      {{ capInfo.capacity | number: '1.0-0' }} rps
+                    }
+                  </strong>
                 </span>
-                <select [ngModel]="node.config[field.key]" (ngModelChange)="updateSelectConfig(field.key, $event)">
-                  <option *ngFor="let option of field.options" [value]="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </label>
+                <small>{{ capInfo.sourceLabel }}</small>
+                @if (capInfo.liveRps > 0 && capInfo.capacity < 100000000) {
+                  <span class="capacity-banner-live">
+                    Live load: <strong>{{ capInfo.liveRps | number: '1.0-0' }} rps</strong> ·
+                    <strong>{{ capInfo.utilization | number: '1.0-1' }}%</strong> of capacity
+                  </span>
+                }
+                @if (capInfo.utilization > 100) {
+                  <small class="capacity-banner-warn">{{ capInfo.saturationHint }}</small>
+                }
+              </div>
+              <i
+                class="fas fa-info-circle info-icon"
+                [title]="
+                  'The load the simulation lets this service absorb before it saturates. Derived from sizing parameters (instances, vCPU, RCU/WCU, shards…) or the default AWS quota, NOT from Requests/Second, which only drives the cost estimate. ' +
+                  capInfo.saturationHint
+                "
+              ></i>
             </div>
+          }
+          @if (!hasJsonModel) {
+            @if (selectedSelectFields.length) {
+              <div class="field-list select-list">
+                @for (field of selectedSelectFields; track field) {
+                  <label (mousemove)="onMouseMove($event)">
+                    <span
+                      [title]="field.description"
+                      class="field-label-with-info"
+                      [class.cost-field]="field.affectsCost && roleMode === 'architect'"
+                    >
+                      {{ field.label }}
+                      @if (field.affectsCost && roleMode === 'architect') {
+                        <i
+                          class="fas fa-coins info-icon cost-icon"
+                          title="Affects monthly cost"
+                        ></i>
+                      }
+                      @if ((field.affectsCost && roleMode === 'architect') || field.description) {
+                        <i
+                          class="fas fa-info-circle info-icon"
+                          [title]="
+                            field.description ||
+                            (roleMode === 'architect' ? 'Affects monthly cost' : '')
+                          "
+                        ></i>
+                      }
+                    </span>
+                    <select
+                      [ngModel]="node.config[field.key]"
+                      (ngModelChange)="updateSelectConfig(field.key, $event)"
+                    >
+                      @for (option of field.options; track option) {
+                        <option [value]="option.value">
+                          {{ option.label }}
+                        </option>
+                      }
+                    </select>
+                  </label>
+                }
+              </div>
+            }
             <div class="field-list">
-              <label *ngFor="let field of selectedConfigFields" (mousemove)="onMouseMove($event)">
-                <span [title]="field.description" class="field-label-with-info"
-                  [class.cost-field]="field.affectsCost && roleMode === 'architect'">
-                  {{ field.label }}
-                  <small *ngIf="field.suffix">{{ field.suffix }}</small>
-                  <i class="fas fa-gauge-high info-icon sim-icon"
-                    title="Simulation parameter — drives the live traffic, latency &amp; utilization simulation."></i>
-                  <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
-                    title="Affects monthly cost"></i>
-                  <i *ngIf="(field.affectsCost && roleMode === 'architect') || field.description"
-                    class="fas fa-info-circle info-icon"
-                    [title]="field.description || (roleMode === 'architect' ? 'Affects monthly cost' : '')"></i>
-                </span>
-                <div class="number-control">
-                  <input type="number" [min]="field.min" [max]="field.max" [step]="field.step"
-                    [ngModel]="node.config[field.key]" (ngModelChange)="updateConfig(field.key, $event)"
-                    [class.input-error]="isFieldInvalid(field)" />
-                  <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
-                </div>
-              </label>
+              @for (field of selectedConfigFields; track field) {
+                <label (mousemove)="onMouseMove($event)">
+                  <span
+                    [title]="field.description"
+                    class="field-label-with-info"
+                    [class.cost-field]="field.affectsCost && roleMode === 'architect'"
+                  >
+                    {{ field.label }}
+                    @if (field.suffix) {
+                      <small>{{ field.suffix }}</small>
+                    }
+                    @if (isSimParam(node, field.key)) {
+                      <i
+                        class="fas fa-gauge-high info-icon sim-icon"
+                        title="Simulation parameter, drives the live traffic, latency &amp; utilization simulation."
+                      ></i>
+                    }
+                    @if (field.affectsCost && roleMode === 'architect') {
+                      <i class="fas fa-coins info-icon cost-icon" title="Affects monthly cost"></i>
+                    }
+                    @if ((field.affectsCost && roleMode === 'architect') || field.description) {
+                      <i
+                        class="fas fa-info-circle info-icon"
+                        [title]="
+                          field.description ||
+                          (roleMode === 'architect' ? 'Affects monthly cost' : '')
+                        "
+                      ></i>
+                    }
+                  </span>
+                  <div class="number-control">
+                    <input
+                      type="number"
+                      [min]="field.min"
+                      [max]="field.max ?? null"
+                      [step]="field.step"
+                      [ngModel]="node.config[field.key]"
+                      (ngModelChange)="updateConfig(field.key, $event)"
+                      [class.input-error]="isFieldInvalid(field)"
+                    />
+                    @if (isFieldInvalid(field)) {
+                      <span class="field-error-text">Min {{ field.min }} required</span>
+                    }
+                  </div>
+                </label>
+              }
             </div>
-          </ng-container>
-
-          <ng-container *ngIf="hasJsonModel">
+          }
+          @if (hasJsonModel) {
             <div class="field-list">
-              <label *ngFor="let field of selectedPrimaryParams" (mousemove)="onMouseMove($event)"
-                [class.readonly-row]="isFieldLocked(node, field)">
-                <i *ngIf="isFieldLocked(node, field)" class="fas fa-lock readonly-corner-lock"
-                  [title]="fieldLockTooltip(node, field)"></i>
-                <span class="field-label-with-info" [class.cost-field]="field.affectsCost && roleMode === 'architect'">
-                  {{ field.label }}
-                  <i class="fas fa-gauge-high info-icon sim-icon"
-                    title="Simulation parameter — drives the live traffic, latency &amp; utilization simulation."></i>
-                  <i *ngIf="field.affectsCost && roleMode === 'architect'" class="fas fa-coins info-icon cost-icon"
-                    [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
-                  <i *ngIf="field.notes || field.description || field.costDriver || isFieldLocked(node, field)"
-                    class="fas fa-info-circle info-icon"
-                    [title]="isFieldLocked(node, field) ? fieldLockTooltip(node, field) : (field.notes || field.description || field.costDriver || '')"></i>
-                </span>
-                <div class="number-control" [class.readonly-input-wrap]="isFieldLocked(node, field)"
-                  *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
-                  <input type="number" [min]="field.min" [max]="field.max" [step]="1" [ngModel]="
-                      node.config[field.key] !== undefined
-                        ? node.config[field.key]
-                        : field.default
-                    " (ngModelChange)="updateConfig(field.key, $event)" [class.input-error]="isFieldInvalid(field)"
-                    [disabled]="isFieldLocked(node, field)" />
-                  <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
-                </div>
-                <select *ngIf="field.type === 'enum'" [ngModel]="node.config[field.key] || field.default"
-                  (ngModelChange)="updateSelectConfig(field.key, $event)">
-                  <ng-container *ngIf="field.options?.length; else simpleEnumFallback">
-                    <option *ngFor="let opt of field.options" [value]="opt.value">
-                      {{ opt.label }}
-                    </option>
-                  </ng-container>
-                  <ng-template #simpleEnumFallback>
-                    <option [value]="field.default">{{ field.default }}</option>
-                  </ng-template>
-                </select>
-                <div class="checkbox-control" *ngIf="field.type === 'boolean'">
-                  <input type="checkbox" [ngModel]="
-                      node.config[field.key] !== undefined
-                        ? node.config[field.key]
-                        : field.default
-                    " (ngModelChange)="updateSelectConfig(field.key, $event)" />
-                </div>
-              </label>
+              <!-- Label wraps its control, but the control is one of input/select/checkbox chosen by
+                          *ngIf, so the rule can't statically see the association; nesting provides it at runtime. -->
+              @for (field of selectedPrimaryParams; track field) {
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                <label
+                  (mousemove)="onMouseMove($event)"
+                  [class.readonly-row]="isFieldLocked(node, field)"
+                >
+                  @if (isFieldLocked(node, field)) {
+                    <i
+                      class="fas fa-lock readonly-corner-lock"
+                      [title]="fieldLockTooltip(node, field)"
+                    ></i>
+                  }
+                  <span
+                    class="field-label-with-info"
+                    [class.cost-field]="field.affectsCost && roleMode === 'architect'"
+                  >
+                    {{ field.label }}
+                    @if (isSimParam(node, field.key)) {
+                      <i
+                        class="fas fa-gauge-high info-icon sim-icon"
+                        title="Simulation parameter, drives the live traffic, latency &amp; utilization simulation."
+                      ></i>
+                    }
+                    @if (field.affectsCost && roleMode === 'architect') {
+                      <i
+                        class="fas fa-coins info-icon cost-icon"
+                        [title]="
+                          field.costDriver ||
+                          'This parameter directly affects your monthly AWS bill.'
+                        "
+                      ></i>
+                    }
+                    @if (
+                      field.notes ||
+                      field.description ||
+                      field.costDriver ||
+                      isFieldLocked(node, field)
+                    ) {
+                      <i
+                        class="fas fa-info-circle info-icon"
+                        [title]="
+                          isFieldLocked(node, field)
+                            ? fieldLockTooltip(node, field)
+                            : field.notes || field.description || field.costDriver || ''
+                        "
+                      ></i>
+                    }
+                  </span>
+                  @if (field.type !== 'enum' && field.type !== 'boolean') {
+                    <div
+                      class="number-control"
+                      [class.readonly-input-wrap]="isFieldLocked(node, field)"
+                    >
+                      <input
+                        type="number"
+                        [min]="field.min ?? null"
+                        [max]="field.max ?? null"
+                        [step]="1"
+                        [ngModel]="
+                          node.config[field.key] !== undefined
+                            ? node.config[field.key]
+                            : field.default
+                        "
+                        (ngModelChange)="updateConfig(field.key, $event)"
+                        [class.input-error]="isFieldInvalid(field)"
+                        [disabled]="isFieldLocked(node, field)"
+                      />
+                      @if (isFieldInvalid(field)) {
+                        <span class="field-error-text">Min {{ field.min }} required</span>
+                      }
+                    </div>
+                  }
+                  @if (field.type === 'enum') {
+                    <select
+                      [ngModel]="node.config[field.key] || field.default"
+                      (ngModelChange)="updateSelectConfig(field.key, $event)"
+                    >
+                      @if (field.options?.length) {
+                        @for (opt of field.options; track opt) {
+                          <option [value]="opt.value">
+                            {{ opt.label }}
+                          </option>
+                        }
+                      } @else {
+                        <option [value]="field.default">{{ field.default }}</option>
+                      }
+                    </select>
+                  }
+                  @if (field.type === 'boolean') {
+                    <div class="checkbox-control">
+                      <input
+                        type="checkbox"
+                        [ngModel]="
+                          node.config[field.key] !== undefined
+                            ? node.config[field.key]
+                            : field.default
+                        "
+                        (ngModelChange)="updateSelectConfig(field.key, $event)"
+                      />
+                    </div>
+                  }
+                </label>
+              }
             </div>
-
-
-
             <!-- Cost Configuration -->
-            <div class="panel-heading" style="
-                margin-top: 16px;
-                border-left: none;
-                padding-left: 0;
-                cursor: pointer;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-              " (click)="advancedConfigExpanded = !advancedConfigExpanded"
-              *ngIf="roleMode === 'architect' && selectedCostParams.length > 0">
-              <strong class="cost-section-title"><i class="fas fa-coins" style="margin-right: 6px; color: #f59e0b"></i>
-                Cost Configuration</strong>
-              <i class="fas" [class.fa-chevron-down]="advancedConfigExpanded"
-                [class.fa-chevron-right]="!advancedConfigExpanded"
-                style="font-size: 11px; color: #64748b; margin-left: auto"></i>
-            </div>
-            <div class="field-list"
-              *ngIf="roleMode === 'architect' && advancedConfigExpanded && selectedCostParams.length > 0">
-              <label *ngFor="let field of selectedCostParams" (mousemove)="onMouseMove($event)"
-                [class.readonly-row]="field.readonly">
-                <!-- Corner lock icon for readonly fields -->
-                <i *ngIf="field.readonly" class="fas fa-lock readonly-corner-lock"></i>
-                <span class="field-label-with-info cost-field">
-                  {{ field.label }}
-                  <i class="fas fa-coins info-icon cost-icon"
-                    [title]="field.costDriver || 'This parameter directly affects your monthly AWS bill.'"></i>
-                  <i *ngIf="field.notes || field.description || field.costDriver || field.syncSource"
-                    class="fas fa-info-circle info-icon"
-                    [title]="field.notes || field.description || field.costDriver || (field.readonly ? 'Synced from: ' + (field.syncSource || 'Client node') : '')"></i>
-                  <i *ngIf="field.readonly && !field.notes && !field.description" class="fas fa-info-circle info-icon"
-                    [title]="'Synced from: ' + (field.syncSource || 'Client node') + '. Change the value on the Client (Users) node.'"></i>
-                </span>
-                <div class="number-control" [class.readonly-input-wrap]="field.readonly"
-                  *ngIf="field.type !== 'enum' && field.type !== 'boolean'">
-                  <input type="number" [min]="field.min" [max]="field.max" [step]="1" [ngModel]="
-                      node.config[field.key] !== undefined
-                        ? node.config[field.key]
-                        : field.default
-                    " (ngModelChange)="updateConfig(field.key, $event)" [class.input-error]="isFieldInvalid(field)"
-                    [disabled]="field.readonly" />
-                  <span *ngIf="isFieldInvalid(field)" class="field-error-text">Min {{field.min}} required</span>
-                </div>
-                <select *ngIf="field.type === 'enum'" [ngModel]="node.config[field.key] || field.default"
-                  (ngModelChange)="updateSelectConfig(field.key, $event)" [disabled]="field.readonly">
-                  <ng-container *ngIf="field.options?.length; else costEnumFallback">
-                    <option *ngFor="let opt of field.options" [value]="opt.value">
-                      {{ opt.label }}
-                    </option>
-                  </ng-container>
-                  <ng-template #costEnumFallback>
-                    <option [value]="field.default">{{ field.default }}</option>
-                  </ng-template>
-                </select>
-                <div class="checkbox-control" *ngIf="field.type === 'boolean'">
-                  <input type="checkbox" [ngModel]="
-                      node.config[field.key] !== undefined
-                        ? node.config[field.key]
-                        : field.default
-                    " (ngModelChange)="updateSelectConfig(field.key, $event)" />
-                </div>
-              </label>
-            </div>
-
+            @if (roleMode === 'architect' && selectedCostParams.length > 0) {
+              <div
+                class="panel-heading"
+                style="
+                  margin-top: 16px;
+                  border-left: none;
+                  padding-left: 0;
+                  cursor: pointer;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+                role="button"
+                tabindex="0"
+                [attr.aria-expanded]="advancedConfigExpanded"
+                (click)="advancedConfigExpanded = !advancedConfigExpanded"
+                (keydown.enter)="advancedConfigExpanded = !advancedConfigExpanded"
+                (keydown.space)="
+                  $event.preventDefault(); advancedConfigExpanded = !advancedConfigExpanded
+                "
+              >
+                <strong class="cost-section-title"
+                  ><i class="fas fa-coins" style="margin-right: 6px; color: #f59e0b"></i> Cost
+                  Configuration</strong
+                >
+                <i
+                  class="fas"
+                  [class.fa-chevron-down]="advancedConfigExpanded"
+                  [class.fa-chevron-right]="!advancedConfigExpanded"
+                  style="font-size: 11px; color: #64748b; margin-left: auto"
+                ></i>
+              </div>
+            }
+            @if (
+              roleMode === 'architect' && advancedConfigExpanded && selectedCostParams.length > 0
+            ) {
+              <div class="field-list">
+                <!-- Label wraps its control, but the control is one of input/select/checkbox chosen by
+                              *ngIf, so the rule can't statically see the association; nesting provides it at runtime. -->
+                @for (field of selectedCostParams; track field) {
+                  <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                  <label
+                    (mousemove)="onMouseMove($event)"
+                    [class.readonly-row]="isFieldLocked(node, field)"
+                  >
+                    <!-- Corner lock icon for readonly / RPS-synced fields -->
+                    @if (isFieldLocked(node, field)) {
+                      <i
+                        class="fas fa-lock readonly-corner-lock"
+                        [title]="fieldLockTooltip(node, field)"
+                      ></i>
+                    }
+                    <span class="field-label-with-info cost-field">
+                      {{ field.label }}
+                      <i
+                        class="fas fa-coins info-icon cost-icon"
+                        [title]="
+                          field.costDriver ||
+                          'This parameter directly affects your monthly AWS bill.'
+                        "
+                      ></i>
+                      @if (
+                        field.notes || field.description || field.costDriver || field.syncSource
+                      ) {
+                        <i
+                          class="fas fa-info-circle info-icon"
+                          [title]="
+                            field.notes ||
+                            field.description ||
+                            field.costDriver ||
+                            (field.readonly
+                              ? 'Synced from: ' + (field.syncSource || 'Client node')
+                              : '')
+                          "
+                        ></i>
+                      }
+                      @if (field.readonly && !field.notes && !field.description) {
+                        <i
+                          class="fas fa-info-circle info-icon"
+                          [title]="
+                            'Synced from: ' +
+                            (field.syncSource || 'Client node') +
+                            '. Change the value on the Client (Users) node.'
+                          "
+                        ></i>
+                      }
+                    </span>
+                    @if (field.type !== 'enum' && field.type !== 'boolean') {
+                      <div
+                        class="number-control"
+                        [class.readonly-input-wrap]="isFieldLocked(node, field)"
+                      >
+                        <input
+                          type="number"
+                          [min]="field.min ?? null"
+                          [max]="field.max ?? null"
+                          [step]="1"
+                          [ngModel]="
+                            node.config[field.key] !== undefined
+                              ? node.config[field.key]
+                              : field.default
+                          "
+                          (ngModelChange)="updateConfig(field.key, $event)"
+                          [class.input-error]="isFieldInvalid(field)"
+                          [disabled]="isFieldLocked(node, field)"
+                        />
+                        @if (isFieldInvalid(field)) {
+                          <span class="field-error-text">Min {{ field.min }} required</span>
+                        }
+                      </div>
+                    }
+                    @if (field.type === 'enum') {
+                      <select
+                        [ngModel]="node.config[field.key] || field.default"
+                        (ngModelChange)="updateSelectConfig(field.key, $event)"
+                        [disabled]="isFieldLocked(node, field)"
+                      >
+                        @if (field.options?.length) {
+                          @for (opt of field.options; track opt) {
+                            <option [value]="opt.value">
+                              {{ opt.label }}
+                            </option>
+                          }
+                        } @else {
+                          <option [value]="field.default">{{ field.default }}</option>
+                        }
+                      </select>
+                    }
+                    @if (field.type === 'boolean') {
+                      <div class="checkbox-control">
+                        <input
+                          type="checkbox"
+                          [ngModel]="
+                            node.config[field.key] !== undefined
+                              ? node.config[field.key]
+                              : field.default
+                          "
+                          (ngModelChange)="updateSelectConfig(field.key, $event)"
+                        />
+                      </div>
+                    }
+                  </label>
+                }
+              </div>
+            }
             <!-- Cost Evaluation Panel -->
-            <div class="panel-heading" style="
-                margin-top: 16px;
-                border-left: none;
-                padding-left: 0;
-                cursor: pointer;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-              " (click)="costEvaluationExpanded = !costEvaluationExpanded"
-              *ngIf="roleMode === 'architect' && costBreakdown && costBreakdown.lines.length > 0">
-              <strong class="cost-section-title"><i class="fas fa-calculator"
-                  style="margin-right: 6px; color: #6366f1"></i>
-                Cost Evaluation<small *ngIf="isVariableCostActive(node)" class="cost-title-hint">({{ mode === 'running'
-                  ? 'live' : 'avg' }})</small></strong>
-              <span class="cost-eval-total">${{ costBreakdown.total | number: "1.2-2" }}/mo</span>
-              <i class="fas" [class.fa-chevron-down]="costEvaluationExpanded"
-                [class.fa-chevron-right]="!costEvaluationExpanded"
-                style="font-size: 11px; color: #64748b; margin-left: 8px"></i>
-            </div>
-            <div class="cost-evaluation-panel"
-              *ngIf="roleMode === 'architect' && costEvaluationExpanded && costBreakdown">
-              <div class="cost-line-item" *ngFor="let line of costBreakdown.lines">
-                <div class="cost-line-header">
-                  <span class="cost-line-label">{{ line.label }}</span>
-                  <span class="cost-line-value">${{ line.value | number: "1.2-2" }}</span>
-                </div>
-                <div class="cost-line-formula">{{ line.formula }}</div>
-                <div class="cost-line-free" *ngIf="line.freeSaving">
-                  <i class="fas fa-leaf" style="font-size: 9px"></i>{{ line.freeSaving }}
-                </div>
-                <div class="cost-line-note" *ngIf="line.note">
-                  {{ line.note }}
-                </div>
+            @if (roleMode === 'architect' && costBreakdown && costBreakdown.lines.length > 0) {
+              <div
+                class="panel-heading"
+                style="
+                  margin-top: 16px;
+                  border-left: none;
+                  padding-left: 0;
+                  cursor: pointer;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+                role="button"
+                tabindex="0"
+                [attr.aria-expanded]="costEvaluationExpanded"
+                (click)="costEvaluationExpanded = !costEvaluationExpanded"
+                (keydown.enter)="costEvaluationExpanded = !costEvaluationExpanded"
+                (keydown.space)="
+                  $event.preventDefault(); costEvaluationExpanded = !costEvaluationExpanded
+                "
+              >
+                <strong class="cost-section-title"
+                  ><i class="fas fa-calculator" style="margin-right: 6px; color: #6366f1"></i> Cost
+                  Evaluation
+                  @if (isVariableCostActive(node)) {
+                    <small class="cost-title-hint"
+                      >({{ mode === 'running' ? 'live' : 'avg' }})</small
+                    >
+                  }
+                </strong>
+                <span class="cost-eval-total">${{ costBreakdown.total | number: '1.2-2' }}/mo</span>
+                <i
+                  class="fas"
+                  [class.fa-chevron-down]="costEvaluationExpanded"
+                  [class.fa-chevron-right]="!costEvaluationExpanded"
+                  style="font-size: 11px; color: #64748b; margin-left: 8px"
+                ></i>
               </div>
-              <div class="cost-total-row">
-                <span>Estimated Monthly Total</span>
-                <strong>${{ costBreakdown.total | number: "1.2-2" }}/mo</strong>
+            }
+            @if (roleMode === 'architect' && costEvaluationExpanded && costBreakdown) {
+              <div class="cost-evaluation-panel">
+                @for (line of costBreakdown.lines; track line.label) {
+                  <div class="cost-line-item">
+                    <div class="cost-line-header">
+                      <span class="cost-line-label">{{ line.label }}</span>
+                      <span class="cost-line-value">${{ line.value | number: '1.2-2' }}</span>
+                    </div>
+                    <div class="cost-line-formula">{{ line.formula }}</div>
+                    @if (line.freeSaving) {
+                      <div class="cost-line-free">
+                        <i class="fas fa-leaf" style="font-size: 9px"></i>{{ line.freeSaving }}
+                      </div>
+                    }
+                    @if (line.note) {
+                      <div class="cost-line-note">
+                        {{ line.note }}
+                      </div>
+                    }
+                  </div>
+                }
+                <div class="cost-total-row">
+                  <span>Estimated Monthly Total</span>
+                  <strong>${{ costBreakdown.total | number: '1.2-2' }}/mo</strong>
+                </div>
+                @if (costBreakdown.freeTierNote) {
+                  <div class="cost-free-tier-note">
+                    <i class="fas fa-gift" style="margin-right: 4px"></i>
+                    {{ costBreakdown.freeTierNote }}
+                  </div>
+                }
               </div>
-              <div class="cost-free-tier-note" *ngIf="costBreakdown.freeTierNote">
-                <i class="fas fa-gift" style="margin-right: 4px"></i>
-                {{ costBreakdown.freeTierNote }}
-              </div>
-            </div>
-          </ng-container>
-        </ng-container>
-
-        <ng-template #emptyInspector>
-          <ng-container *ngIf="selectedConnection as connection; else noSelection">
+            }
+          }
+        } @else {
+          @if (selectedConnection; as connection) {
             <div class="panel-heading">
               <span>Selected Link</span>
               <small>{{ connection.type }}</small>
             </div>
             <div class="link-card">
               <strong>{{ selectedConnectionSummary }}</strong>
-              <span>{{
-                connection.label || "Validated AWS data-flow link"
-                }}</span>
+              <span>{{ connection.label || 'Validated AWS data-flow link' }}</span>
               <div class="summary-grid compact">
                 <div>
-                  <strong>{{
-                    connection.traffic.requestsPerSecond | number: "1.0-0"
-                    }}</strong><small>rps</small>
+                  <strong>{{ connection.traffic.requestsPerSecond | number: '1.0-0' }}</strong
+                  ><small>rps</small>
                 </div>
                 <div>
-                  <strong>{{ formatLatency(connection.traffic.latency) }}</strong><small>latency</small>
+                  <strong>{{ formatLatency(connection.traffic.latency) }}</strong
+                  ><small>latency</small>
                 </div>
               </div>
-              <button type="button" class="delete-panel-button" (click)="deleteConnection($event, connection.id)">
+              <button
+                type="button"
+                class="delete-panel-button"
+                (click)="deleteConnection($event, connection.id)"
+              >
                 Delete this link
               </button>
             </div>
-          </ng-container>
-          <ng-template #noSelection>
+          } @else {
             <div class="empty-state">
-              <app-challenge-panel *ngIf="roleMode === 'developer'" (startChallenge)="onStartChallenge($event)"
-                (resetChallenge)="onResetChallenge($event)" (freePractice)="onFreePractice()"
-                (replayTour)="onReplayTour()" (requestEvaluate)="onEvaluateChallenge()"
-                (showReference)="onShowReference($event)"></app-challenge-panel>
-
-              <ng-container *ngIf="roleMode === 'architect'">
+              @if (roleMode === 'developer') {
+                <app-challenge-panel
+                  (startChallenge)="onStartChallenge($event)"
+                  (resetChallenge)="onResetChallenge($event)"
+                  (freePractice)="onFreePractice()"
+                  (replayTour)="onReplayTour()"
+                  (requestEvaluate)="onEvaluateChallenge()"
+                  (showReference)="onShowReference($event)"
+                ></app-challenge-panel>
+              }
+              @if (roleMode === 'architect') {
                 <!-- Unified Architecture Dashboard Container -->
                 <div class="arch-dashboard-panel">
                   <div class="arch-panel-head">
-                    <i class="fas fa-project-diagram" style="color: #7c3aed;"></i>
+                    <i class="fas fa-project-diagram" style="color: #7c3aed"></i>
                     <span>Architecture Dashboard</span>
                   </div>
-
                   <div class="dashboard-card-wrapper">
                     <!-- 1. Known Errors & Warnings Subsection -->
                     <div class="dashboard-subsection errors-subsection">
@@ -732,102 +1520,157 @@
                         <i class="fas fa-heartbeat"></i>
                         <span>Architecture Health</span>
                       </div>
-
                       <div class="error-pills-container">
-                        <div *ngFor="let node of erroredNodes; trackBy: trackByNodeId" class="error-pill"
-                          (click)="selectNode(node.id)">
-                          <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
-                          <span class="pill-name">{{ node.name }}</span>
-                          <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
-                        </div>
-
-                        <div *ngFor="let node of warnedNodes; trackBy: trackByNodeId" class="error-pill warning"
-                          (click)="selectNode(node.id)">
-                          <span class="pill-icon"><i class="fas fa-exclamation-triangle"></i></span>
-                          <span class="pill-name">{{ node.name }}</span>
-                          <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
-                        </div>
-
+                        @for (node of erroredNodes; track trackByNodeId($index, node)) {
+                          <div
+                            class="error-pill"
+                            role="button"
+                            tabindex="0"
+                            [attr.aria-label]="'Select ' + node.name"
+                            (click)="selectNode(node.id)"
+                            (keydown.enter)="selectNode(node.id)"
+                            (keydown.space)="$event.preventDefault(); selectNode(node.id)"
+                          >
+                            <span class="pill-icon"><i class="fas fa-exclamation-circle"></i></span>
+                            <span class="pill-name">{{ node.name }}</span>
+                            <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+                          </div>
+                        }
+                        @for (node of warnedNodes; track trackByNodeId($index, node)) {
+                          <div
+                            class="error-pill warning"
+                            role="button"
+                            tabindex="0"
+                            [attr.aria-label]="'Select ' + node.name"
+                            (click)="selectNode(node.id)"
+                            (keydown.enter)="selectNode(node.id)"
+                            (keydown.space)="$event.preventDefault(); selectNode(node.id)"
+                          >
+                            <span class="pill-icon"
+                              ><i class="fas fa-exclamation-triangle"></i
+                            ></span>
+                            <span class="pill-name">{{ node.name }}</span>
+                            <span class="pill-msg">{{ nodeHealthShort(node) }}</span>
+                          </div>
+                        }
                         <!-- Overall Success Pill if no errors or warnings -->
-                        <div *ngIf="erroredNodes.length === 0 && warnedNodes.length === 0 && nodes.length > 0"
-                          class="status-pill success">
-                          <i class="fas fa-check-circle"></i> Architecture Healthy
-                        </div>
-
+                        @if (
+                          erroredNodes.length === 0 && warnedNodes.length === 0 && nodes.length > 0
+                        ) {
+                          <div class="status-pill success">
+                            <i class="fas fa-check-circle"></i> Architecture Healthy
+                          </div>
+                        }
                         <!-- Empty state if no services placed -->
-                        <div *ngIf="nodes.length === 0" class="dashboard-empty-subtext">
-                          No services on canvas.
-                        </div>
+                        @if (nodes.length === 0) {
+                          <div class="dashboard-empty-subtext">No services on canvas.</div>
+                        }
                       </div>
                     </div>
-
                     <!-- 2. Cost Analytics & Services Subsection -->
                     <div class="dashboard-subsection cost-subsection">
                       <div class="subsection-header">
                         <i class="fas fa-coins"></i>
                         <span>Cost Analysis</span>
                       </div>
-
                       <div class="dashboard-cost-hero">
                         <div class="dch-label">
                           <span class="dch-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                              stroke-linecap="round" stroke-linejoin="round">
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
                               <circle cx="12" cy="12" r="10"></circle>
-                              <path d="M12 6v12M15 9H10.5a2.5 2.5 0 0 0 0 5h3a2.5 2.5 0 0 1 0 5H9"></path>
+                              <path
+                                d="M12 6v12M15 9H10.5a2.5 2.5 0 0 0 0 5h3a2.5 2.5 0 0 1 0 5H9"
+                              ></path>
                             </svg>
                           </span>
                           <span>Estimated monthly spend</span>
                         </div>
                         <div class="dch-value">{{ totalCostFormatted }}</div>
                       </div>
-
-                      <div class="svc-dashboard-list" *ngIf="unifiedServices.length; else noCanvasServices">
-                        <div class="svc-dashboard-row" *ngFor="let s of unifiedServices; let last = last"
-                          [style.--svc-color]="serviceColor(s.type)" [class.last-row]="last"
-                          [title]="'Open ' + s.name + ' docs in a new tab'" (click)="openDocsForService(s.type)">
-                          <div class="svc-row-main">
-                            <div class="svc-row-icon">
-                              <img [src]="nodeIconUrl(s.type)" [alt]="s.name + ' icon'" />
-                              <div class="tint-overlay" [style.background]="serviceColor(s.type)"></div>
-                            </div>
-                            <div class="svc-row-body">
-                              <div class="svc-row-title-row">
-                                <span class="svc-row-name-wrap">
-                                  <span class="svc-row-name">{{ s.name }}</span>
-                                  <span class="svc-row-badge" *ngIf="s.count > 1">x{{ s.count }}</span>
-                                </span>
-                                <span class="svc-row-cost" *ngIf="s.totalCost > 0.0001">{{ s.formattedCost }}</span>
+                      @if (unifiedServices.length) {
+                        <div class="svc-dashboard-list">
+                          <!-- track by type (stable key): unifiedServices is a getter that builds
+                               fresh row objects each CD pass; identity tracking would recreate
+                               these views mid-check (NG0100 under Angular 21 dev mode). -->
+                          @for (s of unifiedServices; track s.type; let last = $last) {
+                            <div
+                              class="svc-dashboard-row"
+                              [style.--svc-color]="serviceColor(s.type)"
+                              [class.last-row]="last"
+                              role="button"
+                              tabindex="0"
+                              [attr.aria-label]="'Open ' + s.name + ' docs in a new tab'"
+                              [title]="'Open ' + s.name + ' docs in a new tab'"
+                              (click)="openDocsForService(s.type)"
+                              (keydown.enter)="openDocsForService(s.type)"
+                              (keydown.space)="$event.preventDefault(); openDocsForService(s.type)"
+                            >
+                              <div class="svc-row-main">
+                                <div class="svc-row-icon">
+                                  <div
+                                    class="icon-recolor"
+                                    aria-hidden="true"
+                                    [ngStyle]="{
+                                      'background-color': '#fff',
+                                      'mask-image': 'url(' + nodeGlyphUrl(s.type) + ')',
+                                      '-webkit-mask-image': 'url(' + nodeGlyphUrl(s.type) + ')',
+                                    }"
+                                  ></div>
+                                </div>
+                                <div class="svc-row-body">
+                                  <div class="svc-row-title-row">
+                                    <span class="svc-row-name-wrap">
+                                      <span class="svc-row-name">{{ s.name }}</span>
+                                      @if (s.count > 1) {
+                                        <span class="svc-row-badge">x{{ s.count }}</span>
+                                      }
+                                    </span>
+                                    @if (s.totalCost > 0.0001) {
+                                      <span class="svc-row-cost">{{ s.formattedCost }}</span>
+                                    }
+                                  </div>
+                                  <p class="svc-row-desc">{{ s.overview }}</p>
+                                </div>
+                                <div class="svc-row-arrow">
+                                  <i class="fas fa-arrow-up-right-from-square"></i>
+                                </div>
                               </div>
-                              <p class="svc-row-desc">{{ s.overview }}</p>
+                              <!-- Progress bar indicating cost contribution -->
+                              @if (s.pct > 0) {
+                                <div class="svc-row-progress-bar">
+                                  <span [style.width.%]="s.pct"></span>
+                                </div>
+                              }
                             </div>
-                            <div class="svc-row-arrow">
-                              <i class="fas fa-arrow-up-right-from-square"></i>
-                            </div>
-                          </div>
-                          <!-- Progress bar indicating cost contribution -->
-                          <div class="svc-row-progress-bar" *ngIf="s.pct > 0">
-                            <span [style.width.%]="s.pct"></span>
-                          </div>
+                          }
                         </div>
-                      </div>
-                      <ng-template #noCanvasServices>
+                      } @else {
                         <p class="dashboard-empty-text">
-                          Drag AWS services from the palette to see active infrastructure, cost details, and docs.
+                          Drag AWS services from the palette to see active infrastructure, cost
+                          details, and docs.
                         </p>
-                      </ng-template>
+                      }
                     </div>
-
                     <!-- 3. Share Feedback Subsection -->
                     <div class="dashboard-subsection feedback-subsection-new">
                       <div class="subsection-header">
                         <i class="fas fa-comments"></i>
                         <span>Share Feedback</span>
                       </div>
-
                       <div class="feedback-options-list">
-                        <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
-                          class="feedback-card">
+                        <a
+                          href="https://forms.gle/2Kh6TKqcwYUSnYnHA"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="feedback-card"
+                        >
                           <div class="feedback-card-icon testimonial-icon">
                             <i class="fas fa-star"></i>
                           </div>
@@ -836,13 +1679,18 @@
                               <span>Submit Testimonial</span>
                               <i class="fas fa-external-link-alt external-link-icon"></i>
                             </div>
-                            <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to
-                              be featured!</p>
+                            <p class="feedback-card-desc">
+                              Are you satisfied with the simulator? Share your thoughts to be
+                              featured!
+                            </p>
                           </div>
                         </a>
-
-                        <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
-                          class="feedback-card">
+                        <a
+                          href="https://forms.gle/RJwRybjgRPPi11jg7"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="feedback-card"
+                        >
                           <div class="feedback-card-icon support-icon">
                             <i class="fas fa-bug"></i>
                           </div>
@@ -851,26 +1699,30 @@
                               <span>Bugs &amp; Improvements</span>
                               <i class="fas fa-external-link-alt external-link-icon"></i>
                             </div>
-                            <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the
-                              platform.</p>
+                            <p class="feedback-card-desc">
+                              Found a bug or have ideas? Help us optimize and improve the platform.
+                            </p>
                           </div>
                         </a>
                       </div>
                     </div>
                   </div>
                 </div>
-              </ng-container>
-
+              }
               <!-- For Developer Mode, keep the old standalone feedback list outside -->
-              <ng-container *ngIf="roleMode === 'developer'">
+              @if (roleMode === 'developer') {
                 <div class="feedback-section">
                   <div class="block-header">
                     <i class="fas fa-comments"></i>
                     <span>Share Feedback</span>
                   </div>
                   <div class="feedback-options-list">
-                    <a href="https://forms.gle/2Kh6TKqcwYUSnYnHA" target="_blank" rel="noopener noreferrer"
-                      class="feedback-card">
+                    <a
+                      href="https://forms.gle/2Kh6TKqcwYUSnYnHA"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="feedback-card"
+                    >
                       <div class="feedback-card-icon testimonial-icon">
                         <i class="fas fa-star"></i>
                       </div>
@@ -879,13 +1731,17 @@
                           <span>Submit Testimonial</span>
                           <i class="fas fa-external-link-alt external-link-icon"></i>
                         </div>
-                        <p class="feedback-card-desc">Are you satisfied with the simulator? Share your thoughts to be
-                          featured!</p>
+                        <p class="feedback-card-desc">
+                          Are you satisfied with the simulator? Share your thoughts to be featured!
+                        </p>
                       </div>
                     </a>
-
-                    <a href="https://forms.gle/RJwRybjgRPPi11jg7" target="_blank" rel="noopener noreferrer"
-                      class="feedback-card">
+                    <a
+                      href="https://forms.gle/RJwRybjgRPPi11jg7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="feedback-card"
+                    >
                       <div class="feedback-card-icon support-icon">
                         <i class="fas fa-bug"></i>
                       </div>
@@ -894,23 +1750,33 @@
                           <span>Bugs &amp; Improvements</span>
                           <i class="fas fa-external-link-alt external-link-icon"></i>
                         </div>
-                        <p class="feedback-card-desc">Found a bug or have ideas? Help us optimize and improve the
-                          platform.</p>
+                        <p class="feedback-card-desc">
+                          Found a bug or have ideas? Help us optimize and improve the platform.
+                        </p>
                       </div>
                     </a>
                   </div>
                 </div>
-              </ng-container>
+              }
             </div>
-          </ng-template>
-        </ng-template>
+          }
+        }
       </div>
     </aside>
   </section>
 
-  <div class="run-stats" [class.run-stats--open]="runStatsExpanded" [class.is-running]="mode === 'running'"
-    [class.developer-mode]="roleMode === 'developer'" (mousemove)="onMouseMove($event)"
-    (mouseleave)="onRunStatsMouseLeave()" (click)="onPanelClick($event)">
+  <!-- Run-stats dock: on mobile a tap on the panel background expands/collapses it (a touch
+                    convenience). Every actual control inside is a real button; not itself a keyboard control. -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+  <div
+    class="run-stats"
+    [class.run-stats--open]="runStatsExpanded"
+    [class.is-running]="mode === 'running'"
+    [class.developer-mode]="roleMode === 'developer'"
+    (mousemove)="onMouseMove($event)"
+    (mouseleave)="onRunStatsMouseLeave()"
+    (click)="onPanelClick($event)"
+  >
     <!-- Liquid Glass Layers -->
     <div class="glass-reflection"></div>
     <div class="glass-shine"></div>
@@ -922,72 +1788,99 @@
       <!-- Compact Pill View -->
       <div class="island-compact">
         <div class="island-status">
-          <span class="status-dot" [class.live]="mode === 'running'" [class.paused]="mode === 'paused'"></span>
+          <span
+            class="status-dot"
+            [class.live]="mode === 'running'"
+            [class.paused]="mode === 'paused'"
+          ></span>
           <span class="status-text">{{
-            mode === "running"
-            ? "Simulating"
-            : mode === "paused"
-            ? "Paused"
-            : "Play"
-            }}</span>
+            mode === 'running' ? 'Simulating' : mode === 'paused' ? 'Paused' : 'Play'
+          }}</span>
         </div>
         <!-- Equalizer Waveform -->
-        <div class="island-mini-wave" *ngIf="mode === 'running'">
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-        </div>
-        <div class="island-cost" *ngIf="roleMode === 'architect'">
-          {{ totalCostFormatted }}
-        </div>
+        @if (mode === 'running') {
+          <div class="island-mini-wave">
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+          </div>
+        }
+        @if (roleMode === 'architect') {
+          <div class="island-cost">
+            {{ totalCostFormatted }}
+          </div>
+        }
       </div>
 
       <!-- Expanded Control Center View -->
       <div class="island-expanded">
         <!-- Simulation Control Buttons -->
         <div class="sim-actions">
-          <button type="button" class="icon-button primary btn-glass"
-            [class.pulse-on-idle]="mode === 'idle' && !isSimulationDisabled" [title]="
-              isSimulationDisabled
-                ? 'Fix integration errors to run'
-                : 'Run simulation'
-            " [disabled]="isSimulationDisabled || mode !== 'idle'" (click)="startSimulation()">
-            <i class="fas fa-play"></i>
+          <button
+            type="button"
+            class="icon-button primary btn-glass"
+            [class.pulse-on-idle]="mode === 'idle' && !isSimulationDisabled"
+            [title]="isSimulationDisabled ? 'Fix integration errors to run' : 'Run simulation'"
+            [disabled]="isSimulationDisabled || mode !== 'idle'"
+            (click)="startSimulation()"
+          >
+            <i class="fa-solid fa-play"></i>
           </button>
-          <button type="button" class="icon-button btn-glass" [title]="mode === 'paused' ? 'Resume' : 'Pause'"
-            [disabled]="mode === 'idle'" [class.paused-active]="mode === 'paused'" (click)="pauseSimulation()">
-            <i [class]="
-                mode === 'paused' ? 'fas fa-play-circle' : 'fas fa-pause'
-              "></i>
+          <button
+            type="button"
+            class="icon-button btn-glass"
+            [title]="mode === 'paused' ? 'Resume' : 'Pause'"
+            [disabled]="mode === 'idle'"
+            [class.paused-active]="mode === 'paused'"
+            (click)="pauseSimulation()"
+          >
+            <i [class]="mode === 'paused' ? 'fa-solid fa-play' : 'fa-solid fa-pause'"></i>
           </button>
-          <button type="button" class="icon-button stop btn-glass" title="Stop simulation" [disabled]="mode === 'idle'"
-            (click)="stopSimulation()">
-            <i class="fas fa-stop"></i>
+          <button
+            type="button"
+            class="icon-button stop btn-glass"
+            title="Stop simulation"
+            [disabled]="mode === 'idle'"
+            (click)="stopSimulation()"
+          >
+            <i class="fa-solid fa-stop"></i>
           </button>
         </div>
 
-        <div class="stat-divider" *ngIf="roleMode === 'architect'"></div>
+        @if (roleMode === 'architect') {
+          <div class="stat-divider"></div>
+        }
 
         <!-- Monthly Estimated Cost -->
-        <div class="cost-highlight" *ngIf="roleMode === 'architect'">
-          <span class="cost-label">Est. Cost / mo</span>
-          <span class="cost-value">{{ totalCostFormatted }}</span>
-          <select class="currency-select" [ngModel]="globalCurrency" (ngModelChange)="setCurrency($event)">
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="INR">INR</option>
-            <option value="JPY">JPY</option>
-          </select>
-          <div class="region-select-wrapper">
-            <span class="region-select-display">{{ globalRegion }}</span>
-            <select class="region-select" [ngModel]="globalRegion" (ngModelChange)="setRegion($event)">
-              <option *ngFor="let reg of costService.regions" [value]="reg.code">
-                {{ reg.code }} - {{ reg.name }}
-              </option>
+        @if (roleMode === 'architect') {
+          <div class="cost-highlight">
+            <span class="cost-label">Est. Cost / mo</span>
+            <span class="cost-value">{{ totalCostFormatted }}</span>
+            <select
+              class="currency-select"
+              [ngModel]="globalCurrency"
+              (ngModelChange)="setCurrency($event)"
+            >
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="INR">INR</option>
+              <option value="JPY">JPY</option>
             </select>
+            <div class="region-select-wrapper">
+              <span class="region-select-display">{{ globalRegion }}</span>
+              <select
+                class="region-select"
+                [ngModel]="globalRegion"
+                (ngModelChange)="setRegion($event)"
+              >
+                @for (reg of costService.regions; track reg) {
+                  <option [value]="reg.code">{{ reg.code }} - {{ reg.name }}</option>
+                }
+              </select>
+            </div>
           </div>
-        </div>
+        }
 
         <div class="stat-divider"></div>
 
@@ -995,12 +1888,12 @@
         <div class="stats-data">
           <div class="metric-block success">
             <small>Processed</small>
-            <strong>{{ totals.processed | number }}</strong>
+            <strong>{{ formatCompactNumber(totals.processed) }}</strong>
           </div>
 
           <div class="metric-block danger" [class.has-dropped]="totals.dropped > 0">
             <small>Dropped</small>
-            <strong>{{ totals.dropped | number }}</strong>
+            <strong>{{ formatCompactNumber(totals.dropped) }}</strong>
           </div>
 
           <div class="metric-block info">
@@ -1012,177 +1905,251 @@
     </div>
   </div>
 
-
-
   <!-- Mobile/Tablet Warning Overlay -->
-  <div class="mobile-warning-overlay" *ngIf="showMobileWarning" [class.dismissed]="mobileWarningDismissed">
-    <div class="warning-glass-card">
-      <div class="warning-mascot" aria-hidden="true">
-        <img src="assets/mascot/cat-expand.svg" alt="" />
-      </div>
-      <h2>Optimize Your Experience</h2>
-      <p>
-        Sr. Architect works best on larger displays. Switch to a tablet or
-        desktop to unlock full precision modeling and advanced simulation
-        features.
-      </p>
-      <div class="warning-actions">
-        <button type="button" class="dismiss-warning-btn" (click)="dismissMobileWarning()">
-          Continue on this device
-        </button>
+  @if (showMobileWarning) {
+    <div class="mobile-warning-overlay" [class.dismissed]="mobileWarningDismissed">
+      <div class="warning-glass-card">
+        <div class="warning-mascot" aria-hidden="true">
+          <img src="assets/mascot/cat-expand.svg" alt="" />
+        </div>
+        <h2>Optimize Your Experience</h2>
+        <p>
+          Sr. Architect works best on larger displays. Switch to a tablet or desktop to unlock full
+          precision modeling and advanced simulation features.
+        </p>
+        <div class="warning-actions">
+          <button type="button" class="dismiss-warning-btn" (click)="dismissMobileWarning()">
+            Continue on this device
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- Save Loader Overlay -->
-  <div class="save-overlay" *ngIf="showSaveLoader">
-    <div class="glass-loader-card">
-      <div class="loader-spinner"></div>
-      <span>Securing architecture blueprint...</span>
+  @if (showSaveLoader) {
+    <div class="save-overlay">
+      <div class="glass-loader-card">
+        <div class="loader-spinner"></div>
+        <span>Securing architecture blueprint...</span>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Save Success Toast -->
   <div class="save-toast" [class.show]="showSaveSuccess">
     <div class="toast-content">
       <i class="fas fa-check-circle success-icon"></i>
       <div class="toast-text">
-        <strong>{{ (tabs[activeTabIndex] && tabs[activeTabIndex].name) || "Canvas" }} saved in memory</strong>
+        <strong
+          >{{ (tabs[activeTabIndex] && tabs[activeTabIndex].name) || 'Canvas' }} saved in
+          memory</strong
+        >
         <small>Architecture synced with local browser storage</small>
       </div>
     </div>
   </div>
 
   <!-- ───── Unsupported Region Popup ───── -->
-  <div class="unsupported-region-overlay" *ngIf="showUnsupportedRegion" (click)="dismissUnsupportedRegion()">
-    <div class="unsupported-region-card" (click)="$event.stopPropagation()">
-      <!-- Glow ring -->
-      <div class="unsupported-glow"></div>
-
-      <!-- Mascot -->
-      <div class="unsupported-mascot" aria-hidden="true">
-        <img src="assets/mascot/cat.svg" alt="" />
-      </div>
-
-      <!-- Body -->
-      <h3>Region Not Available Yet</h3>
-      <p class="unsupported-region-code">{{ unsupportedRegionCode }}</p>
-      <p class="unsupported-desc">
-        Pricing data for this region hasn't been generated yet.
-        The pricing engine runs weekly and will add this region soon.
-      </p>
-      <p class="unsupported-reverted">
-        <i class="fas fa-undo-alt"></i>
-        Reverted to <strong>{{ previousRegion }}</strong>
-      </p>
-
-      <!-- Actions -->
-      <div class="unsupported-actions">
-        <button type="button" id="dismiss-unsupported-region-btn" class="unsupported-dismiss-btn"
-          (click)="dismissUnsupportedRegion()">
-          <i class="fas fa-check"></i> Got it
-        </button>
+  <!-- Backdrop: click-to-dismiss is a mouse convenience. Keyboard users dismiss via the global
+                    Escape handler or the in-card "Got it" button; the backdrop is intentionally not a tab stop. -->
+  @if (showUnsupportedRegion) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div class="unsupported-region-overlay" (click)="dismissUnsupportedRegion()">
+      <!-- Card click only stops propagation to the backdrop; the dialog is focus-managed on open and
+                        closed via Escape or its buttons, so it is not itself an activatable control. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div
+        class="unsupported-region-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="unsupported-region-title"
+        tabindex="-1"
+        #unsupportedCard
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Glow ring -->
+        <div class="unsupported-glow"></div>
+        <!-- Mascot -->
+        <div class="unsupported-mascot" aria-hidden="true">
+          <img src="assets/mascot/cat.svg" alt="" />
+        </div>
+        <!-- Body -->
+        <h3 id="unsupported-region-title">Region Not Available Yet</h3>
+        <p class="unsupported-region-code">{{ unsupportedRegionCode }}</p>
+        <p class="unsupported-desc">
+          Pricing data for this region hasn't been generated yet. The pricing engine runs weekly and
+          will add this region soon.
+        </p>
+        <p class="unsupported-reverted">
+          <i class="fas fa-undo-alt"></i>
+          Reverted to <strong>{{ previousRegion }}</strong>
+        </p>
+        <!-- Actions -->
+        <div class="unsupported-actions">
+          <button
+            type="button"
+            id="dismiss-unsupported-region-btn"
+            class="unsupported-dismiss-btn"
+            (click)="dismissUnsupportedRegion()"
+          >
+            <i class="fas fa-check"></i> Got it
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- ───── Unsaved-work Guard Popup ───── -->
-  <div class="leave-guard-overlay" *ngIf="leaveGuard" (click)="resolveLeaveGuard('cancel')">
-    <div class="leave-guard-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <!-- Glow ring -->
-      <div class="leave-guard-glow"></div>
-
-      <!-- Close Button -->
-      <button type="button" class="leave-guard-close" aria-label="Cancel" (click)="resolveLeaveGuard('cancel')">
-        <i class="fas fa-times"></i>
-      </button>
-
-      <!-- Mascot -->
-      <div class="leave-guard-mascot" aria-hidden="true">
-        <img src="assets/mascot/cat-think.svg" alt="Think Mascot" />
-      </div>
-
-      <!-- Content -->
-      <h3>{{ leaveGuard.title }}</h3>
-      <p class="leave-guard-msg">{{ leaveGuard.message }}</p>
-
-      <!-- Actions -->
-      <div class="leave-guard-actions">
-        <ng-container *ngIf="leaveGuard.action === 'switch'">
-          <button type="button" class="lg-btn lg-primary" (click)="resolveLeaveGuard('keep')">
-            <i class="fas fa-wand-magic-sparkles"></i> Bring my canvas
-          </button>
-          <button type="button" class="lg-btn" (click)="resolveLeaveGuard('saveFresh')">
-            <i class="fas fa-floppy-disk"></i> Save &amp; start fresh
-          </button>
-          <button type="button" class="lg-btn lg-ghost" (click)="resolveLeaveGuard('fresh')">
-            <i class="fas fa-file"></i> Start fresh
-          </button>
-        </ng-container>
-        <ng-container *ngIf="leaveGuard.action !== 'switch'">
-          <button type="button" class="lg-btn lg-primary" (click)="resolveLeaveGuard('save')">
-            <i class="fas fa-floppy-disk"></i> Save
-          </button>
-          <button type="button" class="lg-btn lg-danger" (click)="resolveLeaveGuard('discard')">
-            <i class="fas fa-trash-can"></i> Discard
-          </button>
-        </ng-container>
+  <!-- Backdrop: click-to-cancel is a mouse convenience. Keyboard users cancel via the global Escape
+                    handler or the in-card Cancel/action buttons; the backdrop is intentionally not a tab stop. -->
+  @if (leaveGuard) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div class="leave-guard-overlay" (click)="resolveLeaveGuard('cancel')">
+      <!-- Card click only stops propagation to the backdrop; the dialog is focus-managed on open and
+                        closed via Escape or its buttons, so it is not itself an activatable control. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div
+        class="leave-guard-card"
+        (click)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
+        #leaveGuardCard
+      >
+        <!-- Glow ring -->
+        <div class="leave-guard-glow"></div>
+        <!-- Close Button -->
+        <button
+          type="button"
+          class="leave-guard-close"
+          aria-label="Cancel"
+          (click)="resolveLeaveGuard('cancel')"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+        <!-- Mascot -->
+        <div class="leave-guard-mascot" aria-hidden="true">
+          <img src="assets/mascot/cat-think.svg" alt="Think Mascot" />
+        </div>
+        <!-- Content -->
+        <h3>{{ leaveGuard.title }}</h3>
+        <p class="leave-guard-msg">{{ leaveGuard.message }}</p>
+        <!-- Actions -->
+        <div class="leave-guard-actions">
+          @if (leaveGuard.action === 'switch') {
+            <button type="button" class="lg-btn lg-primary" (click)="resolveLeaveGuard('keep')">
+              <i class="fas fa-wand-magic-sparkles"></i> Bring my canvas
+            </button>
+            <button type="button" class="lg-btn" (click)="resolveLeaveGuard('saveFresh')">
+              <i class="fas fa-floppy-disk"></i> Save &amp; start fresh
+            </button>
+            <button type="button" class="lg-btn lg-ghost" (click)="resolveLeaveGuard('fresh')">
+              <i class="fas fa-file"></i> Start fresh
+            </button>
+          }
+          @if (leaveGuard.action !== 'switch') {
+            <button type="button" class="lg-btn lg-primary" (click)="resolveLeaveGuard('save')">
+              <i class="fas fa-floppy-disk"></i> Save
+            </button>
+            <button type="button" class="lg-btn lg-danger" (click)="resolveLeaveGuard('discard')">
+              <i class="fas fa-trash-can"></i> Discard
+            </button>
+          }
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- ───── Keyboard Shortcuts Panel ───── -->
-  <div class="hotkeys-overlay" *ngIf="showHotkeys" (click)="closeHotkeys()">
-    <div class="hotkeys-card" (click)="$event.stopPropagation()">
-      <button type="button" class="hotkeys-close" (click)="closeHotkeys()" aria-label="Close">
-        <i class="fas fa-times"></i>
-      </button>
-
-      <div class="hotkeys-header">
-        <span class="hotkeys-mascot" aria-hidden="true">
-          <img src="assets/mascot/cat-think.svg" alt="" />
-        </span>
-        <div class="hotkeys-heading">
-          <h3>Keyboard Shortcuts</h3>
-          <p>Work faster on the canvas. Press <kbd>?</kbd> anytime to reopen this.</p>
-        </div>
-      </div>
-
-      <div class="hotkeys-groups">
-        <div class="hotkeys-group" *ngFor="let group of hotkeyGroups">
-          <h4>{{ group.title }}</h4>
-          <ul>
-            <li *ngFor="let item of group.items">
-              <span class="hotkeys-keys">
-                <ng-container *ngFor="let key of item.keys; let last = last">
-                  <kbd>{{ key }}</kbd><span class="hotkeys-plus" *ngIf="!last">+</span>
-                </ng-container>
-              </span>
-              <span class="hotkeys-label">{{ item.label }}</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="hotkeys-actions">
-        <button type="button" class="hotkeys-got-it" (click)="closeHotkeys()">
-          Got it, let's build
+  <!-- Backdrop: click-to-close is a mouse convenience. Keyboard users close via the global Escape
+                    handler or the in-card close/"Got it" buttons; the backdrop is intentionally not a tab stop. -->
+  @if (showHotkeys) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div class="hotkeys-overlay" (click)="closeHotkeys()">
+      <!-- Card click only stops propagation to the backdrop; the dialog is focus-managed on open and
+                        closed via Escape or its buttons, so it is not itself an activatable control. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div
+        class="hotkeys-card"
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
+        #hotkeysCard
+        (click)="$event.stopPropagation()"
+      >
+        <button type="button" class="hotkeys-close" (click)="closeHotkeys()" aria-label="Close">
+          <i class="fas fa-times"></i>
         </button>
+        <div class="hotkeys-header">
+          <span class="hotkeys-mascot" aria-hidden="true">
+            <img src="assets/mascot/cat-think.svg" alt="" />
+          </span>
+          <div class="hotkeys-heading">
+            <h3>Keyboard Shortcuts</h3>
+            <p>Work faster on the canvas. Press <kbd>?</kbd> anytime to reopen this.</p>
+          </div>
+        </div>
+        <div class="hotkeys-groups">
+          @for (group of hotkeyGroups; track group) {
+            <div class="hotkeys-group">
+              <h4>{{ group.title }}</h4>
+              <ul>
+                @for (item of group.items; track item) {
+                  <li>
+                    <span class="hotkeys-keys">
+                      @for (key of item.keys; track key; let last = $last) {
+                        <kbd>{{ key }}</kbd>
+                        @if (!last) {
+                          <span class="hotkeys-plus">+</span>
+                        }
+                      }
+                    </span>
+                    <span class="hotkeys-label">{{ item.label }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+        <div class="hotkeys-actions">
+          <button type="button" class="hotkeys-got-it" (click)="closeHotkeys()">
+            Got it, let's build
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
-  <app-onboarding-overlay *ngIf="roleMode === 'developer'"></app-onboarding-overlay>
+  @if (roleMode === 'developer') {
+    <app-onboarding-overlay></app-onboarding-overlay>
+  }
 
-  <div class="milestone-popup" [class.bonus-unlocked]="milestonePopup.isHidden" *ngIf="milestonePopup" role="status"
-    aria-live="polite">
-    <span class="mp-badge"><i class="fas" [class.fa-trophy]="!milestonePopup.isHidden"
-        [class.fa-star]="milestonePopup.isHidden"></i></span>
-    <div class="mp-text">
-      <strong *ngIf="!milestonePopup.isHidden">Milestone {{ milestonePopup.number }} of {{ milestonePopup.total }}
-        reached</strong>
-      <strong *ngIf="milestonePopup.isHidden" class="gold-text">Secret Milestone Unlocked! 🌟</strong>
-      <span>{{ milestonePopup.label }}</span>
+  @if (milestonePopup) {
+    <div
+      class="milestone-popup"
+      [class.bonus-unlocked]="milestonePopup.isHidden"
+      role="status"
+      aria-live="polite"
+    >
+      <span class="mp-badge"
+        ><i
+          class="fas"
+          [class.fa-trophy]="!milestonePopup.isHidden"
+          [class.fa-star]="milestonePopup.isHidden"
+        ></i
+      ></span>
+      <div class="mp-text">
+        @if (!milestonePopup.isHidden) {
+          <strong
+            >Milestone {{ milestonePopup.number }} of {{ milestonePopup.total }} reached</strong
+          >
+        }
+        @if (milestonePopup.isHidden) {
+          <strong class="gold-text">Secret Milestone Unlocked! 🌟</strong>
+        }
+        <span>{{ milestonePopup.label }}</span>
+      </div>
     </div>
-  </div>
+  }
 </main>

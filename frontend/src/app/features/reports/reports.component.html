@@ -1,0 +1,97 @@
+<main class="reports-shell" (scroll)="onScroll($event)">
+  <!-- Mesh Ambient Decorative Glows -->
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+  </div>
+
+  <!-- Docs-style Navbar (inline, same as documentation page) -->
+  <nav class="docs-nav glass-panel" [class.nav-scrolled]="navScrolled">
+    <div class="nav-left">
+      <button class="back-btn" (click)="goBack()" aria-label="Go back">
+        <i class="fas fa-arrow-left"></i> <span>Back</span>
+      </button>
+      <a class="brand-mark" href="/" (click)="goHome($event)" aria-label="Go to home">
+        <img src="favicon.svg" alt="Sr. Architect" />
+        <span>Sr<span class="brand-dot">.</span> Architect</span>
+        <small>REPORTS</small>
+      </a>
+    </div>
+
+    <div class="nav-right-group">
+      <a class="docs-btn" href="/docs" (click)="goDocs($event)" aria-label="Go to documentation">Docs</a>
+      <button
+        type="button"
+        class="theme-toggle-btn"
+        [class.show-moon]="!isDarkMode"
+        (click)="toggleTheme()"
+        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      >
+        <svg
+          class="sun-moon-svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <mask id="report-moon-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            <circle
+              [attr.cx]="!isDarkMode ? 6 : -10"
+              [attr.cy]="!isDarkMode ? 18 : 34"
+              r="7"
+              fill="black"
+            />
+          </mask>
+          <circle cx="12" cy="12" r="5" mask="url(#report-moon-mask)" fill="currentColor" />
+          <g class="sun-rays" stroke="currentColor">
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </g>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Report Tab Selector -->
+  @if (reportTabs.length > 1) {
+    <section class="report-tabs-bar">
+      @for (tab of reportTabs; track tab.id) {
+        <button
+          class="report-tab"
+          [class.active]="activeReportId === tab.id"
+          (click)="selectReport(tab.id)"
+        >
+          <i [class]="tab.icon"></i>
+          <span>{{ tab.name }}</span>
+        </button>
+      }
+    </section>
+  }
+
+  <!-- Inline Report Content (no iframe) -->
+  <section class="report-viewport">
+    @if (loading) {
+      <div class="report-loading">
+        <div class="loading-spinner"></div>
+        <p>Loading report...</p>
+      </div>
+    }
+    @if (reportHtml) {
+      <div class="report-inject" [innerHTML]="reportHtml"></div>
+    }
+  </section>
+
+  <footer class="reports-footer">
+    <p>AWS System Design Simulator · GNU GPLv3 Licensed · Open Source</p>
+  </footer>
+</main>

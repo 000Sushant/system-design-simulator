@@ -31,7 +31,7 @@ npm run dev
 - The frontend should type-check cleanly (`cd frontend && npx tsc --noEmit`), and the same for the worker.
 - If you change any pricing factor, remember it lives in two places that must stay in sync:
   - `frontend/src/app/core/data/regions/us-east-1.json`
-  - `worker/src/schema-builder.ts` (`BASELINE_SERVICES`)
+  - `workers/aws-pricing-generator/src/schema-builder.ts` (`BASELINE_SERVICES`)
 - Services are data-driven. Most service changes happen in the JSON files under `frontend/src/app/core`, not in code.
 - Write commit messages that explain the why, not just the what.
 

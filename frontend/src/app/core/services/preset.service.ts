@@ -32,17 +32,30 @@ export class PresetService {
       ['monitoring', 'cloudWatch', 'Monitoring', 800, 720],
     ]);
     const edges: Array<[string, string]> = [
-      // Edge & authentication
-      ['users', 'dns'], ['users', 'auth'], ['dns', 'cdn'], ['dns', 'wsApi'], ['cdn', 'storage'],
-      // WebSocket connection lifecycle ($connect / $disconnect, presence)
-      ['auth', 'connFn'], ['wsApi', 'connFn'], ['connFn', 'presence'], ['connFn', 'messages'], ['connFn', 'monitoring'],
-      // Message send path (persist, look up presence, fan-out, stream)
-      ['wsApi', 'msgFn'], ['msgFn', 'messages'], ['msgFn', 'presence'], ['msgFn', 'storage'],
-      ['msgFn', 'push'], ['msgFn', 'stream'], ['msgFn', 'monitoring'],
-      // Asynchronous fan-out & delivery workers
-      ['push', 'deliveryQueue'], ['deliveryQueue', 'workers'], ['workers', 'messages'], ['workers', 'monitoring'],
-      // Message stream → archive & search
-      ['stream', 'archive'], ['archive', 'storage'], ['stream', 'search'],
+      ['users', 'dns'],
+      ['users', 'auth'],
+      ['dns', 'cdn'],
+      ['dns', 'wsApi'],
+      ['cdn', 'storage'],
+      ['auth', 'connFn'],
+      ['wsApi', 'connFn'],
+      ['connFn', 'presence'],
+      ['connFn', 'messages'],
+      ['connFn', 'monitoring'],
+      ['wsApi', 'msgFn'],
+      ['msgFn', 'messages'],
+      ['msgFn', 'presence'],
+      ['msgFn', 'storage'],
+      ['msgFn', 'push'],
+      ['msgFn', 'stream'],
+      ['msgFn', 'monitoring'],
+      ['push', 'deliveryQueue'],
+      ['deliveryQueue', 'workers'],
+      ['workers', 'messages'],
+      ['workers', 'monitoring'],
+      ['stream', 'archive'],
+      ['archive', 'storage'],
+      ['stream', 'search'],
     ];
     const { nodes, connections } = this.graphBuilder.build(layout, edges);
 
@@ -61,7 +74,7 @@ export class PresetService {
           height: 60,
           fontSize: 26,
           fontWeight: 'bold',
-          selected: false
+          selected: false,
         },
         {
           id: 'anno-subtitle',
@@ -72,11 +85,11 @@ export class PresetService {
           height: 40,
           fontSize: 14,
           fontWeight: 'normal',
-          selected: false
-        }
+          selected: false,
+        },
       ],
       currency: 'USD',
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
   }
 
@@ -117,11 +130,11 @@ export class PresetService {
           height: 60,
           fontSize: 24,
           fontWeight: 'bold',
-          selected: false
-        }
+          selected: false,
+        },
       ],
       currency: 'USD',
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
   }
 }

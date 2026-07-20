@@ -1,61 +1,51 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>System Design Simulator: Model Traffic, Cost & Bottlenecks | Sr. Architect</title>
-    <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta
-      name="description"
-      content="Free, open-source AWS system design simulator. Drag AWS services onto a canvas, run a deterministic traffic-and-cost simulation, estimate real monthly cost, and find traffic bottlenecks. Built for engineers learning system design and cloud architects sizing real workloads."
-    />
-    <meta
-      name="keywords"
-      content="AWS system design simulator, system design practice, AWS architecture diagram, AWS cost estimator, traffic bottleneck analysis, cloud architecture tool, AWS Lambda cost, serverless cost calculator, system design for engineers, cloud architect tool"
-    />
-    <meta name="author" content="Sushant Kumar" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
-    <link rel="canonical" href="https://srarchitect.qzz.io/" />
 
-    <!-- Favicons: SVG adapts to light/dark, ICO and PNG are static fallbacks -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/apple-touch-icon.png" />
-    <link rel="manifest" href="assets/brand/site.webmanifest" />
+<head>
+  <meta charset="utf-8" />
+  <title>System Design Simulator: Model Traffic, Cost & Bottlenecks | Sr. Architect</title>
+  <base href="/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description"
+    content="Free, open-source AWS system design simulator. Drag AWS services onto a canvas, run a deterministic traffic-and-cost simulation, estimate real monthly cost, and find traffic bottlenecks. Built for engineers learning system design and cloud architects sizing real workloads." />
+  <meta name="keywords"
+    content="AWS system design simulator, system design practice, AWS architecture diagram, AWS cost estimator, traffic bottleneck analysis, cloud architecture tool, AWS Lambda cost, serverless cost calculator, system design for engineers, cloud architect tool" />
+  <meta name="author" content="Sushant Kumar" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <link rel="canonical" href="https://srarchitect.qzz.io/" />
 
-    <!-- Browser UI theming -->
-    <meta name="theme-color" content="#fff7e7" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1b2330" media="(prefers-color-scheme: dark)" />
+  <!-- Favicons: SVG adapts to light/dark, ICO and PNG are static fallbacks -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/apple-touch-icon.png" />
+  <link rel="manifest" href="assets/brand/site.webmanifest" />
 
-    <!-- Open Graph / social share card -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Sr. Architect" />
-    <meta property="og:url" content="https://srarchitect.qzz.io/" />
-    <meta
-      property="og:title"
-      content="AWS System Design Simulator: Model Traffic, Cost & Bottlenecks"
-    />
-    <meta
-      property="og:description"
-      content="Drag AWS services onto a canvas, run a deterministic traffic-and-cost simulation, estimate real monthly cost, and find traffic bottlenecks. Free and open source."
-    />
-    <meta property="og:image" content="https://srarchitect.qzz.io/assets/brand/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="en_US" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AWS System Design Simulator: Traffic, Cost & Bottlenecks" />
-    <meta
-      name="twitter:description"
-      content="Sketch an AWS architecture, simulate traffic, estimate real monthly cost, and find bottlenecks. Free and open source."
-    />
-    <meta name="twitter:image" content="https://srarchitect.qzz.io/assets/brand/og-image.png" />
+  <!-- Browser UI theming -->
+  <meta name="theme-color" content="#fff7e7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1b2330" media="(prefers-color-scheme: dark)" />
 
-    <!-- Structured data: tool, site, author, and persona-aligned FAQ.
+  <!-- Open Graph / social share card -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Sr. Architect" />
+  <meta property="og:url" content="https://srarchitect.qzz.io/" />
+  <meta property="og:title" content="AWS System Design Simulator: Model Traffic, Cost & Bottlenecks" />
+  <meta property="og:description"
+    content="Drag AWS services onto a canvas, run a deterministic traffic-and-cost simulation, estimate real monthly cost, and find traffic bottlenecks. Free and open source." />
+  <meta property="og:image" content="https://srarchitect.qzz.io/assets/brand/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AWS System Design Simulator: Traffic, Cost & Bottlenecks" />
+  <meta name="twitter:description"
+    content="Sketch an AWS architecture, simulate traffic, estimate real monthly cost, and find bottlenecks. Free and open source." />
+  <meta name="twitter:image" content="https://srarchitect.qzz.io/assets/brand/og-image.png" />
+
+  <!-- Structured data: tool, site, author, and persona-aligned FAQ.
          Read by search engines and AI answer engines without running JS. -->
-    <script type="application/ld+json">
+  <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
@@ -68,14 +58,14 @@
             "applicationSubCategory": "Cloud Architecture & Cost Estimation Tool",
             "operatingSystem": "Web browser",
             "url": "https://srarchitect.qzz.io/",
-            "description": "A browser-based AWS architecture sketchbook with a deterministic traffic-and-cost simulation engine. Drag AWS services onto a canvas, connect them, run a live simulation, and see per-node RPS, latency, utilization, an accurate monthly cost estimate, and the traffic bottleneck. It also helps you prepare for system design interviews through guided, hands-on challenges, and learn AWS with beginner-friendly visual documentation for 60+ services covering what each one does, when to use it, and how it integrates with others.",
+            "description": "A browser-based AWS architecture sketchbook with a deterministic traffic-and-cost simulation engine. Drag AWS services onto a canvas, connect them, run a live simulation, and see per-node RPS, latency, utilization, an accurate monthly cost estimate, and the traffic bottleneck. It also helps you prepare for system design interviews through guided, hands-on challenges, and learn AWS with beginner-friendly visual documentation for 70+ services covering what each one does, when to use it, and how it integrates with others.",
             "featureList": [
-              "Drag-and-drop AWS architecture canvas with 60+ services",
+              "Drag-and-drop AWS architecture canvas with 70+ services",
               "Deterministic traffic simulation: per-node RPS, latency, queue, drops, utilization",
               "Accurate monthly AWS cost estimation using real pricing formulas",
               "Automatic traffic bottleneck detection",
               "System design interview preparation with guided, hands-on challenges you design and then validate by simulation",
-              "Beginner-friendly visual documentation for 60+ AWS services: what each service does, its use cases, and how it integrates with other services, with animated request-and-data-flow diagrams"
+              "Beginner-friendly visual documentation for 70+ AWS services: what each service does, its use cases, and how it integrates with other services, with animated request-and-data-flow diagrams"
             ],
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
             "isAccessibleForFree": true,
@@ -135,7 +125,7 @@
                 "name": "Does it help beginners learn AWS services?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes. Every one of the 60+ AWS services comes with beginner-friendly visual documentation that explains what the service does, the problems it solves, when to use or avoid it, and how it integrates with other services, using animated diagrams that show how requests and data flow between them. It is designed to make AWS approachable for people who are new to the cloud."
+                  "text": "Yes. Every one of the 70+ AWS services comes with beginner-friendly visual documentation that explains what the service does, the problems it solves, when to use or avoid it, and how it integrates with other services, using animated diagrams that show how requests and data flow between them. It is designed to make AWS approachable for people who are new to the cloud."
                 }
               },
               {
@@ -143,7 +133,7 @@
                 "name": "Is it good for learning system design and AWS?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes. It is built for engineers practicing system design and learning AWS hands-on, with 60+ documented services, guided challenges, and a live simulation that makes capacity, scaling, and cost trade-offs visible."
+                  "text": "Yes. It is built for engineers practicing system design and learning AWS hands-on, with 70+ documented services, guided challenges, and a live simulation that makes capacity, scaling, and cost trade-offs visible."
                 }
               },
               {
@@ -159,49 +149,51 @@
         ]
       }
     </script>
-  </head>
-  <body>
-    <app-root></app-root>
+</head>
 
-    <!-- Crawlable summary for engines that do not execute JavaScript.
+<body>
+  <app-root></app-root>
+
+  <!-- Crawlable summary for engines that do not execute JavaScript.
          Mirrors the interactive app's purpose; replaced by the app for users. -->
-    <noscript>
-      <main>
-        <h1>AWS System Design Simulator</h1>
-        <p>
-          Sr. Architect is a free, open-source AWS system design simulator. Drag AWS services onto a
-          canvas, connect them, and run a deterministic traffic-and-cost simulation that shows
-          per-node requests per second, latency, and utilization, an accurate monthly AWS cost
-          estimate, and the exact traffic bottleneck.
-        </p>
-        <h2>Who it is for</h2>
-        <ul>
-          <li>
-            <strong>Engineers preparing for system design interviews</strong>: work through guided,
-            hands-on challenges that ask you to design real systems, then validate them by
-            simulating traffic and seeing where they break.
-          </li>
-          <li>
-            <strong>Beginners learning AWS</strong>: explore 60+ AWS services with beginner-friendly
-            visual documentation covering what each service does, its use cases, and how it
-            integrates with other services.
-          </li>
-          <li>
-            <strong>Engineers learning system design</strong>: practice designing scalable
-            architectures and see how capacity, scaling, and queueing behave under load.
-          </li>
-          <li>
-            <strong>Cloud and enterprise architects</strong>: estimate real monthly cost for a
-            design and pinpoint traffic bottlenecks before building.
-          </li>
-        </ul>
-        <h2>Explore the AWS service library</h2>
-        <p>
-          Read beginner-friendly visual guides to AWS services (what each one is, how it works, when
-          to use it, how it integrates with other services, and how it is priced) in the
-          <a href="/services/">AWS service library</a>.
-        </p>
-      </main>
-    </noscript>
-  </body>
+  <noscript>
+    <main>
+      <h1>AWS System Design Simulator</h1>
+      <p>
+        Sr. Architect is a free, open-source AWS system design simulator. Drag AWS services onto a
+        canvas, connect them, and run a deterministic traffic-and-cost simulation that shows
+        per-node requests per second, latency, and utilization, an accurate monthly AWS cost
+        estimate, and the exact traffic bottleneck.
+      </p>
+      <h2>Who it is for</h2>
+      <ul>
+        <li>
+          <strong>Engineers preparing for system design interviews</strong>: work through guided,
+          hands-on challenges that ask you to design real systems, then validate them by
+          simulating traffic and seeing where they break.
+        </li>
+        <li>
+          <strong>Beginners learning AWS</strong>: explore 70+ AWS services with beginner-friendly
+          visual documentation covering what each service does, its use cases, and how it
+          integrates with other services.
+        </li>
+        <li>
+          <strong>Engineers learning system design</strong>: practice designing scalable
+          architectures and see how capacity, scaling, and queueing behave under load.
+        </li>
+        <li>
+          <strong>Cloud and enterprise architects</strong>: estimate real monthly cost for a
+          design and pinpoint traffic bottlenecks before building.
+        </li>
+      </ul>
+      <h2>Explore the AWS service library</h2>
+      <p>
+        Read beginner-friendly visual guides to AWS services (what each one is, how it works, when
+        to use it, how it integrates with other services, and how it is priced) in the
+        <a href="/services/">AWS service library</a>.
+      </p>
+    </main>
+  </noscript>
+</body>
+
 </html>

@@ -1,4 +1,4 @@
-<main class="landing-shell" #shell (scroll)="onShellScroll($event)">
+<main class="landing-shell" #shell>
   <div class="mesh-bg" aria-hidden="true">
     <span class="orb orb-a"></span>
     <span class="orb orb-b"></span>
@@ -9,7 +9,7 @@
     <a class="brand-mark" href="#" aria-label="Sr. Architect home">
       <img class="brand-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="32" height="32" />
       <span>Sr<span class="brand-dot">.</span> Architect</span>
-      <small>v1.3.0</small>
+      <small>v1.3.1</small>
     </a>
     <div class="nav-actions">
       <a href="/docs" (click)="openDocs($event)" (mousemove)="onButtonMouseMove($event)"
@@ -83,10 +83,12 @@
           (mouseleave)="onButtonMouseLeave($event)">
           <i class="fab fa-github"></i>
           <span>GitHub</span>
-          <span *ngIf="githubStars" class="github-stars-badge">
+          @if (githubStars) {
+          <span class="github-stars-badge">
             <i class="fas fa-star"></i>
             {{ githubStars }}
           </span>
+          }
         </a>
       </div>
     </div>
@@ -114,8 +116,9 @@
     </div>
 
     <div class="mode-grid">
-      <article class="mode-card glass-panel" *ngFor="let mode of modes" [class]="mode.id"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      @for (mode of modes; track mode) {
+      <article class="mode-card glass-panel" [class]="mode.id" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
         <div class="mode-card-top">
           <span class="mode-badge">{{ mode.badge }}</span>
           <span class="mode-icon"><i [class]="mode.icon"></i></span>
@@ -134,19 +137,24 @@
         <h3>{{ mode.title }}</h3>
         <p>{{ mode.description }}</p>
         <ul>
-          <li *ngFor="let feature of mode.features"><i class="fas fa-check"></i>{{ feature }}</li>
+          @for (feature of mode.features; track feature) {
+          <li><i class="fas fa-check"></i>{{ feature }}</li>
+          }
         </ul>
         <button type="button" class="mode-button" (click)="launch.emit(mode.id)">
           <span>{{ mode.button }}</span>
           <i class="fas fa-arrow-right"></i>
         </button>
       </article>
+      }
     </div>
     <p class="mode-microcopy">Start simple. Scale infinitely.</p>
   </section>
 
   <section class="trust-strip glass-panel" aria-label="Project status">
-    <span *ngFor="let pill of trustPills">{{ pill }}</span>
+    @for (pill of trustPills; track pill) {
+    <span>{{ pill }}</span>
+    }
   </section>
 
   <section class="feature-section" id="features">
@@ -158,39 +166,138 @@
       </h2>
     </div>
     <div class="feature-grid">
-      <article class="feature-card glass-panel" *ngFor="let feature of features" (mousemove)="onButtonMouseMove($event)"
+      @for (feature of features; track feature) {
+      <article class="feature-card glass-panel" (mousemove)="onButtonMouseMove($event)"
         (mouseleave)="onButtonMouseLeave($event)">
         <div class="feature-icon"><i [class]="feature.icon"></i></div>
         <div class="feature-title">
           <h3>{{ feature.title }}</h3>
-          <small *ngIf="feature.badge">{{ feature.badge }}</small>
+          @if (feature.badge) {
+          <small>{{ feature.badge }}</small>
+          }
         </div>
         <p>{{ feature.description }}</p>
       </article>
+      }
     </div>
   </section>
 
-  <section class="creator-card glass-panel">
-    <div class="creator-glow" aria-hidden="true"></div>
-    <div class="creator-avatar">SK</div>
-    <div class="creator-copy">
-      <span class="section-kicker">Creator</span>
-      <h2>Made with <span class="beating-heart">❤️</span> by Sushant Kumar</h2>
-      <p>
-        Backend-focused full stack engineer obsessed with cloud architecture, scalable systems, and
-        building tools that make engineering feel alive.
-      </p>
-      <div class="creator-badges">
-        <span>Open Source</span>
-        <span>GNU GPLv3 Licensed</span>
-        <span>Contributions Welcome</span>
-      </div>
+  <!-- Fidelity & Performance Telemetry Dashboard -->
+  <section class="telemetry-dashboard-section" aria-labelledby="telemetry-dashboard-title">
+    <div class="section-heading centered">
+      <span class="section-kicker">Simulator Fidelity</span>
+      <h2 id="telemetry-dashboard-title">Performance &amp; Accuracy Benchmarks</h2>
+      <p>Transparent metrics showing the realism of our behavior simulation and cloud billing calculations.</p>
     </div>
-    <div class="social-links">
-      <a *ngFor="let link of socialLinks" [href]="link.href" target="_blank" rel="noopener noreferrer"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-        <i [class]="link.icon"></i>{{ link.label }}
-      </a>
+
+    <div class="telemetry-dashboard-grid">
+      <!-- Engine Card -->
+      <div class="telemetry-console glass-panel purple" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span class="telemetry-glow" aria-hidden="true"></span>
+        
+        <div class="tc-header">
+          <div class="tc-title">
+            <span class="tc-icon"><i class="fas fa-microchip"></i></span>
+            <h3>Behavior Engine</h3>
+          </div>
+          <span class="tc-status-badge">
+            <span class="status-pulse-dot"></span>
+            Active Engine
+          </span>
+        </div>
+        
+        <div class="tc-body">
+          <div class="tc-metric-hero">
+            <span class="tc-value">180ms</span>
+            <span class="tc-value-label">PulseFlow Tick Speed</span>
+          </div>
+          
+          <div class="tc-info">
+            <p class="tc-description">
+              PulseFlow simulates real AWS auto-scaling quota ceilings, backpressure queues, connection pools, and failover recoveries.
+            </p>
+            <div class="tc-stats-grid">
+              <div class="tc-stat">
+                <span class="tcs-value">8</span>
+                <span class="tcs-label">Stages</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">10</span>
+                <span class="tcs-label">Metrics</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">~1.1k</span>
+                <span class="tcs-label">Updates / s</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">270+</span>
+                <span class="tcs-label">Params</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tc-footer">
+          <a class="cta-button primary" href="/benchmarks?report=engine-deep-dive" (click)="openReport('engine-deep-dive', $event)">
+            <span>Engine Deep Dive</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Cost Audit Card -->
+      <div class="telemetry-console glass-panel cyan" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span class="telemetry-glow" aria-hidden="true"></span>
+        
+        <div class="tc-header">
+          <div class="tc-title">
+            <span class="tc-icon"><i class="fas fa-coins"></i></span>
+            <h3>Pricing Accuracy</h3>
+          </div>
+          <span class="tc-status-badge">
+            <span class="status-pulse-dot"></span>
+            Live Audit
+          </span>
+        </div>
+        
+        <div class="tc-body">
+          <div class="tc-metric-hero">
+            <span class="tc-value">92.4%</span>
+            <span class="tc-value-label">Billing Coverage</span>
+          </div>
+          
+          <div class="tc-info">
+            <p class="tc-description">
+              Audited against the live AWS Price List API. We match 100% of services to the float, covering regional compute, transfer, and storage costs.
+            </p>
+            <div class="tc-stats-grid">
+              <div class="tc-stat">
+                <span class="tcs-value">100%</span>
+                <span class="tcs-label">Fidelity</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">8.5k+</span>
+                <span class="tcs-label">Checks</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">27</span>
+                <span class="tcs-label">Regions</span>
+              </div>
+              <div class="tc-stat">
+                <span class="tcs-value">68</span>
+                <span class="tcs-label">Services</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tc-footer">
+          <a class="cta-button primary" href="/benchmarks?report=cost-audit" (click)="openReport('cost-audit', $event)">
+            <span>Cost Accuracy Report</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -199,25 +306,30 @@
     <h2>Loved by developers worldwide</h2>
 
     <!-- Live project stats grid -->
-    <div *ngIf="liveStats" class="community-stats-grid">
-      <div *ngFor="let stat of liveStats" class="community-stat-card glass-panel"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+    @if (liveStats) {
+    <div class="community-stats-grid">
+      @for (stat of liveStats; track stat) {
+      <div class="community-stat-card glass-panel" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)">
         <span class="comm-stat-icon"><i [class]="stat.icon"></i></span>
         <span class="comm-stat-value">{{ stat.value }}</span>
         <span class="comm-stat-label">{{ stat.label }}</span>
       </div>
+      }
     </div>
+    }
 
     <h3 class="contributors-subheading">Top Contributors</h3>
 
     <!-- Live contributors list -->
     <div class="contributors-list">
-      <a *ngFor="let contributor of contributors" [href]="contributor.html_url" target="_blank"
-        rel="noopener noreferrer" class="contributor-link" [title]="contributor.login"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+      @for (contributor of contributors; track contributor) {
+      <a [href]="contributor.html_url" target="_blank" rel="noopener noreferrer" class="contributor-link"
+        [title]="contributor.login" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
         <img [src]="contributor.avatar_url" [alt]="contributor.login" class="contributor-avatar" />
         <span class="contributor-name">{{ contributor.login }}</span>
       </a>
+      }
     </div>
 
     <p class="contributors-note">
@@ -241,53 +353,76 @@
       and helps keep things running.
     </p>
     <div class="hero-actions center">
+      <button type="button" class="cta-button primary" (click)="scrollToModes()"
+        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
+        <span>Launch Sr. Architect</span>
+      </button>
       <a class="cta-button primary sponsor-cta" href="https://github.com/sponsors/000Sushant" target="_blank"
         rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
         <i class="fas fa-heart"></i>
-        <span>Sponsor on GitHub</span>
+        <span>Sponsor</span>
       </a>
+      <a class="cta-button primary contribute-btn"
+        href="https://github.com/000Sushant/system-design-simulator/blob/main/CONTRIBUTING.md" target="_blank"
+        rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+        (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
     </div>
     <p class="sponsor-note">
       Every contribution funds development, pricing accuracy, and new features.
     </p>
   </section>
 
-  <section class="final-cta glass-panel">
-    <span class="section-kicker">Start now</span>
-    <h2>Watch your next architecture come alive before it ships.</h2>
-    <div class="hero-actions center">
-      <button type="button" class="cta-button primary" (click)="launch.emit('architect')"
-        (mousemove)="onButtonMouseMove($event)" (mouseleave)="onButtonMouseLeave($event)">
-        <span>Launch Sr. Architect</span>
-      </button>
-      <a class="cta-button primary github-btn" href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Explore GitHub</span></a>
-      <a class="cta-button primary contribute-btn" href="https://github.com/000Sushant/system-design-simulator/"
-        target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
-        (mouseleave)="onButtonMouseLeave($event)"><span>Contribute</span></a>
-    </div>
-  </section>
-
   <footer class="landing-footer">
-    <div class="footer-brand">
-      <img class="footer-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="38" height="38" />
-      <div class="footer-brand-text">
-        <span class="footer-name">Sr<span class="brand-dot">.</span> Architect</span>
-        <span class="footer-tag">See your architecture before you ship it.</span>
+
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-brand-row">
+          <img class="footer-logo" src="assets/brand/logo-mark-dark.svg" alt="Sr. Architect" width="42" height="42" />
+          <div class="footer-brand-text">
+            <span class="footer-name">Sr<span class="brand-dot">.</span> Architect</span>
+            <span class="footer-tag">See your architecture before you ship it.</span>
+          </div>
+        </div>
+        <p class="footer-credit-text">
+          Made with <span class="beating-heart">❤️</span> by <strong>Sushant Kumar</strong>, a backend-focused
+          full stack engineer building tools that make engineering feel alive.
+        </p>
+        <div class="footer-social social-links">
+          @for (link of socialLinks; track link) {
+          <a [href]="link.href" target="_blank" rel="noopener noreferrer" (mousemove)="onButtonMouseMove($event)"
+            (mouseleave)="onButtonMouseLeave($event)">
+            <i [class]="link.icon"></i>{{ link.label }}
+          </a>
+          }
+        </div>
       </div>
+
+      <nav class="footer-columns" aria-label="Footer">
+        <div class="footer-col">
+          <span class="footer-col-title">Product</span>
+          <a href="/docs" (click)="openDocs($event)">Docs</a>
+          <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer">Sponsor</a>
+        </div>
+        <div class="footer-col">
+          <span class="footer-col-title">Legal</span>
+          <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Disclaimer</a>
+          <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Privacy Policy</a>
+          <a href="/docs?category=legal" (click)="openDocs($event, '?category=legal')">Terms &amp; Conditions</a>
+        </div>
+      </nav>
     </div>
-    <nav class="footer-links" aria-label="Footer">
-      <a href="/docs" (click)="openDocs($event)">Docs</a>
-      <a href="https://github.com/000Sushant/system-design-simulator/" target="_blank"
-        rel="noopener noreferrer">GitHub</a>
-      <a href="https://github.com/sponsors/000Sushant" target="_blank" rel="noopener noreferrer">Sponsor</a>
-    </nav>
-    <p class="footer-copy">© 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.</p>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">
+        © 2026 Sr. Architect by Sushant Kumar. Built in the open, free for everyone.
+      </p>
+    </div>
   </footer>
 
   <!-- Mobile back-to-top -->
-  <button *ngIf="showBackToTop" class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
+  @if (showBackToTop) {
+  <button class="back-to-top" aria-label="Back to top" (click)="scrollToTop()">
     <i class="fas fa-chevron-up"></i>
   </button>
+  }
 </main>

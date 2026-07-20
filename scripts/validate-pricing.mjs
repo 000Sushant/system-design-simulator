@@ -11,7 +11,7 @@
  *   STATIC   — param is never queried (hardcoded in baseline only)
  *
  * Usage (Node 18+):
- *   # Default: ap-south-1 (Mumbai)
+ *   # Default: us-east-1 (validates the shipped baseline; expect ~0 mismatches)
  *   AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs
  *
  *   # Specific region
@@ -40,7 +40,7 @@ if (process.argv[2] === '--help' || process.argv[2] === '-h') {
     AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs [region] [region_name]
 
   Examples:
-    # Mumbai (default)
+    # us-east-1 (default — validates the shipped baseline)
     AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs
 
     # Other regions
@@ -48,7 +48,7 @@ if (process.argv[2] === '--help' || process.argv[2] === '-h') {
     AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=xxx node scripts/validate-pricing.mjs us-west-2 "US West (Oregon)"
 
   Arguments:
-    region          AWS region code (default: ap-south-1)
+    region          AWS region code (default: us-east-1)
     region_name     Full region name for API queries (auto-detected if omitted)
 
   Supported regions: ap-south-1, eu-west-1, us-west-2, us-east-1, eu-central-1, ap-southeast-1
@@ -92,8 +92,12 @@ try {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-const REGION_CODE = process.argv[2] || 'ap-south-1';
-let REGION_NAME = process.argv[3] || 'Asia Pacific (Mumbai)';
+// Default to us-east-1 — the region the bundled baseline (us-east-1.json) represents,
+// so a no-arg run validates the shipped baseline itself (expect ~0 mismatches).
+// Pass a region code to spot-check any other region's live prices, e.g.
+//   node validate-pricing.mjs ap-south-1
+const REGION_CODE = process.argv[2] || 'us-east-1';
+let REGION_NAME = process.argv[3] || 'US East (N. Virginia)';
 
 // AWS region name → full name mapping
 const REGION_MAP = {
@@ -155,7 +159,7 @@ function round(n, d = 10) { return n === null ? null : parseFloat(n.toFixed(d));
 
 function extractMaxPrice(raw) {
   try {
-    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const parsed = (typeof raw === 'string' || raw instanceof String) ? JSON.parse(raw.toString()) : raw;
     const onDemand = parsed.terms?.OnDemand;
     if (!onDemand) return null;
     const offer = Object.values(onDemand)[0];
@@ -185,7 +189,7 @@ async function query(serviceCode, filters, predicate = null, maxResults = 25) {
       if (!resp.PriceList?.length) return null;
       if (predicate) {
         const match = resp.PriceList.find(raw => {
-          try { return predicate(JSON.parse(raw)); } catch { return false; }
+          try { return predicate(JSON.parse(raw.toString())); } catch { return false; }
         }) ?? resp.PriceList[0];
         return extractMaxPrice(match);
       }
@@ -210,10 +214,18 @@ function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
 function deepGet(obj, path) {
   const parts = path.split('.');
-  if (parts.length > 2 && parts[1] === 'instances') {
+  // Nested maps whose keys themselves contain dots (db.r6g.large, 0.5GB):
+  // resolve service + map name, then re-join the remainder as one key.
+  if (parts.length > 2 && ['instances', 'instancesIO', 'bundles'].includes(parts[1])) {
     const service = parts[0];
     const key = parts.slice(2).join('.');
-    return obj?.[service]?.instances?.[key];
+    return obj?.[service]?.[parts[1]]?.[key];
+  }
+  if (parts.length > 3 && parts[1] === 'instanceRates') {
+    const service = parts[0];
+    const engine = parts[2];
+    const key = parts.slice(3).join('.');
+    return obj?.[service]?.instanceRates?.[engine]?.[key];
   }
   return parts.reduce((o, k) => (o == null ? undefined : o[k]), obj);
 }
@@ -252,132 +264,381 @@ try {
 // ── Baseline (must stay in sync with worker/src/schema-builder.ts) ───────────
 // Exact copy of BASELINE_SERVICES from schema-builder.ts
 
-const BASELINE = {
-  client: { dataTransferGB: 0.09 },
-  route53: { zoneMonthly: 0.50, standardM: 0.40 },
-  cloudfront: { dtOut: { 'us-eu': 0.085, 'ap': 0.12, 'sa': 0.16, 'au': 0.114, 'me-af': 0.11 }, requestsM: { 'us-eu': 1.0, 'ap': 1.20, 'sa': 1.60, 'au': 1.20, 'me-af': 1.20 }, wafBase: 5.0, wafRequestM: 0.60 },
-  apiGateway: {
-    requestsM: {
-      http: {
-        tier1: 1.00,
-        tier2: 0.90
-      },
-      rest: {
-        tier1: 3.50,
-        tier2: 2.80,
-        tier3: 2.38,
-        tier4: 1.51
-      },
-      websocket: {
-        tier1: 1.00,
-        tier2: 0.80
-      }
-    },
-    cacheRates: {
-      '0': 0.0,
-      '0.5': 14.60,
-      '1.6': 27.74,
-      '6.1': 146.00,
-      '13.5': 182.50,
-      '28.4': 365.00,
-      '58.2': 730.00,
-      '118.0': 1343.20,
-      '237.0': 2555.00
-    },
-    wsConnectionMinuteM: 0.25
-  },
-  elb: {
-    types: {
-      alb: { hourly: 0.0225, lcuHour: 0.008 },
-      nlb: { hourly: 0.0225, lcuHour: 0.006 },
-      clb: { hourly: 0.0250, dataGB: 0.008 },
-      gwlb: { hourly: 0.0125, lcuHour: 0.004 }
-    }
-  },
-  vpc: { endpointHourly: 0.01, endpointGB: 0.01, publicIpv4Hourly: 0.005 },
-  ec2: {
-    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008 },
-    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, 'metal': 96.0 },
-    purchaseDiscounts: { 'on-demand': 0, 'spot': 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
-    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
-    dataTransferGB: 0.09,
-    windowsMultiplier: 1.45
-  },
-  ecs: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50, windowsCpuPremium: 0.046, windowsMemPremium: 0.004, publicIpHour: 0.005, instances: { 't3.medium': 0.0416, 'm5.large': 0.096, 'm6g.large': 0.077 }, ebsGBMonth: 0.08, reservedDiscount: 0.40 },
-  autoScalingGroup: {
-    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008 },
-    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, metal: 96.0 },
-    purchaseDiscounts: { 'on-demand': 0, spot: 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
-    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
-    dataTransferGB: 0.09,
-    windowsMultiplier: 1.45,
-  },
-  lambda: { requestM: 0.20, gbSec_x86: 0.0000166667, gbSec_arm: 0.0000133334, ephemeralGB_Sec: 0.0000000309, provConcurrency_x86: 0.015, provConcurrency_arm: 0.012 },
-  sqs: { standard: 0.40, fifo: 0.50 },
-  sns: { publish: 0.50, http: 0.60, email: 20.00 },
-  s3: { storage: { standard: 0.023, intelligent: 0.023, sia: 0.0125, glacier: 0.0036 }, puts: { standard: 5.0, intelligent: 5.0, sia: 10.0, glacier: 30.0 }, gets: { standard: 0.40, intelligent: 0.40, sia: 1.00, glacier: 10.0 }, dataTransferGB: 0.09 },
-  rds: { engines: { mysql: 1.0, postgresql: 1.05, mariadb: 1.0, 'sqlserver-ex': 1.2, 'oracle-se2': 1.8 }, instances: { 'db.t3.medium': 0.068, 'db.m5.large': 0.171, 'db.r5.large': 0.240, 'db.r6g.large': 0.216 }, multiAzMultiplier: 2.0, storage: { gp2: 0.115, gp3: 0.115, io1: 0.125 }, backupGB: 0.095 },
-  elastiCache: { instances: { 'cache.t3.micro': 0.016, 'cache.t3.medium': 0.068, 'cache.m5.large': 0.156, 'cache.r6g.large': 0.211 }, tieringPremium: 1.15 },
-  dynamoDb: { std: { readM: 0.25, writeM: 1.25, storageGB: 0.25, wcuHr: 0.00065, rcuHr: 0.000130 }, ia: { readM: 0.3125, writeM: 1.5625, storageGB: 0.10, wcuHr: 0.0008125, rcuHr: 0.0001625 }, globalMultiplier: 1.5 },
-  iam: {},
-  cloudWatch: { metricRate: 0.30, logsGB: 0.50, dashboard: 3.00, alarmMonth: 0.10, logsStorageGB: 0.03 },
-  stepFunctions: { standardM: 25.00, expressReq: 1.00, expressGBsec: 16.67 },
-  natGateway: { hourly: 0.045, dataGB: 0.045 },
-  securityGroup: {},
-  batch: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50 },
-  eks: { clusterHourlyStandard: 0.10, clusterHourlyExtended: 0.60, cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, natHourly: 0.045, natDataGB: 0.045, logsGB: 0.50, instances: { 't3.medium': 0.0416, 't3.large': 0.0832, 'm5.large': 0.096, 'm5.xlarge': 0.192, 'm6g.large': 0.077 }, ebsGBMonth: 0.08, reservedDiscount: 0.40, containerInsightsPerNode: 2.5 },
-  aurora: { serverlessAcuHour: 0.12, instances: { 'db.t3.medium': 0.082, 'db.r5.large': 0.290, 'db.r6g.large': 0.260 }, storageGB: 0.10, ioRequestPerM: 0.20 },
-  eventBridge: { eventM: 1.00 },
-  kinesis: { shardHour: 0.015, putM: 0.014, retentionGB: 0.023 },
-  msk: { instances: { 'kafka.t3.small': 0.0466, 'kafka.m5.large': 0.21 }, storageGB: 0.10 },
-  cognito: { freeTier: 50000, ratePerUser: 0.0055 },
-  waf: { aclMonth: 5.0, ruleMonth: 1.0, reqM: 0.60 },
-  efs: { storage: { standard: 0.30, ia: 0.016 }, throughputMBps: 6.0 },
-  athena: { perTB: 5.00 },
-  secretsManager: { secretMonth: 0.40, callM: 5.00 },
-  transitGateway: { attachmentHourly: 0.05, dataGB: 0.02 },
-  directConnect: { portRates: { '1g': 0.30, '10g': 2.25, '100g': 22.5 }, dataTransferGB: 0.02 },
-  globalAccelerator: { hourly: 0.025, dataGB: 0.015 },
-  xray: { recordM: 5.00, scanM: 0.50 },
-  openSearch: { instances: { 't3.medium': 0.073, 'm6g.large': 0.129, 'r6g.large': 0.167 }, storageGB: 0.122 },
-  redshift: { instances: { 'ra3.xlplus': 1.086, 'ra3.4xlarge': 3.26 }, rpuHour: 0.375, storageTB: 24.576 },
-  glue: { dpuHour: 0.44 },
-  emr: { instances: { 'm5.large': 0.12, 'm5.xlarge': 0.24, 'r5.xlarge': 0.31 } },
-  kinesisFirehose: { ingestGB: 0.029, convertGB: 0.018 },
-  mq: { instances: { 'mq.t3.micro': 0.034, 'mq.m5.large': 0.288 }, storageGB: 0.30 },
-  kms: { keyMonth: 1.00, reqM: 3.00 },
-  shield: { advancedMonth: 3000 },
-  organizations: {},
-  codePipeline: { pipelineMonth: 1.00 },
-  codeBuild: { rates: { 'general1.small': 0.005, 'general1.medium': 0.010, 'general1.large': 0.020, 'gpu1.large': 0.950 } },
-  codeDeploy: { updateRate: 0.02 },
-  bedrock: { inM: { 'claude-haiku': 0.25, 'claude-sonnet': 3.00, 'claude-opus': 15.00, 'llama-70b': 0.99, 'titan': 0.15 }, outM: { 'claude-haiku': 1.25, 'claude-sonnet': 15.00, 'claude-opus': 75.00, 'llama-70b': 1.20, 'titan': 0.20 } },
-  sageMaker: { instances: { 'ml.t3.medium': 0.056, 'ml.m5.large': 0.134, 'ml.m5.xlarge': 0.269, 'ml.p3.2xlarge': 4.284 }, trainingHourly: 1.50, serverlessGBsec: 0.000020, serverlessReqM: 0.20 },
-  appSync: { reqM: 4.00, dtGB: 0.09 },
-  iotCore: { msgM: 1.00, ruleM: 0.15 },
-  rekognition: { imageM: 1000 },
-  textract: { pageM: 1500, pageRates: { detect: 1500, tables: 15000, forms: 50000, formsTables: 65000 } },
-  mediaConvert: { minHD: 0.017 },
-  cloudTrail: { eventM: 1.00 },
-  backup: { warmGB: 0.05, coldGB: 0.01 },
-  appRunner: { cpuHour: 0.064, memHour: 0.007 },
-  elasticBeanstalk: {
-    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008 },
-    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, metal: 96.0 },
-    purchaseDiscounts: { 'on-demand': 0, spot: 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
-    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
-    dataTransferGB: 0.09,
-    windowsMultiplier: 1.45,
-  },
-  fsx: { windowsSingle: 0.13, windowsMulti: 0.23, lustreSingle: 0.14, lustreMulti: 0.14, ontapSingle: 0.13, ontapMulti: 0.26, throughputRate: 1.18 },
-  certificateManager: {},
-  systemsManager: { instHour: 0.00695, callM: 5.00 },
-  ecr: { storageGB: 0.10, dataTransferGB: 0.09 },
-  privateLink: { endpointHourly: 0.01, dataGB: 0.01 },
-};
-
-// ── Build pricing (same logic as buildPricingFile in schema-builder.ts) ───────
-// Each record: { path, status: 'live'|'fallback', apiValue, finalValue }
+const BASELINE = {
+  client: { dataTransferGB: 0.09 },
+  route53: { zoneMonthly: 0.50, standardM: 0.40 },
+  cloudfront: { dtOut: { 'us-eu': 0.085, 'ap': 0.12, 'sa': 0.16, 'au': 0.114, 'me-af': 0.11 }, requestsM: { 'us-eu': 1.0, 'ap': 1.20, 'sa': 1.60, 'au': 1.20, 'me-af': 1.20 }, wafBase: 5.0, wafRequestM: 0.60 },
+  apiGateway: {
+    requestsM: {
+      http: {
+        tier1: 1.00,
+        tier2: 0.90
+      },
+      rest: {
+        tier1: 3.50,
+        tier2: 2.80,
+        tier3: 2.38,
+        tier4: 1.51
+      },
+      websocket: {
+        tier1: 1.00,
+        tier2: 0.80
+      }
+    },
+    cacheRates: {
+      '0': 0.0,
+      '0.5': 14.60,
+      '1.6': 27.74,
+      '6.1': 146.00,
+      '13.5': 182.50,
+      '28.4': 365.00,
+      '58.2': 730.00,
+      '118.0': 1343.20,
+      '237.0': 2555.00
+    },
+    wsConnectionMinuteM: 0.25
+  },
+  elb: {
+    types: {
+      alb: { hourly: 0.0225, lcuHour: 0.008 },
+      nlb: { hourly: 0.0225, lcuHour: 0.006 },
+      clb: { hourly: 0.0250, dataGB: 0.008 },
+      gwlb: { hourly: 0.0125, lcuHour: 0.004 }
+    }
+  },
+  vpc: { endpointHourly: 0.01, endpointGB: 0.01, publicIpv4Hourly: 0.005 },
+  ec2: {
+    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008, m7g: 0.096, m7i: 0.10, c7g: 0.072, r7g: 0.136, m8g: 0.10, i4i: 0.17 },
+    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, 'metal': 96.0 },
+    purchaseDiscounts: { 'on-demand': 0, 'spot': 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
+    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
+    dataTransferGB: 0.09,
+    windowsMultiplier: 1.45,
+    gpuInstances: {
+      'g4dn.xlarge': 0.736,
+      'g4dn.2xlarge': 0.752,
+      'g4dn.12xlarge': 4.352,
+      'g5.xlarge': 1.408,
+      'g5.2xlarge': 1.624,
+      'g5.12xlarge': 7.09,
+      'g5.48xlarge': 28.00,
+      'g6.xlarge': 1.127,
+      'g6.2xlarge': 1.334,
+      'g6.12xlarge': 5.922,
+      'g6.48xlarge': 23.00
+    }
+  },
+  ecs: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50, windowsCpuPremium: 0.046, windowsMemPremium: 0.004, publicIpHour: 0.005, instances: { 't3.medium': 0.0416, 'm5.large': 0.096, 'm6g.large': 0.077, 'm7g.large': 0.096, 'g5.xlarge': 1.408 }, ebsGBMonth: 0.08, reservedDiscount: 0.40 },
+  autoScalingGroup: {
+    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008, m7g: 0.096, m7i: 0.10, c7g: 0.072, r7g: 0.136, m8g: 0.10, i4i: 0.17 },
+    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, metal: 96.0 },
+    purchaseDiscounts: { 'on-demand': 0, spot: 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
+    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
+    dataTransferGB: 0.09,
+    windowsMultiplier: 1.45,
+    gpuInstances: {
+      'g4dn.xlarge': 0.736,
+      'g4dn.2xlarge': 0.752,
+      'g4dn.12xlarge': 4.352,
+      'g5.xlarge': 1.408,
+      'g5.2xlarge': 1.624,
+      'g5.12xlarge': 7.09,
+      'g5.48xlarge': 28.00,
+      'g6.xlarge': 1.127,
+      'g6.2xlarge': 1.334,
+      'g6.12xlarge': 5.922,
+      'g6.48xlarge': 23.00
+    }
+  },
+  lambda: { requestM: 0.20, gbSec_x86: 0.0000166667, gbSec_arm: 0.0000133334, ephemeralGB_Sec: 0.0000000309, provConcurrency_x86: 0.015, provConcurrency_arm: 0.012, streamingGB: 0.008, snapStartCacheGBsec: 0.0000015, snapStartRestoreGBM: 0.00014 },
+  sqs: { standard: 0.40, fifo: 0.50 },
+  sns: { publish: 0.50, http: 0.60, email: 20.00 },
+  s3: { storage: { standard: 0.023, intelligent: 0.023, sia: 0.0125, glacier: 0.0036, 'onezone-ia': 0.01, 'glacier-instant': 0.004, 'deep-archive': 0.00099, 'express-onezone': 0.11 }, puts: { standard: 5.0, intelligent: 5.0, sia: 10.0, glacier: 30.0, 'onezone-ia': 10.0, 'glacier-instant': 20.0, 'deep-archive': 50.0, 'express-onezone': 2.5 }, gets: { standard: 0.40, intelligent: 0.40, sia: 1.00, glacier: 10.0, 'onezone-ia': 1.0, 'glacier-instant': 10.0, 'deep-archive': 50.0, 'express-onezone': 0.25 }, dataTransferGB: 0.09 },
+  rds: { instanceRates: { mysql: { 'db.t3.medium': 0.068, 'db.t4g.medium': 0.05, 'db.m5.large': 0.171, 'db.m7g.large': 0.165, 'db.r5.large': 0.240, 'db.r7g.large': 0.216, 'db.r6g.large': 0.216, 'db.m6i.large': 0.171 }, postgresql: { 'db.t3.medium': 0.071, 'db.t4g.medium': 0.052, 'db.m5.large': 0.180, 'db.m7g.large': 0.173, 'db.r5.large': 0.252, 'db.r7g.large': 0.227, 'db.r6g.large': 0.227, 'db.m6i.large': 0.180 }, mariadb: { 'db.t3.medium': 0.068, 'db.t4g.medium': 0.05, 'db.m5.large': 0.171, 'db.m7g.large': 0.165, 'db.r5.large': 0.240, 'db.r7g.large': 0.216, 'db.r6g.large': 0.216, 'db.m6i.large': 0.171 }, 'sqlserver-web': { 'db.m6i.large': 0.26, 'db.r6g.large': 0.32 }, 'sqlserver-se': { 'db.m6i.large': 0.85, 'db.r6g.large': 1.05 }, 'sqlserver-ee': { 'db.m6i.large': 3.50, 'db.r6g.large': 4.20 }, 'oracle-se2': { 'db.r7g.large': 0.40 }, 'oracle-ee': { 'db.r7g.large': 3.20 } }, multiAzMultiplier: 2.0, storage: { gp2: 0.115, gp3: 0.115, io1: 0.125 }, backupGB: 0.095 },
+  elastiCache: { instances: { 'cache.t3.micro': 0.016, 'cache.t3.medium': 0.068, 'cache.m5.large': 0.156, 'cache.r6g.large': 0.211, 'cache.t4g.medium': 0.034, 'cache.m7g.large': 0.126, 'cache.r7g.large': 0.175 }, valkeyNodeMultiplier: 0.8, serverless: { redis: { storageGBHour: 0.125, ecpuM: 0.0034 }, valkey: { storageGBHour: 0.084, ecpuM: 0.0023 } }, tieringPremium: 1.15 },
+  dynamoDb: { std: { readM: 0.125, writeM: 0.625, storageGB: 0.25, wcuHr: 0.00065, rcuHr: 0.000130 }, ia: { readM: 0.15625, writeM: 0.78125, storageGB: 0.10, wcuHr: 0.0008125, rcuHr: 0.0001625 }, pitrStorageGB: 0.20, backupStorageGB: 0.10, restoreGB: 0.15, streamsRequestsM: 0.20, exportGB: 0.10, globalMultiplier: 1.5 },
+  iam: {},
+  cloudWatch: { metricRate: 0.30, logsGB: 0.50, dashboard: 3.00, alarmMonth: 0.10, logsStorageGB: 0.03 },
+  stepFunctions: { standardM: 25.00, expressReq: 1.00, expressGBsec: 16.67 },
+  natGateway: { hourly: 0.045, dataGB: 0.045 },
+  securityGroup: {},
+  batch: { cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, logsGB: 0.50 },
+  eks: { clusterHourlyStandard: 0.10, clusterHourlyExtended: 0.60, cpuHour: 0.04048, memHour: 0.004445, armCpuHour: 0.03238, armMemHour: 0.00356, ephemeralGBHour: 0.000111, spotDiscount: 0.70, dataTransferGB: 0.09, crossAzGB: 0.01, elbHourly: 0.0225, natHourly: 0.045, natDataGB: 0.045, logsGB: 0.50, instances: { 't3.medium': 0.0416, 't3.large': 0.0832, 'm5.large': 0.096, 'm5.xlarge': 0.192, 'm6g.large': 0.077, 'm7g.large': 0.096, 'g5.xlarge': 1.408 }, ebsGBMonth: 0.08, reservedDiscount: 0.40, containerInsightsPerNode: 2.5 },
+  aurora: { serverlessAcuHour: 0.12, instances: { 'db.t3.medium': 0.082, 'db.r5.large': 0.290, 'db.r6g.large': 0.260, 'db.t4g.medium': 0.041, 'db.m7g.large': 0.13, 'db.r7g.large': 0.175 }, ioOptimizedComputeMultiplier: 1.30, ioOptimizedStorageRate: 0.225, storageGB: 0.10, ioRequestPerM: 0.20 },
+  eventBridge: { eventM: 1.00 },
+  kinesis: { shardHour: 0.015, putM: 0.014, retentionGB: 0.023, onDemandStreamHour: 0.04, onDemandIngestGB: 0.08, onDemandEgressGB: 0.04, efoEgressGB: 0.05, consumerShardHour: 0.015, extendedRetentionGB: 0.10, longTermRetentionGB: 0.023 },
+  msk: { instances: { 'kafka.t3.small': 0.0456, 'kafka.m5.large': 0.21, 'kafka.m7g.large': 0.204 }, expressInstances: { 'express.m7g.large': 0.408 }, expressStorageGB: 0.10, serverless: { clusterHour: 0.75, partitionHour: 0.0015, ingestGB: 0.10, egressGB: 0.05 }, tieredStorageGB: 0.06, storageGB: 0.10 },
+  cognito: { freeTier: 50000, ratePerUser: 0.0055 },
+  waf: { aclMonth: 5.0, ruleMonth: 1.0, reqM: 0.60 },
+  efs: { storage: { standard: 0.30, ia: 0.016 }, throughputMBps: 6.0 },
+  athena: { perTB: 5.00 },
+  secretsManager: { secretMonth: 0.40, callM: 5.00 },
+  transitGateway: { attachmentHourly: 0.05, dataGB: 0.02 },
+  directConnect: { portRates: { '1g': 0.30, '10g': 2.25, '100g': 22.5 }, dataTransferGB: 0.02 },
+  globalAccelerator: { hourly: 0.025, dataGB: 0.015 },
+  xray: { recordM: 5.00, scanM: 0.50 },
+  openSearch: { instances: { 't3.medium': 0.073, 'm6g.large': 0.128, 'r6g.large': 0.167 }, serverlessOcuHour: 0.24, serverlessStorageGB: 0.024, ultraWarmHour: 0.238, ultraWarmStorageGB: 0.024, storageGB: 0.122 },
+  redshift: { instances: { 'ra3.xlplus': 1.086, 'ra3.4xlarge': 3.26, 'ra3.large': 0.543, 'ra3.16xlarge': 13.04 }, rpuHour: 0.375, storageTB: 24.576 },
+  glue: { dpuHour: 0.44 },
+  emr: { instances: { 'm5.large': 0.12, 'm5.xlarge': 0.24, 'r5.xlarge': 0.315, 'm7g.xlarge': 0.1912 }, serverless: { cpuHour: 0.052624, memHour: 0.0057785, storageHour: 0.000111 } },
+  kinesisFirehose: { ingestGB: 0.029, convertGB: 0.018 },
+  mq: { instances: { 'mq.t3.micro': 0.027, 'mq.m5.large': 0.288, 'mq.m7g.large': 0.2734 }, multiAzActiveMqMultiplier: 2.0, multiAzRabbitMqMultiplier: 3.0, storageRates: { activemq: 0.30, rabbitmq: 0.10 }, storageGB: 0.30 },
+  kms: { keyMonth: 1.00, reqM: 3.00 },
+  shield: { advancedMonth: 3000 },
+  organizations: {},
+  codePipeline: { pipelineMonth: 1.00 },
+  codeBuild: { rates: { 'general1.small': 0.005, 'general1.medium': 0.010, 'general1.large': 0.020, 'gpu1.large': 0.950 } },
+  codeDeploy: { updateRate: 0.02 },
+  // Bedrock token rates are $ per 1M tokens (standard-tier on-demand, text
+  // generation). Keys match the model options in service-cost-model.json;
+  // the trailing legacy keys keep architectures saved before the
+  // provider/model split priced correctly.
+  bedrock: {
+    inM: {
+      // anthropic
+      'claude-sonnet-5': 2.2,
+      'claude-fable-5': 11,
+      'claude-mythos-5': 11,
+      'claude-opus-4-8': 5.5,
+      'claude-haiku-4-5': 1.1,
+      'claude-sonnet-4-6': 3.3,
+      'claude-3-7-sonnet': 3,
+      'claude-3-5-haiku': 0.8,
+      'claude-3-haiku': 0.25,
+      // amazon
+      'nova-2-pro': 1.375,
+      'nova-2-omni': 0.3,
+      'nova-2-lite': 0.33,
+      'nova-premier': 2.5,
+      'nova-pro': 0.8,
+      'nova-lite': 0.06,
+      'nova-micro': 0.035,
+      'titan-text-premier': 0.5,
+      'titan-text-express': 0.2,
+      'titan-text-lite': 0.15,
+      // openai
+      'gpt-oss-120b': 0.15,
+      'gpt-oss-20b': 0.07,
+      // meta
+      'llama-4-maverick': 0.24,
+      'llama-4-scout': 0.17,
+      'llama-3-3-70b': 0.72,
+      'llama-3-2-11b': 0.16,
+      'llama-3-2-3b': 0.15,
+      'llama-3-1-8b': 0.22,
+      // deepseek
+      'deepseek-v3-2': 0.62,
+      'deepseek-r1': 1.35,
+      // mistral
+      'mistral-large-3': 0.5,
+      'pixtral-large': 2,
+      'mistral-small': 1,
+      'magistral-small': 0.5,
+      'devstral': 0.4,
+      'ministral-8b': 0.15,
+      // qwen
+      'qwen3-coder-next': 0.5,
+      'qwen3-vl-235b': 0.53,
+      'qwen3-coder-30b': 0.15,
+      'qwen3-32b': 0.15,
+      // google
+      'gemma-3-27b': 0.23,
+      'gemma-3-12b': 0.09,
+      'gemma-3-4b': 0.04,
+      // cohere
+      'command-r-plus': 3,
+      'command-r': 0.5,
+      // ai21
+      'jamba-1-5-large': 2,
+      'jamba-1-5-mini': 0.2,
+      // writer
+      'palmyra-x5': 0.6,
+      'palmyra-x4': 2.5,
+      // moonshot
+      'kimi-k2-5': 0.6,
+      'kimi-k2-thinking': 0.6,
+      // minimax
+      'minimax-m2-5': 0.3,
+      'minimax-m2': 0.3,
+      // zai
+      'glm-5': 1,
+      'glm-4-7': 0.6,
+      'glm-4-7-flash': 0.07,
+      // nvidia
+      'nemotron-3-super': 0.15,
+      'nemotron-nano-3': 0.06,
+      'nemotron-nano-2-vl': 0.2,
+      // legacy
+      'claude-haiku': 0.25,
+      'claude-sonnet': 3,
+      'claude-opus': 15,
+      'llama-70b': 0.72,
+      'titan': 0.15,
+    },
+    outM: {
+      // anthropic
+      'claude-sonnet-5': 11,
+      'claude-fable-5': 55,
+      'claude-mythos-5': 55,
+      'claude-opus-4-8': 27.5,
+      'claude-haiku-4-5': 5.5,
+      'claude-sonnet-4-6': 16.5,
+      'claude-3-7-sonnet': 15,
+      'claude-3-5-haiku': 4,
+      'claude-3-haiku': 1.25,
+      // amazon
+      'nova-2-pro': 11,
+      'nova-2-omni': 2.8,
+      'nova-2-lite': 2.75,
+      'nova-premier': 12.5,
+      'nova-pro': 3.2,
+      'nova-lite': 0.24,
+      'nova-micro': 0.14,
+      'titan-text-premier': 1.5,
+      'titan-text-express': 0.6,
+      'titan-text-lite': 0.2,
+      // openai
+      'gpt-oss-120b': 0.6,
+      'gpt-oss-20b': 0.3,
+      // meta
+      'llama-4-maverick': 0.97,
+      'llama-4-scout': 0.66,
+      'llama-3-3-70b': 0.72,
+      'llama-3-2-11b': 0.16,
+      'llama-3-2-3b': 0.15,
+      'llama-3-1-8b': 0.22,
+      // deepseek
+      'deepseek-v3-2': 1.85,
+      'deepseek-r1': 5.4,
+      // mistral
+      'mistral-large-3': 1.5,
+      'pixtral-large': 6,
+      'mistral-small': 3,
+      'magistral-small': 1.5,
+      'devstral': 2,
+      'ministral-8b': 0.15,
+      // qwen
+      'qwen3-coder-next': 1.2,
+      'qwen3-vl-235b': 2.66,
+      'qwen3-coder-30b': 0.6,
+      'qwen3-32b': 0.6,
+      // google
+      'gemma-3-27b': 0.38,
+      'gemma-3-12b': 0.29,
+      'gemma-3-4b': 0.08,
+      // cohere
+      'command-r-plus': 15,
+      'command-r': 1.5,
+      // ai21
+      'jamba-1-5-large': 8,
+      'jamba-1-5-mini': 0.4,
+      // writer
+      'palmyra-x5': 6,
+      'palmyra-x4': 10,
+      // moonshot
+      'kimi-k2-5': 3,
+      'kimi-k2-thinking': 2.5,
+      // minimax
+      'minimax-m2-5': 1.2,
+      'minimax-m2': 1.2,
+      // zai
+      'glm-5': 3.2,
+      'glm-4-7': 2.2,
+      'glm-4-7-flash': 0.4,
+      // nvidia
+      'nemotron-3-super': 0.65,
+      'nemotron-nano-3': 0.24,
+      'nemotron-nano-2-vl': 0.6,
+      // legacy
+      'claude-haiku': 1.25,
+      'claude-sonnet': 15,
+      'claude-opus': 75,
+      'llama-70b': 0.72,
+      'titan': 0.2,
+    },
+  },
+  sageMaker: {
+    instances: {
+      'ml.m5.large': 0.115, 'ml.m5.xlarge': 0.23, 'ml.m5.2xlarge': 0.46, 'ml.m5.4xlarge': 0.92,
+      'ml.m6g.large': 0.101, 'ml.m6g.xlarge': 0.202, 'ml.m6g.2xlarge': 0.404, 'ml.m6g.4xlarge': 0.808,
+      'ml.g4dn.xlarge': 0.736, 'ml.g4dn.2xlarge': 0.752, 'ml.g4dn.12xlarge': 4.352,
+      'ml.g5.xlarge': 1.408, 'ml.g5.2xlarge': 1.624, 'ml.g5.12xlarge': 7.09, 'ml.g5.48xlarge': 28.00,
+      'ml.g6.xlarge': 1.127, 'ml.g6.2xlarge': 1.334, 'ml.g6.12xlarge': 5.922, 'ml.g6.48xlarge': 23.00,
+      'ml.g6e.xlarge': 2.605, 'ml.g6e.2xlarge': 3.00, 'ml.g6e.12xlarge': 13.00, 'ml.g6e.48xlarge': 52.00,
+      'ml.inf2.xlarge': 0.99, 'ml.inf2.8xlarge': 3.96, 'ml.inf2.24xlarge': 11.88,
+      'ml.trn1.2xlarge': 1.55, 'ml.trn1.32xlarge': 24.80,
+      'ml.p4d.24xlarge': 25.25,
+      'ml.p5.48xlarge': 63.30
+    },
+    trainingHourly: 1.50, serverlessGBsec: 0.000020, serverlessReqM: 0.20
+  },
+  appSync: { reqM: 4.00, dtGB: 0.09 },
+  iotCore: { msgM: 1.00, ruleM: 0.15 },
+  rekognition: { imageM: 1000, videoArchivedMin: 0.10, videoLiveMin: 0.12, faceVectorM: 10.0 },
+  textract: { pageM: 1500, pageRates: { detect: 1500, tables: 15000, forms: 50000, formsTables: 65000, queries: 15000, layout: 4000, expense: 10000, identity: 25000, lending: 70000, signatures: 3500, customQueries: 25000 } },
+  mediaConvert: {
+    rates: {
+      basic: {
+        avc: { sd: 0.0075, hd: 0.015 }
+      },
+      professional: {
+        avc: { sd: 0.012, hd: 0.024, '4k': 0.048 },
+        hevc: { sd: 0.0225, hd: 0.045, '4k': 0.09 },
+        av1: { sd: 0.0375, hd: 0.075, '4k': 0.15 },
+        prores: { sd: 0.025, hd: 0.05, '4k': 0.10 }
+      }
+    }
+  },
+  cloudTrail: { eventM: 1.00 },
+  backup: { warmGB: 0.05, coldGB: 0.01 },
+  appRunner: { cpuHour: 0.064, memHour: 0.007 },
+  elasticBeanstalk: {
+    familyRatesLarge: { t3: 0.0832, m5: 0.096, m6g: 0.077, c5: 0.085, c6g: 0.068, r5: 0.126, r6g: 0.1008, m7g: 0.096, m7i: 0.10, c7g: 0.072, r7g: 0.136, m8g: 0.10, i4i: 0.17 },
+    sizeMultipliers: { nano: 0.0625, micro: 0.125, small: 0.25, medium: 0.5, large: 1.0, xlarge: 2.0, '2xlarge': 4.0, '4xlarge': 8.0, '8xlarge': 16.0, '12xlarge': 24.0, '16xlarge': 32.0, '24xlarge': 48.0, metal: 96.0 },
+    purchaseDiscounts: { 'on-demand': 0, spot: 0.70, 'reserved-1yr': 0.40, 'reserved-3yr': 0.60 },
+    ebsRates: { gp2: 0.10, gp3: 0.08, io2: 0.125 },
+    dataTransferGB: 0.09,
+    windowsMultiplier: 1.45,
+    gpuInstances: {
+      'g4dn.xlarge': 0.736,
+      'g4dn.2xlarge': 0.752,
+      'g4dn.12xlarge': 4.352,
+      'g5.xlarge': 1.408,
+      'g5.2xlarge': 1.624,
+      'g5.12xlarge': 7.09,
+      'g5.48xlarge': 28.00,
+      'g6.xlarge': 1.127,
+      'g6.2xlarge': 1.334,
+      'g6.12xlarge': 5.922,
+      'g6.48xlarge': 23.00
+    }
+  },
+  fsx: { windowsSingle: 0.13, windowsMulti: 0.23, lustreSingle: 0.14, lustreMulti: 0.14, ontapSingle: 0.13, ontapMulti: 0.26, throughputRate: 1.18 },
+  certificateManager: {},
+  systemsManager: { instHour: 0.00695, callM: 5.00 },
+  ecr: { storageGB: 0.10, dataTransferGB: 0.09 },
+  privateLink: { endpointHourly: 0.01, dataGB: 0.01 },
+  amplify: { buildMinute: 0.01, buildMinuteLarge: 0.025, buildMinuteXLarge: 0.10, dataServedGB: 0.15, storageGB: 0.023 },
+  ses: { email: 0.0001, inboundEmail: 0.0001, attachmentGB: 0.12, dedicatedIP: 24.95, vdmEmail: 0.00007 },
+  documentDb: {
+    instances: { 'db.t3.medium': 0.078, 'db.r6g.large': 0.2631, 'db.r6g.xlarge': 0.5263 },
+    instancesIO: { 'db.t3.medium': 0.0858, 'db.r6g.large': 0.2895, 'db.r6g.xlarge': 0.5789 },
+    storageGB: 0.10, storageIOGB: 0.30, ioMillion: 0.20,
+  },
+  neptune: {
+    instances: { 'db.t3.medium': 0.098, 'db.r6g.large': 0.3287, 'db.r6g.2xlarge': 1.3149 },
+    storageGB: 0.10, ioMillion: 0.20,
+  },
+  timestream: { ingestGB: 0.50, memoryGBHr: 0.036, magneticGB: 0.03, scannedGB: 0.01 },
+  appConfig: { requestM: 0.20, deployment: 0.0008 },
+  appMesh: {},
+  cloudMap: { resourceMonth: 0.10, queryM: 1.00 },
+  quickSight: { authorPro: 40.0, reader: 3.0, spiceGB: 0.38 },
+  lightsail: {
+    bundles: { '0.5GB': 0.00672, '1GB': 0.0094, '2GB': 0.01612, '4GB': 0.03225, '8GB': 0.05913, '16GB': 0.1129, '32GB': 0.22043 },
+    overageGB: 0.09,
+  },
+}
 
 const svc = deepClone(BASELINE);
 const records = [];  // { path, status, apiValue, finalValue }
@@ -416,7 +677,9 @@ const albHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field:
 const albLcu = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Application' }, { Field: 'operation', Value: 'LoadBalancing:Application' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Used Application Load Balancer capacity units-hr' }]);
 const nlbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Network' }, { Field: 'operation', Value: 'LoadBalancing:Network' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'LoadBalancer hourly usage by Network Load Balancer' }]);
 const nlbLcu = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Network' }, { Field: 'operation', Value: 'LoadBalancing:Network' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Used Network Load Balancer capacity units-hr' }]);
-const clbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer' }, { Field: 'operation', Value: 'LoadBalancing' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'LoadBalancer hourly usage' }]);
+// The CLB hourly SKU no longer carries the old groupDescription; select by
+// usagetype instead (matches worker fetcher.clbHourly).
+const clbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer' }, { Field: 'operation', Value: 'LoadBalancing' }, { Field: 'locationType', Value: 'AWS Region' }], p => String(p.product?.attributes?.usagetype ?? '').endsWith('LoadBalancerUsage'), 100);
 const clbData = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer' }, { Field: 'operation', Value: 'LoadBalancing' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Data processed by Classic Load Balancer' }]);
 const gwlbHr = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Gateway' }, { Field: 'operation', Value: 'LoadBalancing:Gateway' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'LoadBalancer hourly usage by Gateway Load Balancer' }]);
 const gwlbLcu = await query('AWSELB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Load Balancer-Gateway' }, { Field: 'operation', Value: 'LoadBalancing:Gateway' }, { Field: 'locationType', Value: 'AWS Region' }, { Field: 'groupDescription', Value: 'Used Gateway Load Balancer capacity units-hr' }]);
@@ -567,15 +830,15 @@ const rdsM5 = await query('AmazonRDS', [{ Field: 'location', Value: loc }, { Fie
 const rdsR5 = await query('AmazonRDS', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'db.r5.large' }, { Field: 'databaseEngine', Value: 'MySQL' }, { Field: 'deploymentOption', Value: 'Single-AZ' }, { Field: 'licenseModel', Value: 'No license required' }]);
 const rdsR6g = await query('AmazonRDS', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'db.r6g.large' }, { Field: 'databaseEngine', Value: 'MySQL' }, { Field: 'deploymentOption', Value: 'Single-AZ' }, { Field: 'licenseModel', Value: 'No license required' }]);
 const rdsGp2 = await query('AmazonRDS', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }, { Field: 'volumeType', Value: 'General Purpose (SSD)' }]);
-if (rdsT3 !== null) svc.rds.instances['db.t3.medium'] = round(rdsT3, 4);
-if (rdsM5 !== null) svc.rds.instances['db.m5.large'] = round(rdsM5, 4);
-if (rdsR5 !== null) svc.rds.instances['db.r5.large'] = round(rdsR5, 4);
-if (rdsR6g !== null) svc.rds.instances['db.r6g.large'] = round(rdsR6g, 4);
+if (rdsT3 !== null) svc.rds.instanceRates.mysql['db.t3.medium'] = round(rdsT3, 4);
+if (rdsM5 !== null) svc.rds.instanceRates.mysql['db.m5.large'] = round(rdsM5, 4);
+if (rdsR5 !== null) svc.rds.instanceRates.mysql['db.r5.large'] = round(rdsR5, 4);
+if (rdsR6g !== null) svc.rds.instanceRates.mysql['db.r6g.large'] = round(rdsR6g, 4);
 if (rdsGp2 !== null) { svc.rds.storage.gp2 = round(rdsGp2, 4); svc.rds.storage.gp3 = svc.rds.storage.gp2; }
-track('rds.instances.db.t3.medium', rdsT3 !== null ? round(rdsT3, 4) : null, svc.rds.instances['db.t3.medium']);
-track('rds.instances.db.m5.large', rdsM5 !== null ? round(rdsM5, 4) : null, svc.rds.instances['db.m5.large']);
-track('rds.instances.db.r5.large', rdsR5 !== null ? round(rdsR5, 4) : null, svc.rds.instances['db.r5.large']);
-track('rds.instances.db.r6g.large', rdsR6g !== null ? round(rdsR6g, 4) : null, svc.rds.instances['db.r6g.large']);
+track('rds.instanceRates.mysql.db.t3.medium', rdsT3 !== null ? round(rdsT3, 4) : null, svc.rds.instanceRates.mysql['db.t3.medium']);
+track('rds.instanceRates.mysql.db.m5.large', rdsM5 !== null ? round(rdsM5, 4) : null, svc.rds.instanceRates.mysql['db.m5.large']);
+track('rds.instanceRates.mysql.db.r5.large', rdsR5 !== null ? round(rdsR5, 4) : null, svc.rds.instanceRates.mysql['db.r5.large']);
+track('rds.instanceRates.mysql.db.r6g.large', rdsR6g !== null ? round(rdsR6g, 4) : null, svc.rds.instanceRates.mysql['db.r6g.large']);
 track('rds.storage.gp2', rdsGp2 !== null ? round(rdsGp2, 4) : null, svc.rds.storage.gp2);
 console.log(' done');
 
@@ -613,8 +876,11 @@ console.log(' done');
 
 // ── DynamoDB ──────────────────────────────────────────────────────────────────
 process.stdout.write('  [DynamoDB]     read, write, storage...');
-const ddbR = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-ReadUnits' }]);
-const ddbW = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-WriteUnits' }]);
+// The bare group filter matches BOTH the on-demand request-unit SKU and the
+// provisioned capacity-unit-hour SKU; pin PayPerRequestThroughput so we read the
+// on-demand request price (matches worker fetcher.dynamoDbRead/Write).
+const ddbR = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-ReadUnits' }, { Field: 'operation', Value: 'PayPerRequestThroughput' }]);
+const ddbW = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'group', Value: 'DDB-WriteUnits' }, { Field: 'operation', Value: 'PayPerRequestThroughput' }]);
 const ddbS = await query('AmazonDynamoDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }, { Field: 'volumeType', Value: 'Amazon DynamoDB - Indexed DataStore' }]);
 if (ddbR !== null) { const rm = round(ddbR * 1_000_000, 4); svc.dynamoDb.std.readM = rm; svc.dynamoDb.ia.readM = round(rm * 1.25, 4); }
 if (ddbW !== null) { const wm = round(ddbW * 1_000_000, 4); svc.dynamoDb.std.writeM = wm; svc.dynamoDb.ia.writeM = round(wm * 1.25, 4); }
@@ -655,9 +921,17 @@ console.log(' done');
 
 // ── EMR ────────────────────────────────────────────────────────────────────────
 process.stdout.write('  [EMR]          m5.large, m5.xlarge, r5.xlarge...');
-const emrM5x = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'm5.xlarge' }]);
-const emrR5x = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'r5.xlarge' }]);
-const emrM5l = emrM5x !== null ? emrM5x * 0.5 : null; // m5.large = 50% of m5.xlarge (same as fetcher fallback)
+// ElasticMapReduce prices ONLY the EMR service fee (~25% of the EC2 rate). The
+// simulator bills the whole node, so all-in = EC2 Linux on-demand + EMR fee
+// (matches worker fetcher.emrInstance). EC2 large-size rates were fetched live
+// above into svc.ec2.familyRatesLarge; xlarge = large × 2.
+const emrM5xFee = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'm5.xlarge' }]);
+const emrR5xFee = await query('ElasticMapReduce', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: 'r5.xlarge' }]);
+const ec2M5Large = svc.ec2.familyRatesLarge.m5;
+const ec2R5Large = svc.ec2.familyRatesLarge.r5;
+const emrM5x = emrM5xFee !== null ? ec2M5Large * 2 + emrM5xFee : null;       // m5.xlarge = EC2 xlarge + fee
+const emrR5x = emrR5xFee !== null ? ec2R5Large * 2 + emrR5xFee : null;       // r5.xlarge = EC2 xlarge + fee
+const emrM5l = emrM5xFee !== null ? ec2M5Large + emrM5xFee * 0.5 : null;     // m5.large = EC2 large + half the xlarge fee
 if (emrM5l !== null) svc.emr.instances['m5.large'] = round(emrM5l, 4);
 if (emrM5x !== null) svc.emr.instances['m5.xlarge'] = round(emrM5x, 4);
 if (emrR5x !== null) svc.emr.instances['r5.xlarge'] = round(emrR5x, 4);
@@ -715,7 +989,12 @@ console.log(' done');
 
 // ── API Gateway ───────────────────────────────────────────────────────────────
 process.stdout.write('  [API Gateway]  REST (scales tiers + cache)...');
-const apiGw = await query('AmazonApiGateway', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'API Calls' }]);
+// 'API Calls' also contains HTTP-API and $0 SKUs, so pin the REST request SKU by
+// usagetype (matches worker fetcher.apiGatewayRest). The API returns a PER-REQUEST
+// price (~0.0000035 in us-east-1); scale ×1,000,000 to compare against the
+// per-million baseline tiers.
+const apiGwRaw = await query('AmazonApiGateway', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'API Calls' }], p => String(p.product?.attributes?.usagetype ?? '').endsWith('ApiGatewayRequest'), 100);
+const apiGw = apiGwRaw !== null ? apiGwRaw * 1_000_000 : null;
 if (apiGw !== null) {
   const ratio = apiGw / 3.50;
   svc.apiGateway.requestsM.rest.tier1 = round(3.50 * ratio, 4);
@@ -734,6 +1013,232 @@ if (apiGw !== null) {
 track('apiGateway.requestsM.rest.tier1', apiGw !== null ? round(3.50 * (apiGw / 3.50), 4) : null, svc.apiGateway.requestsM.rest.tier1);
 track('apiGateway.requestsM.http.tier1', apiGw !== null ? round(1.00 * (apiGw / 3.50), 4) : null, svc.apiGateway.requestsM.http.tier1);
 track('apiGateway.wsConnectionMinuteM', apiGw !== null ? round(BASELINE.apiGateway.wsConnectionMinuteM * (apiGw / 3.50), 4) : null, svc.apiGateway.wsConnectionMinuteM);
+console.log(' done');
+
+// ── AWS Amplify ──────────────────────────────────────────────────────────────
+process.stdout.write('  [Amplify]      build, storage, dataTransfer...');
+const amplifyBuildQuery = (instanceType) => query('AWSAmplify', [{ Field: 'location', Value: loc }], p => {
+  const u = p.product?.attributes?.usagetype ?? '';
+  const inst = p.product?.attributes?.instancetype ?? '';
+  // Standard SKU usagetype ends with plain "BuildDuration"; Large16GB / Xlarge72GB
+  // SKUs end with "BuildDuration-Large16GB" / "-XLarge72GB", so match instancetype.
+  return u.includes('BuildDuration') && inst === instanceType;
+});
+const ampB = await amplifyBuildQuery('Standard8GB');
+const ampBL = await amplifyBuildQuery('Large16GB');
+const ampBXL = await amplifyBuildQuery('Xlarge72GB');
+const ampS = await query('AWSAmplify', [{ Field: 'location', Value: loc }], p => {
+  const u = p.product?.attributes?.usagetype ?? '';
+  return u.endsWith('DataStorage');
+});
+const ampD = await query('AWSAmplify', [{ Field: 'location', Value: loc }], p => {
+  const u = p.product?.attributes?.usagetype ?? '';
+  return u.endsWith('DataTransferOut');
+});
+if (ampB !== null) svc.amplify.buildMinute = round(ampB, 4);
+if (ampBL !== null) svc.amplify.buildMinuteLarge = round(ampBL, 4);
+if (ampBXL !== null) svc.amplify.buildMinuteXLarge = round(ampBXL, 4);
+if (ampS !== null) svc.amplify.storageGB = round(ampS, 4);
+if (ampD !== null) svc.amplify.dataServedGB = round(ampD, 4);
+track('amplify.buildMinute', ampB !== null ? round(ampB, 4) : null, svc.amplify.buildMinute);
+track('amplify.buildMinuteLarge', ampBL !== null ? round(ampBL, 4) : null, svc.amplify.buildMinuteLarge);
+track('amplify.buildMinuteXLarge', ampBXL !== null ? round(ampBXL, 4) : null, svc.amplify.buildMinuteXLarge);
+track('amplify.storageGB', ampS !== null ? round(ampS, 4) : null, svc.amplify.storageGB);
+track('amplify.dataServedGB', ampD !== null ? round(ampD, 4) : null, svc.amplify.dataServedGB);
+console.log(' done');
+
+// ── Helpers for the missing-services batch (strict: no first-item fallback) ─
+// The shared query() falls back to PriceList[0] when the predicate matches
+// nothing, which would silently validate the wrong SKU. These mirror the
+// worker's strict extractMatchingPrice semantics instead.
+async function queryStrict(serviceCode, filters, predicate, maxResults = 100) {
+  await sleep(RATE_LIMIT_MS);
+  callCount++;
+  const attempt = async () => {
+    try {
+      const resp = await client.send(new GetProductsCommand({
+        ServiceCode: serviceCode,
+        Filters: filters.map(f => ({ Type: 'TERM_MATCH', Field: f.Field, Value: f.Value })),
+        MaxResults: maxResults,
+      }));
+      if (!resp.PriceList?.length) return null;
+      const match = resp.PriceList.find(raw => {
+        try { return predicate(JSON.parse(raw.toString())); } catch { return false; }
+      });
+      return match === undefined ? null : extractMaxPrice(match);
+    } catch (e) {
+      const name = e.name ?? '';
+      if (name.includes('Throttl') || name.includes('RateExceeded')) {
+        process.stdout.write(` [throttle — waiting ${THROTTLE_WAIT}ms]`);
+        await sleep(THROTTLE_WAIT);
+        return attempt();
+      }
+      process.stdout.write(` [SDK error: ${e.message?.slice(0, 60)}]`);
+      return null;
+    }
+  };
+  return attempt();
+}
+
+/** Paginated fetch of every product matching `filters` (parsed). Mirrors worker queryBulk. */
+async function queryBulkAll(serviceCode, filters, maxPages = 8) {
+  const items = [];
+  let nextToken;
+  for (let page = 0; page < maxPages; page++) {
+    await sleep(RATE_LIMIT_MS);
+    callCount++;
+    try {
+      const resp = await client.send(new GetProductsCommand({
+        ServiceCode: serviceCode,
+        Filters: filters.map(f => ({ Type: 'TERM_MATCH', Field: f.Field, Value: f.Value })),
+        MaxResults: 100,
+        ...(nextToken ? { NextToken: nextToken } : {}),
+      }));
+      for (const raw of resp.PriceList ?? []) {
+        try { items.push(JSON.parse(raw.toString())); } catch { /* skip */ }
+      }
+      nextToken = resp.NextToken;
+      if (!nextToken) break;
+    } catch (e) {
+      const name = e.name ?? '';
+      if (name.includes('Throttl') || name.includes('RateExceeded')) {
+        process.stdout.write(` [throttle — waiting ${THROTTLE_WAIT}ms]`);
+        await sleep(THROTTLE_WAIT);
+        page--; // retry this page
+        continue;
+      }
+      process.stdout.write(` [SDK error: ${e.message?.slice(0, 60)}]`);
+      break;
+    }
+  }
+  return items;
+}
+
+const ut = (p) => p.product?.attributes?.usagetype ?? '';
+
+// ── Amazon SES ───────────────────────────────────────────────────────────────
+process.stdout.write('  [SES]          email, inbound, attachments, DIP, VDM...');
+const sesOut = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Sending Email' }], p => /(^|-)Recipients$/.test(ut(p)));
+const sesIn = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Receiving Email' }], p => /(^|-)Message$/.test(ut(p)));
+const sesAtt = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Sending Attachments' }], p => ut(p).endsWith('AttachmentsSize-Bytes'));
+const sesDip = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Sending Email' }], p => ut(p).endsWith('DIP-Hours'));
+const sesVdm = await queryStrict('AmazonSES', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('Recipients-VirtDelivMgr'));
+if (sesOut !== null) svc.ses.email = round(sesOut, 6);
+if (sesIn !== null) svc.ses.inboundEmail = round(sesIn, 6);
+if (sesAtt !== null) svc.ses.attachmentGB = round(sesAtt, 4);
+if (sesDip !== null) svc.ses.dedicatedIP = round(sesDip, 2);
+if (sesVdm !== null) svc.ses.vdmEmail = round(sesVdm, 6);
+track('ses.email', sesOut !== null ? round(sesOut, 6) : null, svc.ses.email);
+track('ses.inboundEmail', sesIn !== null ? round(sesIn, 6) : null, svc.ses.inboundEmail);
+track('ses.attachmentGB', sesAtt !== null ? round(sesAtt, 4) : null, svc.ses.attachmentGB);
+track('ses.dedicatedIP', sesDip !== null ? round(sesDip, 2) : null, svc.ses.dedicatedIP);
+track('ses.vdmEmail', sesVdm !== null ? round(sesVdm, 6) : null, svc.ses.vdmEmail);
+console.log(' done');
+
+// ── Amazon DocumentDB ────────────────────────────────────────────────────────
+process.stdout.write('  [DocumentDB]   instances, storage, I/O...');
+for (const cls of Object.keys(svc.documentDb.instances)) {
+  const std = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: cls }], p => ut(p).includes('InstanceUsage:') && !ut(p).includes('IOOptimized'));
+  if (std !== null) svc.documentDb.instances[cls] = round(std, 4);
+  track(`documentDb.instances.${cls}`, std !== null ? round(std, 4) : null, svc.documentDb.instances[cls]);
+  const io = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: cls }], p => ut(p).includes('InstanceUsageIOOptimized:'));
+  if (io !== null) svc.documentDb.instancesIO[cls] = round(io, 4);
+  track(`documentDb.instancesIO.${cls}`, io !== null ? round(io, 4) : null, svc.documentDb.instancesIO[cls]);
+}
+const docStor = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => !ut(p).includes('Elastic') && ut(p).endsWith('StorageUsage') && !ut(p).includes('IO-Optimized'));
+const docStorIO = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => !ut(p).includes('Elastic') && ut(p).endsWith('IO-OptimizedStorageUsage'));
+const docIo = await queryStrict('AmazonDocDB', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'System Operation' }], p => ut(p).endsWith('StorageIOUsage'));
+if (docStor !== null) svc.documentDb.storageGB = round(docStor, 4);
+if (docStorIO !== null) svc.documentDb.storageIOGB = round(docStorIO, 4);
+if (docIo !== null) svc.documentDb.ioMillion = round(docIo * 1_000_000, 4);
+track('documentDb.storageGB', docStor !== null ? round(docStor, 4) : null, svc.documentDb.storageGB);
+track('documentDb.storageIOGB', docStorIO !== null ? round(docStorIO, 4) : null, svc.documentDb.storageIOGB);
+track('documentDb.ioMillion', docIo !== null ? round(docIo * 1_000_000, 4) : null, svc.documentDb.ioMillion);
+console.log(' done');
+
+// ── Amazon Neptune ───────────────────────────────────────────────────────────
+process.stdout.write('  [Neptune]      instances, storage, I/O...');
+for (const cls of Object.keys(svc.neptune.instances)) {
+  const rate = await queryStrict('AmazonNeptune', [{ Field: 'location', Value: loc }, { Field: 'instanceType', Value: cls }], p => ut(p).includes('InstanceUsage:') && !ut(p).includes('IOOptimized'));
+  if (rate !== null) svc.neptune.instances[cls] = round(rate, 4);
+  track(`neptune.instances.${cls}`, rate !== null ? round(rate, 4) : null, svc.neptune.instances[cls]);
+}
+const nepStor = await queryStrict('AmazonNeptune', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => ut(p).endsWith('StorageUsage') && !ut(p).includes('IO-Optimized'));
+const nepIo = await queryStrict('AmazonNeptune', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'System Operation' }], p => ut(p).endsWith('StorageIOUsage'));
+if (nepStor !== null) svc.neptune.storageGB = round(nepStor, 4);
+if (nepIo !== null) svc.neptune.ioMillion = round(nepIo * 1_000_000, 4);
+track('neptune.storageGB', nepStor !== null ? round(nepStor, 4) : null, svc.neptune.storageGB);
+track('neptune.ioMillion', nepIo !== null ? round(nepIo * 1_000_000, 4) : null, svc.neptune.ioMillion);
+console.log(' done');
+
+// ── Amazon Timestream ────────────────────────────────────────────────────────
+process.stdout.write('  [Timestream]   ingest, memory, magnetic, scans...');
+const tsIngest = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Data Payload' }], p => ut(p).endsWith('DataIngestion-Bytes'));
+const tsMem = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => ut(p).endsWith('MemoryStore-ByteHrs'));
+const tsMag = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Database Storage' }], p => ut(p).endsWith('MagneticStore-ByteHrs'));
+// The productFamily for scanned-query billing varies by region, so match on
+// usagetype alone — the strict predicate still guarantees we only accept a
+// DataScanned-Bytes SKU (never a wrong one). If the region genuinely doesn't
+// expose it, this stays null (a real regional gap, not a query bug).
+const tsScan = await queryStrict('AmazonTimestream', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('DataScanned-Bytes'));
+if (tsIngest !== null) svc.timestream.ingestGB = round(tsIngest, 4);
+if (tsMem !== null) svc.timestream.memoryGBHr = round(tsMem, 4);
+if (tsMag !== null) svc.timestream.magneticGB = round(tsMag, 4);
+if (tsScan !== null) svc.timestream.scannedGB = round(tsScan, 4);
+track('timestream.ingestGB', tsIngest !== null ? round(tsIngest, 4) : null, svc.timestream.ingestGB);
+track('timestream.memoryGBHr', tsMem !== null ? round(tsMem, 4) : null, svc.timestream.memoryGBHr);
+track('timestream.magneticGB', tsMag !== null ? round(tsMag, 4) : null, svc.timestream.magneticGB);
+track('timestream.scannedGB', tsScan !== null ? round(tsScan, 4) : null, svc.timestream.scannedGB);
+console.log(' done');
+
+// ── AWS AppConfig (AWSSystemsManager offer) ──────────────────────────────────
+process.stdout.write('  [AppConfig]    requests, deployments...');
+const acReq = await queryStrict('AWSSystemsManager', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('AppConfig-Requests'));
+const acDep = await queryStrict('AWSSystemsManager', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('AppConfig-Deployments'));
+if (acReq !== null) svc.appConfig.requestM = round(acReq * 1_000_000, 4);
+if (acDep !== null) svc.appConfig.deployment = round(acDep, 6);
+track('appConfig.requestM', acReq !== null ? round(acReq * 1_000_000, 4) : null, svc.appConfig.requestM);
+track('appConfig.deployment', acDep !== null ? round(acDep, 6) : null, svc.appConfig.deployment);
+console.log(' done');
+
+// ── AWS Cloud Map ────────────────────────────────────────────────────────────
+process.stdout.write('  [CloudMap]     resources, API calls...');
+const cmRes = await queryStrict('AWSCloudMap', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('Cloud-Map-Resources'));
+const cmQry = await queryStrict('AWSCloudMap', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('Cloud-Map-API-Calls') && !ut(p).includes('DIR'));
+if (cmRes !== null) svc.cloudMap.resourceMonth = round(cmRes, 4);
+if (cmQry !== null) svc.cloudMap.queryM = round(cmQry * 1_000_000, 4);
+track('cloudMap.resourceMonth', cmRes !== null ? round(cmRes, 4) : null, svc.cloudMap.resourceMonth);
+track('cloudMap.queryM', cmQry !== null ? round(cmQry * 1_000_000, 4) : null, svc.cloudMap.queryM);
+console.log(' done');
+
+// ── Amazon QuickSight ────────────────────────────────────────────────────────
+process.stdout.write('  [QuickSight]   author pro, reader, SPICE...');
+const qsGroup = (p) => p.product?.attributes?.group ?? '';
+const qsAuthor = await queryStrict('AmazonQuickSight', [{ Field: 'location', Value: loc }], p => qsGroup(p) === 'Author Pro Subscription' && !ut(p).includes('Free-Trial'));
+const qsReader = await queryStrict('AmazonQuickSight', [{ Field: 'location', Value: loc }], p => qsGroup(p) === 'Reader Subscription' && !ut(p).includes('Free-Trial'));
+const qsSpice = await queryStrict('AmazonQuickSight', [{ Field: 'location', Value: loc }], p => ut(p).endsWith('QS-Enterprise-SPICE'));
+if (qsAuthor !== null) svc.quickSight.authorPro = round(qsAuthor, 2);
+if (qsReader !== null) svc.quickSight.reader = round(qsReader, 2);
+if (qsSpice !== null) svc.quickSight.spiceGB = round(qsSpice, 4);
+track('quickSight.authorPro', qsAuthor !== null ? round(qsAuthor, 2) : null, svc.quickSight.authorPro);
+track('quickSight.reader', qsReader !== null ? round(qsReader, 2) : null, svc.quickSight.reader);
+track('quickSight.spiceGB', qsSpice !== null ? round(qsSpice, 4) : null, svc.quickSight.spiceGB);
+console.log(' done');
+
+// ── Amazon Lightsail ─────────────────────────────────────────────────────────
+process.stdout.write('  [Lightsail]    bundles (bulk), overage...');
+const lsItems = await queryBulkAll('AmazonLightsail', [{ Field: 'location', Value: loc }, { Field: 'productFamily', Value: 'Lightsail Instance' }]);
+for (const size of Object.keys(svc.lightsail.bundles)) {
+  const re = new RegExp(`(^|-)BundleUsage:${size.replace('.', '\\.')}$`);
+  const match = lsItems.find(p => re.test(ut(p)));
+  const rate = match ? extractMaxPrice(match) : null;
+  if (rate !== null) svc.lightsail.bundles[size] = round(rate, 5);
+  track(`lightsail.bundles.${size}`, rate !== null ? round(rate, 5) : null, svc.lightsail.bundles[size]);
+}
+// Overage SKUs carry data-transfer attributes (`fromLocation`), not `location`.
+const lsOver = await queryStrict('AmazonLightsail', [{ Field: 'fromLocation', Value: loc }, { Field: 'productFamily', Value: 'Lightsail Networking' }], p => ut(p).endsWith('DataXfer-Out-Overage-Bytes') && !ut(p).includes('Storage'));
+if (lsOver !== null) svc.lightsail.overageGB = round(lsOver, 4);
+track('lightsail.overageGB', lsOver !== null ? round(lsOver, 4) : null, svc.lightsail.overageGB);
 console.log(' done');
 
 console.log('\n  All queries complete. Total API calls: ' + callCount + '\n');

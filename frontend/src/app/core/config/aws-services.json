@@ -92,6 +92,39 @@
           ],
           "type": "http",
           "description": "Users call the Elastic Beanstalk environment URL."
+        },
+        {
+          "target": "amplify",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users connect to the hosted Amplify web application."
+        },
+        {
+          "target": "quickSight",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Analysts and embedded-app users open QuickSight dashboards over HTTPS."
+        },
+        {
+          "target": "lightsail",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Users browse websites and applications hosted on Lightsail instances."
         }
       ],
       "description": "Needed to represent external clients (browsers, mobile apps, IoT) generating request traffic and latency benchmarks for testing."
@@ -145,6 +178,28 @@
           ],
           "type": "dns",
           "description": "Route 53 can resolve to ELB."
+        },
+        {
+          "target": "amplify",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 can resolve to the Amplify hosted app URL."
+        },
+        {
+          "target": "lightsail",
+          "sourcePorts": [
+            "dns"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "dns",
+          "description": "Route 53 resolves custom domains to Lightsail instances and load balancers."
         }
       ],
       "description": "Needed to resolve user-friendly domains (e.g. app.com) into AWS resource endpoints like CloudFront or Application Load Balancers."
@@ -222,6 +277,17 @@
           ],
           "type": "event",
           "description": "CloudFront can invoke Lambda@Edge (and CloudFront Functions) for request/response manipulation at the edge."
+        },
+        {
+          "target": "amplify",
+          "sourcePorts": [
+            "cdn"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "CloudFront can route dynamic backend requests or proxy hosted client paths to AWS Amplify."
         }
       ],
       "description": "Needed to cache static assets close to users, dramatically reducing latency, bandwidth costs, and load on origin servers."
@@ -951,6 +1017,61 @@
           ],
           "type": "event",
           "description": "Lambda triggers Glue ETL jobs on demand."
+        },
+        {
+          "target": "ses",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Lambda functions call the SES API to send transactional email."
+        },
+        {
+          "target": "documentDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda functions read and write JSON documents in DocumentDB."
+        },
+        {
+          "target": "neptune",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda functions execute Gremlin/SPARQL graph queries against Neptune."
+        },
+        {
+          "target": "timestream",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lambda functions write measurements and run queries against Timestream."
+        },
+        {
+          "target": "appConfig",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "Lambda handlers poll AppConfig for feature flags and dynamic configuration."
         }
       ],
       "description": "Needed to execute backend business logic serverlessly on an event-driven basis, paying only for the exact milliseconds consumed."
@@ -1338,7 +1459,8 @@
         "topic",
         "observability",
         "event",
-        "identity"
+        "identity",
+        "network"
       ],
       "mandatoryInput": true,
       "mandatoryOutput": false,
@@ -1676,6 +1798,72 @@
           ],
           "type": "network",
           "description": "ECS tasks connect to VPC endpoints via PrivateLink."
+        },
+        {
+          "target": "ses",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "ECS services submit outbound email through the SES API or SMTP endpoint."
+        },
+        {
+          "target": "documentDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS microservices persist document data in DocumentDB inside the VPC."
+        },
+        {
+          "target": "neptune",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "ECS services traverse graph relationships stored in Neptune."
+        },
+        {
+          "target": "appConfig",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "ECS tasks retrieve configuration profiles from AppConfig at startup and on a poll interval."
+        },
+        {
+          "target": "appMesh",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "ECS tasks run Envoy sidecars that receive routing rules from App Mesh."
+        },
+        {
+          "target": "cloudMap",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "ECS service discovery registers task endpoints in Cloud Map."
         }
       ],
       "description": "Needed to deploy containerized microservices (Docker) at scale on Fargate serverless compute, bypassing virtual machine management."
@@ -3563,6 +3751,39 @@
           ],
           "type": "http",
           "description": "EKS-hosted workloads can call this AWS service via SDK over HTTPS or a VPC endpoint."
+        },
+        {
+          "target": "documentDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "EKS pods store document workloads in DocumentDB."
+        },
+        {
+          "target": "appMesh",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "EKS pods participate in the App Mesh service mesh via injected Envoy sidecars."
+        },
+        {
+          "target": "cloudMap",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "EKS workloads register and resolve service endpoints through Cloud Map."
         }
       ],
       "description": "Amazon Elastic Kubernetes Service (EKS) is a managed service that makes it easy for you to run Kubernetes on AWS."
@@ -3882,6 +4103,17 @@
           ],
           "type": "event",
           "description": "Kinesis records can be persisted to DynamoDB via a Lambda processor or Firehose dynamic partitioning."
+        },
+        {
+          "target": "timestream",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Kinesis streams deliver telemetry records into Timestream tables."
         }
       ],
       "description": "Amazon Kinesis makes it easy to collect, process, and analyze real-time, streaming data so you can get timely insights."
@@ -5336,6 +5568,17 @@
           ],
           "type": "database",
           "description": "IoT Core rules can index payloads into OpenSearch."
+        },
+        {
+          "target": "timestream",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "IoT Core rules route device telemetry directly into Timestream."
         }
       ],
       "description": "AWS IoT Core lets you connect IoT devices to the AWS Cloud without having to provision or manage servers."
@@ -5947,6 +6190,491 @@
         }
       ],
       "description": "AWS PrivateLink provides secure, private connectivity between VPCs, AWS services, and your on-premises networks."
+    },
+    {
+      "type": "amplify",
+      "name": "AWS Amplify",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "http",
+        "database",
+        "storage",
+        "identity"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cognito",
+          "sourcePorts": [
+            "identity"
+          ],
+          "targetPorts": [
+            "identity"
+          ],
+          "type": "identity",
+          "description": "AWS Amplify configures User Auth via Cognito."
+        },
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "AWS Amplify stores static assets and user uploads in S3."
+        },
+        {
+          "target": "dynamoDb",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "AWS Amplify connects to dynamic database tables in DynamoDB."
+        },
+        {
+          "target": "appSync",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "AWS Amplify provisions and calls AppSync GraphQL APIs for its data layer."
+        },
+        {
+          "target": "lambda",
+          "sourcePorts": [
+            "http"
+          ],
+          "targetPorts": [
+            "http"
+          ],
+          "type": "http",
+          "description": "AWS Amplify invokes Lambda functions (Amplify Functions) for custom backend logic."
+        }
+      ],
+      "description": "AWS Amplify is a set of purpose-built tools and features that lets frontend web and mobile developers quickly and easily build full-stack applications on AWS."
+    },
+    {
+      "type": "ses",
+      "name": "Simple Email Service",
+      "category": "Application Integration",
+      "inputs": [
+        "http",
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "event",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "sns",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "SES publishes bounce, complaint, and delivery notifications to SNS topics."
+        },
+        {
+          "target": "sqs",
+          "sourcePorts": [
+            "event"
+          ],
+          "targetPorts": [
+            "event"
+          ],
+          "type": "event",
+          "description": "SES routes email events into SQS queues for asynchronous processing."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "SES emits sending metrics (deliveries, bounces, complaints) to CloudWatch."
+        }
+      ],
+      "description": "Amazon SES is a cost-effective, scalable email service for sending transactional mail, notifications, and campaigns from any application."
+    },
+    {
+      "type": "documentDb",
+      "name": "DocumentDB",
+      "category": "Database",
+      "inputs": [
+        "database",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "database",
+        "observability",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "DocumentDB exports cluster snapshots and backups to S3."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "DocumentDB publishes instance and cluster metrics to CloudWatch."
+        }
+      ],
+      "description": "Amazon DocumentDB is a fully managed JSON document database with MongoDB compatibility, decoupling compute instances from cluster storage."
+    },
+    {
+      "type": "neptune",
+      "name": "Neptune",
+      "category": "Database",
+      "inputs": [
+        "database",
+        "identity",
+        "network"
+      ],
+      "outputs": [
+        "database",
+        "observability",
+        "storage"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Neptune exports snapshots to S3 and bulk-loads graph data from S3 buckets."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Neptune publishes query and cluster metrics to CloudWatch."
+        }
+      ],
+      "description": "Amazon Neptune is a fast, fully managed graph database optimized for storing and querying highly connected datasets via Gremlin, openCypher, and SPARQL."
+    },
+    {
+      "type": "timestream",
+      "name": "Timestream",
+      "category": "Database",
+      "inputs": [
+        "database",
+        "event",
+        "identity"
+      ],
+      "outputs": [
+        "database",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": false,
+      "rules": [
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Timestream publishes ingestion and query metrics to CloudWatch."
+        }
+      ],
+      "description": "Amazon Timestream is a serverless time-series database that automatically tiers recent data in memory and historical data on magnetic storage."
+    },
+    {
+      "type": "appConfig",
+      "name": "AppConfig",
+      "category": "Management & Governance",
+      "inputs": [
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "AppConfig emits deployment and rollback metrics to CloudWatch, and alarms can trigger automatic rollback."
+        }
+      ],
+      "description": "AWS AppConfig manages feature flags and dynamic configuration, validating configurations and deploying updates gradually to running workloads."
+    },
+    {
+      "type": "appMesh",
+      "name": "App Mesh",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "network",
+        "identity"
+      ],
+      "outputs": [
+        "network",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudMap",
+          "sourcePorts": [
+            "network"
+          ],
+          "targetPorts": [
+            "network"
+          ],
+          "type": "network",
+          "description": "App Mesh resolves virtual-service endpoints through Cloud Map service discovery."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Envoy sidecars managed by App Mesh export traffic metrics to CloudWatch."
+        }
+      ],
+      "description": "AWS App Mesh is a service mesh whose control plane distributes routing rules to Envoy sidecar proxies running alongside containers."
+    },
+    {
+      "type": "cloudMap",
+      "name": "Cloud Map",
+      "category": "Networking & Content Delivery",
+      "inputs": [
+        "network",
+        "dns",
+        "identity"
+      ],
+      "outputs": [
+        "network",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Cloud Map emits health-check and discovery metrics to CloudWatch."
+        }
+      ],
+      "description": "AWS Cloud Map is a service discovery registry where application resources register endpoints that other services resolve via DNS or API queries."
+    },
+    {
+      "type": "quickSight",
+      "name": "QuickSight",
+      "category": "Analytics",
+      "inputs": [
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "database",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": true,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "redshift",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "QuickSight runs direct queries and SPICE ingestion against Redshift data warehouses."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "QuickSight connects to RDS databases as dashboard data sources."
+        },
+        {
+          "target": "athena",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "QuickSight queries S3 data lakes through Athena."
+        },
+        {
+          "target": "timestream",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "QuickSight visualizes time-series metrics stored in Timestream."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "QuickSight emits dashboard and ingestion metrics to CloudWatch."
+        }
+      ],
+      "description": "Amazon QuickSight is a cloud-powered BI service that delivers interactive dashboards accelerated by the SPICE in-memory engine."
+    },
+    {
+      "type": "lightsail",
+      "name": "Lightsail",
+      "category": "Compute",
+      "inputs": [
+        "http",
+        "identity"
+      ],
+      "outputs": [
+        "http",
+        "database",
+        "storage",
+        "observability"
+      ],
+      "mandatoryInput": true,
+      "mandatoryOutput": false,
+      "allowFanIn": true,
+      "allowFanOut": true,
+      "rules": [
+        {
+          "target": "s3",
+          "sourcePorts": [
+            "storage"
+          ],
+          "targetPorts": [
+            "storage"
+          ],
+          "type": "storage",
+          "description": "Lightsail instances reach S3 buckets through VPC peering for object storage."
+        },
+        {
+          "target": "rds",
+          "sourcePorts": [
+            "database"
+          ],
+          "targetPorts": [
+            "database"
+          ],
+          "type": "database",
+          "description": "Lightsail applications connect to RDS databases via VPC peering."
+        },
+        {
+          "target": "cloudWatch",
+          "sourcePorts": [
+            "observability"
+          ],
+          "targetPorts": [
+            "observability"
+          ],
+          "type": "observability",
+          "description": "Lightsail publishes instance CPU, network, and burst-capacity metrics to CloudWatch."
+        }
+      ],
+      "description": "Amazon Lightsail provides easy-to-use VPS bundles with flat-rate pricing that include compute, SSD storage, and a data transfer allowance."
     }
   ]
 }
