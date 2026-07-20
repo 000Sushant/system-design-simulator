@@ -32,7 +32,7 @@
     "@angular/cli": "^21.2.18",
     "@angular/compiler-cli": "^21.2.18",
     "@types/three": "^0.184.1",
-    "angular-eslint": "^21.4.0",
+    "angular-eslint": "^22.1.0",
     "chokidar": "^5.0.0",
     "eslint": "^9.39.4",
     "png-to-ico": "^3.0.1",
