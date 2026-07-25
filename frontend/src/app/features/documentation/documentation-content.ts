@@ -158,18 +158,18 @@ export const SERVICE_DOCS: Record<
         <svg viewBox="0 0 400 180" class="illustration-svg">
           <!-- FLOW PATHS -->
           <!-- 1. Viewer → nearest edge POP -->
-          <path d="M 50 90 L 120 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
-          <!-- 2a. Edge → CACHE HIT response (loops back fast) -->
-          <path d="M 162 80 Q 105 50 50 78" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-left" />
+          <path d="M 50 90 L 118 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <!-- 2a. Edge → CACHE HIT response (loops back fast over top) -->
+          <path d="M 162 68 Q 105 34 45 74" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-left" />
           <!-- 2b. Edge → CACHE MISS → origin -->
-          <path d="M 162 100 L 295 100" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 163 90 L 295 90" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
           <!-- 3. Origin → returns object to edge (populates cache) -->
-          <path d="M 295 115 L 162 115" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3" />
+          <path d="M 295 114 L 163 114" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3" />
 
           <!-- ANIMATED PACKETS -->
-          <circle r="4" fill="#6366f1"><animateMotion dur="1.6s" repeatCount="indefinite" path="M 50 90 L 120 90" /></circle>
-          <circle r="4" fill="#10b981"><animateMotion dur="1.4s" repeatCount="indefinite" path="M 162 80 Q 105 50 50 78" /></circle>
-          <circle r="4" fill="#8b5cf6"><animateMotion dur="2.4s" repeatCount="indefinite" path="M 162 100 L 295 100" /></circle>
+          <circle r="4" fill="#6366f1"><animateMotion dur="1.6s" repeatCount="indefinite" path="M 50 90 L 118 90" /></circle>
+          <circle r="4" fill="#10b981"><animateMotion dur="1.4s" repeatCount="indefinite" path="M 162 68 Q 105 34 45 74" /></circle>
+          <circle r="4" fill="#8b5cf6"><animateMotion dur="2.4s" repeatCount="indefinite" path="M 163 90 L 295 90" /></circle>
 
           <!-- NODES -->
           <!-- 1. Viewer (browser) -->
@@ -179,7 +179,7 @@ export const SERVICE_DOCS: Record<
             <circle cx="-10" cy="-9" r="1" fill="#ef4444" />
             <circle cx="-6" cy="-9" r="1" fill="#f59e0b" />
             <circle cx="-2" cy="-9" r="1" fill="#22c55e" />
-            <text x="0" y="22" font-size="8.5" text-anchor="middle" font-weight="700" fill="#475569">Viewer</text>
+            <text x="0" y="24" font-size="8.5" text-anchor="middle" font-weight="700" fill="#475569">Viewer</text>
           </g>
 
           <!-- 2. CloudFront Edge POP -->
@@ -189,19 +189,19 @@ export const SERVICE_DOCS: Record<
             <ellipse cx="0" cy="-4" rx="4" ry="10" fill="none" stroke="#7c3aed" stroke-width="1" />
             <line x1="-10" y1="-4" x2="10" y2="-4" stroke="#7c3aed" stroke-width="1" />
             <text x="0" y="14" font-size="6.5" text-anchor="middle" font-weight="800" fill="#6b21a8">EDGE POP</text>
-            <text x="0" y="34" font-size="8.5" text-anchor="middle" font-weight="800" fill="#6b21a8">CloudFront</text>
+            <text x="0" y="36" font-size="8.5" text-anchor="middle" font-weight="800" fill="#6b21a8">CloudFront</text>
           </g>
 
           <!-- 2a. Cache HIT label -->
-          <g transform="translate(95, 38)">
-            <rect x="-30" y="-10" width="60" height="18" rx="9" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" />
-            <text x="0" y="2" font-size="8" text-anchor="middle" font-weight="800" fill="#047857">CACHE HIT ~5ms</text>
+          <g transform="translate(105, 18)">
+            <rect x="-45" y="-10" width="90" height="20" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.4" />
+            <text x="0" y="3" font-size="7.5" text-anchor="middle" font-weight="800" fill="#047857">CACHE HIT ~5ms</text>
           </g>
 
           <!-- 2b. Cache MISS label -->
-          <g transform="translate(228, 88)">
-            <rect x="-32" y="-9" width="64" height="16" rx="8" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.2" />
-            <text x="0" y="2" font-size="7.5" text-anchor="middle" font-weight="800" fill="#6b21a8">CACHE MISS ~120ms</text>
+          <g transform="translate(228, 66)">
+            <rect x="-48" y="-10" width="96" height="20" rx="10" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.2" />
+            <text x="0" y="3" font-size="7" text-anchor="middle" font-weight="800" fill="#6b21a8">CACHE MISS ~120ms</text>
           </g>
 
           <!-- 3. Origin (S3 bucket) -->
@@ -847,26 +847,26 @@ export const SERVICE_DOCS: Record<
           <!-- FLOW PATHS -->
           <!-- 1. App → Cache lookup -->
           <path d="M 50 90 L 110 90" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
-          <!-- 2a. Cache HIT → return to app (loop back) -->
-          <path d="M 150 75 Q 100 30 50 75" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-left" />
+          <!-- 2a. Cache HIT → return to app (loop back over top) -->
+          <path d="M 150 70 Q 100 32 50 70" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-left" />
           <!-- 2b. Cache MISS → DB query -->
-          <path d="M 150 100 L 280 130" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
+          <path d="M 150 102 L 280 132" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="4 3" class="ill-flow-right" />
           <!-- 3. DB → populate cache (write back) -->
-          <path d="M 285 115 Q 220 100 155 95" fill="none" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="3 2" />
+          <path d="M 285 142 Q 220 118 155 110" fill="none" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="3 2" />
 
           <!-- ANIMATED PACKETS -->
           <circle r="4" fill="#6366f1"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 50 90 L 110 90" /></circle>
-          <circle r="4" fill="#10b981"><animateMotion dur="1.2s" repeatCount="indefinite" path="M 150 75 Q 100 30 50 75" /></circle>
-          <circle r="4" fill="#ef4444"><animateMotion dur="2.6s" repeatCount="indefinite" path="M 150 100 L 280 130" /></circle>
+          <circle r="4" fill="#10b981"><animateMotion dur="1.2s" repeatCount="indefinite" path="M 150 70 Q 100 32 50 70" /></circle>
+          <circle r="4" fill="#ef4444"><animateMotion dur="2.6s" repeatCount="indefinite" path="M 150 102 L 280 132" /></circle>
 
           <!-- Latency labels -->
-          <g transform="translate(100, 38)">
-            <rect x="-32" y="-9" width="64" height="16" rx="8" fill="#f0fdf4" stroke="#10b981" stroke-width="1.2" />
-            <text x="0" y="2" font-size="8" text-anchor="middle" font-weight="800" fill="#047857">HIT  ~0.5ms</text>
+          <g transform="translate(100, 18)">
+            <rect x="-38" y="-9" width="76" height="18" rx="9" fill="#f0fdf4" stroke="#10b981" stroke-width="1.2" />
+            <text x="0" y="3" font-size="7.5" text-anchor="middle" font-weight="800" fill="#047857">HIT ~0.5ms</text>
           </g>
-          <g transform="translate(225, 120)">
-            <rect x="-30" y="-8" width="60" height="14" rx="7" fill="#fef2f2" stroke="#ef4444" stroke-width="1.2" />
-            <text x="0" y="2" font-size="7.5" text-anchor="middle" font-weight="800" fill="#b91c1c">MISS  ~45ms</text>
+          <g transform="translate(210, 92)">
+            <rect x="-38" y="-9" width="76" height="18" rx="9" fill="#fef2f2" stroke="#ef4444" stroke-width="1.2" />
+            <text x="0" y="3" font-size="7.5" text-anchor="middle" font-weight="800" fill="#b91c1c">MISS ~45ms</text>
           </g>
 
           <!-- NODES -->

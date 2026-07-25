@@ -674,8 +674,9 @@
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--service-color, var(--c-violet)) 10%, #fff);
-  border: 1px solid color-mix(in srgb, var(--service-color, var(--c-violet)) 25%, #fff);
+  background: var(--service-color, var(--c-violet));
+  border: 1px solid var(--service-color, var(--c-violet));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--service-color, var(--c-violet)) 25%, transparent);
 }
 
 .service-mini-icon img {
@@ -783,10 +784,9 @@
 }
 
 /* Children Stack Layer */
-.doc-card>* {
+.doc-card > * {
   position: relative;
   z-index: 2;
-  pointer-events: none;
 }
 
 /* Hover static border glow */
@@ -1380,13 +1380,14 @@
   width: 54px;
   height: 54px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--service-color, var(--c-slate-400));
   border: 1.5px solid var(--service-color, var(--c-slate-300));
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 8px;
-  box-shadow: 0 8px 20px var(--c-black-04);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--service-color, var(--c-violet)) 30%, transparent);
+  flex-shrink: 0;
 }
 
 .service-icon-lg img {
@@ -1395,15 +1396,6 @@
   object-fit: contain;
   z-index: 2;
   position: relative;
-}
-
-.service-icon-lg .tint-overlay {
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  mix-blend-mode: color;
-  opacity: 0.9;
-  z-index: 1;
 }
 
 .category-badge {
@@ -2149,6 +2141,42 @@
 
   .service-switcher {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .deep-dive-left,
+  .deep-dive-right {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .illustration-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+    min-height: 160px;
+    justify-content: flex-start;
+  }
+
+  .illustration-svg {
+    min-width: 320px;
+    width: 100%;
+    height: auto;
+    max-height: 220px;
+  }
+
+  .connectivity-map-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px;
+    justify-content: flex-start;
+  }
+
+  .connectivity-map-container svg {
+    min-width: 480px;
+    width: 100%;
+    height: auto;
   }
 }
 

@@ -107,9 +107,8 @@
           <!-- Left Panel: Core Service Info -->
           <div class="deep-dive-left glass-panel">
             <div class="service-header-row">
-              <span class="service-icon-lg" [style.--service-color]="serviceColor(serviceType)">
-                <img [src]="awsCatalog.getByType(serviceType).iconUrl" alt="" />
-                <div class="tint-overlay" [style.background]="serviceColor(serviceType)"></div>
+              <span class="service-icon-lg" [style.background]="serviceColor(serviceType)" [style.border-color]="serviceColor(serviceType)">
+                <img [src]="awsCatalog.getByType(serviceType).iconUrl" [alt]="awsCatalog.getByType(serviceType).name" />
               </span>
               <div>
                 <span class="category-badge">{{
@@ -241,8 +240,8 @@
                 <!-- Left Nodes (Inbound Source Services) -->
                 @for (node of inboundNodes; track node; let i = $index) {
                 <g [attr.transform]="'translate(100, ' + node.y + ')'">
-                  <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
-                  <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
+                  <circle r="22" [attr.fill]="node.color || '#64748b'" stroke="#ffffff" stroke-width="2" />
+                  <image [attr.href]="node.iconUrl" [attr.xlink:href]="node.iconUrl" x="-13" y="-13" width="26" height="26" />
                   <text y="36" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">
                     {{ node.name }}
                   </text>
@@ -256,8 +255,8 @@
                 <!-- Right Nodes (Outbound Target Services) -->
                 @for (node of outboundNodes; track node; let i = $index) {
                 <g [attr.transform]="'translate(500, ' + node.y + ')'">
-                  <circle r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
-                  <image [attr.href]="node.iconUrl" x="-12" y="-12" width="24" height="24" />
+                  <circle r="22" [attr.fill]="node.color || '#64748b'" stroke="#ffffff" stroke-width="2" />
+                  <image [attr.href]="node.iconUrl" [attr.xlink:href]="node.iconUrl" x="-13" y="-13" width="26" height="26" />
                   <text y="36" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">
                     {{ node.name }}
                   </text>
@@ -270,9 +269,9 @@
                 }
                 <!-- Center Node (Selected Service) -->
                 <g transform="translate(300, 150)">
-                  <circle r="38" [attr.fill]="serviceColor(serviceType) + '1f'" filter="url(#glow-soft)" />
-                  <circle r="32" fill="#ffffff" [attr.stroke]="serviceColor(serviceType)" stroke-width="2.5" />
-                  <image [attr.href]="awsCatalog.getByType(serviceType).iconUrl" x="-18" y="-18" width="36"
+                  <circle r="38" [attr.fill]="serviceColor(serviceType) + '22'" filter="url(#glow-soft)" />
+                  <circle r="32" [attr.fill]="serviceColor(serviceType)" stroke="#ffffff" stroke-width="2.5" />
+                  <image [attr.href]="awsCatalog.getByType(serviceType).iconUrl" [attr.xlink:href]="awsCatalog.getByType(serviceType).iconUrl" x="-18" y="-18" width="36"
                     height="36" />
                   <text y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">
                     {{ awsCatalog.getByType(serviceType).name }}
