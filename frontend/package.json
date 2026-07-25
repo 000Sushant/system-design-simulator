@@ -36,7 +36,7 @@
     "chokidar": "^5.0.0",
     "eslint": "^9.39.4",
     "png-to-ico": "^3.0.1",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.6",
     "readdirp": "^5.0.0",
     "sharp": "^0.35.2",
     "typescript": "~5.9.3",
