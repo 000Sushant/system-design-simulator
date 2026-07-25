@@ -383,7 +383,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       .filter((s: any) => allowedTargets.includes(s.type))
       .map((s: any) => {
         const def = this.awsCatalog.getByType(s.type);
-        return { name: def.name, iconUrl: def.iconUrl };
+        return { name: def.name, iconUrl: def.iconUrl, color: def.color };
       })
       .slice(0, 4);
 
@@ -393,7 +393,7 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
       })
       .map((s: any) => {
         const def = this.awsCatalog.getByType(s.type);
-        return { name: def.name, iconUrl: def.iconUrl };
+        return { name: def.name, iconUrl: def.iconUrl, color: def.color };
       })
       .slice(0, 4);
 
@@ -404,12 +404,13 @@ export class DocumentationComponent implements OnInit, AfterViewChecked, OnDestr
   getNodesWithY(nodesList: any[], startY = 40, endY = 260): any[] {
     const count = nodesList.length;
     if (count === 0) return [];
-    if (count === 1) return [{ name: nodesList[0].name, iconUrl: nodesList[0].iconUrl, y: 150 }];
+    if (count === 1) return [{ name: nodesList[0].name, iconUrl: nodesList[0].iconUrl, color: nodesList[0].color, y: 150 }];
 
     const step = (endY - startY) / (count - 1);
     return nodesList.map((node, i) => ({
       name: node.name,
       iconUrl: node.iconUrl,
+      color: node.color,
       y: startY + i * step,
     }));
   }
