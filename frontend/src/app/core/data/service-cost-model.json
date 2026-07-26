@@ -340,6 +340,29 @@
           "max": 3000,
           "costDriver": "Hard cap on simultaneous executions, throttles requests beyond this limit.",
           "notes": "Maximum simultaneous in-flight executions. Acts as a hard ceiling: effective max RPS = concurrency ÷ (executionTime/1000). Throttled requests return 429 TooManyRequests."
+        },
+        {
+          "key": "memoryMB",
+          "label": "Memory (MB)",
+          "type": "number",
+          "default": 512,
+          "min": 128,
+          "max": 10240,
+          "step": 1,
+          "affectsCost": true,
+          "costDriver": "Bills GB-seconds = (memoryMB/1024) × (durationMs/1000). Also sets allocated CPU.",
+          "notes": "RAM per invocation (128-10,240 MB, 1-MB increments). AWS allocates CPU in proportion to memory (one full vCPU at 1,769 MB), so raising memory shortens CPU-bound execution time and cold starts, and raises effective throughput. Speed-up flattens past 1,769 MB for single-threaded code."
+        },
+        {
+          "key": "provConcurrency",
+          "label": "Provisioned Concurrency",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 3000,
+          "affectsCost": true,
+          "costDriver": "Pre-warmed environments billed 24/7 regardless of invocations.",
+          "notes": "Pre-warmed execution environments that eliminate cold starts up to this count. Billed 24/7. Seeds the simulation's warm pool, so a value at or above steady-state concurrency removes cold-start latency entirely."
         }
       ],
       "costParams": [
@@ -374,17 +397,6 @@
           "notes": "CPU instruction set. ARM/Graviton2 is ~20% cheaper and often faster for compute-bound workloads."
         },
         {
-          "key": "memoryMB",
-          "label": "Memory (MB)",
-          "type": "number",
-          "default": 512,
-          "min": 128,
-          "max": 10240,
-          "step": 128,
-          "group": "compute",
-          "notes": "RAM per invocation. Lambda bills GB-seconds = (memoryMB/1024) × (durationMs/1000). Higher memory also allocates proportionally more CPU."
-        },
-        {
           "key": "durationMs",
           "label": "Avg Duration per Invocation (ms)",
           "type": "number",
@@ -403,16 +415,6 @@
           "max": 10240,
           "group": "compute",
           "notes": "Temporary /tmp storage per invocation. First 512 MB is free; storage above 512 MB is billed per GB-second of execution."
-        },
-        {
-          "key": "provConcurrency",
-          "label": "Provisioned Concurrency",
-          "type": "number",
-          "default": 0,
-          "min": 0,
-          "max": 3000,
-          "group": "compute",
-          "notes": "Pre-warmed execution environments that eliminate cold starts. Billed 24/7 regardless of invocations. Essential for latency-sensitive functions."
         }
       ],
       "costEvaluation": {

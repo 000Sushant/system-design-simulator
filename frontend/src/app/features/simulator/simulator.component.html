@@ -608,7 +608,7 @@
                   <span>{{
                     formatLatency(
                       mode === 'idle'
-                        ? node.metrics.avgLatency || node.config.latency
+                        ? node.metrics.avgLatency || idleLatency(node)
                         : node.metrics.avgLatency
                     )
                   }}</span>
