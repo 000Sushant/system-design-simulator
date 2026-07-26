@@ -67,6 +67,8 @@ export class SimulationService {
   >;
   private overloadStreak = new Map<string, number>();
   private overloadLatency = new Map<string, number>();
+  private warmPool = new Map<string, number>();
+  private lambdaColdStart = new Map<string, number>();
   private static readonly OFFLINE_SUSTAIN_TICKS = 6;
   private static readonly RECOVERY_TICKS = 10;
   private static readonly RECOVERY_HEADROOM = 0.9;
@@ -120,33 +122,82 @@ export class SimulationService {
     return SimulationService.saturationOf(spec) !== 'queue';
   }
 
+  private static readonly FORK_JOIN_SOURCES = new Set<string>(['stepFunctions']);
+
+  private static harmonic(k: number): number {
+    let h = 0;
+    for (let i = 1; i <= k; i++) h += 1 / i;
+    return h;
+  }
+
   private computeBackpressure(outgoingByNode: Map<string, ArchitectureConnection[]>): void {
     this.downstreamWait.clear();
     this.depOfflineShare.clear();
     const nodeById = new Map(this.nodes.map((n) => [n.id, n] as const));
     for (const node of this.nodes) {
       if (!SimulationService.inheritsBackpressure(node)) continue;
-      let wait = 0;
       let offlineShare = 0;
+      let weightedWait = 0;
+      let shareTotal = 0;
+      let maxWait = 0;
+      let branches = 0;
       for (const conn of outgoingByNode.get(node.id) ?? []) {
         const target = nodeById.get(conn.targetNodeId);
         if (!target || target.id === node.id) continue;
         if (SimulationService.isAsyncTarget(target.type)) continue;
-        const share = Math.min(1, (conn.trafficWeight ?? 100) / 100);
+        const share = Math.max(0, (conn.trafficWeight ?? 100) / 100);
         if (target.status === 'offline') {
           offlineShare += share;
           continue;
         }
-        wait += Math.min(target.metrics.avgLatency, SimulationService.DEFAULT_TIMEOUT_MS) * share;
+        const branchWait = Math.min(
+          target.metrics.avgLatency,
+          SimulationService.DEFAULT_TIMEOUT_MS,
+        );
+        weightedWait += branchWait * share;
+        shareTotal += share;
+        maxWait = Math.max(maxWait, branchWait);
+        branches += 1;
       }
+
+      let wait: number;
+      if (SimulationService.FORK_JOIN_SOURCES.has(node.type) && branches > 0) {
+        const meanBranch = weightedWait / shareTotal;
+        wait = Math.max(maxWait, meanBranch * SimulationService.harmonic(branches));
+      } else {
+        wait = shareTotal > 0 ? weightedWait / shareTotal : 0;
+      }
+
       if (wait > 0) this.downstreamWait.set(node.id, Math.round(wait * 100) / 100);
       if (offlineShare > 0) this.depOfflineShare.set(node.id, Math.min(1, offlineShare));
     }
   }
 
   private effectiveLatencyMs(node: ArchitectureNode, fallback: number): number {
-    const own = node.config.latency || fallback;
+    const own = (node.config.latency || fallback) * this.memorySpeedFactor(node);
     return own + (this.downstreamWait.get(node.id) ?? 0);
+  }
+
+  private static readonly LAMBDA_VCPU_FULL_MB = 1769; // AWS: one full vCPU at 1,769 MB
+  private static readonly LAMBDA_REF_MEMORY_MB = 512; // app default; anchor for configured time
+  private static readonly BASE_COLD_START_MS = 200;
+
+  previewLatencyMs(node: ArchitectureNode): number {
+    const base = Number(node.config.latency) || 0;
+    return Math.round(base * this.memorySpeedFactor(node) * 100) / 100;
+  }
+
+  private memorySpeedFactor(node: ArchitectureNode): number {
+    if (node.type !== 'lambda') return 1;
+    const full = SimulationService.LAMBDA_VCPU_FULL_MB;
+    const mem = Number(node.config['memoryMB']) || SimulationService.LAMBDA_REF_MEMORY_MB;
+    const vcpu = Math.min(mem, full) / full;
+    const vcpuRef = Math.min(SimulationService.LAMBDA_REF_MEMORY_MB, full) / full;
+    return vcpuRef / vcpu;
+  }
+
+  private coldStartMs(node: ArchitectureNode): number {
+    return SimulationService.BASE_COLD_START_MS * this.memorySpeedFactor(node);
   }
 
   private static vcpuOf(sizeOrType: unknown, fallback = 2): number {
@@ -203,7 +254,7 @@ export class SimulationService {
     elb: ['routingAlgorithm', 'lbType'],
     sqs: ['batchSize', 'type'],
     cloudWatch: ['batchSize'],
-    lambda: ['concurrency'],
+    lambda: ['concurrency', 'memoryMB', 'provConcurrency'],
     dynamoDb: ['capacityMode', 'rcu', 'wcu', 'itemSizeKB'],
     kinesis: ['shards'],
     appRunner: ['instances', 'concurrencyPerInstance'],
@@ -463,6 +514,8 @@ export class SimulationService {
     this.overloadStreak.clear();
     this.overloadLatency.clear();
     this.timeoutStreak.clear();
+    this.warmPool.clear();
+    this.lambdaColdStart.clear();
     this.lastCapacity.clear();
     this.downstreamWait.clear();
     this.depOfflineShare.clear();
@@ -547,6 +600,8 @@ export class SimulationService {
     this.overloadStreak.clear();
     this.overloadLatency.clear();
     this.timeoutStreak.clear();
+    this.warmPool.clear();
+    this.lambdaColdStart.clear();
     this.lastCapacity.clear();
     this.downstreamWait.clear();
     this.depOfflineShare.clear();
@@ -895,7 +950,10 @@ export class SimulationService {
       ? cacheHitRate * 0.28
       : 0;
     const timeoutMs = node.config.timeoutMs || 0;
-    const latency = node.type === 'elb' ? lbBaseLatency : node.config.latency || 100;
+    const latency =
+      node.type === 'elb'
+        ? lbBaseLatency
+        : (node.config.latency || 100) * this.memorySpeedFactor(node);
     const cacheLatencyReduction = Math.min(rawCacheReduction, latency * 0.6);
     const timeoutPressure = timeoutMs > 0 && timeoutMs < latency * 3 ? 6 : 0;
 
@@ -914,6 +972,12 @@ export class SimulationService {
         100,
         Math.round((activeConcurrency / concurrencyLimit) * 10000) / 100,
       );
+      const warmFloor = Number(node.config['provConcurrency']) || 0;
+      const currentWarm = Math.max(this.warmPool.get(node.id) ?? warmFloor, warmFloor);
+      const newEnvs = Math.max(0, activeConcurrency - currentWarm);
+      this.warmPool.set(node.id, Math.max(currentWarm, activeConcurrency));
+      const coldFraction = processed > 0 ? Math.min(1, newEnvs / processed) : 0;
+      this.lambdaColdStart.set(node.id, coldFraction * this.coldStartMs(node));
     } else {
       memoryPressure = Math.min(
         100,
@@ -1014,6 +1078,10 @@ export class SimulationService {
       cpuPressure = Math.min(100, round2(cpu * 0.45 + overloadRatio * 58));
     }
     this.overloadLatency.set(node.id, overloadLatency);
+
+    if (!isOffline && node.type === 'lambda') {
+      avgLatency = round2(avgLatency + (this.lambdaColdStart.get(node.id) ?? 0));
+    }
 
     if (!isOffline && depOffline > 0 && processed > 0) {
       failures += Math.round(processed * depOffline * 100) / 100;

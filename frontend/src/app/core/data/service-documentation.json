@@ -181,9 +181,10 @@
     "practicalScenario": "A user uploads an invoice to an S3 bucket, which immediately triggers a Lambda function to parse the document and insert a row into a DynamoDB table.",
     "keyCharacteristics": [
       "Serverless: no infrastructure management or patching.",
-      "Scales automatically with request concurrency.",
+      "Scales automatically with request concurrency; the ceiling is reserved concurrency ÷ execution time.",
+      "Memory sets CPU (one full vCPU at 1,769 MB), so higher memory shortens execution and can lower both latency and cost.",
       "Charged per invocation and GB-seconds of execution time.",
-      "Supports cold starts but executes fast once active."
+      "Cold starts hit only new execution environments on scale-up; provisioned concurrency removes them."
     ],
     "commonIntegrationPatterns": [
       "Handle HTTP requests routed through API Gateway.",

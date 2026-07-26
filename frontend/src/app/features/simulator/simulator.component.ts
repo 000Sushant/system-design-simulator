@@ -1502,6 +1502,10 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.simulation.isSimulationParam(node, String(key));
   }
 
+  idleLatency(node: ArchitectureNode): number {
+    return this.simulation.previewLatencyMs(node);
+  }
+
   /**
    * Effective capacity the simulation engine uses for the selected node, with
    * its source. Shown in the inspector so the Requests/Second cost param can't

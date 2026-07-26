@@ -42,9 +42,10 @@
   "lambda": {
     "kind": "concurrency",
     "failureMode": "throttle",
-    "capacityDriver": "Reserved concurrency ÷ execution time",
+    "capacityDriver": "Reserved concurrency ÷ execution time, where memory sets CPU (one full vCPU at 1,769 MB) so higher memory shortens execution and raises capacity.",
+    "saturationCondition": "In-flight executions (RPS × execution time) exceed reserved concurrency.",
     "atSaturation": "Past capacity it shows Overloaded and throttles excess (429), but stays up and recovers when load drops.",
-    "summary": "Serverless compute bound by concurrent executions, not raw RPS. Effective capacity = reserved concurrency ÷ execution time. Bottleneck: reserved concurrency."
+    "summary": "Serverless compute bound by concurrent executions, not raw RPS. Effective capacity = reserved concurrency ÷ execution time. AWS allocates CPU in proportion to memory (one full vCPU at 1,769 MB), so raising memory shortens CPU-bound execution, lowering latency and raising the concurrency-limited RPS ceiling; the speed-up flattens past 1,769 MB for single-threaded code. Cold-start latency is added only to requests that spin up a new execution environment (spikes on scale-up, near zero in steady state) and is removed by provisioned concurrency up to its count. Fan-out to sibling services is parallel, so a caller inherits the routing-weighted branch latency, not the sum."
   },
   "sns": {
     "kind": "throughput",
