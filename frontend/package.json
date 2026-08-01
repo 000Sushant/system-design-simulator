@@ -20,7 +20,7 @@
     "@angular/core": "^21.2.18",
     "@angular/forms": "^21.2.18",
     "@angular/platform-browser": "^21.2.18",
-    "@foblex/flow": "^18.6.0",
+    "@foblex/flow": "^19.1.6",
     "@fortawesome/fontawesome-free": "^7.2.0",
     "rxjs": "^7.8.1",
     "three": "^0.184.0",
