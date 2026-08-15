@@ -34,7 +34,7 @@
     "@types/three": "^0.184.1",
     "angular-eslint": "^21.4.0",
     "chokidar": "^5.0.0",
-    "eslint": "^9.39.4",
+    "eslint": "^10.8.1",
     "png-to-ico": "^3.0.1",
     "prettier": "^3.8.4",
     "readdirp": "^5.0.0",
