@@ -154,6 +154,50 @@ select {
   display: none;
 }
 
+.mcp-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 16px;
+  z-index: 3;
+  width: min(320px, calc(100vw - 32px));
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  color: var(--c-ink);
+  background: var(--c-white);
+  border: 1px solid var(--c-slate-300);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px var(--c-black-25);
+  font-size: 13px;
+}
+
+.mcp-panel form,
+.mcp-panel label {
+  display: grid;
+  gap: 6px;
+}
+
+.mcp-panel input {
+  min-width: 0;
+  padding: 6px 8px;
+  color: inherit;
+  background: var(--c-white);
+  border: 1px solid var(--c-slate-300);
+  border-radius: 6px;
+}
+
+.mcp-panel p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.node-card.mcp-highlight,
+.annotation-node.mcp-highlight,
+.run-stats.mcp-highlight {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
 .field-label-with-info {
   display: flex;
   align-items: center;
@@ -2457,6 +2501,11 @@ small {
 :host ::ng-deep .f-connection.selected path[f-connection-path] {
   stroke: #ff9900;
   filter: drop-shadow(0 0 10px rgba(255, 153, 0, 0.58));
+}
+
+:host ::ng-deep .f-connection.mcp-highlight path[f-connection-path] {
+  stroke: #2563eb;
+  stroke-width: 4px;
 }
 
 @keyframes connection-flow {

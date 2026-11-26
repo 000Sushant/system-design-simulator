@@ -136,6 +136,18 @@
         <button type="button" class="action-btn" (click)="loadPreset()">
           <i class="fas fa-folder-open"></i> Preset
         </button>
+        @if (mcpAvailable) {
+          <button
+            type="button"
+            class="action-btn"
+            aria-controls="mcp-connection-panel"
+            [attr.aria-expanded]="showMcpPanel"
+            [disabled]="mcp.status !== 'disconnected'"
+            (click)="showMcpPanel = !showMcpPanel"
+          >
+            MCP
+          </button>
+        }
         <button type="button" class="action-btn" (click)="fileInput.click()">
           <i class="fas fa-file-import"></i> Import
         </button>
@@ -216,6 +228,43 @@
         </button>
       </div>
     </div>
+    @if (mcpAvailable && showMcpPanel) {
+      <section id="mcp-connection-panel" class="mcp-panel" aria-label="MCP connection">
+        <strong>MCP connection</strong>
+        @if (mcp.status === 'disconnected') {
+          <form (submit)="pairMcpCanvas($event, pairingCode)">
+            <label>
+              Pairing code
+              <input
+                #pairingCode
+                type="password"
+                name="mcp-pairing-code"
+                maxlength="128"
+                autocomplete="off"
+                spellcheck="false"
+                required
+              />
+            </label>
+            <button type="submit">Pair canvas</button>
+          </form>
+        } @else {
+          <button type="button" (click)="mcp.disconnect()">Disconnect</button>
+        }
+        <p
+          role="status"
+          [attr.data-mcp-action]="mcp.lastAction?.tool"
+          [attr.data-mcp-target]="mcp.lastAction?.targetId"
+          [attr.data-mcp-sequence]="mcp.lastAction?.sequence"
+          [attr.data-mcp-canvas]="mcp.lastAction?.canvasId"
+        >
+          @if (mcp.lastAction; as action) {
+            {{ action.sequence }}. {{ action.description }}
+          } @else {
+            {{ mcp.message }}
+          }
+        </p>
+      </section>
+    }
   </header>
 
   @if (isMobileViewport && mobileSidebarOpen) {
@@ -497,6 +546,10 @@
               [fOffset]="20"
               [fRadius]="18"
               [class.selected]="selectedConnectionIds.includes(connection.id)"
+              [class.mcp-highlight]="mcp.lastAction?.targetId === connection.id"
+              [attr.data-mcp-highlighted-target]="
+                mcp.lastAction?.targetId === connection.id ? connection.id : null
+              "
               [class.edge-active]="connection.traffic.requestsPerSecond > 0"
               [style.--edge-intensity]="connection.traffic.intensity"
               [style.--edge-color]="connectionColor(connection)"
@@ -514,6 +567,10 @@
               class="node-card"
               [class.vpc-card]="node.type === 'vpc'"
               [class.selected]="node.selected"
+              [class.mcp-highlight]="mcp.lastAction?.targetId === node.id"
+              [attr.data-mcp-highlighted-target]="
+                mcp.lastAction?.targetId === node.id ? node.id : null
+              "
               [class.offline]="node.status === 'offline'"
               [class.region-unavailable]="isServiceUnavailable(node.type)"
               [style.borderColor]="
@@ -672,6 +729,10 @@
               [fNodePosition]="nodePos(anno)"
               class="annotation-node"
               [class.selected]="anno.selected"
+              [class.mcp-highlight]="mcp.lastAction?.targetId === anno.id"
+              [attr.data-mcp-highlighted-target]="
+                mcp.lastAction?.targetId === anno.id ? anno.id : null
+              "
               [style.width.px]="anno.width"
               [style.height.px]="anno.height"
               (pointerdown)="selectAnnotation(anno.id); $event.stopPropagation()"
@@ -1205,6 +1266,11 @@
                           node.config[field.key] !== undefined
                             ? node.config[field.key]
                             : field.default
+                        "
+                        [attr.data-mcp-request-rate]="
+                          mcp.lastAction?.tool === 'set_node_config' &&
+                          mcp.lastAction?.targetId === node.id &&
+                          field.key === 'requestRate' ? node.id : null
                         "
                         (ngModelChange)="updateConfig(field.key, $event)"
                         [class.input-error]="isFieldInvalid(field)"
@@ -1773,6 +1839,8 @@
     [class.run-stats--open]="runStatsExpanded"
     [class.is-running]="mode === 'running'"
     [class.developer-mode]="roleMode === 'developer'"
+    [class.mcp-highlight]="mcp.lastAction?.tool === 'set_simulation'"
+    [attr.data-mcp-highlighted-target]="mcp.lastAction?.tool === 'set_simulation' ? mcp.lastAction?.targetId : null"
     (mousemove)="onMouseMove($event)"
     (mouseleave)="onRunStatsMouseLeave()"
     (click)="onPanelClick($event)"

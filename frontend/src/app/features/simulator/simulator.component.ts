@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -68,7 +69,7 @@ import { OnboardingService } from '../../core/services/onboarding.service';
 import { GraphBuilderService } from '../../core/services/graph-builder.service';
 import { evaluateVisibleIf } from '../../core/utils/visible-if';
 import { HistoryStack } from '../../core/utils/history-stack';
-import { cloneGraph, selectSubgraph } from '../../core/utils/graph-clone';
+import { cloneGraph, newId, selectSubgraph } from '../../core/utils/graph-clone';
 import { downstreamNodeIds } from '../../core/utils/graph-traversal';
 import { isFieldLocked } from '../../core/utils/field-lock';
 import { NodeHealth, evaluateNodeHealth } from '../../core/utils/node-health';
@@ -86,6 +87,15 @@ import {
 import { Challenge } from '../../core/models/challenge.model';
 import { ChallengePanelComponent } from './challenge/challenge-panel.component';
 import { OnboardingOverlayComponent } from './challenge/onboarding-overlay.component';
+import { CanvasMcpConnection } from './mcp/canvas-mcp-connection';
+import {
+  CanvasActionMarker,
+  CanvasRequest,
+  CanvasResult,
+  canvasError,
+  requestRateField,
+} from './mcp/canvas-mcp-contract';
+import { visibleConnectionPath, visibleElement } from './mcp/canvas-mcp-visibility';
 
 interface PortSelection {
   node: ArchitectureNode;
@@ -144,6 +154,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly onboarding = inject(OnboardingService);
   private readonly graphBuilder = inject(GraphBuilderService);
   private readonly themeService = inject(ThemeService);
+  private readonly changes = inject(ChangeDetectorRef);
+
+  showMcpPanel = false;
+  private mcpFocus?: Point;
+  readonly mcp = new CanvasMcpConnection({
+    activeCanvasId: () => (this.mcpAvailable ? this.tabs[this.activeTabIndex]?.id : undefined),
+    apply: (request) => this.applyMcpRequest(request),
+    renderAction: () => this.renderMcpAction(),
+    hasRenderedAction: (marker) => this.hasRenderedMcpAction(marker),
+  });
 
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLDivElement>;
   @ViewChild('flowCanvas') flowCanvas?: FCanvasComponent;
@@ -1043,6 +1063,258 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.themeService.isDark;
   }
 
+  get mcpAvailable(): boolean {
+    return (
+      this.roleMode === 'architect' &&
+      typeof window !== 'undefined' &&
+      CanvasMcpConnection.isSupportedOrigin(window.location.origin)
+    );
+  }
+
+  pairMcpCanvas(event: Event, input: HTMLInputElement): void {
+    event.preventDefault();
+    this.mcp.connect(input.value);
+    input.value = '';
+  }
+
+  @HostListener('window:pagehide')
+  onMcpPageHide(): void {
+    this.mcp.disconnect();
+  }
+
+  private applyMcpRequest(request: CanvasRequest): CanvasResult {
+    if (request.tool === 'get_canvas_state') {
+      return {
+        ok: true,
+        data: {
+          canvasId: request.canvasId,
+          nodes: this.nodes,
+          connections: this.connections,
+          annotations: this.annotations,
+          region: this.globalRegion,
+          currency: this.globalCurrency,
+          mode: this.mode as SimulationMode,
+          tick: this.simulation.tick,
+          totals: this.totals,
+        },
+      };
+    }
+    if (request.tool === 'get_node_config_fields') {
+      const node = this.nodes.find((candidate) => candidate.id === request.args.nodeId);
+      if (!node) return canvasError('INVALID_ARGUMENT', 'The node is not on this canvas.');
+      const field = this.mode === 'idle' ? requestRateField(node) : undefined;
+      return { ok: true, data: { nodeId: node.id, fields: field ? [field] : [] } };
+    }
+    if (request.tool === 'set_simulation') return this.applyMcpSimulation(request);
+    if (this.mode !== 'idle') {
+      return canvasError('INVALID_STATE', 'Stop the simulation before editing this canvas.');
+    }
+
+    switch (request.tool) {
+      case 'add_node': {
+        const { serviceType, name, x, y } = request.args;
+        const service = this.catalog.find((candidate) => candidate.type === serviceType);
+        if (!service) return canvasError('INVALID_ARGUMENT', 'The service type is not in the catalog.');
+        const node = this.addService(service.type, x, y, name);
+        this.mcpFocus = this.mcpNodeCenter(node);
+        return {
+          ok: true,
+          data: { node },
+          action: { tool: request.tool, targetId: node.id, description: `Added ${node.name}.` },
+        };
+      }
+      case 'connect_nodes':
+        return this.applyMcpConnection(request);
+      case 'set_node_config':
+        return this.applyMcpConfig(request);
+      case 'add_annotation': {
+        const { x, y, ...details } = request.args;
+        const annotation = this.addAnnotation(x, y, details);
+        this.mcpFocus = { x: x + annotation.width / 2, y: y + annotation.height / 2 };
+        return {
+          ok: true,
+          data: { annotation },
+          action: { tool: request.tool, targetId: annotation.id, description: 'Added a note.' },
+        };
+      }
+    }
+  }
+
+  private applyMcpConnection(request: Extract<CanvasRequest, { tool: 'connect_nodes' }>): CanvasResult {
+    const { sourceNodeId, sourcePortId, targetNodeId, targetPortId } = request.args;
+    const source = this.nodes.find((node) => node.id === sourceNodeId);
+    const target = this.nodes.find((node) => node.id === targetNodeId);
+    const output = source?.ports.find(
+      (port) => port.id === sourcePortId && port.direction === 'output',
+    );
+    const input = target?.ports.find(
+      (port) => port.id === targetPortId && port.direction === 'input',
+    );
+    if (!source || !target || !output || !input) {
+      return canvasError(
+        'INVALID_ARGUMENT',
+        'Select an existing output port and input port on this canvas.',
+      );
+    }
+    const result = this.tryCreateConnection(source, output, target, input, false);
+    if ('error' in result) return canvasError('INVALID_ARGUMENT', result.error);
+    this.mcpFocus = this.connectionMidpoint(result.connection);
+    return {
+      ok: true,
+      data: result,
+      action: {
+        tool: request.tool,
+        targetId: result.connection.id,
+        description: `Connected ${source.name} to ${target.name}.`,
+      },
+    };
+  }
+
+  private applyMcpConfig(request: Extract<CanvasRequest, { tool: 'set_node_config' }>): CanvasResult {
+    const { nodeId, key, value } = request.args;
+    const node = this.nodes.find((candidate) => candidate.id === nodeId);
+    if (!node || !requestRateField(node)) {
+      return canvasError(
+        'INVALID_ARGUMENT',
+        'Edit requestRate on a Users node with fixed traffic and Dynamic RPS off.',
+      );
+    }
+    this.pushHistory();
+    this.applyNumericConfig([nodeId], key, value);
+    this.selectNode(nodeId);
+    this.rightCollapsed = false;
+    this.onConfigChange();
+    this.mcpFocus = this.mcpNodeCenter(node);
+    return {
+      ok: true,
+      data: { nodeId, key, value },
+      action: {
+        tool: request.tool,
+        targetId: nodeId,
+        value,
+        description: `${node.name} now sends ${value} RPS.`,
+      },
+    };
+  }
+
+  private applyMcpSimulation(request: Extract<CanvasRequest, { tool: 'set_simulation' }>): CanvasResult {
+    const { action } = request.args;
+    const expectedMode = { play: 'idle', pause: 'running', resume: 'paused' };
+    if (action === 'stop' ? this.mode === 'idle' : this.mode !== expectedMode[action]) {
+      return canvasError('INVALID_STATE', `Cannot ${action} when the simulation is ${this.mode}.`);
+    }
+    if (action === 'play') {
+      const issue = this.nodes
+        .map((node) => this.calculateNodeHealth(node))
+        .find((health) => health.tone === 'error' && health.blocksRun);
+      if (issue) return canvasError('INVALID_STATE', issue.message);
+      this.startSimulation();
+    } else if (action === 'stop') {
+      this.stopSimulation();
+    } else {
+      this.pauseSimulation();
+    }
+    const mode = this.mode as SimulationMode;
+    return {
+      ok: true,
+      data: { mode },
+      action: {
+        tool: request.tool,
+        targetId: request.canvasId,
+        mode,
+        description: `Simulation ${mode}.`,
+      },
+    };
+  }
+
+  private mcpNodeCenter(node: ArchitectureNode): Point {
+    return { x: node.x + 74, y: node.y + 47 };
+  }
+
+  private renderMcpAction(): void {
+    const focus = this.mcpFocus;
+    this.mcpFocus = undefined;
+    this.changes.detectChanges();
+    if (this.mcp.lastAction?.tool === 'set_node_config') {
+      const root: HTMLElement = this.elementRef.nativeElement;
+      root.querySelector('[data-mcp-request-rate]')?.scrollIntoView({ block: 'nearest' });
+    }
+    if (!focus || !this.flowCanvas) return;
+
+    const { width, height } = this.canvasRef.nativeElement.getBoundingClientRect();
+    const { position, scaledPosition, scale } = this.flowCanvas.transform;
+    const x = focus.x * scale + position.x + scaledPosition.x;
+    const y = focus.y * scale + position.y + scaledPosition.y;
+    const margin = Math.min(100, width / 4, height / 4);
+    if (x >= margin && x <= width - margin && y >= margin && y <= height - margin) return;
+
+    this.pan = { x: width / 2 - focus.x * scale, y: height / 2 - focus.y * scale };
+    // Foblex stores the zoom anchor separately from the base position.
+    this.flowCanvas._setPosition({
+      x: this.pan.x - scaledPosition.x,
+      y: this.pan.y - scaledPosition.y,
+    });
+    this.flowCanvas.redraw();
+  }
+
+  private hasRenderedMcpAction(marker: CanvasActionMarker): boolean {
+    const root: HTMLElement = this.elementRef.nativeElement;
+    const status = root.querySelector<HTMLElement>('[data-mcp-action]');
+    if (
+      !status ||
+      status.dataset['mcpSequence'] !== String(marker.sequence) ||
+      status.dataset['mcpTarget'] !== marker.targetId ||
+      status.dataset['mcpCanvas'] !== marker.canvasId ||
+      status.dataset['mcpAction'] !== marker.tool ||
+      !visibleElement(status)
+    ) {
+      return false;
+    }
+
+    const targetStyle = {
+      add_node: '.node-card',
+      connect_nodes: 'f-connection',
+      add_annotation: '.annotation-node',
+      set_node_config: '.node-card',
+      set_simulation: '.run-stats',
+    }[marker.tool];
+    const target = root.querySelector<HTMLElement>(
+      `${targetStyle}.mcp-highlight[data-mcp-highlighted-target="${CSS.escape(marker.targetId)}"]`,
+    );
+    if (!target) return false;
+
+    if (marker.tool === 'set_simulation') {
+      const controls = target.querySelectorAll('.island-status, .sim-actions');
+      const clip = target.getBoundingClientRect();
+      return (
+        this.mode === marker.mode && Array.from(controls).some((control) => visibleElement(control, clip))
+      );
+    }
+
+    const viewport = this.canvasRef.nativeElement.getBoundingClientRect();
+    const tabs = this.canvasRef.nativeElement.querySelector('.canvas-tab-bar');
+    const clip = {
+      left: viewport.left,
+      top: Math.max(viewport.top, tabs?.getBoundingClientRect().bottom ?? viewport.top),
+      right: viewport.right,
+      bottom: viewport.bottom,
+    };
+    if (marker.tool === 'connect_nodes') return visibleConnectionPath(target, clip);
+    if (!visibleElement(target, clip)) return false;
+
+    if (marker.tool === 'set_node_config') {
+      const field = root.querySelector<HTMLInputElement>('[data-mcp-request-rate]');
+      const inspector = field?.closest('.sidebar-content');
+      return (
+        !!field &&
+        !!inspector &&
+        field.valueAsNumber === marker.value &&
+        visibleElement(field, inspector.getBoundingClientRect())
+      );
+    }
+    return true;
+  }
+
   toggleTheme(): void {
     this.themeService.toggleTheme();
   }
@@ -1138,7 +1410,11 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  addAnnotation(x?: number, y?: number): void {
+  addAnnotation(
+    x?: number,
+    y?: number,
+    details?: Pick<Annotation, 'text' | 'width' | 'height' | 'fontSize' | 'fontWeight'>,
+  ): Annotation {
     if (x === undefined || y === undefined) {
       const rect = this.canvasRef.nativeElement.getBoundingClientRect();
       const point = this.toCanvasPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
@@ -1147,7 +1423,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.pushHistory();
-    const id = `anno-${Date.now()}`;
+    const id = `anno-${newId()}`;
     const annotation: Annotation = {
       id,
       text: 'New Note',
@@ -1158,12 +1434,14 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
       fontSize: 16,
       fontWeight: 'normal',
       selected: true,
+      ...details,
     };
     this.annotations = [...this.annotations, annotation];
     this.selectAnnotation(id);
+    return annotation;
   }
 
-  addService(type: AwsServiceType, x?: number, y?: number): void {
+  addService(type: AwsServiceType, x?: number, y?: number, name?: string): ArchitectureNode {
     if (x === undefined || y === undefined) {
       const rect = this.canvasRef.nativeElement.getBoundingClientRect();
       const point = this.toCanvasPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
@@ -1172,12 +1450,14 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.pushHistory();
     const node = this.factory.createNode(type, x, y);
+    if (name !== undefined) node.name = name;
     this.nodes = [...this.nodes, node];
     this.selectNode(node.id);
     this.revealMinimap();
     this.setMessage(`${node.name} added to the architecture.`, 'success');
     this.onboarding.notify('nodeAdded');
     this.afterGraphMutated();
+    return node;
   }
 
   selectAnnotation(id: string): void {
@@ -1300,6 +1580,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.mcp.disconnect();
     this.stopResizeLeft();
     this.stopResizeRight();
     this.snapshotSubscription?.unsubscribe();
@@ -2100,6 +2381,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private doGoHome(): void {
+    this.mcp.disconnect();
     window.history.pushState(null, '', '/');
     window.dispatchEvent(new Event('popstate'));
   }
@@ -2142,6 +2424,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Collapse every canvas down to a single fresh, empty tab. */
   private resetAllCanvases(): void {
+    this.mcp.disconnect();
     this.simulation.stop();
     this.tabs = [];
     this.activeTabIndex = 0;
@@ -2246,6 +2529,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private applyRoleSwitch(mode: 'developer' | 'architect'): void {
+    this.mcp.disconnect();
+    this.showMcpPanel = false;
     this.roleMode = mode;
     if (typeof window !== 'undefined' && window.history) {
       const url = new URL(window.location.href);
@@ -2261,6 +2546,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   goDocs(): void {
+    this.mcp.disconnect();
     // Record origin so the docs "Back" button returns to the playground.
     sessionStorage.setItem('docsOrigin', '/playground');
     window.history.pushState(null, '', '/docs');
@@ -2624,7 +2910,8 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     sourcePort: ServicePort,
     targetNode: ArchitectureNode,
     targetPort: ServicePort,
-  ): void {
+    allowAlternative = true,
+  ): { connection: ArchitectureConnection } | { error: string } {
     let finalSourcePort = sourcePort;
     let finalTargetPort = targetPort;
     let result = this.validation.validate(
@@ -2636,7 +2923,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     // If exact port match fails, auto-correct by finding ANY valid port combination between these two nodes
-    if (!result.allowed) {
+    if (!result.allowed && allowAlternative) {
       const allOutputs = sourceNode.ports.filter((p) => p.direction === 'output');
       const allInputs = targetNode.ports.filter((p) => p.direction === 'input');
 
@@ -2664,7 +2951,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (!result.allowed) {
       this.setMessage(result.message, 'error');
-      return;
+      return { error: result.message };
     }
 
     this.pushHistory();
@@ -2680,6 +2967,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMessage(result.message, 'success');
     this.onboarding.notify('edgeCreated');
     this.afterGraphMutated();
+    return { connection };
   }
 
   selectNode(id: string): void {
@@ -2896,6 +3184,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openDocs(): void {
+    this.mcp.disconnect();
     this.simulation.stop();
     // Record origin so the docs "Back" button returns to the playground.
     sessionStorage.setItem('docsOrigin', '/playground');
@@ -2982,6 +3271,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   resetCanvas(): void {
+    this.mcp.disconnect();
     this.simulation.stop();
     // Record the pre-clear state so Ctrl+Z can bring the architecture back.
     if (this.nodes.length > 0 || this.connections.length > 0 || this.annotations.length > 0) {
@@ -3148,11 +3438,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     const selectedId = this.selectedNode.id;
     this.pushHistory(`config:${selectedId}:${key}`);
 
-    this.nodes = this.nodes.map((node) =>
-      this.selectedNodeIds.includes(node.id)
-        ? { ...node, config: { ...node.config, [key]: numValue } }
-        : node,
-    );
+    this.applyNumericConfig(this.selectedNodeIds, key, numValue);
 
     // Client special handling: propagate RPS to downstream services if sync is on
     if (
@@ -3189,6 +3475,16 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.onConfigChange();
+  }
+
+  private applyNumericConfig(
+    nodeIds: readonly string[],
+    key: keyof ServiceConfig,
+    value: number | null,
+  ): void {
+    this.nodes = this.nodes.map((node) =>
+      nodeIds.includes(node.id) ? { ...node, config: { ...node.config, [key]: value } } : node,
+    );
   }
 
   updateSelectConfig(key: any, value: any): void {
@@ -3670,6 +3966,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private applyProject(project: ArchitectureProject): void {
+    this.mcp.disconnect();
     this.projectName = project.name;
     this.globalCurrency = project.currency || 'USD';
     this.globalRegion = project.region || 'us-east-1';
@@ -3767,6 +4064,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadTabState(index: number): void {
+    this.mcp.disconnect();
     this.activeTabIndex = index;
     const tab = this.tabs[index];
     this.projectName = tab.projectName;
@@ -3863,6 +4161,7 @@ export class SimulatorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private doCloseTab(index: number): void {
+    if (index === this.activeTabIndex) this.mcp.disconnect();
     this.tabs.splice(index, 1);
     if (index === this.activeTabIndex) {
       const nextIndex = Math.min(index, this.tabs.length - 1);

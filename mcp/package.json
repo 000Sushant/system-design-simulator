@@ -1,0 +1,23 @@
+{
+  "name": "system-design-simulator-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "bin": {
+    "system-design-simulator-mcp": "src/index.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.mjs",
+    "demo": "node scripts/demo/index.mjs",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "ws": "8.23.0",
+    "zod": "4.6.7"
+  }
+}
